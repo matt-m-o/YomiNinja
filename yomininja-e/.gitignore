@@ -1,0 +1,7 @@
+node_modules
+*.log
+.next
+app
+dist
+grpc/rpc/**/*.ts
+yomininja/grpc/rpc/**/*.ts

@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package ppocr_service;
+
+service PPOCRInference {  
+  rpc RecognizeBytes (RecognizeBytesRequest) returns (RecognizeDefaultResponse) {}
+  rpc RecognizeBase64 (RecognizeBase64Request) returns (RecognizeDefaultResponse) {}
+  rpc GetSupportedLanguages (GetSupportedLanguagesRequest) returns (GetSupportedLanguagesResponse) {}
+}
+
+message RecognizeBytesRequest {
+  string id = 1;
+  string language_code = 2;
+  bytes image_bytes = 3;
+}
+message RecognizeBase64Request {
+  string id = 1;
+  string language_code = 2;
+  string base64_image = 3;
+}
+
+
+message Vertex {
+  int32 x = 1;
+  int32 y = 2;
+}
+message Box {
+  Vertex bottom_left = 1;
+  Vertex bottom_right = 2;
+  Vertex top_left = 3;
+  Vertex top_right = 4;
+}
+message Result {
+  string text = 1;
+  float score = 2;
+  Box box = 3;
+}
+message ContextResolution {
+  int32 width = 1;
+  int32 height = 2;
+}
+message RecognizeDefaultResponse {
+  string id = 1;
+  repeated Result results = 2;
+  ContextResolution context_resolution = 3;
+}
+
+
+
+message GetSupportedLanguagesRequest {
+}
+message GetSupportedLanguagesResponse {
+  repeated string language_codes = 1;
+}
