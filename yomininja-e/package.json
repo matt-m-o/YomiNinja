@@ -12,7 +12,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "grpc:gen-types": "proto-loader-gen-types --longs=String --enums=String --defaults --keep-case --oneofs --grpcLib=@grpc/grpc-js --includeDirs=./grpc/protos --outDir=./grpc/rpc ./grpc/protos/ppocr_service.proto"
+    "grpc:gen-types": "proto-loader-gen-types --longs=String --enums=String --defaults --keep-case --oneofs --grpcLib=@grpc/grpc-js --includeDirs=./grpc/protos --outDir=./grpc/rpc ./grpc/protos/ocr_service.proto"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.9.3",

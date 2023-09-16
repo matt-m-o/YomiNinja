@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package ppocr_service;
+package ocr_service;
 
-service PPOCRInference {  
+service OCRService {
   rpc RecognizeBytes (RecognizeBytesRequest) returns (RecognizeDefaultResponse) {}
   rpc RecognizeBase64 (RecognizeBase64Request) returns (RecognizeDefaultResponse) {}
   rpc GetSupportedLanguages (GetSupportedLanguagesRequest) returns (GetSupportedLanguagesResponse) {}
