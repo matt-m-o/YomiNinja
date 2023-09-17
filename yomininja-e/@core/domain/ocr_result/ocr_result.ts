@@ -39,7 +39,10 @@ export class OcrResult {
         this.id = input.id;
         
         this.props = {
-            ...input.props,
+            context_resolution: {
+                width: input.props?.context_resolution.width || 0,
+                height: input.props?.context_resolution.height || 0,
+            },
             results: input.props?.results ? [ ...input?.props?.results ] : []
         }        
     }

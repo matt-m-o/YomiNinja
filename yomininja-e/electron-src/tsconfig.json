@@ -17,10 +17,7 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext",
-    "outDir": "../main",
-    "types": [
-      "jest"
-    ]
+    "outDir": "../main"
   },
   "exclude": ["node_modules"],
   "include": ["**/*.ts", "**/*.tsx", "**/*.js"]

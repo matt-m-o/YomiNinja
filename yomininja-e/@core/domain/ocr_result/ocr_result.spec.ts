@@ -10,7 +10,7 @@ describe( "OCR Result tests", () => {
         });
 
         expect( ocrResult.id ).toStrictEqual( 1 );
-        expect( ocrResult.contextResolution ).toBeUndefined();        
+        expect( ocrResult.contextResolution ).toStrictEqual({ width: 0, height: 0 });        
         expect( ocrResult.results ).toHaveLength( 0 );
     });
 
