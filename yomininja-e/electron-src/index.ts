@@ -1,11 +1,21 @@
 // Native
 import { join } from 'path';
 import { format } from 'url';
+import { Registry, container_registry } from '../@core/infra/container_registry/container_registry'
 
 // Packages
 import { BrowserWindow, app, ipcMain, IpcMainEvent } from 'electron';
 import isDev from 'electron-is-dev';
 import prepareNext from 'electron-next';
+import { OcrRecognitionController } from './controllers/ocr_recognition.controller';
+import { RecognizeImageUseCase } from '../@core/application/use_cases/recognize_image/recognize_image.use_case';
+import { GetSupportedLanguagesUseCase } from '../@core/application/use_cases/get_supported_languages/get_supported_languages.use_case';
+
+
+const recognizeUseCase = container_registry.get< RecognizeImageUseCase >( Registry.RecognizeImageUseCase );
+const getSupportedLanguagesUseCase = container_registry.get< GetSupportedLanguagesUseCase >( Registry.GetSupportedLanguagesUseCase );
+
+let ocrRecognitionController: OcrRecognitionController;
 
 
 // Prepare the renderer once the app is ready
@@ -31,6 +41,17 @@ app.on('ready', async () => {
       });
 
   mainWindow.loadURL(url);
+
+  ocrRecognitionController = new OcrRecognitionController({
+    recognizeImageUseCase: recognizeUseCase,
+    getSupportedLanguagesUseCase: getSupportedLanguagesUseCase,
+    languageCode: 'ja',
+    presentationWindow: mainWindow
+  });
+
+  ocrRecognitionController.registerGlobalShortcuts( mainWindow );
+
+  // ocrRecognitionController.getSupportedLanguages();
 });
 
 // Quit the app once all windows are closed
