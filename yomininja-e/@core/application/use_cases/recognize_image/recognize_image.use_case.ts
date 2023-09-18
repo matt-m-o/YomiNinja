@@ -14,12 +14,12 @@ export class RecognizeImageUseCase {
 
     constructor( public ocrAdapters: OcrAdapter[] ) {}
 
-    async execute( input: RecognizeImageInput ): Promise< OcrResult> {
+    async execute( input: RecognizeImageInput ): Promise< OcrResult | null > {
 
         const adapter = this.getAdapter( input.ocrAdapterName );
 
         if ( !adapter )
-            return;
+            return null;
 
         this.idCounter++;
 
@@ -30,7 +30,7 @@ export class RecognizeImageUseCase {
         });
     }
 
-    private getAdapter( adapterName: string ): OcrAdapter {
-        return this.ocrAdapters.find( adapter => adapter.name === adapterName );
+    private getAdapter( adapterName: string ): OcrAdapter | null {
+        return this.ocrAdapters.find( adapter => adapter.name === adapterName ) || null;
     }
 }

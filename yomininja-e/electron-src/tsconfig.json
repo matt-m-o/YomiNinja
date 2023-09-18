@@ -12,12 +12,15 @@
     "noEmit": false,
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": false,
-    "noUnusedParameters": true,    
+    "noUnusedParameters": false,    
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext",
-    "outDir": "../main"
+    "outDir": "../main",
+    "types": [
+      "jest"
+    ]
   },
   "exclude": ["node_modules"],
   "include": ["**/*.ts", "**/*.tsx", "**/*.js"]

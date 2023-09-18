@@ -5,14 +5,15 @@ import { OCRServiceClient } from "../../../grpc/rpc/ocr_service/OCRService";
 import { RecognizeDefaultResponse__Output } from "../../../grpc/rpc/ocr_service/RecognizeDefaultResponse";
 import { GetSupportedLanguagesResponse__Output } from "../../../grpc/rpc/ocr_service/GetSupportedLanguagesResponse";
 import { ocrServiceProto } from "../../../grpc/grpc_protos";
+import { RecognizeBytesRequest } from "../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
 
 
   
 
-export class OcrPpOcrAdapter implements OcrAdapter {
+export class PpOcrAdapter implements OcrAdapter {
 
     static _name: string = "OcrPpOcrAdapter";
-    public readonly name: string = OcrPpOcrAdapter._name;
+    public readonly name: string = PpOcrAdapter._name;
     public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
     private ocrServiceClient: OCRServiceClient;
 
@@ -30,13 +31,19 @@ export class OcrPpOcrAdapter implements OcrAdapter {
 
         if ( this.status != OcrAdapterStatus.Enabled )
             return null;
+
+        console.log({
+            recognize_input: input
+        })
+
+        const requestInput: RecognizeBytesRequest = {
+            id: input.id.toString(),
+            image_bytes: input.imageBuffer,
+            language_code: input.languageCode            
+        };        
         
         const clientResponse = await new Promise< RecognizeDefaultResponse__Output | undefined >(
-            (resolve, reject) => this.ocrServiceClient.RecognizeBytes( {
-                id: input.id.toString(),
-                image_bytes: input.imageBuffer,
-                language_code: input.languageCode
-            }, ( error, response ) => {
+            (resolve, reject) => this.ocrServiceClient.RecognizeBytes( requestInput, ( error, response ) => {
                 if (error) {
                     return reject(error)
                 }
@@ -46,7 +53,8 @@ export class OcrPpOcrAdapter implements OcrAdapter {
 
         if ( !clientResponse )
             return null;
-
+        
+        // return null;
         return OcrResult.create({
             id: input.id,
             props: {
