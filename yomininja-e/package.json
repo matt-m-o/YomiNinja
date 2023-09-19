@@ -58,8 +58,7 @@
     ],
     "rootDir": ".",
     "roots": [
-      "electron-src",
-      "@core"
+      "electron-src"      
     ],
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
