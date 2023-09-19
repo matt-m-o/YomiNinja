@@ -31,44 +31,35 @@ export type OcrResultProperties = {
 export class OcrResult {
 
     public readonly id: number;
-
-    public readonly props: OcrResultProperties;
+    public context_resolution: OcrResultContextResolution;
+    public results: OcrItem[];    
     
-    private constructor( input: { id: number, props?: OcrResultProperties } ) {
+    private constructor( input: {
+        id: number,
+        context_resolution: OcrResultContextResolution;
+        results: OcrItem[];
+    }) {
 
         this.id = input.id;
         
-        this.props = {
-            context_resolution: {
-                width: input.props?.context_resolution.width || 0,
-                height: input.props?.context_resolution.height || 0,
-            },
-            results: input.props?.results ? [ ...input?.props?.results ] : []
-        }        
+        this.context_resolution = {
+            width: input.context_resolution.width || 0,
+            height: input.context_resolution.height || 0,
+        };
+
+        this.results = input.results ? [ ...input?.results ] : [];
     }
 
-    static create( input: { id: number, props?: OcrResultProperties } ): OcrResult {
+    static create( input: {
+        id: number,
+        context_resolution: OcrResultContextResolution;
+        results: OcrItem[];
+    }): OcrResult {
         return new OcrResult( input );
     }
-    
-    get contextResolution(){ return this.props.context_resolution; }
-
-    get results(){ return this.props.results; }
-
-    set contextResolution( obj: OcrResultContextResolution ) {
-        this.props.context_resolution = {
-            width: obj.width,
-            height: obj.height,            
-        };
-    }
+            
 
     addResultItem( item: OcrItem ): void {
-        this.props.results.push( item );
-    }
-
-    set setResults( items: OcrItem[] ) {
-        items.map( item => {
-            this.props.results.push(item);
-        });
-    }
+        this.results.push( item );
+    }    
 }

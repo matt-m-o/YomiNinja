@@ -1,4 +1,4 @@
-import { OcrResult, OcrResultProperties } from "../../domain/ocr_result/ocr_result";
+import { OcrItem, OcrResult, OcrResultProperties } from "../../domain/ocr_result/ocr_result";
 import { OcrAdapter, OcrAdapterStatus, OcrRecognitionInput } from "../../application/adapters/ocr.adapter";
 import * as grpc from '@grpc/grpc-js';
 import { OCRServiceClient } from "../../../grpc/rpc/ocr_service/OCRService";
@@ -30,11 +30,7 @@ export class PpOcrAdapter implements OcrAdapter {
     async recognize( input: OcrRecognitionInput ): Promise< OcrResult | null > {
 
         if ( this.status != OcrAdapterStatus.Enabled )
-            return null;
-
-        console.log({
-            recognize_input: input
-        })
+            return null;        
 
         const requestInput: RecognizeBytesRequest = {
             id: input.id.toString(),
@@ -54,13 +50,17 @@ export class PpOcrAdapter implements OcrAdapter {
         if ( !clientResponse )
             return null;
         
+        if (
+            !clientResponse?.context_resolution ||
+            !clientResponse?.results
+        )
+            return null;
+
         // return null;
         return OcrResult.create({
-            id: input.id,
-            props: {
-                context_resolution: clientResponse.context_resolution,
-                results: clientResponse.results,
-            } as OcrResultProperties
+            id: input.id,            
+            context_resolution: clientResponse.context_resolution,
+            results: clientResponse.results as OcrItem[],            
         });        
     }
     async getSupportedLanguages(): Promise< string[] > {

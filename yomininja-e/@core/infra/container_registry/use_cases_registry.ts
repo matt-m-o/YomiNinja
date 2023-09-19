@@ -15,3 +15,14 @@ container_registry.bind( Registry.GetSupportedLanguagesUseCase ).toDynamicValue(
         context.container.get( Registry.PpOcrAdapter ),
     ]);
 }).inSingletonScope();
+
+
+
+
+export function get_RecognizeImageUseCase(): RecognizeImageUseCase {
+    return container_registry.get< RecognizeImageUseCase >( Registry.RecognizeImageUseCase )
+}
+
+export function get_GetSupportedLanguagesUseCase(): GetSupportedLanguagesUseCase {    
+    return container_registry.get< GetSupportedLanguagesUseCase >( Registry.GetSupportedLanguagesUseCase );
+}
