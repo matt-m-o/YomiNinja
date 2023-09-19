@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { OcrResult } from '../../electron-src/@core/domain/ocr_result/ocr_result';
 import { styled } from '@mui/material/styles';
+import { OcrResultContext, OcrResultProvider } from '../context/ocr_result.provider';
+import FullscreenOcrResult from '../components/fullscreen_ocr_result';
 
 
 const OverlayFrame = styled('div')({
@@ -9,41 +11,23 @@ const OverlayFrame = styled('div')({
   overflow: 'hidden',
 });
 
-const OcrItem = styled('div')({
-  border: 'solid 1px red',
-  borderRadius: '10px',  
-});
-
 export default function OcrOverlayPage() {
-
-  const [ ocrResult, setOcrResult ] = useState< OcrResult >();
+  
 
   useEffect( () => {
-    document.body.style.margin = "0";
-    document.body.style.padding = "0";
+    document.body.style.margin = "0px";
+    document.body.style.padding = "0px";
     document.body.style.overflow = "hidden";
-    
-
-    function handleOcrResult( _event, args: OcrResult ) {
-      console.log( args );
-      setOcrResult( args )
-    }
-    // add a listener to 'message' channel
-    global.ipcRenderer.addListener('message', handleOcrResult)
-
-    global.ipcRenderer.on( 'ocr:result', handleOcrResult );
-
-    return () => {
-      global.ipcRenderer.removeListener( 'ocr:result', handleOcrResult )
-    }
   }, []);
   
 
-  return (    
-    <OverlayFrame>
-      { ocrResult?.results?.map( ( item, idx ) => {
-        return <OcrItem key={idx}> { item.text } </OcrItem>
-      }) }      
-    </OverlayFrame>
+  return (
+    <OcrResultProvider>
+      <OverlayFrame>
+
+        <FullscreenOcrResult />
+
+      </OverlayFrame>
+    </OcrResultProvider>
   );
 }

@@ -8,33 +8,33 @@ import { GetSupportedLanguagesOutput, GetSupportedLanguagesUseCase } from "../@c
 
 export class OcrRecognitionController {
         
-    private presentationWindow: BrowserWindow | undefined;
+    private overlayWindow: BrowserWindow | undefined;
 
     private recognizeImageUseCase: RecognizeImageUseCase;
     private getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
 
     private selectedLanguageCode: string;    
 
-    constructor( input: {        
-        presentationWindow?: BrowserWindow;        
+    constructor( input: {
+        presentationWindow?: BrowserWindow;
         languageCode: string;
         recognizeImageUseCase: RecognizeImageUseCase;
         getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
-    }) {        
+    }) {
 
         if ( input?.presentationWindow ) {
-            this.presentationWindow = input.presentationWindow;
+            this.overlayWindow = input.presentationWindow;
         }
         else {
-            this.createPresentationWindow();
+            this.createOverlayWindow();
         }
 
         this.recognizeImageUseCase = input.recognizeImageUseCase;
         this.getSupportedLanguagesUseCase = input.getSupportedLanguagesUseCase;
         this.selectedLanguageCode = input.languageCode;
 
-        if ( this.presentationWindow != null ) {
-            this.registerGlobalShortcuts( this.presentationWindow );
+        if ( this.overlayWindow != null ) {
+            this.registerGlobalShortcuts( this.overlayWindow );
         }
     }
 
@@ -51,14 +51,15 @@ export class OcrRecognitionController {
 
             // console.log(ocrResult?.results);
 
-            if ( !this.presentationWindow )
-                this.createPresentationWindow();
+            if ( !this.overlayWindow )
+                this.createOverlayWindow();
 
-            if ( !this.presentationWindow )
+            if ( !this.overlayWindow )
                 return;
 
-            this.presentationWindow.webContents.send( 'ocr:result', ocrResult );
-            this.showPresentationWindow();
+            this.overlayWindow.webContents.send( 'ocr:result', ocrResult );
+            this.showOverlayWindow();
+
         } catch (error) {
             console.error( error );
         }
@@ -75,17 +76,18 @@ export class OcrRecognitionController {
 
             window.webContents.send( 'user_command:scan' );
             await this.fullScreenOcr();
-            // this.showPresentationWindow();
+            this.showOverlayWindow();
         });
         
         globalShortcut.register( 'Alt+C', () => {
 
-            this.showPresentationWindow();
+            this.showOverlayWindow();
             window.webContents.send( 'user_command:copy_to_clipboard' );
         });
     }
 
     private async takeScreenshot(): Promise<Buffer> {
+
         // const { workAreaSize } = screen.getPrimaryDisplay();
 
         const sources = await desktopCapturer.getSources({
@@ -96,15 +98,16 @@ export class OcrRecognitionController {
             }
         });
 
-        return sources[0].thumbnail.toPNG();        
+        return sources[0].thumbnail.toPNG();
     }
 
-    private createPresentationWindow() {
-        this.presentationWindow = new BrowserWindow({
-            width: 800,
-            height: 600,
-            show: false,
-            transparent: true,
+    private createOverlayWindow() {
+        
+        this.overlayWindow = new BrowserWindow({
+            width: 1280,
+            height: 720,
+            show: true,
+            transparent: false,
             webPreferences: {
                 nodeIntegration: false,
                 contextIsolation: false,
@@ -120,14 +123,14 @@ export class OcrRecognitionController {
             slashes: true,
         });
 
-        this.presentationWindow.loadURL(url);
+        this.overlayWindow.loadURL(url);
     }
 
-    private showPresentationWindow() {
+    private showOverlayWindow() {
 
-        if ( !this.presentationWindow )
+        if ( !this.overlayWindow )
             return;
 
-        this.presentationWindow.show();
+        this.overlayWindow.show();
     }
 }
