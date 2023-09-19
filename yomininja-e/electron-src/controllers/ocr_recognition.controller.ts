@@ -4,7 +4,7 @@ import { join } from "path";
 import { format } from 'url';
 import { RecognizeImageUseCase } from '../../@core/application/use_cases/recognize_image/recognize_image.use_case';
 import { PpOcrAdapter } from '../../@core/infra/ppocr.adapter/ppocr.adapter';
-import { GetSupportedLanguagesUseCase } from "../../@core/application/use_cases/get_supported_languages/get_supported_languages.use_case";
+import { GetSupportedLanguagesOutput, GetSupportedLanguagesUseCase } from "../../@core/application/use_cases/get_supported_languages/get_supported_languages.use_case";
 
 export class OcrRecognitionController {
         
@@ -13,8 +13,7 @@ export class OcrRecognitionController {
     private recognizeImageUseCase: RecognizeImageUseCase;
     private getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
 
-    private selectedLanguageCode: string;
-    private idCounter = 0;
+    private selectedLanguageCode: string;    
 
     constructor( input: {        
         presentationWindow?: BrowserWindow;        
@@ -41,8 +40,6 @@ export class OcrRecognitionController {
 
     async fullScreenOcr() {
 
-        this.idCounter++;
-
         const imageBuffer = await this.takeScreenshot();
         
         try {
@@ -52,25 +49,29 @@ export class OcrRecognitionController {
                 languageCode: this.selectedLanguageCode,
             });            
 
-            console.log(ocrResult?.results);
+            // console.log(ocrResult?.results);
 
+            if ( !this.presentationWindow )
+                this.createPresentationWindow();
+
+            if ( !this.presentationWindow )
+                return;
+
+            this.presentationWindow.webContents.send( 'ocr:result', ocrResult );
+            this.showPresentationWindow();
         } catch (error) {
             console.error( error );
         }
 
     }
 
-    async getSupportedLanguages() {
-        await this.getSupportedLanguagesUseCase.execute();
+    async getSupportedLanguages(): Promise< GetSupportedLanguagesOutput[] > {
+        return await this.getSupportedLanguagesUseCase.execute();
     }
 
     registerGlobalShortcuts( window: BrowserWindow ) {
 
-        console.log("registerGlobalShortcuts");
-
-        globalShortcut.register( 'Alt+S', async () => {
-
-            console.log("Alt+S");
+        globalShortcut.register( 'Alt+S', async () => {            
 
             window.webContents.send( 'user_command:scan' );
             await this.fullScreenOcr();
@@ -78,6 +79,7 @@ export class OcrRecognitionController {
         });
         
         globalShortcut.register( 'Alt+C', () => {
+
             this.showPresentationWindow();
             window.webContents.send( 'user_command:copy_to_clipboard' );
         });
@@ -99,24 +101,31 @@ export class OcrRecognitionController {
 
     private createPresentationWindow() {
         this.presentationWindow = new BrowserWindow({
-            transparent: true, // !
-            frame: false, // !
-            // fullscreen: true, // !
-            // alwaysOnTop: true, // !
-            autoHideMenuBar: true,
+            width: 800,
+            height: 600,
             show: false,
             webPreferences: {
-            //   preload: path.join(__dirname, 'preload.js'),
-              nodeIntegration: true,
-              contextIsolation: false,
+                nodeIntegration: false,
+                contextIsolation: false,
+                preload: join(__dirname, '../preload.js'),
             },
-        });       
+        });
+
+        const url = isDev
+        ? 'http://localhost:8000/ocr-overlay'
+        : format({
+            pathname: join(__dirname, '../../renderer/out/ocr-overlay.html'),
+            protocol: 'file:',
+            slashes: true,
+        });
+
+        this.presentationWindow.loadURL(url);
     }
 
     private showPresentationWindow() {
 
         if ( !this.presentationWindow )
-            return;        
+            return;
 
         this.presentationWindow.show();
     }

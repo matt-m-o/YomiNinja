@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
-import Layout from '../components/Layout'
+import Layout from '../components/Layout';
+import { OcrResult } from '../../@core/domain/ocr_result/ocr_result';
 
 const IndexPage = () => {
   useEffect(() => {
@@ -8,6 +9,11 @@ const IndexPage = () => {
 
     // add a listener to 'message' channel
     global.ipcRenderer.addListener('message', handleMessage)
+
+    global.ipcRenderer.on( 'ocr:result', ( event, data: OcrResult ) => {
+      console.log(data);
+      // drawOverlay( data.result );
+  });
 
     return () => {
       global.ipcRenderer.removeListener('message', handleMessage)
