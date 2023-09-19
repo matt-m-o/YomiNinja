@@ -7,7 +7,7 @@ import { BrowserWindow, app, ipcMain, IpcMainEvent } from 'electron';
 import isDev from 'electron-is-dev';
 import prepareNext from 'electron-next';
 import { OcrRecognitionController } from './controllers/ocr_recognition.controller';
-import { get_GetSupportedLanguagesUseCase, get_RecognizeImageUseCase } from '../@core/infra/container_registry/use_cases_registry';
+import { get_GetSupportedLanguagesUseCase, get_RecognizeImageUseCase } from './@core/infra/container_registry/use_cases_registry';
 
 
 
@@ -43,9 +43,7 @@ app.on('ready', async () => {
     getSupportedLanguagesUseCase: get_GetSupportedLanguagesUseCase(),
     languageCode: 'ja',
     // presentationWindow: mainWindow
-  });
-
-  ocrRecognitionController.registerGlobalShortcuts( mainWindow );
+  });  
 
   // ocrRecognitionController.getSupportedLanguages();
 });

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 import Layout from '../components/Layout';
-import { OcrResult } from '../../@core/domain/ocr_result/ocr_result';
+import { OcrResult } from '../../electron-src/@core/domain/ocr_result/ocr_result';
 
 const IndexPage = () => {
   useEffect(() => {

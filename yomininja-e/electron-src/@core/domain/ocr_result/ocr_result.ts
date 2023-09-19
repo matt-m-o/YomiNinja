@@ -22,9 +22,10 @@ export type OcrResultContextResolution = {
     height: number;
 }
 
-export type OcrResultProperties = {
-    context_resolution: OcrResultContextResolution;
-    results: OcrItem[];
+export type OcrResult_CreationInput = {
+    id: number;
+    context_resolution?: OcrResultContextResolution;
+    results?: OcrItem[];
 };
 
 
@@ -34,30 +35,22 @@ export class OcrResult {
     public context_resolution: OcrResultContextResolution;
     public results: OcrItem[];    
     
-    private constructor( input: {
-        id: number,
-        context_resolution: OcrResultContextResolution;
-        results: OcrItem[];
-    }) {
+    private constructor( input: OcrResult_CreationInput ) {
 
         this.id = input.id;
         
         this.context_resolution = {
-            width: input.context_resolution.width || 0,
-            height: input.context_resolution.height || 0,
+            width: input?.context_resolution?.width || 0,
+            height: input?.context_resolution?.height || 0,
         };
 
         this.results = input.results ? [ ...input?.results ] : [];
     }
 
-    static create( input: {
-        id: number,
-        context_resolution: OcrResultContextResolution;
-        results: OcrItem[];
-    }): OcrResult {
+    static create( input: OcrResult_CreationInput ): OcrResult {
         return new OcrResult( input );
     }
-            
+    
 
     addResultItem( item: OcrItem ): void {
         this.results.push( item );

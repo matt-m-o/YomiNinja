@@ -1,4 +1,4 @@
-import { OcrResult, OcrResultProperties } from "../../domain/ocr_result/ocr_result";
+import { OcrItem, OcrResult, OcrResultContextResolution, OcrResult_CreationInput } from "../../domain/ocr_result/ocr_result";
 import { OcrAdapter, OcrAdapterStatus, OcrRecognitionInput } from "../../application/adapters/ocr.adapter";
 
 export class OcrTestAdapter implements OcrAdapter {
@@ -8,7 +8,7 @@ export class OcrTestAdapter implements OcrAdapter {
     public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
 
     constructor(
-        public baseResultProps: OcrResultProperties,
+        public baseResultProps: OcrResult_CreationInput,
         public supportedLanguages: string[],
     ) {}
 
@@ -16,14 +16,14 @@ export class OcrTestAdapter implements OcrAdapter {
         this.status = OcrAdapterStatus.Enabled; 
     }
 
-    async recognize(input: OcrRecognitionInput ): Promise< OcrResult > {
+    async recognize(input: OcrRecognitionInput ): Promise< OcrResult | null > {
 
         if ( this.status != OcrAdapterStatus.Enabled )
-            return;
+            return null;
 
         const result = OcrResult.create({
+            ...this.baseResultProps,
             id: input.id,
-            props: this.baseResultProps,
         });
 
         result.results[0].text = input.imageBuffer.toString();

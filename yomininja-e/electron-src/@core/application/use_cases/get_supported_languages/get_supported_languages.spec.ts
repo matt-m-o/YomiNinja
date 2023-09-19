@@ -1,4 +1,4 @@
-import { OcrResult, OcrResultProperties } from "../../../domain/ocr_result/ocr_result";
+import { OcrResult, OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
 import { OcrAdapter, OcrRecognitionInput } from "../../adapters/ocr.adapter";
 import { OcrTestAdapter } from "../../../infra/ocr_in_memory.adapter/ocr_test.adapter";
 import { GetSupportedLanguagesUseCase } from "./get_supported_languages.use_case";
@@ -7,7 +7,8 @@ import { GetSupportedLanguagesUseCase } from "./get_supported_languages.use_case
 
 describe("Get Supported Languages Use Case tests", () => {
                 
-    const ocrTestAdapterResultProps: OcrResultProperties = {
+    const ocrTestAdapterResultProps: OcrResult_CreationInput = {
+        id: 1,
         context_resolution: {
             width: 1920,
             height: 1080,                        

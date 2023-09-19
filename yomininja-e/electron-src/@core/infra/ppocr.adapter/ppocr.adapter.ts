@@ -1,11 +1,11 @@
-import { OcrItem, OcrResult, OcrResultProperties } from "../../domain/ocr_result/ocr_result";
+import { OcrItem, OcrResult, OcrResult_CreationInput } from "../../domain/ocr_result/ocr_result";
 import { OcrAdapter, OcrAdapterStatus, OcrRecognitionInput } from "../../application/adapters/ocr.adapter";
 import * as grpc from '@grpc/grpc-js';
-import { OCRServiceClient } from "../../../grpc/rpc/ocr_service/OCRService";
-import { RecognizeDefaultResponse__Output } from "../../../grpc/rpc/ocr_service/RecognizeDefaultResponse";
-import { GetSupportedLanguagesResponse__Output } from "../../../grpc/rpc/ocr_service/GetSupportedLanguagesResponse";
-import { ocrServiceProto } from "../../../grpc/grpc_protos";
-import { RecognizeBytesRequest } from "../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
+import { OCRServiceClient } from "../../../../grpc/rpc/ocr_service/OCRService";
+import { RecognizeDefaultResponse__Output } from "../../../../grpc/rpc/ocr_service/RecognizeDefaultResponse";
+import { GetSupportedLanguagesResponse__Output } from "../../../../grpc/rpc/ocr_service/GetSupportedLanguagesResponse";
+import { ocrServiceProto } from "../../../../grpc/grpc_protos";
+import { RecognizeBytesRequest } from "../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
 
 
   
@@ -77,7 +77,7 @@ export class PpOcrAdapter implements OcrAdapter {
         if ( !clientResponse )
             return [];
 
-        console.log( clientResponse );
+        // console.log( clientResponse );
         
         return clientResponse.language_codes;
     }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
-import { OcrResult } from '../../@core/domain/ocr_result/ocr_result';
+import { OcrResult } from '../../electron-src/@core/domain/ocr_result/ocr_result';
 
 export default function OcrOverlayPage() {
 

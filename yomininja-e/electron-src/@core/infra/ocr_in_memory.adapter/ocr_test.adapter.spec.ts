@@ -1,9 +1,10 @@
-import { OcrResultProperties } from "../../domain/ocr_result/ocr_result";
+import { OcrResult_CreationInput } from "../../domain/ocr_result/ocr_result";
 import { OcrTestAdapter } from "./ocr_test.adapter";
 
 describe("OCR Test Adapter tests", () => {
                 
-    const ocrTestAdapterBaseProps: OcrResultProperties = {
+    const ocrTestAdapterBaseProps: OcrResult_CreationInput = {
+        id: 1,
         context_resolution: {
             width: 1920,
             height: 1080,                        
@@ -49,10 +50,11 @@ describe("OCR Test Adapter tests", () => {
             languageCode: "en",
         });
 
-        expect( result.contextResolution ).toStrictEqual( ocrTestAdapterBaseProps.context_resolution );
-        expect( result.results[0].score ).toStrictEqual( ocrTestAdapterBaseProps.results[0].score );
-        expect( result.results[0].box ).toStrictEqual( ocrTestAdapterBaseProps.results[0].box );
-        expect( result.results[0].text ).toStrictEqual( testText );        
+        
+        expect( result?.context_resolution ).toStrictEqual( ocrTestAdapterBaseProps.context_resolution );
+        expect( result?.results[0].score ).toStrictEqual( ocrTestAdapterBaseProps.results?.[0].score );
+        expect( result?.results[0].box ).toStrictEqual( ocrTestAdapterBaseProps.results?.[0].box );
+        expect( result?.results[0].text ).toStrictEqual( testText );        
     });
     
     it("should get adapter supported languages", async () => {

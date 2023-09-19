@@ -2,9 +2,9 @@ import { BrowserWindow, globalShortcut, screen, desktopCapturer } from "electron
 import isDev from 'electron-is-dev';
 import { join } from "path";
 import { format } from 'url';
-import { RecognizeImageUseCase } from '../../@core/application/use_cases/recognize_image/recognize_image.use_case';
-import { PpOcrAdapter } from '../../@core/infra/ppocr.adapter/ppocr.adapter';
-import { GetSupportedLanguagesOutput, GetSupportedLanguagesUseCase } from "../../@core/application/use_cases/get_supported_languages/get_supported_languages.use_case";
+import { RecognizeImageUseCase } from '../@core/application/use_cases/recognize_image/recognize_image.use_case';
+import { PpOcrAdapter } from '../@core/infra/ppocr.adapter/ppocr.adapter';
+import { GetSupportedLanguagesOutput, GetSupportedLanguagesUseCase } from "../@core/application/use_cases/get_supported_languages/get_supported_languages.use_case";
 
 export class OcrRecognitionController {
         
@@ -104,6 +104,7 @@ export class OcrRecognitionController {
             width: 800,
             height: 600,
             show: false,
+            transparent: true,
             webPreferences: {
                 nodeIntegration: false,
                 contextIsolation: false,

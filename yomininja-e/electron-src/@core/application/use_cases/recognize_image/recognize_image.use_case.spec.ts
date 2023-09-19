@@ -1,4 +1,4 @@
-import { OcrResult, OcrResultProperties } from "../../../domain/ocr_result/ocr_result";
+import { OcrResult, OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
 import { OcrAdapter, OcrRecognitionInput } from "../../adapters/ocr.adapter";
 import { OcrTestAdapter } from "../../../infra/ocr_in_memory.adapter/ocr_test.adapter";
 import { RecognizeImageInput, RecognizeImageUseCase } from "./recognize_image.use_case";
@@ -6,7 +6,8 @@ import { RecognizeImageInput, RecognizeImageUseCase } from "./recognize_image.us
 
 describe("Recognize Image Use Case tests", () => {
                 
-    const ocrTestAdapterResultProps: OcrResultProperties = {
+    const ocrTestAdapterResultProps: OcrResult_CreationInput = {
+        id: 1,
         context_resolution: {
             width: 1920,
             height: 1080,                        
@@ -56,10 +57,10 @@ describe("Recognize Image Use Case tests", () => {
 
         const result = await recognizeImageUseCase.execute(input);
 
-        expect( result.contextResolution ).toStrictEqual( ocrTestAdapterResultProps.context_resolution );
-        expect( result.results[0].score ).toStrictEqual( ocrTestAdapterResultProps.results[0].score );
-        expect( result.results[0].box ).toStrictEqual( ocrTestAdapterResultProps.results[0].box );
-        expect( result.results[0].text ).toStrictEqual( testText );        
+        expect( result?.context_resolution ).toStrictEqual( ocrTestAdapterResultProps.context_resolution );
+        expect( result?.results[0].score ).toStrictEqual( ocrTestAdapterResultProps.results?.[0].score );
+        expect( result?.results[0].box ).toStrictEqual( ocrTestAdapterResultProps.results?.[0].box );
+        expect( result?.results[0].text ).toStrictEqual( testText );        
     });
     
 });
