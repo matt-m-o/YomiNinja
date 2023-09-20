@@ -1,7 +1,6 @@
 import { useContext, useEffect } from "react";
-import { OcrResultContext } from "../context/ocr_result.provider";
+import { OcrItemUI, OcrResultContext } from "../context/ocr_result.provider";
 import { styled } from "@mui/material";
-import { OcrItem } from "../../electron-src/@core/domain/ocr_result/ocr_result";
 
 
 const OcrResultBox = styled('div')({
@@ -18,17 +17,21 @@ const OcrResultBox = styled('div')({
 
 export default function FullscreenOcrResult() {
 
-    const { ocrResult } = useContext( OcrResultContext );
+    const { ocrUIitems } = useContext( OcrResultContext );
     
-    function createOcrResultBox( item: OcrItem, idx: number ): JSX.Element {
+    function createOcrResultBox( item: OcrItemUI, idx: number ): JSX.Element {
 
-        const { box } = item;
+        const { box_ui } = item;
 
         return (
             <OcrResultBox key={idx}
                 sx={{
-                    left: box.top_left.x + 'px',
-                    top: box.top_left.y + 'px'
+                    left: box_ui.box_position.left + '%',
+                    top: box_ui.box_position.top + '%',
+                    transform: `rotate( ${box_ui.angle_degrees}deg )`,
+                    minWidth: box_ui.dimensions.width + '%',
+                    minHeight: box_ui.dimensions.height + '%',
+                    fontSize: box_ui.dimensions.height * 45 + '%',
                 }}
             >
                 { item.text }
@@ -37,12 +40,12 @@ export default function FullscreenOcrResult() {
     }
 
     useEffect( () => {
-        console.log( ocrResult );        
-    }, [ ocrResult ] );
+        // console.log( ocrUIitems );        
+    }, [ ocrUIitems ] );
 
     return (
         <>
-            { ocrResult?.results?.map( createOcrResultBox ) }        
+            { ocrUIitems?.map( createOcrResultBox ) }        
         </> 
     );
 }

@@ -1,5 +1,5 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
-import { OcrItem, OcrResult, OcrResultContextResolution } from "../../electron-src/@core/domain/ocr_result/ocr_result";
+import { OcrItem, OcrItemBox, OcrResult, OcrResultContextResolution } from "../../electron-src/@core/domain/ocr_result/ocr_result";
 
 
 export type OcrResultBoxPositionPcts = {
@@ -25,13 +25,13 @@ export interface OcrItemUI {
 };
 
 export type OcrResultContextType = {
-    ocrResult: OcrResult;
+    // ocrResult: OcrResult;
     ocrUIitems: OcrItemUI[];
 };
 
-function calculateOcrItemBoxPosition( ocrResultItem: OcrItem, contextResolution: OcrResultContextResolution ): OcrResultBoxPositionPcts {
+function calculateBoxPosition( ocrResultItem: OcrItem, contextResolution: OcrResultContextResolution ): OcrResultBoxPositionPcts {
 
-    const { width, height } = contextResolution;    
+    const { width, height } = contextResolution;
 
     const topLeftXPixels = ocrResultItem.box.top_left.x;
     const position_left = ( 1 - ( ( width - topLeftXPixels ) / width ) ) * 100;
@@ -45,35 +45,96 @@ function calculateOcrItemBoxPosition( ocrResultItem: OcrItem, contextResolution:
     }
 }
 
+function calculateBoxAngle( verticalDistance: number, horizontalDistance: number ) {    
+
+    verticalDistance = verticalDistance * -1;    
+
+    const negativeRotation = verticalDistance > 0;
+
+    verticalDistance = Math.abs( verticalDistance );
+    
+    // Ensure height and distance are positive numbers
+    if (verticalDistance <= 0 || horizontalDistance <= 0) {
+        return null; // Invalid input
+    }
+
+    // Calculate the angle in radians
+    const radians = Math.atan( verticalDistance / horizontalDistance );
+
+    // Convert radians to degrees
+    const degrees = radians * (180 / Math.PI);
+
+    if (negativeRotation)
+        return -degrees;
+
+  return degrees;
+}
+
+function calculateBoxWidth(
+    verticalDistance: number,
+    horizontalDistance: number,
+    contextResolution: OcrResultContextResolution
+) {    
+
+    const topToLeftHypot = Math.hypot( Math.abs(verticalDistance), horizontalDistance ); // Diagonal distance
+
+    const widthPercent = ( topToLeftHypot / contextResolution.width ) * 100;
+
+    return widthPercent || horizontalDistance;
+}
+
+function calculateBoxHeight(
+    box: OcrItemBox,
+    contextResolution: OcrResultContextResolution
+) {
+
+    const { top_left, bottom_left } = box;
+
+    const topToBottomVerticalDistance = Math.abs(top_left.y - bottom_left.y);
+    // console.log({ topToBottomDistance: topToBottomVerticalDistance })
+
+    const topToBottomHorizontalDistance = Math.abs(top_left.x - bottom_left.x);
+    // console.log({ topToBottomHorizontalDistance })
+
+    const topToBottomHypot = Math.hypot( topToBottomVerticalDistance, topToBottomHorizontalDistance ); // Diagonal distance
+    // console.log({ topToBottomHypot })
+
+    return ( topToBottomHypot / contextResolution.height ) * 100;   
+}
+
 export const OcrResultContext = createContext( {} as OcrResultContextType );
 
 
 export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
 
-    const [ ocrResult, setOcrResult ] = useState< OcrResult >();
+    // const [ ocrResult, setOcrResult ] = useState< OcrResult >();
     const [ ocrUIitems, setOcrUIitems ] = useState< OcrItemUI[] >( [] );
-
   
   
     function ocrResultHandler ( _event, data: OcrResult ) {
-        // console.log( data );
-        setOcrResult( data );
+        // console.log( data );        
 
-        data.results.forEach( item => {            
+        const arr: OcrItemUI[] = [];
 
-            setOcrUIitems([
-                ...ocrUIitems,
-                {
-                    box_ui: {
-                        box_position: calculateOcrItemBoxPosition( item, data.context_resolution )
-                    },
-                    text: item.text,
-                }
-            ])
+        data.results.forEach( item => {
+
+            const verticalDistance = item.box.top_right.y - item.box.top_left.y;
+            const horizontalDistance = item.box.top_right.x - item.box.top_left.x;
+            
+            arr.push({
+                box_ui: {
+                    box_position: calculateBoxPosition( item, data.context_resolution ),
+                    angle_degrees: calculateBoxAngle( verticalDistance, horizontalDistance ),
+                    dimensions: {
+                        width: calculateBoxWidth( verticalDistance, horizontalDistance, data.context_resolution ),
+                        height: calculateBoxHeight( item.box, data.context_resolution )
+                    }
+                },
+                text: item.text,
+            });
         });
-
-        console.log(ocrUIitems);
-
+        
+        setOcrUIitems(arr);
     }
     
     useEffect( () => {
@@ -84,7 +145,7 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
     return (
         <OcrResultContext.Provider
             value={{
-                ocrResult,
+                // ocrResult,
                 ocrUIitems,
             }}
         >
