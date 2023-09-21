@@ -9,16 +9,11 @@ const IndexPage = () => {
 
     // add a listener to 'message' channel
     global.ipcRenderer.addListener('message', handleMessage)
-
-    global.ipcRenderer.on( 'ocr:result', ( event, data: OcrResult ) => {
-      console.log(data);
-      // drawOverlay( data.result );
-  });
-
+    
     return () => {
       global.ipcRenderer.removeListener('message', handleMessage)
     }
-  }, [])
+  }, [global.ipcRenderer])
 
   const onSayHiClick = () => {
     global.ipcRenderer.send('message', 'hi from next')
