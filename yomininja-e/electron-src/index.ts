@@ -3,7 +3,7 @@ import { join } from 'path';
 import { format } from 'url';
 
 // Packages
-import { BrowserWindow, app, ipcMain, IpcMainEvent } from 'electron';
+import { BrowserWindow, app, ipcMain, IpcMainEvent, IpcMainInvokeEvent, clipboard } from 'electron';
 import isDev from 'electron-is-dev';
 import prepareNext from 'electron-next';
 import { OcrRecognitionController } from './controllers/ocr_recognition.controller';
@@ -55,4 +55,12 @@ app.on('window-all-closed', app.quit);
 ipcMain.on('message', (event: IpcMainEvent, message: any) => {
   console.log(message);
   setTimeout(() => event.sender.send('message', 'hi from electron'), 500);
+});
+
+ipcMain.handle('user_command:copy_to_clipboard', ( event: IpcMainInvokeEvent, message: string ) => {
+  clipboard.writeText(message);
+});
+
+ipcMain.handle('user_command:printscreen', ( event: IpcMainInvokeEvent, message: undefined ) => {  
+  ocrRecognitionController.fullScreenOcr( clipboard.readImage().toPNG() );
 });

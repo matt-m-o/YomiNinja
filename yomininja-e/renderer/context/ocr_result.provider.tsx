@@ -138,8 +138,14 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
     }
     
     useEffect( () => {
+
         global.ipcRenderer.on( 'ocr:result', ocrResultHandler );
-    }, [ global.ipcRenderer ] );
+        
+        global.ipcRenderer.on( 'user_command:clear_overlay', () => {
+            setOcrUIitems([]);
+        });
+
+    }, [ global.ipcRenderer ] );    
     
     
     return (

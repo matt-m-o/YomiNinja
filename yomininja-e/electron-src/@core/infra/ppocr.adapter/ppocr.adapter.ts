@@ -1,4 +1,4 @@
-import { OcrItem, OcrResult, OcrResult_CreationInput } from "../../domain/ocr_result/ocr_result";
+import { OcrItem, OcrResult } from "../../domain/ocr_result/ocr_result";
 import { OcrAdapter, OcrAdapterStatus, OcrRecognitionInput } from "../../application/adapters/ocr.adapter";
 import * as grpc from '@grpc/grpc-js';
 import { OCRServiceClient } from "../../../../grpc/rpc/ocr_service/OCRService";
@@ -6,7 +6,6 @@ import { RecognizeDefaultResponse__Output } from "../../../../grpc/rpc/ocr_servi
 import { GetSupportedLanguagesResponse__Output } from "../../../../grpc/rpc/ocr_service/GetSupportedLanguagesResponse";
 import { ocrServiceProto } from "../../../../grpc/grpc_protos";
 import { RecognizeBytesRequest } from "../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
-
 
   
 
@@ -28,6 +27,8 @@ export class PpOcrAdapter implements OcrAdapter {
     initialize() {}
 
     async recognize( input: OcrRecognitionInput ): Promise< OcrResult | null > {
+
+        console.time('PpOcrAdapter.recognize');
 
         if ( this.status != OcrAdapterStatus.Enabled )
             return null;        
@@ -55,7 +56,8 @@ export class PpOcrAdapter implements OcrAdapter {
             !clientResponse?.results
         )
             return null;
-
+        
+        console.timeEnd('PpOcrAdapter.recognize');
         // return null;
         return OcrResult.create({
             id: input.id,            

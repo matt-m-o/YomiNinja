@@ -6,6 +6,7 @@ import { RecognizeImageUseCase } from '../@core/application/use_cases/recognize_
 import { PpOcrAdapter } from '../@core/infra/ppocr.adapter/ppocr.adapter';
 import { GetSupportedLanguagesOutput, GetSupportedLanguagesUseCase } from "../@core/application/use_cases/get_supported_languages/get_supported_languages.use_case";
 
+
 export class OcrRecognitionController {
         
     private overlayWindow: BrowserWindow | undefined;
@@ -38,16 +39,19 @@ export class OcrRecognitionController {
         }
     }
 
-    async fullScreenOcr() {
+    async fullScreenOcr( imageBuffer?: Buffer ) {
+        console.log('');
+        console.time('fullScreenOcr');
 
-        const imageBuffer = await this.takeScreenshot();
-        
+        if ( !imageBuffer )
+            imageBuffer = await this.takeScreenshot();
+
         try {
             const ocrResult = await this.recognizeImageUseCase.execute({
                 ocrAdapterName: PpOcrAdapter._name,
                 imageBuffer,
                 languageCode: this.selectedLanguageCode,
-            });            
+            });
 
             // console.log(ocrResult?.results);
 
@@ -63,7 +67,8 @@ export class OcrRecognitionController {
         } catch (error) {
             console.error( error );
         }
-
+        console.timeEnd('fullScreenOcr');
+        console.log('');
     }
 
     async getSupportedLanguages(): Promise< GetSupportedLanguagesOutput[] > {
@@ -72,6 +77,7 @@ export class OcrRecognitionController {
 
     registerGlobalShortcuts( window: BrowserWindow ) {
 
+        // Electron full screen OCR
         globalShortcut.register( 'Alt+S', async () => {            
 
             window.webContents.send( 'user_command:scan' );
@@ -79,14 +85,24 @@ export class OcrRecognitionController {
             this.showOverlayWindow();
         });
         
+        // View overlay and copy text clipboard
         globalShortcut.register( 'Alt+C', () => {
 
             this.showOverlayWindow();
             window.webContents.send( 'user_command:copy_to_clipboard' );
         });
+
+        // View overlay and clear
+        globalShortcut.register( 'Alt+V', () => {
+
+            this.showOverlayWindow();
+            window.webContents.send( 'user_command:clear_overlay' );
+        });
     }
 
     private async takeScreenshot(): Promise<Buffer> {
+
+        console.time('takeScreenshot');
 
         // const { workAreaSize } = screen.getPrimaryDisplay();
 
@@ -98,20 +114,22 @@ export class OcrRecognitionController {
             }
         });
 
+        console.timeEnd('takeScreenshot');
+
         return sources[0].thumbnail.toPNG();
     }
 
     private createOverlayWindow() {
-        
-        this.overlayWindow = new BrowserWindow({
-            width: 1280,
-            height: 720,
-            show: true,
-            transparent: false,
+
+        this.overlayWindow = new BrowserWindow({            
+            // show: true,
+            frame: false,
+            transparent: true,
+            autoHideMenuBar: true,
             webPreferences: {
-                nodeIntegration: false,
+                nodeIntegration: false, // false
                 contextIsolation: false,
-                preload: join(__dirname, '../preload.js'),
+                preload: join(__dirname, '../preload.js'),                
             },
         });
 
@@ -124,6 +142,15 @@ export class OcrRecognitionController {
         });
 
         this.overlayWindow.loadURL(url);
+        this.overlayWindow.maximize();        
+        
+        // this.overlayWindow.webContents.openDevTools();
+
+        // this.overlayWindow.setAlwaysOnTop( true, "normal" ); // normal, pop-up-menu och screen-saver
+
+        this.overlayWindow.setIgnoreMouseEvents( true, {
+            forward: true,
+        });
     }
 
     private showOverlayWindow() {
@@ -133,4 +160,6 @@ export class OcrRecognitionController {
 
         this.overlayWindow.show();
     }
+
+
 }
