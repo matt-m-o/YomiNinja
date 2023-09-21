@@ -15,7 +15,7 @@ export type OcrResultBoxDimensionsPcts = {
 // Ocr result box percentages to position, scale and rotate the boxes
 export type OcrResultBoxUI = {
     box_position: OcrResultBoxPositionPcts;
-    dimensions?: OcrResultBoxDimensionsPcts;    
+    dimensions?: OcrResultBoxDimensionsPcts;
     angle_degrees?: number;
 };
 

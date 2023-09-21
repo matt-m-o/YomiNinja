@@ -8,7 +8,7 @@ import isDev from 'electron-is-dev';
 import prepareNext from 'electron-next';
 import { OcrRecognitionController } from './controllers/ocr_recognition.controller';
 import { get_GetSupportedLanguagesUseCase, get_RecognizeImageUseCase } from './@core/infra/container_registry/use_cases_registry';
-
+import { PAGES_DIR } from './util/directories';
 
 
 let ocrRecognitionController: OcrRecognitionController;
@@ -31,7 +31,7 @@ app.on('ready', async () => {
   const url = isDev
     ? 'http://localhost:8000/'
     : format({
-        pathname: join(__dirname, '../renderer/out/index.html'),
+        pathname: join( PAGES_DIR, '/index.html'),
         protocol: 'file:',
         slashes: true,
       });
@@ -44,8 +44,6 @@ app.on('ready', async () => {
     languageCode: 'ja',
     // presentationWindow: mainWindow
   });  
-
-  // ocrRecognitionController.getSupportedLanguages();
 });
 
 // Quit the app once all windows are closed

@@ -5,6 +5,7 @@ import { format } from 'url';
 import { RecognizeImageUseCase } from '../@core/application/use_cases/recognize_image/recognize_image.use_case';
 import { PpOcrAdapter } from '../@core/infra/ppocr.adapter/ppocr.adapter';
 import { GetSupportedLanguagesOutput, GetSupportedLanguagesUseCase } from "../@core/application/use_cases/get_supported_languages/get_supported_languages.use_case";
+import { PAGES_DIR } from "../util/directories";
 
 
 export class OcrRecognitionController {
@@ -134,10 +135,15 @@ export class OcrRecognitionController {
             },
         });
 
+        console.log({
+            pages_dir: PAGES_DIR
+        })
+        
+
         const url = isDev
         ? 'http://localhost:8000/ocr-overlay'
         : format({
-            pathname: join(__dirname, '../../renderer/out/ocr-overlay.html'),
+            pathname: join( PAGES_DIR, '/ocr-overlay.html' ),
             protocol: 'file:',
             slashes: true,
         });
