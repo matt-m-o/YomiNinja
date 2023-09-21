@@ -58,7 +58,8 @@ ipcMain.on('message', (event: IpcMainEvent, message: any) => {
 });
 
 ipcMain.handle('user_command:copy_to_clipboard', ( event: IpcMainInvokeEvent, message: string ) => {
-  clipboard.writeText(message);
+  if (message)
+    clipboard.writeText(message);
 });
 
 ipcMain.handle('user_command:printscreen', ( event: IpcMainInvokeEvent, message: undefined ) => {  
