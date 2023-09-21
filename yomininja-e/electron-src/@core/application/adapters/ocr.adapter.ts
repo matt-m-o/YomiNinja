@@ -9,7 +9,7 @@ export type OcrRecognitionInput = {
 export interface OcrAdapter {
     name: string;
     status: OcrAdapterStatus;
-    initialize: () => void;
+    initialize: ( serviceAddress?: string ) => void;
     recognize: ( input: OcrRecognitionInput ) => Promise< OcrResult | null >;
     getSupportedLanguages: () => Promise< string[] >; // Get this by calling the grpc stub or reading it's config files
 }
