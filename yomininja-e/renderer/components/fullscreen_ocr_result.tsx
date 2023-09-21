@@ -45,7 +45,7 @@ export default function FullscreenOcrResult() {
                     transform: `rotate( ${box_ui.angle_degrees}deg )`,
                     minWidth: box_ui.dimensions.width + '%',
                     minHeight: box_ui.dimensions.height + '%',
-                    fontSize: box_ui.dimensions.height * 45 + '%',                    
+                    fontSize: box_ui.dimensions.height * 50 + '%',                    
                 }}
                 onMouseEnter={ () => ( setHoveredText( item.text ) ) }
             >
