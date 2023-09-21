@@ -4,6 +4,11 @@
   "private": true,
   "main": "main/electron-src/index.js",
   "productName": "YomiNinja",
+  "author": {
+    "name": "Matheus M.",
+    "email": "mattmo.dev@outlook.com",
+    "url": "https://github.com/matt-m-o"
+  },
   "scripts": {
     "clean": "rimraf dist main renderer/out renderer/.next",
     "dev": "npm run build-electron && electron .",
@@ -48,11 +53,19 @@
   },
   "build": {
     "asar": true,
-    "files": [
+    "files": [      
       "main",
-      "renderer/out"
+      "renderer/out",
+      "**/*.proto"
+    ],
+    "extraResources": [
+      {
+        "from": "../bin",
+        "to": "bin",
+        "filter": "**/*"
+      }      
     ]
-  },
+  },  
   "jest": {
     "moduleFileExtensions": [
       "js",

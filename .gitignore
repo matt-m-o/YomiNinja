@@ -1,1 +1,2 @@
-start_pporc_service.bat
+**/bin/*
+copy_ppocr_build.bat
