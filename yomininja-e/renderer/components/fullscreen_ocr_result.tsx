@@ -13,6 +13,9 @@ const OcrResultBox = styled('div')({
     paddingRight: '0.5%',
     textAlign: 'center',
     letterSpacing: '0.1rem',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
 
     ":hover": {
         backgroundColor: 'black',

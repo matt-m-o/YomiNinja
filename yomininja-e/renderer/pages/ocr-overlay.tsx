@@ -6,8 +6,8 @@ import FullscreenOcrResult from '../components/fullscreen_ocr_result';
 
 
 const OverlayFrame = styled('div')({
-  border: 'solid 2px red',
-  height: '99.5vh',
+  border: 'solid 1px red',
+  height: '99.8vh',
   overflow: 'hidden',
 });
 
