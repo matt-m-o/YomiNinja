@@ -123,6 +123,7 @@ export class OcrRecognitionController {
 
         this.overlayWindow = new BrowserWindow({            
             // show: true,
+            fullscreen: true,
             frame: false,
             transparent: true,
             autoHideMenuBar: true,
@@ -142,14 +143,17 @@ export class OcrRecognitionController {
         });
 
         this.overlayWindow.loadURL(url);
-        this.overlayWindow.maximize();        
+        // this.overlayWindow.maximize();        
         
-        // this.overlayWindow.webContents.openDevTools();
+        const showDevTools = false;
+        if (showDevTools)
+            this.overlayWindow.webContents.openDevTools();        
 
         // this.overlayWindow.setAlwaysOnTop( true, "normal" ); // normal, pop-up-menu och screen-saver
 
-        this.overlayWindow.setIgnoreMouseEvents( true, {
-            forward: true,
+        // Prevents black image when using youtube on some browsers (e.g. Brave)
+        this.overlayWindow.setIgnoreMouseEvents( !showDevTools, {
+            forward: !showDevTools,
         });
     }
 
