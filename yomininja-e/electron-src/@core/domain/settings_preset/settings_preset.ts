@@ -16,6 +16,10 @@ export type OverlayVisualCustomizations = {
     }
 }
 
+export type OverlayBehavior = {
+    copy_text_on_hover: true,
+};
+
 export type OverlaySettings = {
     visuals: OverlayVisualCustomizations;
     hotkeys: { 
@@ -24,8 +28,10 @@ export type OverlaySettings = {
         copy_text: string;
         show: string;
         show_and_clear: string;
-    },
+    };
+    behavior: OverlayBehavior;
 }
+
 
 export type SettingsPresetProps = {
     language_code: string; // ISO 639-1
@@ -66,6 +72,9 @@ export class SettingsPreset {
                 show: 'Alt+C',
                 show_and_clear: 'Alt+V',
                 ocr_on_screen_shot: true
+            },
+            behavior: {
+                copy_text_on_hover: true
             }
         },
 
@@ -99,6 +108,8 @@ export class SettingsPreset {
 
         this.props.overlay = {            
 
+            ...this.overlay,
+
             visuals: {
                 ...this.overlay.visuals,
                 ...update.visuals,
@@ -107,6 +118,11 @@ export class SettingsPreset {
             hotkeys: {
                 ...this.overlay.hotkeys,
                 ...update.hotkeys
+            },
+
+            behavior: {
+                ...this.overlay.behavior,
+                ...update.behavior
             }
         };
     }

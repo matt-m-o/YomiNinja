@@ -24,12 +24,17 @@ export default function OcrOverlayPage() {
   
 
   return (
-    <OcrResultProvider>
-      <OverlayFrame>
+    <>      
+      <title>OCR Overlay - YomiNinja</title>
 
-        <FullscreenOcrResult />
+      <OcrResultProvider>
+        <OverlayFrame>
 
-      </OverlayFrame>
-    </OcrResultProvider>
+          <FullscreenOcrResult />
+
+        </OverlayFrame>
+      </OcrResultProvider>
+    </>
+    
   );
 }

@@ -1,4 +1,4 @@
-import { BrowserWindow, globalShortcut, screen, desktopCapturer } from "electron";
+import { BrowserWindow, globalShortcut, screen, desktopCapturer, clipboard } from "electron";
 import isDev from 'electron-is-dev';
 import { join } from "path";
 import { format } from 'url';
@@ -6,7 +6,11 @@ import { RecognizeImageUseCase } from '../@core/application/use_cases/recognize_
 import { PpOcrAdapter } from '../@core/infra/ppocr.adapter/ppocr.adapter';
 import { GetSupportedLanguagesOutput, GetSupportedLanguagesUseCase } from "../@core/application/use_cases/get_supported_languages/get_supported_languages.use_case";
 import { PAGES_DIR } from "../util/directories";
+import { uIOhook, UiohookKey } from 'uiohook-napi'
 
+
+
+uIOhook.start()
 
 export class OcrRecognitionController {
         
@@ -81,7 +85,7 @@ export class OcrRecognitionController {
         // Electron full screen OCR
         globalShortcut.register( 'Alt+S', async () => {            
 
-            window.webContents.send( 'user_command:scan' );
+            window.webContents.send( 'user_command:clear_overlay' );
             await this.fullScreenOcr();
             this.showOverlayWindow();
         });
@@ -98,6 +102,14 @@ export class OcrRecognitionController {
 
             this.showOverlayWindow();
             window.webContents.send( 'user_command:clear_overlay' );
+        });
+
+        uIOhook.on( 'keyup', async ( e ) => {  
+
+            if (e.keycode === UiohookKey.PrintScreen) {                
+                await this.fullScreenOcr( clipboard.readImage().toPNG() );
+                this.showOverlayWindow();
+            }  
         });
     }
 
@@ -146,14 +158,14 @@ export class OcrRecognitionController {
         this.overlayWindow.loadURL(url);
         // this.overlayWindow.maximize();        
         
-        const showDevTools = true;
+        const showDevTools = isDev && false;
         if (showDevTools)
             this.overlayWindow.webContents.openDevTools();        
 
         // this.overlayWindow.setAlwaysOnTop( true, "normal" ); // normal, pop-up-menu och screen-saver
 
         // Prevents black image when using youtube on some browsers (e.g. Brave)
-        this.overlayWindow.setIgnoreMouseEvents( !showDevTools, {
+        this.overlayWindow.setIgnoreMouseEvents( true, { // !showDevTools
             forward: !showDevTools,
         });
     }
@@ -163,6 +175,9 @@ export class OcrRecognitionController {
         if ( !this.overlayWindow )
             return;
 
+        
+        this.overlayWindow.setAlwaysOnTop( true, "normal" ); // normal, pop-up-menu och screen-saver
+        this.overlayWindow.setAlwaysOnTop( false, "normal" ); // normal, pop-up-menu och screen-saver
         this.overlayWindow.show();
     }
 

@@ -83,9 +83,6 @@ export default function FullscreenOcrResult() {
             if ( e.key === 'c' && hoveredElement) {
                 global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', hoveredText );
             }
-            else if ( e.key === 'PrintScreen' ) {
-                global.ipcRenderer.invoke( 'user_command:printscreen', undefined );
-            }
         };
 
         document.addEventListener('keyup', handleKeyPress);
@@ -96,6 +93,9 @@ export default function FullscreenOcrResult() {
 
     }, [ hoveredElement, global.ipcRenderer ]);
 
+    useEffect( () => {
+        global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', hoveredText );
+    }, [ hoveredText ] );
 
     return (
         <>

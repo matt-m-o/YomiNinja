@@ -30,6 +30,9 @@ describe( "SettingsPreset tests", () => {
         const oldOverlaySettings = cloneDeep( settingsPreset.overlay );
 
         settingsPreset.overlay = {
+
+            ...settingsPreset.overlay,
+
             hotkeys: {
                 ...settingsPreset.overlay.hotkeys,
                 copy_text: 'Ctrl+C'
@@ -39,8 +42,9 @@ describe( "SettingsPreset tests", () => {
                 frame: {
                     ...settingsPreset.overlay.visuals.frame,
                     border_color: 'blue',
-                }
-            }
+                },        
+            },
+            
         };
 
         expect( settingsPreset.language_code ).toHaveLength( 2 );

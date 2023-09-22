@@ -2,6 +2,10 @@
 import { join } from 'path';
 import { format } from 'url';
 
+// import { WindowManager } from '../gyp_modules/window_management/window_manager';
+// const windowManager = new WindowManager(); // Use to bring third-party dictionaries to the front
+
+
 // Packages
 import { BrowserWindow, app, ipcMain, IpcMainEvent, IpcMainInvokeEvent, clipboard } from 'electron';
 import isDev from 'electron-is-dev';
@@ -58,8 +62,4 @@ ipcMain.on('message', (event: IpcMainEvent, message: any) => {
 ipcMain.handle('user_command:copy_to_clipboard', ( event: IpcMainInvokeEvent, message: string ) => {
   if (message)
     clipboard.writeText(message);
-});
-
-ipcMain.handle('user_command:printscreen', ( event: IpcMainInvokeEvent, message: undefined ) => {  
-  ocrRecognitionController.fullScreenOcr( clipboard.readImage().toPNG() );
 });
