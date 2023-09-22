@@ -41,19 +41,21 @@
     "@swc/jest": "^0.2.29",
     "@types/inversify": "^2.0.33",
     "@types/jest": "^29.5.5",
+    "@types/lodash": "^4.14.198",
     "@types/node": "^14.14.6",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "electron": "^26.2.1",
     "electron-builder": "^23.0.3",
     "jest": "^29.7.0",
+    "lodash": "^4.17.21",
     "next": "^13.4.19",
     "rimraf": "^3.0.0",
     "typescript": "^4.0.5"
   },
   "build": {
     "asar": true,
-    "files": [      
+    "files": [
       "main",
       "renderer/out",
       "**/*.proto"
@@ -63,9 +65,9 @@
         "from": "../bin",
         "to": "bin",
         "filter": "**/*"
-      }      
+      }
     ]
-  },  
+  },
   "jest": {
     "moduleFileExtensions": [
       "js",
