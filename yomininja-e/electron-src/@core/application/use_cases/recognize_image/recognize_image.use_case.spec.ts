@@ -58,9 +58,7 @@ describe("Recognize Image Use Case tests", () => {
         const result = await recognizeImageUseCase.execute(input);
 
         expect( result?.context_resolution ).toStrictEqual( ocrTestAdapterResultProps.context_resolution );
-        expect( result?.results[0].score ).toStrictEqual( ocrTestAdapterResultProps.results?.[0].score );
-        expect( result?.results[0].box ).toStrictEqual( ocrTestAdapterResultProps.results?.[0].box );
-        expect( result?.results[0].text ).toStrictEqual( testText );        
+        expect( result?.results[0].text ).toStrictEqual( testText );
     });
     
 });

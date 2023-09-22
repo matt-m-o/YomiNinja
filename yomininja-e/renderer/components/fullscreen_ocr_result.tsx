@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
-import { OcrItemUI, OcrResultContext } from "../context/ocr_result.provider";
+import { OcrResultContext } from "../context/ocr_result.provider";
 import { styled } from "@mui/material";
+import { OcrItemScalable } from "../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 
 
 const OcrResultBox = styled('div')({
@@ -28,24 +29,24 @@ const OcrResultBox = styled('div')({
 
 export default function FullscreenOcrResult() {
 
-    const { ocrUIitems } = useContext( OcrResultContext );
+    const { ocrResult } = useContext( OcrResultContext );
     const [ hoveredText, setHoveredText ] = useState< string >('asdf');
     
     const [ hoveredElement, setHoveredElement ] = useState< HTMLElement | null >( null );
     
-    function createOcrResultBox( item: OcrItemUI, idx: number ): JSX.Element {
+    function createOcrResultBox( item: OcrItemScalable, idx: number ): JSX.Element {
 
-        const { box_ui } = item;
+        const { box } = item;
 
         return (
             <OcrResultBox key={idx}
                 sx={{
-                    left: box_ui.box_position.left + '%',
-                    top: box_ui.box_position.top + '%',
-                    transform: `rotate( ${box_ui.angle_degrees}deg )`,
-                    minWidth: box_ui.dimensions.width + '%',
-                    minHeight: box_ui.dimensions.height + '%',
-                    fontSize: box_ui.dimensions.height * 50 + '%',                    
+                    left: box.position.left + '%',
+                    top: box.position.top + '%',
+                    transform: `rotate( ${box.angle_degrees}deg )`,
+                    minWidth: box.dimensions.width + '%',
+                    minHeight: box.dimensions.height + '%',
+                    fontSize: box.dimensions.height * 50 + '%',                    
                 }}
                 onMouseEnter={ () => ( setHoveredText( item.text ) ) }
             >
@@ -98,7 +99,7 @@ export default function FullscreenOcrResult() {
 
     return (
         <>
-            { ocrUIitems?.map( createOcrResultBox ) }        
+            { ocrResult?.results?.map( createOcrResultBox ) }        
         </> 
     );
 }

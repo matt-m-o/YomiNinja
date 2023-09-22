@@ -48,7 +48,7 @@ export class OcrRecognitionController {
             imageBuffer = await this.takeScreenshot();
 
         try {
-            const ocrResult = await this.recognizeImageUseCase.execute({
+            const ocrResultScalable = await this.recognizeImageUseCase.execute({
                 ocrAdapterName: PpOcrAdapter._name,
                 imageBuffer,
                 languageCode: this.selectedLanguageCode,
@@ -62,7 +62,7 @@ export class OcrRecognitionController {
             if ( !this.overlayWindow )
                 return;
 
-            this.overlayWindow.webContents.send( 'ocr:result', ocrResult );
+            this.overlayWindow.webContents.send( 'ocr:result', ocrResultScalable );
             this.showOverlayWindow();
 
         } catch (error) {
@@ -135,11 +135,6 @@ export class OcrRecognitionController {
             },
         });
 
-        console.log({
-            pages_dir: PAGES_DIR
-        })
-        
-
         const url = isDev
         ? 'http://localhost:8000/ocr-overlay'
         : format({
@@ -151,7 +146,7 @@ export class OcrRecognitionController {
         this.overlayWindow.loadURL(url);
         // this.overlayWindow.maximize();        
         
-        const showDevTools = false;
+        const showDevTools = true;
         if (showDevTools)
             this.overlayWindow.webContents.openDevTools();        
 

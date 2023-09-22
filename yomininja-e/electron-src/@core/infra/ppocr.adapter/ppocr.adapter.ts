@@ -74,9 +74,9 @@ export class PpOcrAdapter implements OcrAdapter {
         console.timeEnd('PpOcrAdapter.recognize');
         // return null;
         return OcrResult.create({
-            id: input.id,            
+            id: input.id,
             context_resolution: clientResponse.context_resolution,
-            results: clientResponse.results as OcrItem[],            
+            results: clientResponse.results as OcrItem[],
         });        
     }
 

@@ -1,4 +1,5 @@
 import { OcrResult } from "../../../domain/ocr_result/ocr_result";
+import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 import { OcrAdapter } from "../../adapters/ocr.adapter";
 
 
@@ -14,7 +15,7 @@ export class RecognizeImageUseCase {
 
     constructor( public ocrAdapters: OcrAdapter[] ) {}
 
-    async execute( input: RecognizeImageInput ): Promise< OcrResult | null > {
+    async execute( input: RecognizeImageInput ): Promise< OcrResultScalable | null > {
 
         const adapter = this.getAdapter( input.ocrAdapterName );
 
@@ -23,11 +24,16 @@ export class RecognizeImageUseCase {
 
         this.idCounter++;
 
-        return await adapter.recognize({
+        const ocrResult = await adapter.recognize({
             id: this.idCounter,
             imageBuffer: input.imageBuffer,
             languageCode: input.languageCode,
         });
+
+        if ( !ocrResult )
+            return null;        
+
+        return OcrResultScalable.createFromOcrResult( ocrResult );
     }
 
     private getAdapter( adapterName: string ): OcrAdapter | null {
