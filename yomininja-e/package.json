@@ -10,28 +10,33 @@
     "url": "https://github.com/matt-m-o"
   },
   "scripts": {
-    "clean": "rimraf dist main renderer/out renderer/.next",
+    "clean": "rimraf dist main renderer/out renderer/.next && node-gyp clean",
     "dev": "npm run build-electron && electron .",
     "build-renderer": "next build renderer",
     "build-electron": "tsc -p electron-src",
-    "build": "npm run build-renderer && npm run build-electron",
+    "build": "npm run build-renderer && npm run build-electron && npm run gyp-build",
     "pack-app": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",
     "type-check": "tsc -p ./renderer/tsconfig.json && tsc -p ./electron-src/tsconfig.json",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "grpc-types": "proto-loader-gen-types --longs=String --enums=String --defaults --keep-case --oneofs --grpcLib=@grpc/grpc-js --outDir=./grpc/rpc ./grpc/protos/ocr_service.proto"
+    "grpc-types": "proto-loader-gen-types --longs=String --enums=String --defaults --keep-case --oneofs --grpcLib=@grpc/grpc-js --outDir=./grpc/rpc ./grpc/protos/ocr_service.proto",
+    "gyp-build": "node-gyp clean && node-gyp configure && node-gyp build"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.9.3",
     "@grpc/proto-loader": "^0.7.9",
+    "bindings": "^1.5.0",
     "electron-is-dev": "^1.1.0",
     "electron-next": "^3.1.5",
     "inversify": "^6.0.1",
+    "node-addon-api": "^7.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "uiohook-napi": "^1.5.2",
+    "win-control": "^0.3.1"
   },
   "devDependencies": {
     "@emotion/react": "^11.11.1",
@@ -39,6 +44,7 @@
     "@mui/material": "^5.14.10",
     "@swc/core": "^1.3.85",
     "@swc/jest": "^0.2.29",
+    "@types/bindings": "^1.5.2",
     "@types/inversify": "^2.0.33",
     "@types/jest": "^29.5.5",
     "@types/lodash": "^4.14.198",
@@ -53,6 +59,7 @@
     "rimraf": "^3.0.0",
     "typescript": "^4.0.5"
   },
+  "gypfile": true,
   "build": {
     "asar": true,
     "files": [

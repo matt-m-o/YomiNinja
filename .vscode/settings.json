@@ -1,3 +1,16 @@
 {
-    "terminal.integrated.cwd": "yomininja-e"
+    "terminal.integrated.cwd": "yomininja-e",
+    "files.associations": {
+        "*.hpp": "cpp",
+        "xstring": "cpp",
+        "chrono": "cpp",
+        "format": "cpp",
+        "forward_list": "cpp",
+        "initializer_list": "cpp",
+        "list": "cpp",
+        "vector": "cpp",
+        "xhash": "cpp",
+        "xutility": "cpp",
+        "system_error": "cpp"
+    }
 }
