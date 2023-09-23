@@ -7,10 +7,12 @@ import { PpOcrAdapter } from '../@core/infra/ppocr.adapter/ppocr.adapter';
 import { GetSupportedLanguagesOutput, GetSupportedLanguagesUseCase } from "../@core/application/use_cases/get_supported_languages/get_supported_languages.use_case";
 import { PAGES_DIR } from "../util/directories";
 import { uIOhook, UiohookKey } from 'uiohook-napi'
+import { WindowManager } from '../../gyp_modules/window_management/window_manager';
 
 
 
-uIOhook.start()
+
+
 
 export class OcrRecognitionController {
         
@@ -19,7 +21,9 @@ export class OcrRecognitionController {
     private recognizeImageUseCase: RecognizeImageUseCase;
     private getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
 
-    private selectedLanguageCode: string;    
+    private selectedLanguageCode: string;
+
+    private windowManager = new WindowManager();    
 
     constructor( input: {
         presentationWindow?: BrowserWindow;
@@ -86,8 +90,7 @@ export class OcrRecognitionController {
         globalShortcut.register( 'Alt+S', async () => {            
 
             window.webContents.send( 'user_command:clear_overlay' );
-            await this.fullScreenOcr();
-            this.showOverlayWindow();
+            await this.fullScreenOcr();            
         });
         
         // View overlay and copy text clipboard
@@ -104,11 +107,11 @@ export class OcrRecognitionController {
             window.webContents.send( 'user_command:clear_overlay' );
         });
 
+        uIOhook.start();
         uIOhook.on( 'keyup', async ( e ) => {  
 
             if (e.keycode === UiohookKey.PrintScreen) {                
-                await this.fullScreenOcr( clipboard.readImage().toPNG() );
-                this.showOverlayWindow();
+                await this.fullScreenOcr( clipboard.readImage().toPNG() );                
             }  
         });
     }
@@ -175,9 +178,9 @@ export class OcrRecognitionController {
         if ( !this.overlayWindow )
             return;
 
-        
+        // this.windowManager.setForegroundWindow("OCR Overlay - YomiNinja");
         this.overlayWindow.setAlwaysOnTop( true, "normal" ); // normal, pop-up-menu och screen-saver
-        this.overlayWindow.setAlwaysOnTop( false, "normal" ); // normal, pop-up-menu och screen-saver
+        this.overlayWindow.setAlwaysOnTop( false );
         this.overlayWindow.show();
     }
 
