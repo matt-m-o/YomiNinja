@@ -16,11 +16,11 @@ describe( "SettingsPresetInMemoryRepository tests", () => {
         const settingsPreset = SettingsPreset.create();
 
         await repo.insert(settingsPreset);
-        expect( repo.items.get( settingsPreset.name ) ).toStrictEqual( settingsPreset );
+        expect( repo.items.get( settingsPreset.id ) ).toStrictEqual( settingsPreset );
 
         // Testing for object references
         settingsPreset.language_code = 'ch';
-        expect( repo.items.get( settingsPreset.name ) ).not.toEqual( settingsPreset );
+        expect( repo.items.get( settingsPreset.id ) ).not.toEqual( settingsPreset );
     });
     
 
@@ -32,7 +32,7 @@ describe( "SettingsPresetInMemoryRepository tests", () => {
         repo.items.set( defaultPreset.name, defaultPreset );
         repo.items.set( customPreset.name, customPreset );
 
-        const foundPreset = await repo.findOne( customPreset.name );
+        const foundPreset = await repo.findOne({ name: customPreset.name });
 
         expect( foundPreset ).toStrictEqual( customPreset );
         
@@ -43,12 +43,12 @@ describe( "SettingsPresetInMemoryRepository tests", () => {
         const defaultPreset = SettingsPreset.create();
         const customPreset = SettingsPreset.create({ name: 'custom' });
 
-        repo.items.set( defaultPreset.name, defaultPreset );
-        repo.items.set( customPreset.name, customPreset );
+        repo.items.set( defaultPreset.id, defaultPreset );
+        repo.items.set( customPreset.id, customPreset );
 
-        await repo.delete( defaultPreset.name );
+        await repo.delete( defaultPreset.id );
 
-        expect( repo.items.get( customPreset.name ) ).toStrictEqual(customPreset);
-        expect( repo.items.get( defaultPreset.name ) ).toBeUndefined();
+        expect( repo.items.get( customPreset.id ) ).toStrictEqual( customPreset );
+        expect( repo.items.get( defaultPreset.id ) ).toBeUndefined();
     });
 })

@@ -7,6 +7,7 @@ describe( "SettingsPreset tests", () => {
 
         const settingsPreset = SettingsPreset.create();
 
+        expect( settingsPreset.id ).toBeDefined();
         expect( settingsPreset.name ).toStrictEqual( 'default' );
         expect( settingsPreset.language_code ).toHaveLength( 2 );
         expect( settingsPreset.created_at ).toBeDefined();
@@ -17,6 +18,7 @@ describe( "SettingsPreset tests", () => {
         
         const settingsPreset = SettingsPreset.create({ name: 'custom 1' });
 
+        expect( settingsPreset.id ).toBeDefined();
         expect( settingsPreset.name ).toStrictEqual( 'custom 1' );
         expect( settingsPreset.language_code ).toHaveLength( 2 );
     });

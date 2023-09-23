@@ -1,5 +1,5 @@
 import { cloneDeep } from 'lodash';
-import { SettingsPresetRepository } from '../../../domain/settings_preset/settings_preset.repository';
+import { SettingsPresetRepoFindOneInput, SettingsPresetRepository } from '../../../domain/settings_preset/settings_preset.repository';
 import { SettingsPreset } from '../../../domain/settings_preset/settings_preset';
 
 
@@ -9,21 +9,35 @@ export default class SettingsPresetInMemoryRepository implements SettingsPresetR
 
     constructor( items?: SettingsPreset[] ) {
 
-        items?.forEach( item => this.items.set( item.name, item ) );
+        items?.forEach( item => this.items.set( item.id, item ) );
     }
 
     async insert( settingsPreset: SettingsPreset ): Promise< void > {
-        this.items.set( settingsPreset.name, cloneDeep(settingsPreset) );
+        this.items.set( settingsPreset.id, cloneDeep(settingsPreset) );
     }
 
     async update( updatedPreset: SettingsPreset ): Promise< void > {
 
-        this.items.set( updatedPreset.name, cloneDeep(updatedPreset) );
+        this.items.set( updatedPreset.id, cloneDeep(updatedPreset) );
     }
 
-    async findOne( name: string ): Promise< SettingsPreset | null > {        
+    async findOne( input: SettingsPresetRepoFindOneInput ): Promise< SettingsPreset | null > {        
+        
 
-        return this.items.get( name ) || null;
+        if ( input?.id )
+            return this.items.get( input?.id ) || null;
+
+        if ( input.name ) {
+            
+            for ( const [ id, obj ] of this.items ) {
+    
+                if ( obj.name === input.name )
+                    return obj;
+            }
+        }
+
+
+        return null;
     }
 
     async delete( name: string ): Promise< void > {
@@ -33,6 +47,6 @@ export default class SettingsPresetInMemoryRepository implements SettingsPresetR
 
     async getAll(): Promise< SettingsPreset[] > {
 
-        return Array.from( this.items, ( [name, item] ) => ( item ) );
+        return Array.from( this.items, ( [ id, item ] ) => ( item ) );
     }
 }

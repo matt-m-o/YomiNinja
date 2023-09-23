@@ -15,7 +15,7 @@ import { BIN_DIR } from "../../../util/directories";
 
 export class PpOcrAdapter implements OcrAdapter {
     
-    static _name: string = "OcrPpOcrAdapter";
+    static _name: string = "PpOcrAdapter";
     public readonly name: string = PpOcrAdapter._name;
     public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
     private ocrServiceClient: OCRServiceClient | null = null;

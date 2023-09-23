@@ -22,7 +22,7 @@ export type OverlayBehavior = {
 
 export type OverlaySettings = {
     visuals: OverlayVisualCustomizations;
-    hotkeys: { 
+    hotkeys: {
         ocr: string;
         ocr_on_screen_shot: boolean; // Perform ocr when pressing "PrintScreen"
         copy_text: string;
@@ -37,6 +37,7 @@ export interface SettingsPresetProps {
     name: string;
     language_code: string; // ISO 639-1
     overlay: OverlaySettings;
+    ocr_adapter_name?: string;
     created_at: Date;
     updated_at: Date;
 };
@@ -80,7 +81,7 @@ export class SettingsPreset {
             behavior: {
                 copy_text_on_hover: true
             }
-        },
+        },        
 
         created_at: new Date(),
         updated_at: new Date()
@@ -89,10 +90,7 @@ export class SettingsPreset {
     
     private constructor( input?: SettingsPreset_CreationInput, id?: string ) {
 
-        if ( id )
-            this.id = id;
-        else
-            this.id = randomUUID();
+        this.id = id || randomUUID();        
 
         if (input) {
             this.props = {
@@ -110,8 +108,11 @@ export class SettingsPreset {
     get name(){ return this.props.name; }
     get language_code() { return this.props.language_code; }
     get overlay(){ return this.props.overlay; }
+    get ocr_adapter_name() { return this.props.ocr_adapter_name; }
+
     get created_at(){ return this.props.created_at; }
     get updated_at(){ return this.props.updated_at; }
+
 
     set language_code( value: string ) {
 

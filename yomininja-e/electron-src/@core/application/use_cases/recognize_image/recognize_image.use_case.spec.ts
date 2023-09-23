@@ -2,6 +2,8 @@ import { OcrResult, OcrResult_CreationInput } from "../../../domain/ocr_result/o
 import { OcrAdapter, OcrRecognitionInput } from "../../adapters/ocr.adapter";
 import { OcrTestAdapter } from "../../../infra/ocr_in_memory.adapter/ocr_test.adapter";
 import { RecognizeImageInput, RecognizeImageUseCase } from "./recognize_image.use_case";
+import SettingsPresetInMemoryRepository from "../../../infra/db/in_memory/settings_preset.in_memory.repository";
+import { SettingsPreset } from "../../../domain/settings_preset/settings_preset";
 
 
 describe("Recognize Image Use Case tests", () => {
@@ -32,17 +34,29 @@ describe("Recognize Image Use Case tests", () => {
     let ocrTestAdapter: OcrTestAdapter;
     let recognizeImageUseCase: RecognizeImageUseCase;
 
+    const settingsPreset = SettingsPreset.create();
+
     beforeEach( () => {
 
         ocrTestAdapter = new OcrTestAdapter( ocrTestAdapterResultProps, ocrTestAdapterSupportedLanguages );
         ocrTestAdapter.initialize();
-        recognizeImageUseCase = new RecognizeImageUseCase( [ ocrTestAdapter ] );        
+
+        const settingsPresetRepo = new SettingsPresetInMemoryRepository(
+            [ settingsPreset ]
+        );
+
+        recognizeImageUseCase = new RecognizeImageUseCase(
+            [ ocrTestAdapter ],
+            settingsPresetRepo,
+        );
+
     });
 
     it("should check if the use case has an adapter", () => {
         
         expect( recognizeImageUseCase.ocrAdapters ).toHaveLength( 1 );
         expect( recognizeImageUseCase.ocrAdapters[0] ).toStrictEqual( ocrTestAdapter );
+        expect( recognizeImageUseCase.settingsPresetRepository ).toBeDefined();
     });
 
     it("should recognize using an OCR test adapter", async () => {
@@ -50,12 +64,11 @@ describe("Recognize Image Use Case tests", () => {
         const testText = "some text";
 
         const input: RecognizeImageInput = {
-            imageBuffer: Buffer.from( testText ),
-            languageCode: "en",
-            ocrAdapterName: OcrTestAdapter._name
+            imageBuffer: Buffer.from( testText ),            
+            settingsPresetId: settingsPreset.id,
         };
 
-        const result = await recognizeImageUseCase.execute(input);
+        const result = await recognizeImageUseCase.execute( input );
 
         expect( result?.context_resolution ).toStrictEqual( ocrTestAdapterResultProps.context_resolution );
         expect( result?.results[0].text ).toStrictEqual( testText );
