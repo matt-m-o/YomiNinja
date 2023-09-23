@@ -23,6 +23,7 @@ export class RecognizeImageUseCase {
         
         if (!settings)
             return null;
+        
 
         const adapter = this.getAdapter( settings.ocr_adapter_name );
 

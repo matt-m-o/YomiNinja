@@ -6,6 +6,7 @@ export class OcrTestAdapter implements OcrAdapter {
     static _name: string = "OcrTestAdapter";
     public readonly name: string = OcrTestAdapter._name;
     public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
+    private idCounter: number = 0;
 
     constructor(
         public baseResultProps: OcrResult_CreationInput,
@@ -18,12 +19,14 @@ export class OcrTestAdapter implements OcrAdapter {
 
     async recognize(input: OcrRecognitionInput ): Promise< OcrResult | null > {
 
+        this.idCounter++;
+
         if ( this.status != OcrAdapterStatus.Enabled )
             return null;
 
         const result = OcrResult.create({
             ...this.baseResultProps,
-            id: input.id,
+            id: this.idCounter,
         });
 
         result.results[0].text = input.imageBuffer.toString();

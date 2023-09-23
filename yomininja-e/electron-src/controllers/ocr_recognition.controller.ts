@@ -3,16 +3,17 @@ import isDev from 'electron-is-dev';
 import { join } from "path";
 import { format } from 'url';
 import { RecognizeImageUseCase } from '../@core/application/use_cases/recognize_image/recognize_image.use_case';
-import { PpOcrAdapter } from '../@core/infra/ppocr.adapter/ppocr.adapter';
 import { GetSupportedLanguagesOutput, GetSupportedLanguagesUseCase } from "../@core/application/use_cases/get_supported_languages/get_supported_languages.use_case";
 import { PAGES_DIR } from "../util/directories";
 import { uIOhook, UiohookKey } from 'uiohook-napi'
 import { WindowManager } from '../../gyp_modules/window_management/window_manager';
+import { SettingsPreset } from "../@core/domain/settings_preset/settings_preset";
+import { get_SettingsPresetRepository } from "../@core/infra/container_registry/repositories_registry";
 
 
-
-
-
+// ! Just for test
+const settingsPreset = SettingsPreset.create();
+get_SettingsPresetRepository().insert( settingsPreset );
 
 export class OcrRecognitionController {
         
@@ -23,7 +24,7 @@ export class OcrRecognitionController {
 
     private selectedLanguageCode: string;
 
-    private windowManager = new WindowManager();    
+    // private windowManager = new WindowManager();    
 
     constructor( input: {
         presentationWindow?: BrowserWindow;
@@ -56,10 +57,9 @@ export class OcrRecognitionController {
             imageBuffer = await this.takeScreenshot();
 
         try {
-            const ocrResultScalable = await this.recognizeImageUseCase.execute({
-                ocrAdapterName: PpOcrAdapter._name,
+            const ocrResultScalable = await this.recognizeImageUseCase.execute({                
                 imageBuffer,
-                languageCode: this.selectedLanguageCode,
+                settingsPresetId: settingsPreset.id,
             });
 
             // console.log(ocrResult?.results);

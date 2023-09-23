@@ -44,8 +44,7 @@ describe("OCR Test Adapter tests", () => {
 
         const testText = "some text";
 
-        const result = await ocrTestAdapter.recognize({
-            id: 1,
+        const result = await ocrTestAdapter.recognize({            
             imageBuffer: Buffer.from(testText),
             languageCode: "en",
         });

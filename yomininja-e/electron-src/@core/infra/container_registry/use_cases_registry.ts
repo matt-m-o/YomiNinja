@@ -5,9 +5,12 @@ import { RecognizeImageUseCase } from "../../application/use_cases/recognize_ima
 
 
 container_registry.bind( Registry.RecognizeImageUseCase ).toDynamicValue( (context) => {
-    return new RecognizeImageUseCase( [
-        context.container.get( Registry.PpOcrAdapter ),
-    ]);
+    return new RecognizeImageUseCase(
+        [
+            context.container.get( Registry.PpOcrAdapter ),
+        ],
+        context.container.get( Registry.SettingsPresetInMemoryRepository ),
+    );
 }).inSingletonScope();
 
 container_registry.bind( Registry.GetSupportedLanguagesUseCase ).toDynamicValue( (context) => {

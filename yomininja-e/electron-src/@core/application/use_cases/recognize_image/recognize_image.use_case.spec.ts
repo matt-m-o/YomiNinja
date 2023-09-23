@@ -1,8 +1,7 @@
-import { OcrResult, OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
-import { OcrAdapter, OcrRecognitionInput } from "../../adapters/ocr.adapter";
+import { OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
 import { OcrTestAdapter } from "../../../infra/ocr_in_memory.adapter/ocr_test.adapter";
 import { RecognizeImageInput, RecognizeImageUseCase } from "./recognize_image.use_case";
-import SettingsPresetInMemoryRepository from "../../../infra/db/in_memory/settings_preset.in_memory.repository";
+import { SettingsPresetInMemoryRepository } from "../../../infra/db/in_memory/settings_preset/settings_preset.in_memory.repository";
 import { SettingsPreset } from "../../../domain/settings_preset/settings_preset";
 
 

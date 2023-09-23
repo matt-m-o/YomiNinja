@@ -1,9 +1,9 @@
 import { cloneDeep } from 'lodash';
-import { SettingsPresetRepoFindOneInput, SettingsPresetRepository } from '../../../domain/settings_preset/settings_preset.repository';
-import { SettingsPreset } from '../../../domain/settings_preset/settings_preset';
+import { SettingsPresetRepoFindOneInput, SettingsPresetRepository } from '../../../../domain/settings_preset/settings_preset.repository';
+import { SettingsPreset } from '../../../../domain/settings_preset/settings_preset';
 
 
-export default class SettingsPresetInMemoryRepository implements SettingsPresetRepository {
+export class SettingsPresetInMemoryRepository implements SettingsPresetRepository {
 
     items = new Map< string, SettingsPreset >();
 

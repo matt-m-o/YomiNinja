@@ -1,5 +1,5 @@
-import { SettingsPreset } from "../../../domain/settings_preset/settings_preset"
-import SettingsPresetInMemoryRepository from "./settings_preset.in_memory.repository"
+import { SettingsPreset } from "../../../../domain/settings_preset/settings_preset"
+import { SettingsPresetInMemoryRepository } from "./settings_preset.in_memory.repository"
 
 
 describe( "SettingsPresetInMemoryRepository tests", () => {
