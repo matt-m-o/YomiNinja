@@ -9,6 +9,8 @@ describe( "SettingsPreset tests", () => {
 
         expect( settingsPreset.name ).toStrictEqual( 'default' );
         expect( settingsPreset.language_code ).toHaveLength( 2 );
+        expect( settingsPreset.created_at ).toBeDefined();
+        expect( settingsPreset.updated_at ).toBeDefined();
     });
 
     it( "should define an SettingsPreset with custom name", () => {
@@ -29,9 +31,7 @@ describe( "SettingsPreset tests", () => {
 
         const oldOverlaySettings = cloneDeep( settingsPreset.overlay );
 
-        settingsPreset.overlay = {
-
-            ...settingsPreset.overlay,
+        settingsPreset.updateOverlaySettings({
 
             hotkeys: {
                 ...settingsPreset.overlay.hotkeys,
@@ -45,7 +45,7 @@ describe( "SettingsPreset tests", () => {
                 },        
             },
             
-        };
+        });
 
         expect( settingsPreset.language_code ).toHaveLength( 2 );
 

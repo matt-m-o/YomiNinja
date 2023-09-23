@@ -1,4 +1,4 @@
-import { OcrItem, OcrItemBox, OcrResult, OcrResultContextResolution } from "../ocr_result/ocr_result";
+import { randomUUID } from "crypto";
 
 export type OverlayVisualCustomizations = {
     ocr_item_box: {
@@ -33,22 +33,26 @@ export type OverlaySettings = {
 }
 
 
-export type SettingsPresetProps = {
+export interface SettingsPresetProps {
+    name: string;
     language_code: string; // ISO 639-1
     overlay: OverlaySettings;
     created_at: Date;
-    update_at: Date;
+    updated_at: Date;
 };
 
-export type SettingsPreset_CreationInput = {
-    name?: string;
-};
+
+
+export interface SettingsPreset_CreationInput extends Partial< SettingsPresetProps > {
+    name: string;    
+ };
 
 // Scalable version OcrResult. Uses percentages instead of pixel coordinates
 export class SettingsPreset {
 
-    public name: string = "default";
+    public id: string; // ID
     private props: SettingsPresetProps = {
+        name: 'default',
         language_code: 'ja',
         overlay: {
             visuals: {
@@ -79,22 +83,35 @@ export class SettingsPreset {
         },
 
         created_at: new Date(),
-        update_at: new Date()
+        updated_at: new Date()
     }    
     
     
-    private constructor( input?: SettingsPreset_CreationInput ) {
+    private constructor( input?: SettingsPreset_CreationInput, id?: string ) {
 
-        if (input?.name)
-            this.name = input.name;        
+        if ( id )
+            this.id = id;
+        else
+            this.id = randomUUID();
+
+        if (input) {
+            this.props = {
+                ...this.props,
+                ...input,
+            };
+        }
+        
     }
 
     static create( input?: SettingsPreset_CreationInput ): SettingsPreset {
         return new SettingsPreset( input );
     }
     
+    get name(){ return this.props.name; }
     get language_code() { return this.props.language_code; }
     get overlay(){ return this.props.overlay; }
+    get created_at(){ return this.props.created_at; }
+    get updated_at(){ return this.props.updated_at; }
 
     set language_code( value: string ) {
 
@@ -104,11 +121,12 @@ export class SettingsPreset {
         this.props.language_code = value;
     }
 
-    set overlay( update: OverlaySettings ) {
+    protected set overlay( update: OverlaySettings ) {
 
-        this.props.overlay = {            
+        this.props.overlay = {
 
             ...this.overlay,
+            ...update,
 
             visuals: {
                 ...this.overlay.visuals,
@@ -123,6 +141,34 @@ export class SettingsPreset {
             behavior: {
                 ...this.overlay.behavior,
                 ...update.behavior
+            }
+        };
+    }
+    
+    protected set created_at( date: Date ){ this.props.created_at = date; }
+    protected set updated_at( date: Date ){ this.props.updated_at = date; }
+
+
+    updateOverlaySettings( overlayUpdate: Partial< OverlaySettings > ) {
+
+        this.overlay = {
+
+            ...this.overlay,
+            ...overlayUpdate,
+
+            visuals: {
+                ...this.overlay.visuals,
+                ...overlayUpdate.visuals,
+            },
+
+            hotkeys: {
+                ...this.overlay.hotkeys,
+                ...overlayUpdate.hotkeys
+            },
+
+            behavior: {
+                ...this.overlay.behavior,
+                ...overlayUpdate.behavior
             }
         };
     }
