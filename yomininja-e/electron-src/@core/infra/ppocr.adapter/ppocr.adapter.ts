@@ -14,11 +14,12 @@ import { BIN_DIR } from "../../../util/directories";
 
 
 export class PpOcrAdapter implements OcrAdapter {
-
+    
     static _name: string = "OcrPpOcrAdapter";
     public readonly name: string = PpOcrAdapter._name;
     public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
     private ocrServiceClient: OCRServiceClient | null = null;
+    private idCounter: number = 0;
 
     constructor() {
 
@@ -48,7 +49,7 @@ export class PpOcrAdapter implements OcrAdapter {
             return null;        
 
         const requestInput: RecognizeBytesRequest = {
-            id: input.id.toString(),
+            id: this.idCounter.toString(),
             image_bytes: input.imageBuffer,
             language_code: input.languageCode            
         };        
@@ -74,7 +75,7 @@ export class PpOcrAdapter implements OcrAdapter {
         console.timeEnd('PpOcrAdapter.recognize');
         // return null;
         return OcrResult.create({
-            id: input.id,
+            id: parseInt(clientResponse.id),
             context_resolution: clientResponse.context_resolution,
             results: clientResponse.results as OcrItem[],
         });        

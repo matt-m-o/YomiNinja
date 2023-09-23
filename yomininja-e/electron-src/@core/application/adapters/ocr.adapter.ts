@@ -1,12 +1,11 @@
 import { OcrResult } from "../../domain/ocr_result/ocr_result";
 
-export type OcrRecognitionInput = {
-    id: number;
+export type OcrRecognitionInput = {    
     imageBuffer: Buffer;
     languageCode: string;
 };
 
-export interface OcrAdapter {
+export interface OcrAdapter {     
     name: string;
     status: OcrAdapterStatus;
     initialize: ( serviceAddress?: string ) => void;

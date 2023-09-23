@@ -11,8 +11,6 @@ export type RecognizeImageInput = {
 
 export class RecognizeImageUseCase {
 
-    private idCounter = 0;
-
     constructor( public ocrAdapters: OcrAdapter[] ) {}
 
     async execute( input: RecognizeImageInput ): Promise< OcrResultScalable | null > {
@@ -20,12 +18,9 @@ export class RecognizeImageUseCase {
         const adapter = this.getAdapter( input.ocrAdapterName );
 
         if ( !adapter )
-            return null;
+            return null;        
 
-        this.idCounter++;
-
-        const ocrResult = await adapter.recognize({
-            id: this.idCounter,
+        const ocrResult = await adapter.recognize({            
             imageBuffer: input.imageBuffer,
             languageCode: input.languageCode,
         });
