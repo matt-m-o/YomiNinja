@@ -23,15 +23,12 @@ describe( 'SettingsPreset Entity Schema tests', () => {
 
     it("should insert", async () => {
 
-        const settingsPreset = SettingsPreset.create();
-
-        //console.log(user);
+        const settingsPreset = SettingsPreset.create();        
         
         await settingsPresetTypeOrmRepo.save(settingsPreset);
 
         const foundPreset = await settingsPresetTypeOrmRepo.findOneBy({ id: settingsPreset.id });
-
-        //console.log(foundUser);
+        
 
         expect( foundPreset ).toBeDefined();
         expect( foundPreset?.id ).toStrictEqual( settingsPreset.id );

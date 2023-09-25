@@ -14,7 +14,7 @@ describe( "SettingsPreset tests", () => {
         expect( settingsPreset.updated_at ).toBeDefined();
     });
 
-    it( "should define an SettingsPreset with custom name", () => {
+    it( "should define a SettingsPreset with custom name", () => {
         
         const settingsPreset = SettingsPreset.create({ name: 'custom 1' });
 
@@ -24,7 +24,7 @@ describe( "SettingsPreset tests", () => {
     });
     
 
-    it( "should define an SettingsPreset and change overlay settings and language code", () => {
+    it( "should define a SettingsPreset and change overlay settings and language code", () => {
         
         const settingsPreset = SettingsPreset.create({ name: 'custom 1' });
 

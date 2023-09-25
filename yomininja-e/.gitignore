@@ -42,3 +42,6 @@ main/*
 
 # electron
 dist/
+
+# database
+data/

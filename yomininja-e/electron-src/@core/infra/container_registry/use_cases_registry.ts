@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { Registry, container_registry } from './container_registry';
 import { GetSupportedLanguagesUseCase } from "../../application/use_cases/get_supported_languages/get_supported_languages.use_case";
 import { RecognizeImageUseCase } from "../../application/use_cases/recognize_image/recognize_image.use_case";
+import { get_SettingsPresetRepository } from "./repositories_registry";
 
 
 container_registry.bind( Registry.RecognizeImageUseCase ).toDynamicValue( (context) => {
@@ -9,7 +10,7 @@ container_registry.bind( Registry.RecognizeImageUseCase ).toDynamicValue( (conte
         [
             context.container.get( Registry.PpOcrAdapter ),
         ],
-        context.container.get( Registry.SettingsPresetInMemoryRepository ),
+        context.container.get( Registry.SettingsPresetTypeOrmRepository ),
     );
 }).inSingletonScope();
 

@@ -7,13 +7,10 @@ import { GetSupportedLanguagesOutput, GetSupportedLanguagesUseCase } from "../@c
 import { PAGES_DIR } from "../util/directories";
 import { uIOhook, UiohookKey } from 'uiohook-napi'
 import { WindowManager } from '../../gyp_modules/window_management/window_manager';
-import { SettingsPreset } from "../@core/domain/settings_preset/settings_preset";
 import { get_SettingsPresetRepository } from "../@core/infra/container_registry/repositories_registry";
+import { SettingsPreset } from "../@core/domain/settings_preset/settings_preset";
 
-
-// ! Just for test
-const settingsPreset = SettingsPreset.create();
-get_SettingsPresetRepository().insert( settingsPreset );
+const settingsPresetRepository = get_SettingsPresetRepository();
 
 export class OcrRecognitionController {
         
@@ -24,7 +21,9 @@ export class OcrRecognitionController {
 
     private selectedLanguageCode: string;
 
-    // private windowManager = new WindowManager();    
+    // private windowManager = new WindowManager();
+
+    settingsPreset: SettingsPreset | null;
 
     constructor( input: {
         presentationWindow?: BrowserWindow;
@@ -43,10 +42,17 @@ export class OcrRecognitionController {
         this.recognizeImageUseCase = input.recognizeImageUseCase;
         this.getSupportedLanguagesUseCase = input.getSupportedLanguagesUseCase;
         this.selectedLanguageCode = input.languageCode;
+        
 
-        if ( this.overlayWindow != null ) {
-            this.registerGlobalShortcuts( this.overlayWindow );
-        }
+        settingsPresetRepository.findOne({ name: 'default' })
+            .then( settingsPreset => {
+                
+                this.settingsPreset = settingsPreset;
+
+                if ( this.overlayWindow != null ) {
+                    this.registerGlobalShortcuts( this.overlayWindow );
+                }
+            });
     }
 
     async fullScreenOcr( imageBuffer?: Buffer ) {
@@ -59,7 +65,6 @@ export class OcrRecognitionController {
         try {
             const ocrResultScalable = await this.recognizeImageUseCase.execute({                
                 imageBuffer,
-                settingsPresetId: settingsPreset.id,
             });
 
             // console.log(ocrResult?.results);
@@ -86,8 +91,13 @@ export class OcrRecognitionController {
 
     registerGlobalShortcuts( window: BrowserWindow ) {
 
+        if ( !this.settingsPreset )
+            return;
+
+        const overlayHotkeys = this.settingsPreset?.overlay.hotkeys;
+
         // Electron full screen OCR
-        globalShortcut.register( 'Alt+S', async () => {            
+        globalShortcut.register( overlayHotkeys?.ocr, async () => {            
 
             window.webContents.send( 'user_command:clear_overlay' );
             await this.fullScreenOcr();            

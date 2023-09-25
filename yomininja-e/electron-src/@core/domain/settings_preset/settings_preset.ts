@@ -48,7 +48,7 @@ export interface SettingsPreset_CreationInput extends Partial< SettingsPresetPro
     name: string;    
 };
 
-// Scalable version OcrResult. Uses percentages instead of pixel coordinates
+// Stores general application settings
 export class SettingsPreset {
 
     static default_name = 'default';
@@ -56,7 +56,7 @@ export class SettingsPreset {
     public id: string; // ID
     private props: SettingsPresetProps = {
         name: SettingsPreset.default_name,
-        language_code: 'ja',
+        language_code: 'ja', // !OCR Language Code. Rename to "ocr_language_code"
         overlay: {
             visuals: {
                 frame: {

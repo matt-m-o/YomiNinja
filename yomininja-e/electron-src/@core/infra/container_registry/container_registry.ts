@@ -7,6 +7,9 @@ export const container_registry = new Container();
 
 export const Registry = {
 
+    // Database
+    MainDataSource: Symbol.for('MainDataSource'),
+
     // Adapters
     PpOcrAdapter: Symbol.for('PpOcrAdapter'),
 
@@ -16,8 +19,10 @@ export const Registry = {
 
     // Repositories
     SettingsPresetInMemoryRepository: Symbol.for('SettingsPresetInMemoryRepository'),
+    SettingsPresetTypeOrmRepository: Symbol.for('SettingsPresetTypeOrmRepository'),
 }
 
+import "./db_registry";
+import "./repositories_registry";
 import "./adapters_registry";
 import "./use_cases_registry";
-import "./repositories_registry";
