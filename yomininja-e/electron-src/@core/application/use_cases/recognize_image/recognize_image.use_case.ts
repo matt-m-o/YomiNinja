@@ -1,11 +1,12 @@
 import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
+import { SettingsPreset } from "../../../domain/settings_preset/settings_preset";
 import { SettingsPresetRepository } from "../../../domain/settings_preset/settings_preset.repository";
 import { OcrAdapter } from "../../adapters/ocr.adapter";
 
 
 export type RecognizeImageInput = {    
     imageBuffer: Buffer;    
-    settingsPresetId: string;
+    settingsPresetId?: string;
 }
 
 export class RecognizeImageUseCase {
@@ -17,22 +18,34 @@ export class RecognizeImageUseCase {
 
     async execute( input: RecognizeImageInput ): Promise< OcrResultScalable | null > {
 
-        const settings = await this.settingsPresetRepository.findOne({
-            id: input.settingsPresetId
-        });
         
-        if (!settings)
-            return null;
-        
+        let settingsPreset: SettingsPreset | null = null;
 
-        const adapter = this.getAdapter( settings.ocr_adapter_name );
+        if ( input.settingsPresetId ) {
+            settingsPreset = await this.settingsPresetRepository.findOne({
+                id: input.settingsPresetId
+            });
+        }
+        
+        if ( !settingsPreset ){
+            settingsPreset = await this.settingsPresetRepository.findOne({
+                name: SettingsPreset.default_name
+            });
+        }
+        
+        
+        if (!settingsPreset)
+            return null;
+                
+
+        const adapter = this.getAdapter( settingsPreset.ocr_adapter_name );
 
         if ( !adapter )
             return null;
 
         const ocrResult = await adapter.recognize({            
             imageBuffer: input.imageBuffer,
-            languageCode: settings.language_code,
+            languageCode: settingsPreset.language_code,
         });
 
         if ( !ocrResult )
