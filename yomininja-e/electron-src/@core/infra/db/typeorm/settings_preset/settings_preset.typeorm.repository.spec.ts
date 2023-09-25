@@ -69,7 +69,7 @@ describe( "Settings Preset TypeOrm Repository tests", () => {
         expect( foundByName ).toStrictEqual( customPreset );
     });
 
-    it('should find ALL by id and name', async () => {
+    it('should find ALL', async () => {
 
         const defaultPreset = SettingsPreset.create();
         const customPreset = SettingsPreset.create({ name: 'custom' });
