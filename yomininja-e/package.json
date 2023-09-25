@@ -36,6 +36,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "reflect-metadata": "^0.1.13",
+    "typeorm": "^0.3.17",
     "uiohook-napi": "^1.5.2",
     "win-control": "^0.3.1"
   },
