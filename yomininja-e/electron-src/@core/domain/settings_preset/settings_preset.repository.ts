@@ -1,6 +1,6 @@
 import { SettingsPreset } from "./settings_preset";
 
-export type SettingsPresetRepoFindOneInput = {
+export type SettingsPresetFindOneInput = {
     id?: string;
     name?: string;
 }
@@ -11,7 +11,7 @@ export interface SettingsPresetRepository {
 
     update( settingsPreset: SettingsPreset ): Promise< void >;
 
-    findOne( input: SettingsPresetRepoFindOneInput ): Promise< SettingsPreset | null >;
+    findOne( input: SettingsPresetFindOneInput ): Promise< SettingsPreset | null >;
 
     getAll(): Promise< SettingsPreset[] >;
 

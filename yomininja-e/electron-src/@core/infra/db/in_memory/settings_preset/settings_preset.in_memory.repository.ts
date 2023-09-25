@@ -1,5 +1,5 @@
 import { cloneDeep } from 'lodash';
-import { SettingsPresetRepoFindOneInput, SettingsPresetRepository } from '../../../../domain/settings_preset/settings_preset.repository';
+import { SettingsPresetFindOneInput, SettingsPresetRepository } from '../../../../domain/settings_preset/settings_preset.repository';
 import { SettingsPreset } from '../../../../domain/settings_preset/settings_preset';
 
 
@@ -21,7 +21,7 @@ export class SettingsPresetInMemoryRepository implements SettingsPresetRepositor
         this.items.set( updatedPreset.id, cloneDeep(updatedPreset) );
     }
 
-    async findOne( input: SettingsPresetRepoFindOneInput ): Promise< SettingsPreset | null > {        
+    async findOne( input: SettingsPresetFindOneInput ): Promise< SettingsPreset | null > {        
         
 
         if ( input?.id )

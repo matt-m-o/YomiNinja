@@ -46,7 +46,7 @@ export interface SettingsPresetProps {
 
 export interface SettingsPreset_CreationInput extends Partial< SettingsPresetProps > {
     name: string;    
- };
+};
 
 // Scalable version OcrResult. Uses percentages instead of pixel coordinates
 export class SettingsPreset {
@@ -113,6 +113,8 @@ export class SettingsPreset {
     get created_at(){ return this.props.created_at; }
     get updated_at(){ return this.props.updated_at; }
 
+
+    set name( value: string ){ this.props.name = value; }
 
     set language_code( value: string ) {
 
