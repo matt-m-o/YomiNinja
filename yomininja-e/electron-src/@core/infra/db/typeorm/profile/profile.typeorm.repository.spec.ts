@@ -7,6 +7,8 @@ import ProfileTypeOrmRepository from './profile.typeorm.repository';
 import { Profile } from '../../../../domain/profile/profile';
 import { ProfileRepository } from '../../../../domain/profile/profile.repository';
 import { SettingsPresetTypeOrmSchema } from '../settings_preset/settings_preset.schema';
+import { Language } from '../../../../domain/language/language';
+import { LanguageTypeOrmSchema } from '../language/language.schema';
 
 
 describe( "Profile TypeOrm Repository tests", () => {
@@ -16,6 +18,13 @@ describe( "Profile TypeOrm Repository tests", () => {
     let repo: ProfileRepository;
 
     let settingsPreset: SettingsPreset;
+    let languageJa: Language;
+    let languageEn: Language;
+
+    const relations = [
+        'active_settings_preset',
+        'active_ocr_language'
+    ];
 
     beforeEach( async () => {
         
@@ -24,14 +33,24 @@ describe( "Profile TypeOrm Repository tests", () => {
             database: ':memory:',
             synchronize: true,
             logging: false,
-            entities: [ ProfileTypeOrmSchema, SettingsPresetTypeOrmSchema ]
+            entities: [
+                ProfileTypeOrmSchema,
+                SettingsPresetTypeOrmSchema,
+                LanguageTypeOrmSchema
+            ]
         });
 
         await dataSource.initialize();
 
         settingsPreset = SettingsPreset.create();
-
         await dataSource.getRepository( SettingsPreset ).insert( settingsPreset );
+        
+        languageJa = Language.create({ name: 'japanese', two_letter_code: 'ja' });
+        languageEn = Language.create({ name: 'english', two_letter_code: 'en' });
+        await dataSource.getRepository( Language ).insert([
+            languageJa,
+            languageEn
+        ]);
 
         // Settings Preset repository by TypeOrm
         ormRepo = dataSource.getRepository( Profile );
@@ -43,7 +62,8 @@ describe( "Profile TypeOrm Repository tests", () => {
     it('should insert', async () => {
 
         const profile = Profile.create({
-            active_settings_preset: settingsPreset
+            active_settings_preset: settingsPreset,
+            active_ocr_language: languageJa
         });
 
         await repo.insert( profile );
@@ -52,7 +72,7 @@ describe( "Profile TypeOrm Repository tests", () => {
             where: {
                 id: profile.id
             },
-            relations: ['active_settings_preset']
+            relations,
         });
 
         expect( foundProfile ).toStrictEqual( profile );
@@ -61,18 +81,20 @@ describe( "Profile TypeOrm Repository tests", () => {
     it('should update', async () => {
 
         const profile = Profile.create({
-            active_settings_preset: settingsPreset
+            active_settings_preset: settingsPreset,
+            active_ocr_language: languageJa,
         });
         await ormRepo.save( profile );
 
         profile.name = 'custom name';
+        profile.active_ocr_language = languageEn;
         await repo.update( profile );
 
         const foundPreset = await ormRepo.findOne({
             where: {
                 id: profile.id
             },
-            relations: ['active_settings_preset']
+            relations,
         });
 
         expect( foundPreset ).toStrictEqual( profile );        
@@ -82,10 +104,12 @@ describe( "Profile TypeOrm Repository tests", () => {
 
         const defaultProfile = Profile.create({
             active_settings_preset: settingsPreset,
+            active_ocr_language: languageJa
         });
         const customProfile = Profile.create({
             name: 'custom',
             active_settings_preset: settingsPreset,
+            active_ocr_language: languageEn
         });
         await ormRepo.save([
             defaultProfile,
@@ -103,10 +127,12 @@ describe( "Profile TypeOrm Repository tests", () => {
 
         const defaultProfile = Profile.create({
             active_settings_preset: settingsPreset,
+            active_ocr_language: languageJa
         });
         const customProfile = Profile.create({
             name: 'custom',
-            active_settings_preset: settingsPreset
+            active_settings_preset: settingsPreset,
+            active_ocr_language: languageEn
         });
         await ormRepo.save([
             defaultProfile,
@@ -124,10 +150,12 @@ describe( "Profile TypeOrm Repository tests", () => {
 
         const defaultProfile = Profile.create({
             active_settings_preset: settingsPreset,
+            active_ocr_language: languageJa
         });
         const customProfile = Profile.create({
             name: 'custom',
             active_settings_preset: settingsPreset,
+            active_ocr_language: languageEn
         });
         await ormRepo.save([
             defaultProfile,

@@ -1,51 +1,55 @@
+import { Language } from "../../../domain/language/language";
 import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
+import { Profile } from "../../../domain/profile/profile";
+import { ProfileRepository } from "../../../domain/profile/profile.repository";
 import { SettingsPreset } from "../../../domain/settings_preset/settings_preset";
-import { SettingsPresetRepository } from "../../../domain/settings_preset/settings_preset.repository";
 import { OcrAdapter } from "../../adapters/ocr.adapter";
 
 
 export type RecognizeImageInput = {    
-    imageBuffer: Buffer;    
-    settingsPresetId?: string;
+    imageBuffer: Buffer;
+    profile_id?: string;
 }
 
 export class RecognizeImageUseCase {
 
     constructor(
         public ocrAdapters: OcrAdapter[],
-        public settingsPresetRepository: SettingsPresetRepository,
+        public profileRepo: ProfileRepository,
     ) {}
 
     async execute( input: RecognizeImageInput ): Promise< OcrResultScalable | null > {
-
         
-        let settingsPreset: SettingsPreset | null = null;
+        let activeSettingsPreset: SettingsPreset | null = null;
+        let activeOcrLanguage: Language | null = null;
+        let profile: Profile | null = null;
 
-        if ( input.settingsPresetId ) {
-            settingsPreset = await this.settingsPresetRepository.findOne({
-                id: input.settingsPresetId
+        if ( input.profile_id ) {
+
+            profile = await this.profileRepo.findOne({
+                id: input.profile_id
             });
+
+            activeOcrLanguage = profile?.active_ocr_language || null;
+            activeSettingsPreset = profile?.active_settings_preset || null;
         }
         
-        if ( !settingsPreset ){
-            settingsPreset = await this.settingsPresetRepository.findOne({
-                name: SettingsPreset.default_name
-            });
-        }
-        
-        
-        if (!settingsPreset)
+        if ( 
+            !profile ||
+            !activeOcrLanguage ||
+            !activeSettingsPreset
+        )
             return null;
-                
+        
 
-        const adapter = this.getAdapter( settingsPreset.ocr_adapter_name );
+        const adapter = this.getAdapter( activeSettingsPreset.ocr_adapter_name );
 
         if ( !adapter )
             return null;
 
         const ocrResult = await adapter.recognize({            
             imageBuffer: input.imageBuffer,
-            languageCode: settingsPreset.language_code,
+            languageCode: profile.active_ocr_language.two_letter_code,
         });
 
         if ( !ocrResult )

@@ -20,11 +20,6 @@ export const ProfileTypeOrmSchema = new EntitySchema< Profile >({
         name: {
             type: String,
             length: 100,
-        },
-
-        ocr_language_code: {
-            type: String,
-            length: 100,
         },        
 
         created_at: {
@@ -49,5 +44,15 @@ export const ProfileTypeOrmSchema = new EntitySchema< Profile >({
           //inverseSide: '' // Note that this is relation name, not the entity name
           createForeignKeyConstraints: false,
         },
+
+        active_ocr_language: {
+            type: 'many-to-one',
+            target: 'Language',
+            joinColumn: {
+              name: 'active_ocr_language_id',
+            },          
+            //inverseSide: '' // Note that this is relation name, not the entity name
+            createForeignKeyConstraints: false,
+          },
     },
 })

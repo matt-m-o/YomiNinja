@@ -16,12 +16,18 @@ export default class ProfileTypeOrmRepository implements ProfileRepository {
     async findOne( params: ProfileFindOneInput ): Promise< Profile | null > {
         return this.ormRepo.findOne({
             where: params,
-            relations: ['active_settings_preset']
+            relations: [
+                'active_settings_preset',
+                'active_ocr_language'
+            ]
         });
     }
     async getAll(): Promise< Profile[] > {
         return this.ormRepo.find({
-            relations: ['active_settings_preset'],
+            relations: [
+                'active_settings_preset',
+                'active_ocr_language'
+            ],
         });
     }
 

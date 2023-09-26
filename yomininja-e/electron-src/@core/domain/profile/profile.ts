@@ -1,20 +1,21 @@
 import { randomUUID } from "crypto";
 import { SettingsPreset } from "../settings_preset/settings_preset";
+import { Language } from "../language/language";
 
 export interface ProfileProps {
     name: string;
     active_settings_preset: SettingsPreset;
     // app_language: string; // Application display language
-    ocr_language_code: string; // TODO: Implement and use language entity
-
+    active_ocr_language: Language;
     created_at: Date;
     updated_at: Date;
 };
 
 
 
-export interface Profile_CreationInput extends Partial< ProfileProps > {    
+export interface Profile_CreationInput extends Partial< ProfileProps > {
     active_settings_preset: SettingsPreset;
+    active_ocr_language: Language;
 };
 
 // Stores all application configuration
@@ -30,8 +31,7 @@ export class Profile {
 
         this.id = id || randomUUID();
         
-        this.props = {
-            ocr_language_code: 'ja',
+        this.props = {            
             ...input,
             name: input?.name || Profile.default_name,
             created_at: new Date(),
@@ -45,7 +45,7 @@ export class Profile {
     
     get name(){ return this.props.name; }
     get active_settings_preset() { return this.props.active_settings_preset; }
-    get ocr_language_code(){ return this.props.ocr_language_code; }
+    get active_ocr_language(){ return this.props.active_ocr_language; }
     
     get created_at(){ return this.props.created_at; }
     get updated_at(){ return this.props.updated_at; }
@@ -58,9 +58,9 @@ export class Profile {
         this.props.active_settings_preset = value;
     }
 
-    set ocr_language_code( value: string ) {        
+    set active_ocr_language( value: Language ) {        
 
-        this.props.ocr_language_code = value;
+        this.props.active_ocr_language = value;
     }
     
     protected set created_at( date: Date ){ this.props.created_at = date; }
