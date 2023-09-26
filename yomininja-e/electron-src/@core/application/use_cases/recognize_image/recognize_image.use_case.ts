@@ -29,8 +29,6 @@ export class RecognizeImageUseCase {
 
         activeOcrLanguage = profile?.active_ocr_language || null;
         activeSettingsPreset = profile?.active_settings_preset || null;        
-
-        console.log(profile);
         
         if ( 
             !profile ||

@@ -13,6 +13,7 @@ import { PAGES_DIR } from './util/directories';
 
 initializeApp();
 
+
 let ocrRecognitionController: OcrRecognitionController;
 
 
