@@ -24,8 +24,9 @@ export class Language {
 
         this.id = id || randomUUID();
         
-        this.props = {            
-            ...input,            
+        this.props = {
+            ...input,
+            three_letter_code: input?.two_letter_code || undefined
         };        
     }
 
@@ -50,11 +51,15 @@ export class Language {
         this.props.two_letter_code = value;
     }
 
-    set three_letter_code( value: string ) {
+    
+    set three_letter_code( value: string | undefined ) {
+        
+        if ( !value )
+            value = undefined;
 
-        if ( value?.length != 3 )
+        if ( value?.length != 2 )
             return;
 
         this.props.three_letter_code = value;
-    }    
+    }
 }
