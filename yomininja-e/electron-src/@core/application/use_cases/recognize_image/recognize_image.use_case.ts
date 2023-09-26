@@ -8,7 +8,7 @@ import { OcrAdapter } from "../../adapters/ocr.adapter";
 
 export type RecognizeImageInput = {    
     imageBuffer: Buffer;
-    profile_id?: string;
+    profile_id: string;
 }
 
 export class RecognizeImageUseCase {
@@ -22,17 +22,15 @@ export class RecognizeImageUseCase {
         
         let activeSettingsPreset: SettingsPreset | null = null;
         let activeOcrLanguage: Language | null = null;
-        let profile: Profile | null = null;
 
-        if ( input.profile_id ) {
+        const profile: Profile | null = await this.profileRepo.findOne({
+            id: input.profile_id
+        });
 
-            profile = await this.profileRepo.findOne({
-                id: input.profile_id
-            });
+        activeOcrLanguage = profile?.active_ocr_language || null;
+        activeSettingsPreset = profile?.active_settings_preset || null;        
 
-            activeOcrLanguage = profile?.active_ocr_language || null;
-            activeSettingsPreset = profile?.active_settings_preset || null;
-        }
+        console.log(profile);
         
         if ( 
             !profile ||

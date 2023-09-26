@@ -16,10 +16,13 @@ export const Registry = {
     // Use Cases
     RecognizeImageUseCase: Symbol.for('RecognizeImageUseCase'),
     GetSupportedLanguagesUseCase: Symbol.for('GetSupportedLanguagesUseCase'),
+    GetActiveSettingsPresetUseCase: Symbol.for('GetActiveSettingsPresetUseCase'),
 
     // Repositories
     SettingsPresetInMemoryRepository: Symbol.for('SettingsPresetInMemoryRepository'),
     SettingsPresetTypeOrmRepository: Symbol.for('SettingsPresetTypeOrmRepository'),
+    LanguageTypeOrmRepository: Symbol.for('LanguageTypeOrmRepository'),
+    ProfileTypeOrmRepository: Symbol.for('ProfileTypeOrmRepository'),
 }
 
 import "./db_registry";

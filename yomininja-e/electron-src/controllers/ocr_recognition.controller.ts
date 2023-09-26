@@ -9,8 +9,10 @@ import { uIOhook, UiohookKey } from 'uiohook-napi'
 import { WindowManager } from '../../gyp_modules/window_management/window_manager';
 import { get_SettingsPresetRepository } from "../@core/infra/container_registry/repositories_registry";
 import { SettingsPreset } from "../@core/domain/settings_preset/settings_preset";
+import { get_GetActiveSettingsPresetUseCase } from "../@core/infra/container_registry/use_cases_registry";
+import { activeProfile } from "../app_initialization";
 
-const settingsPresetRepository = get_SettingsPresetRepository();
+const getActiveSettingsPresetUseCase = get_GetActiveSettingsPresetUseCase();
 
 export class OcrRecognitionController {
         
@@ -44,7 +46,7 @@ export class OcrRecognitionController {
         this.selectedLanguageCode = input.languageCode;
         
 
-        settingsPresetRepository.findOne({ name: 'default' })
+        getActiveSettingsPresetUseCase.execute({ profile_id: activeProfile.id })
             .then( settingsPreset => {
                 
                 this.settingsPreset = settingsPreset;
@@ -60,11 +62,13 @@ export class OcrRecognitionController {
         console.time('fullScreenOcr');
 
         if ( !imageBuffer )
+        
             imageBuffer = await this.takeScreenshot();
-
         try {
+            // console.log(activeProfile);
             const ocrResultScalable = await this.recognizeImageUseCase.execute({                
                 imageBuffer,
+                profile_id: activeProfile.id
             });
 
             // console.log(ocrResult?.results);
