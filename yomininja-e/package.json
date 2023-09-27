@@ -44,6 +44,7 @@
   "devDependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.14.11",
     "@mui/material": "^5.14.10",
     "@swc/core": "^1.3.85",
     "@swc/jest": "^0.2.29",

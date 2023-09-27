@@ -1,33 +1,33 @@
-import { useEffect } from 'react'
-import Link from 'next/link'
-import Layout from '../components/Layout';
-import { OcrResult } from '../../electron-src/@core/domain/ocr_result/ocr_result';
+import Layout, { LayoutProps } from '../components/Layout';
+import React from 'react';
+import { Home, Settings } from '@mui/icons-material';
 
-const IndexPage = () => {
-  useEffect(() => {
-    const handleMessage = (_event, args) => alert(args)
 
-    // add a listener to 'message' channel
-    global.ipcRenderer.addListener('message', handleMessage)
-    
-    return () => {
-      global.ipcRenderer.removeListener('message', handleMessage)
-    }
-  }, [global.ipcRenderer])
+export default function IndexPage() {
 
-  const onSayHiClick = () => {
-    global.ipcRenderer.send('message', 'hi from next')
-  }
+  const layoutProps: LayoutProps = {
+    contents: [
+      {
+        tabLabel: {
+          text: 'Home',
+          icon: <Home/>,
+        },
+        tabContent: <div> HOME CONTENT </div>
+      },
+      {
+        tabLabel: {
+          text: 'Settings',
+          icon: <Settings/>,
+        },
+        tabContent: <div> SETTINGS CONTENT </div>
+      }
+    ]
+  };
 
   return (
-    <Layout title="Home | Next.js + TypeScript + Electron Example">
-      <h1>Hello Next.js 👋</h1>
-      <button onClick={onSayHiClick}>Say hi to electron</button>
-      <p>
-        <Link href="/about">About</Link>
-      </p>
-    </Layout>
-  )
+      <Layout {...layoutProps}>
+        
+      </Layout>
+  );
 }
 
-export default IndexPage

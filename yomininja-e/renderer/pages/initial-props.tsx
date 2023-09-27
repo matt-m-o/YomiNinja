@@ -13,14 +13,14 @@ type Props = {
 const WithInitialProps = ({ items }: Props) => {
   const router = useRouter()
   return (
-    <Layout title="List Example (as Function Component) | Next.js + TypeScript + Electron Example">
+    <div>
       <h1>List Example (as Function Component)</h1>
       <p>You are currently on: {router.pathname}</p>
       <List items={items} />
       <p>
         <Link href="/">Go home</Link>
       </p>
-    </Layout>
+    </div>
   )
 }
 

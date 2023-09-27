@@ -1,31 +1,216 @@
-import React, { ReactNode } from 'react'
-import Link from 'next/link'
-import Head from 'next/head'
+import { ReactNode, useEffect, useState } from 'react'
+import CssBaseline from '@mui/material/CssBaseline';
+import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
+import { AppBar, Drawer } from '../components/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Box from '@mui/material/Box';
+import React from 'react';
+import MenuIcon from '@mui/icons-material/Menu';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import Divider from '@mui/material/Divider';
+import { ListItemIcon, ListItemText, SxProps, Tab, Tabs, Theme } from '@mui/material';
 
-type Props = {
-  children: ReactNode
-  title?: string
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
 }
 
-const Layout = ({ children, title = 'This is the default title' }: Props) => (
-  <div>
-    <Head>
-      <title>{title}</title>
-      <meta charSet="utf-8" />
-      <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-    </Head>
-    <header>
-      <nav>
-        <Link href="/">Home</Link> | <Link href="/about">About</Link> |{' '}
-        <Link href="/initial-props">With Initial Props</Link>
-      </nav>
-    </header>
-    {children}
-    <footer>
-      <hr />
-      <span>I'm here to stay (Footer)</span>
-    </footer>
-  </div>
-)
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
 
-export default Layout
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`vertical-tabpanel-${index}`}
+      aria-labelledby={`vertical-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ p: 3 }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+}
+
+function a11yProps(index: number) {
+  return {
+    id: `vertical-tab-${index}`,
+    'aria-controls': `vertical-tabpanel-${index}`,
+  };
+}
+
+
+const defaultTheme = createTheme({
+  palette: {
+    mode: 'dark'
+  }
+});
+
+export type LayoutProps = {
+  contents: {
+
+    tabLabel: {
+      text: string,
+      icon: JSX.Element,
+    },
+    tabContent: JSX.Element
+
+  }[]
+}
+
+export default function Layout( { contents }: LayoutProps) {  
+
+  const [ open, setOpen ] = useState(true);
+  const toggleDrawer = () => {
+      setOpen(!open);
+  };
+
+  // Tabs
+  const [ activeTab, setActiveTab ] = React.useState(0);
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+  };  
+
+  const toolbarVariant = 'dense';
+  const tabSx: SxProps<Theme> = {
+    display: 'flex',
+    alignItems: 'flex-start',
+    width: 'max-content',
+    minWidth: '-webkit-fill-available',
+    overflow: 'hidden',
+    paddingTop: '5px',
+    paddingBottom: '5px'
+  };
+
+  const tabLabelStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center'
+  }
+  
+  const tabLabelsComponents = contents.map( item => (
+    <div style={tabLabelStyle}>
+      <ListItemIcon sx={{ minWidth: '48px' }}>
+        {item.tabLabel.icon}
+      </ListItemIcon>
+      <ListItemText primary={item.tabLabel.text} sx={{ paddingTop: '1px' }} />
+    </div>
+  ));
+
+  return (
+    <ThemeProvider theme={defaultTheme}>
+      <Box sx={{ display: 'flex', height: '100vh' }}>
+  
+        <CssBaseline />
+  
+        <AppBar position="absolute" open={open}>
+          <Toolbar variant={toolbarVariant}
+            sx={{              
+              pr: '24px', // keep right padding when drawer closed              
+            }}
+          >
+  
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="open drawer"
+              onClick={toggleDrawer}
+              sx={{
+                marginRight: '36px',
+                ...(open && { display: 'none' }),
+              }}
+            >
+              <MenuIcon />
+            </IconButton>
+  
+            <Typography
+              component="h1"
+              variant="h6"
+              color="inherit"
+              noWrap
+              sx={{ flexGrow: 1 }}
+            >
+              { contents[activeTab].tabLabel.text }
+            </Typography>
+  
+            {/* <IconButton color="inherit">
+              <Badge badgeContent={6} color="secondary">
+                <NotificationsIcon />
+              </Badge>
+            </IconButton> */}
+  
+          </Toolbar>
+        </AppBar>
+        
+        <Drawer variant="permanent" open={open}>
+          <Toolbar variant={toolbarVariant}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              px: [1],              
+            }}
+          >
+            <IconButton onClick={toggleDrawer}>
+              <ChevronLeftIcon />
+            </IconButton>
+          </Toolbar>
+          <Divider />          
+
+          <Tabs
+            orientation="vertical"
+            variant="standard"
+            value={activeTab}
+            onChange={handleChange}
+            aria-label="Vertical tabs example"
+            TabIndicatorProps={{
+              sx: {
+                width: 5,
+                backgroundColor: defaultTheme.palette.action.active
+              }
+            }}
+            sx={{
+              borderRight: 1,
+              borderColor: 'divider',
+              "& button.Mui-selected": { backgroundColor: 'dimgray' }
+            }}          
+          >
+            { tabLabelsComponents.map( ( component, idx ) => (
+              <Tab label={component} {...a11yProps(0)} sx={tabSx} key={idx} />
+            ))}
+          </Tabs>
+
+        </Drawer>
+        
+        <Box
+          component="main"
+          sx={{
+            backgroundColor: (theme) =>
+              theme.palette.mode === 'light'
+                ? theme.palette.grey[100]
+                : theme.palette.grey[900],
+            flexGrow: 1,          
+            height: '100vh',
+            overflow: 'auto',
+          }}
+        >
+          <Toolbar variant={toolbarVariant}/> {/* Just to make sure the content won't get covered by the actual toolbar  */}          
+
+          { contents.map( ( { tabContent }, idx ) => (
+            <TabPanel value={activeTab} index={idx} key={idx}>
+              {tabContent}              
+            </TabPanel>
+          ))}
+          
+        </Box>
+      </Box>
+  
+    </ThemeProvider>
+  );
+}
