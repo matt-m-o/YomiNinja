@@ -25,9 +25,7 @@ export default function IndexPage() {
   };
 
   return (
-      <Layout {...layoutProps}>
-        
-      </Layout>
+    <Layout {...layoutProps}/>
   );
 }
 

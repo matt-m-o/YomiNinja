@@ -94,7 +94,7 @@ describe("Recognize Image Use Case tests", () => {
 
         const input: RecognizeImageInput = {
             imageBuffer: Buffer.from( testText ),            
-            profile_id: profile.id,
+            profileId: profile.id,
         };
 
         const result = await recognizeImageUseCase.execute( input );

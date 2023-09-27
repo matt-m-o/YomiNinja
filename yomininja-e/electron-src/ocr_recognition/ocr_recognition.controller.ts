@@ -11,73 +11,43 @@ import { get_SettingsPresetRepository } from "../@core/infra/container_registry/
 import { SettingsPreset } from "../@core/domain/settings_preset/settings_preset";
 import { get_GetActiveSettingsPresetUseCase } from "../@core/infra/container_registry/use_cases_registry";
 import { activeProfile } from "../app_initialization";
+import { OcrRecognitionService } from "./ocr_recognition.service";
+import { GetActiveSettingsPresetUseCase } from "../@core/application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
 
-const getActiveSettingsPresetUseCase = get_GetActiveSettingsPresetUseCase();
 
 export class OcrRecognitionController {
         
     private overlayWindow: BrowserWindow | undefined;
+    // private windowManager = new WindowManager();
 
-    private recognizeImageUseCase: RecognizeImageUseCase;
-    private getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
+    private ocrRecognitionService: OcrRecognitionService;
+    private getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;
 
-    private selectedLanguageCode: string;
-
-    private windowManager = new WindowManager();
-
-    settingsPreset: SettingsPreset | null;
-
-    constructor( input: {
-        presentationWindow?: BrowserWindow;
-        languageCode: string;
-        recognizeImageUseCase: RecognizeImageUseCase;
-        getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
+    constructor( input: {        
+        ocrRecognitionService: OcrRecognitionService;
+        getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;
     }) {
 
-        if ( input?.presentationWindow ) {
-            this.overlayWindow = input.presentationWindow;
-        }
-        else {
-            this.createOverlayWindow();
-        }
+        this.ocrRecognitionService = input.ocrRecognitionService;
+        this.getActiveSettingsPresetUseCase = input.getActiveSettingsPresetUseCase;        
+    }
 
-        this.recognizeImageUseCase = input.recognizeImageUseCase;
-        this.getSupportedLanguagesUseCase = input.getSupportedLanguagesUseCase;
-        this.selectedLanguageCode = input.languageCode;
-        
-
-        getActiveSettingsPresetUseCase.execute({ profile_id: activeProfile.id })
-            .then( settingsPreset => {
-                
-                this.settingsPreset = settingsPreset;
-
-                if ( this.overlayWindow != null ) {
-                    this.registerGlobalShortcuts( this.overlayWindow );
-                }
-            });
+    async init() {
+        this.createOverlayWindow();
+        this.registerGlobalShortcuts(  );
     }
 
     async fullScreenOcr( imageBuffer?: Buffer ) {
         console.log('');
         console.time('fullScreenOcr');
 
-        if ( !imageBuffer ) {
-            const { image } = await this.takeScreenshot();
-            imageBuffer = image;            
-        }
-
-        if ( !imageBuffer )
-            return;
-        
-
         try {
-            // console.log(activeProfile);
-            const ocrResultScalable = await this.recognizeImageUseCase.execute({                
-                imageBuffer,
-                profile_id: activeProfile.id
-            });
+            // console.log(activeProfile);            
 
-            // console.log(ocrResult?.results);
+            const ocrResultScalable = await this.ocrRecognitionService.recognizeEntireScreen({
+                imageBuffer,
+                profileId: activeProfile.id
+            });            
 
             if ( !this.overlayWindow )
                 this.createOverlayWindow();
@@ -95,21 +65,22 @@ export class OcrRecognitionController {
         console.log('');
     }
 
-    async getSupportedLanguages(): Promise< GetSupportedLanguagesOutput[] > {
-        return await this.getSupportedLanguagesUseCase.execute();
-    }
+    async registerGlobalShortcuts() {
 
-    registerGlobalShortcuts( window: BrowserWindow ) {
-
-        if ( !this.settingsPreset )
+        if ( !this.overlayWindow )
             return;
 
-        const overlayHotkeys = this.settingsPreset?.overlay.hotkeys;
+        const settingsPreset = await this.getActiveSettingsPresetUseCase.execute({ profile_id: activeProfile.id });
+
+        if ( !settingsPreset )
+            return;
+
+        const overlayHotkeys = settingsPreset.overlay.hotkeys;
 
         // Electron full screen OCR
-        globalShortcut.register( overlayHotkeys?.ocr, async () => {            
+        globalShortcut.register( overlayHotkeys.ocr, async () => {            
 
-            window.webContents.send( 'user_command:clear_overlay' );
+            this.overlayWindow?.webContents.send( 'user_command:clear_overlay' );
             await this.fullScreenOcr();            
         });
         
@@ -117,70 +88,27 @@ export class OcrRecognitionController {
         globalShortcut.register( 'Alt+C', () => {
 
             this.showOverlayWindow();
-            window.webContents.send( 'user_command:copy_to_clipboard' );
+            this.overlayWindow?.webContents.send( 'user_command:copy_to_clipboard' );
         });
 
         // View overlay and clear
-        globalShortcut.register( 'Alt+V', () => {
+        globalShortcut.register( overlayHotkeys.show_and_clear, () => {
 
             this.showOverlayWindow();
-            window.webContents.send( 'user_command:clear_overlay' );
+            this.overlayWindow?.webContents.send( 'user_command:clear_overlay' );
         });
 
-        uIOhook.start();
+        
+        uIOhook.start();        
         uIOhook.on( 'keyup', async ( e ) => {  
 
             if (e.keycode === UiohookKey.PrintScreen) {                
                 await this.fullScreenOcr( clipboard.readImage().toPNG() );                
-            }  
-        });
-    }
-
-    private async takeScreenshot( target = 'Entire screen' ): Promise<{
-        image?: Buffer,
-        windowProps?: WindowProperties
-    }> {
-
-        console.time('takeScreenshot');
-
-        // const { workAreaSize } = screen.getPrimaryDisplay();
-        let sourceTypes: ( 'window' | 'screen' )[] = [];
-
-        let windowProps: WindowProperties | undefined;
-
-        if ( target === 'Entire screen' )
-            sourceTypes.push('screen');
-        else{
-            sourceTypes.push('window');
-            windowProps = this.windowManager.getWindowProperties( target );
-        }
-
-        const sources = await desktopCapturer.getSources({
-            types: sourceTypes,
-            thumbnailSize: {
-                width: windowProps?.size.width || 1280, // workAreaSize.width, // 2560 // 1920
-                height: windowProps?.size.height || 720, // workAreaSize.height, // 1440 // 1080
-            },
-        });
-        
-        const source = sources.find( source => source.name.includes( target ) );
-
-        console.timeEnd('takeScreenshot');
-
-        if ( !source )
-            return {};
-
-        if ( target === 'Entire screen' ) {
-            
-            return {
-                image: source.thumbnail.toPNG()
             }
-        }
-
-        return {
-            image: source.thumbnail.toPNG(),
-            windowProps
-        }        
+        });
+        // if ( overlayHotkeys.ocr_on_screen_shot ) {
+            
+        // }
     }
 
     private createOverlayWindow() {

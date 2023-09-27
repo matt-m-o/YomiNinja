@@ -7,14 +7,12 @@ import { initializeApp } from './app_initialization';
 import { BrowserWindow, app, ipcMain, IpcMainEvent, IpcMainInvokeEvent, clipboard } from 'electron';
 import isDev from 'electron-is-dev';
 import prepareNext from 'electron-next';
-import { OcrRecognitionController } from './controllers/ocr_recognition.controller';
+import { OcrRecognitionController } from './ocr_recognition/ocr_recognition.controller';
 import { get_GetSupportedLanguagesUseCase, get_RecognizeImageUseCase } from './@core/infra/container_registry/use_cases_registry';
 import { PAGES_DIR } from './util/directories';
+import { ocrRecognitionController } from './ocr_recognition/ocr_recognition.index';
 
 initializeApp();
-
-
-let ocrRecognitionController: OcrRecognitionController;
 
 
 // Prepare the renderer once the app is ready
@@ -41,12 +39,7 @@ app.on('ready', async () => {
 
   mainWindow.loadURL(url);
 
-  ocrRecognitionController = new OcrRecognitionController({
-    recognizeImageUseCase: get_RecognizeImageUseCase(),
-    getSupportedLanguagesUseCase: get_GetSupportedLanguagesUseCase(),
-    languageCode: 'ja',
-    // presentationWindow: mainWindow
-  });  
+  ocrRecognitionController.init();
 });
 
 // Quit the app once all windows are closed
