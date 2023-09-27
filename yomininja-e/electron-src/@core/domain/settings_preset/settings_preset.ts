@@ -166,4 +166,15 @@ export class SettingsPreset {
             }
         };
     }
+
+    toJson(): SettingsPresetJson {
+        return {
+            id: this.id,
+            ...this.props,
+        }
+    }
+}
+
+export interface SettingsPresetJson extends SettingsPresetProps {
+    id: string;
 }

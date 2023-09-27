@@ -2,7 +2,9 @@ import { BrowserWindow, IpcMainInvokeEvent } from "electron";
 import { SettingsService } from "./settings.service";
 import { activeProfile } from "../app_initialization";
 import { ipcMain } from 'electron';
-import { SettingsPreset } from "../@core/domain/settings_preset/settings_preset";
+import { SettingsPreset, SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
+
+
 
 
 export class SettingsController {   
@@ -24,13 +26,23 @@ export class SettingsController {
 
         ipcMain.handle( 'settings_preset:get_active', async ( event: IpcMainInvokeEvent, message: string ) => {
 
-            const settingsPreset = await this.getActiveSettingsPreset( activeProfile.id );
-            this.mainWindow.webContents.send( 'settings_preset:active_data', settingsPreset ); 
+            const settingsPresetJson = await this.getActiveSettingsPreset( activeProfile.id );
+
+            if ( !settingsPresetJson )
+                return;
+
+            this.mainWindow.webContents.send( 'settings_preset:active_data', settingsPresetJson ); 
         });
     }
     
     
-    private async getActiveSettingsPreset( profileId: string ): Promise< SettingsPreset | null > {
-        return await this.settingsService.getActiveSettings({ profileId })
+    private async getActiveSettingsPreset( profileId: string ): Promise<  SettingsPresetJson | null > {
+
+        const settingsPreset = await this.settingsService.getActiveSettings({ profileId });
+
+        if ( !settingsPreset )
+            return null;        
+
+        return settingsPreset.toJson();
     }
 }
