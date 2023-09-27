@@ -11,6 +11,7 @@ import { OcrRecognitionController } from './ocr_recognition/ocr_recognition.cont
 import { get_GetSupportedLanguagesUseCase, get_RecognizeImageUseCase } from './@core/infra/container_registry/use_cases_registry';
 import { PAGES_DIR } from './util/directories';
 import { ocrRecognitionController } from './ocr_recognition/ocr_recognition.index';
+import { settingsController } from './settings/settings.index';
 
 initializeApp();
 
@@ -40,6 +41,7 @@ app.on('ready', async () => {
   mainWindow.loadURL(url);
 
   ocrRecognitionController.init();
+  settingsController.init( mainWindow );
 });
 
 // Quit the app once all windows are closed

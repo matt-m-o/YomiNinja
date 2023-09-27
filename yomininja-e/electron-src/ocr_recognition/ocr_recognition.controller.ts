@@ -2,14 +2,8 @@ import { BrowserWindow, globalShortcut, screen, desktopCapturer, clipboard } fro
 import isDev from 'electron-is-dev';
 import { join } from "path";
 import { format } from 'url';
-import { RecognizeImageUseCase } from '../@core/application/use_cases/recognize_image/recognize_image.use_case';
-import { GetSupportedLanguagesOutput, GetSupportedLanguagesUseCase } from "../@core/application/use_cases/get_supported_languages/get_supported_languages.use_case";
 import { PAGES_DIR } from "../util/directories";
 import { uIOhook, UiohookKey } from 'uiohook-napi'
-import { WindowManager, WindowProperties } from '../../gyp_modules/window_management/window_manager';
-import { get_SettingsPresetRepository } from "../@core/infra/container_registry/repositories_registry";
-import { SettingsPreset } from "../@core/domain/settings_preset/settings_preset";
-import { get_GetActiveSettingsPresetUseCase } from "../@core/infra/container_registry/use_cases_registry";
 import { activeProfile } from "../app_initialization";
 import { OcrRecognitionService } from "./ocr_recognition.service";
 import { GetActiveSettingsPresetUseCase } from "../@core/application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
@@ -70,7 +64,7 @@ export class OcrRecognitionController {
         if ( !this.overlayWindow )
             return;
 
-        const settingsPreset = await this.getActiveSettingsPresetUseCase.execute({ profile_id: activeProfile.id });
+        const settingsPreset = await this.getActiveSettingsPresetUseCase.execute({ profileId: activeProfile.id });
 
         if ( !settingsPreset )
             return;
@@ -96,19 +90,17 @@ export class OcrRecognitionController {
 
             this.showOverlayWindow();
             this.overlayWindow?.webContents.send( 'user_command:clear_overlay' );
-        });
-
+        });        
         
-        uIOhook.start();        
-        uIOhook.on( 'keyup', async ( e ) => {  
+        if ( overlayHotkeys.ocr_on_screen_shot ) {
+            uIOhook.start();        
+            uIOhook.on( 'keyup', async ( e ) => {  
 
-            if (e.keycode === UiohookKey.PrintScreen) {                
-                await this.fullScreenOcr( clipboard.readImage().toPNG() );                
-            }
-        });
-        // if ( overlayHotkeys.ocr_on_screen_shot ) {
-            
-        // }
+                if (e.keycode === UiohookKey.PrintScreen) {                
+                    await this.fullScreenOcr( clipboard.readImage().toPNG() );                
+                }
+            });
+        }
     }
 
     private createOverlayWindow() {

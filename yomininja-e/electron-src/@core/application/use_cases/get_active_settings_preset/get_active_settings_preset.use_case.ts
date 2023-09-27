@@ -3,7 +3,7 @@ import { SettingsPreset } from "../../../domain/settings_preset/settings_preset"
 
 
 export type GetActiveSettingsPreset_Input = {
-    profile_id: string;
+    profileId: string;
 }
 
 
@@ -13,7 +13,7 @@ export class GetActiveSettingsPresetUseCase {
         public profileRepo: ProfileRepository,
     ) {}
 
-    async execute( { profile_id }: GetActiveSettingsPreset_Input ): Promise< SettingsPreset | null > {
+    async execute( { profileId: profile_id }: GetActiveSettingsPreset_Input ): Promise< SettingsPreset | null > {
         
         const profile = await this.profileRepo.findOne({
             id: profile_id

@@ -57,7 +57,7 @@ describe("GetActiveSettingsPresetUseCase tests", () => {
     it("should get the active settings preset for the given profile", async () => {        
 
         const input: GetActiveSettingsPreset_Input = {
-            profile_id: profile.id            
+            profileId: profile.id            
         };
 
         const result = await getActiveSettingsPresetUseCase.execute( input );
