@@ -6,7 +6,7 @@ import { RecognizeImageUseCase } from '../@core/application/use_cases/recognize_
 import { GetSupportedLanguagesOutput, GetSupportedLanguagesUseCase } from "../@core/application/use_cases/get_supported_languages/get_supported_languages.use_case";
 import { PAGES_DIR } from "../util/directories";
 import { uIOhook, UiohookKey } from 'uiohook-napi'
-import { WindowManager } from '../../gyp_modules/window_management/window_manager';
+import { WindowManager, WindowProperties } from '../../gyp_modules/window_management/window_manager';
 import { get_SettingsPresetRepository } from "../@core/infra/container_registry/repositories_registry";
 import { SettingsPreset } from "../@core/domain/settings_preset/settings_preset";
 import { get_GetActiveSettingsPresetUseCase } from "../@core/infra/container_registry/use_cases_registry";
@@ -23,7 +23,7 @@ export class OcrRecognitionController {
 
     private selectedLanguageCode: string;
 
-    // private windowManager = new WindowManager();
+    private windowManager = new WindowManager();
 
     settingsPreset: SettingsPreset | null;
 
@@ -61,9 +61,15 @@ export class OcrRecognitionController {
         console.log('');
         console.time('fullScreenOcr');
 
+        if ( !imageBuffer ) {
+            const { image } = await this.takeScreenshot();
+            imageBuffer = image;            
+        }
+
         if ( !imageBuffer )
+            return;
         
-            imageBuffer = await this.takeScreenshot();
+
         try {
             // console.log(activeProfile);
             const ocrResultScalable = await this.recognizeImageUseCase.execute({                
@@ -130,23 +136,51 @@ export class OcrRecognitionController {
         });
     }
 
-    private async takeScreenshot(): Promise<Buffer> {
+    private async takeScreenshot( target = 'Entire screen' ): Promise<{
+        image?: Buffer,
+        windowProps?: WindowProperties
+    }> {
 
         console.time('takeScreenshot');
 
         // const { workAreaSize } = screen.getPrimaryDisplay();
+        let sourceTypes: ( 'window' | 'screen' )[] = [];
+
+        let windowProps: WindowProperties | undefined;
+
+        if ( target === 'Entire screen' )
+            sourceTypes.push('screen');
+        else{
+            sourceTypes.push('window');
+            windowProps = this.windowManager.getWindowProperties( target );
+        }
 
         const sources = await desktopCapturer.getSources({
-            types: ['window', 'screen'],
+            types: sourceTypes,
             thumbnailSize: {
-                width: 1280, // workAreaSize.width, // 2560 // 1920
-                height: 720, // workAreaSize.height, // 1440 // 1080
-            }
+                width: windowProps?.size.width || 1280, // workAreaSize.width, // 2560 // 1920
+                height: windowProps?.size.height || 720, // workAreaSize.height, // 1440 // 1080
+            },
         });
+        
+        const source = sources.find( source => source.name.includes( target ) );
 
         console.timeEnd('takeScreenshot');
 
-        return sources[0].thumbnail.toPNG();
+        if ( !source )
+            return {};
+
+        if ( target === 'Entire screen' ) {
+            
+            return {
+                image: source.thumbnail.toPNG()
+            }
+        }
+
+        return {
+            image: source.thumbnail.toPNG(),
+            windowProps
+        }        
     }
 
     private createOverlayWindow() {
