@@ -8,8 +8,7 @@ describe( "SettingsPreset tests", () => {
         const settingsPreset = SettingsPreset.create();
 
         expect( settingsPreset.id ).toBeDefined();
-        expect( settingsPreset.name ).toStrictEqual( 'default' );
-        expect( settingsPreset.language_code ).toHaveLength( 2 );
+        expect( settingsPreset.name ).toStrictEqual( 'default' );        
         expect( settingsPreset.created_at ).toBeDefined();
         expect( settingsPreset.updated_at ).toBeDefined();
     });
@@ -19,17 +18,13 @@ describe( "SettingsPreset tests", () => {
         const settingsPreset = SettingsPreset.create({ name: 'custom 1' });
 
         expect( settingsPreset.id ).toBeDefined();
-        expect( settingsPreset.name ).toStrictEqual( 'custom 1' );
-        expect( settingsPreset.language_code ).toHaveLength( 2 );
+        expect( settingsPreset.name ).toStrictEqual( 'custom 1' );       
     });
     
 
-    it( "should define a SettingsPreset and change overlay settings and language code", () => {
+    it( "should define a SettingsPreset and change overlay settings", () => {
         
-        const settingsPreset = SettingsPreset.create({ name: 'custom 1' });
-
-        settingsPreset.language_code = 'ch';
-        expect( settingsPreset.language_code ).toStrictEqual( 'ch' );
+        const settingsPreset = SettingsPreset.create({ name: 'custom 1' });        
 
         const oldOverlaySettings = cloneDeep( settingsPreset.overlay );
 
@@ -47,9 +42,7 @@ describe( "SettingsPreset tests", () => {
                 },        
             },
             
-        });
-
-        expect( settingsPreset.language_code ).toHaveLength( 2 );
+        });        
 
         expect( settingsPreset.overlay.hotkeys.copy_text )
             .toStrictEqual( 'Ctrl+C' );
@@ -64,17 +57,4 @@ describe( "SettingsPreset tests", () => {
             .toStrictEqual( oldOverlaySettings.visuals.frame.border_width );
     });
 
-    it( "should NOT allow invalid language codes", () => {
-        
-        const settingsPreset = SettingsPreset.create({ name: 'custom 1' });
-        
-        settingsPreset.language_code = "jap";
-        expect( settingsPreset.language_code ).toHaveLength( 2 );
-
-        settingsPreset.language_code = "j";
-        expect( settingsPreset.language_code ).toHaveLength( 2 );
-
-        settingsPreset.language_code = "";
-        expect( settingsPreset.language_code ).toHaveLength( 2 );
-    });
 });

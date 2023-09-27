@@ -34,8 +34,7 @@ export type OverlaySettings = {
 
 
 export interface SettingsPresetProps {
-    name: string;
-    language_code: string; // ISO 639-1
+    name: string;    
     overlay: OverlaySettings;
     ocr_adapter_name?: string;
     created_at: Date;
@@ -55,8 +54,7 @@ export class SettingsPreset {
 
     public id: string; // ID
     private props: SettingsPresetProps = {
-        name: SettingsPreset.default_name,
-        language_code: 'ja', // !OCR Language Code. Rename to "ocr_language_code"
+        name: SettingsPreset.default_name,        
         overlay: {
             visuals: {
                 frame: {
@@ -107,8 +105,7 @@ export class SettingsPreset {
         return new SettingsPreset( input );
     }
     
-    get name(){ return this.props.name; }
-    get language_code() { return this.props.language_code; }
+    get name(){ return this.props.name; }    
     get overlay(){ return this.props.overlay; }
     get ocr_adapter_name() { return this.props.ocr_adapter_name; }
 
@@ -117,14 +114,6 @@ export class SettingsPreset {
 
 
     set name( value: string ){ this.props.name = value; }
-
-    set language_code( value: string ) {
-
-        if ( value.length != 2 )
-            return;
-
-        this.props.language_code = value;
-    }
 
     protected set overlay( update: OverlaySettings ) {
 

@@ -19,7 +19,7 @@ describe( "SettingsPresetInMemoryRepository tests", () => {
         expect( repo.items.get( settingsPreset.id ) ).toStrictEqual( settingsPreset );
 
         // Testing for object references
-        settingsPreset.language_code = 'ch';
+        settingsPreset.name = 'custom 1';
         expect( repo.items.get( settingsPreset.id ) ).not.toEqual( settingsPreset );
     });
     
