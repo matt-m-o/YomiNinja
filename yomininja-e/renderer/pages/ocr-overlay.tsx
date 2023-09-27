@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { OcrResult } from '../../electron-src/@core/domain/ocr_result/ocr_result';
 import { styled } from '@mui/material/styles';
 import { OcrResultContext, OcrResultProvider } from '../context/ocr_result.provider';
-import FullscreenOcrResult from '../components/fullscreen_ocr_result';
+import FullscreenOcrResult from '../components/FullscreenOcrResult';
 
 
 const OverlayFrame = styled('div')({
