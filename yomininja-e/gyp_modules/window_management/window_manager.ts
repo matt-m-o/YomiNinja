@@ -1,7 +1,19 @@
 import bindings from 'bindings';
 
+export type WindowProperties = {
+    size: {
+        width: number,
+        height: number
+    },
+    position: {
+        x: number,
+        y: number
+    }
+}
+
 interface WindowManagerCppInterface {
     setForegroundWindow( windowTitle: string ): string; // Set window to front
+    getWindowProperties( windowTitle: string ): WindowProperties;
 };
 
 export class WindowManager {
@@ -14,6 +26,12 @@ export class WindowManager {
     }
 
     setForegroundWindow( windowTitle: string ): void {
+
         this.windowManager.setForegroundWindow( windowTitle );
+    }
+
+    getWindowProperties( windowTitle: string  ): WindowProperties {
+
+        return this.windowManager.getWindowProperties( windowTitle );
     }
 }
