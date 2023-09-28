@@ -47,6 +47,9 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
 
         global.ipcRenderer.invoke( 'settings_preset:get_active' );
 
+        return () => {
+            global.ipcRenderer.removeAllListeners( 'settings_preset:active_data' );            
+        }
     }, [ global.ipcRenderer ] );
     
     

@@ -28,6 +28,11 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
             setOcrResult( null );
         });
 
+        return () => {
+            global.ipcRenderer.removeAllListeners( 'ocr:result' );
+            global.ipcRenderer.removeAllListeners( 'user_command:clear_overlay' );
+        }
+
     }, [ global.ipcRenderer ] );    
     
     
