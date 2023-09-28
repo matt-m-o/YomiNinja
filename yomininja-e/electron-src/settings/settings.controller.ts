@@ -33,6 +33,7 @@ export class SettingsController {
 
             this.mainWindow.webContents.send( 'settings_preset:active_data', settingsPresetJson ); 
         });
+        
     }
     
     
@@ -44,5 +45,10 @@ export class SettingsController {
             return null;        
 
         return settingsPreset.toJson();
+    }
+
+    async updateSettingsPreset( settingsPresetJson: SettingsPresetJson ) {
+
+        await this.settingsService.updateSettingsPreset( settingsPresetJson );
     }
 }

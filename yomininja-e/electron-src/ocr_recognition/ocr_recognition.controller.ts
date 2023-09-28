@@ -1,4 +1,4 @@
-import { BrowserWindow, globalShortcut, screen, desktopCapturer, clipboard } from "electron";
+import { BrowserWindow, globalShortcut, screen, desktopCapturer, clipboard, ipcMain, IpcMainInvokeEvent } from "electron";
 import isDev from 'electron-is-dev';
 import { join } from "path";
 import { format } from 'url';
@@ -7,6 +7,7 @@ import { uIOhook, UiohookKey } from 'uiohook-napi'
 import { activeProfile } from "../app_initialization";
 import { OcrRecognitionService } from "./ocr_recognition.service";
 import { GetActiveSettingsPresetUseCase } from "../@core/application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
+import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 
 
 export class OcrRecognitionController {
@@ -27,8 +28,11 @@ export class OcrRecognitionController {
     }
 
     async init() {
+
         this.createOverlayWindow();
-        this.registerGlobalShortcuts(  );
+        this.registerGlobalShortcuts();
+
+        
     }
 
     async fullScreenOcr( imageBuffer?: Buffer ) {
@@ -70,6 +74,8 @@ export class OcrRecognitionController {
             return;
 
         const overlayHotkeys = settingsPreset.overlay.hotkeys;
+
+        globalShortcut.unregisterAll();
 
         // Electron full screen OCR
         globalShortcut.register( overlayHotkeys.ocr, async () => {            

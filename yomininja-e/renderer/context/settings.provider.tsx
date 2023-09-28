@@ -30,12 +30,15 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
 
         console.log( updatedPreset );
 
+        if ( !updatedPreset )
+            return;
+
         setActiveSettingsPreset({
             ...activeSettingsPreset,
             ...updatedPreset,
         });
 
-        
+        global.ipcRenderer.invoke( 'settings_preset:update', updatedPreset );
     }
     
     useEffect( () => {

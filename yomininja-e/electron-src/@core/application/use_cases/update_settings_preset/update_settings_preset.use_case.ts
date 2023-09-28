@@ -10,7 +10,7 @@ export class UpdateSettingsPresetUseCase {
         public settingsPresetRepo: SettingsPresetRepository,
     ) {}
 
-    async execute( input: UpdateSettingsPreset_Input ): Promise< void > {
+    async execute( input: UpdateSettingsPreset_Input ): Promise< void > {        
 
         const settingsPreset = await this.settingsPresetRepo.findOne({ id: input.id });
 

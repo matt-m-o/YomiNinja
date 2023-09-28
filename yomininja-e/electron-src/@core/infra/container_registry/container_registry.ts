@@ -17,6 +17,7 @@ export const Registry = {
     RecognizeImageUseCase: Symbol.for('RecognizeImageUseCase'),
     GetSupportedLanguagesUseCase: Symbol.for('GetSupportedLanguagesUseCase'),
     GetActiveSettingsPresetUseCase: Symbol.for('GetActiveSettingsPresetUseCase'),
+    UpdateSettingsPresetUseCase: Symbol.for('UpdateSettingsPresetUseCase'),
 
     // Repositories
     SettingsPresetInMemoryRepository: Symbol.for('SettingsPresetInMemoryRepository'),

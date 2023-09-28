@@ -4,6 +4,7 @@ import { GetSupportedLanguagesUseCase } from "../../application/use_cases/get_su
 import { RecognizeImageUseCase } from "../../application/use_cases/recognize_image/recognize_image.use_case";
 import { get_SettingsPresetRepository } from "./repositories_registry";
 import { GetActiveSettingsPresetUseCase } from "../../application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
+import { UpdateSettingsPresetUseCase } from "../../application/use_cases/update_settings_preset/update_settings_preset.use_case";
 
 
 container_registry.bind( Registry.RecognizeImageUseCase ).toDynamicValue( (context) => {
@@ -28,6 +29,11 @@ container_registry.bind( Registry.GetActiveSettingsPresetUseCase ).toDynamicValu
     );
 }).inSingletonScope();
 
+container_registry.bind( Registry.UpdateSettingsPresetUseCase ).toDynamicValue( (context) => {
+    return new UpdateSettingsPresetUseCase(
+        context.container.get( Registry.SettingsPresetTypeOrmRepository ),
+    );
+}).inSingletonScope();
 
 
 
@@ -41,4 +47,8 @@ export function get_GetSupportedLanguagesUseCase(): GetSupportedLanguagesUseCase
 
 export function get_GetActiveSettingsPresetUseCase(): GetActiveSettingsPresetUseCase {    
     return container_registry.get< GetActiveSettingsPresetUseCase >( Registry.GetActiveSettingsPresetUseCase );
+}
+
+export function get_UpdateSettingsPresetUseCase(): UpdateSettingsPresetUseCase {    
+    return container_registry.get< UpdateSettingsPresetUseCase >( Registry.UpdateSettingsPresetUseCase );
 }
