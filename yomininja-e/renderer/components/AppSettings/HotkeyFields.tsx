@@ -2,6 +2,22 @@ import { Box, InputBaseComponentProps, TextField } from "@mui/material";
 import { Dispatch, SetStateAction } from "react";
 import AddSharpIcon from '@mui/icons-material/AddSharp';
 
+const modifierKeys: string[] = [
+    'Command', 'Cmd',
+    'Control', 'Ctrl',
+    'CommandOrControl',
+    'Alt',
+    'Option',
+    'AltGr', 'AltGraph',
+    'Shift',
+    'Super',
+    'Meta'
+];
+function isModifierKey( key: string ): boolean {
+    return modifierKeys.includes( key );
+}
+
+
 export interface HotkeyCombination {
     modifierKey: string;
     key: string;
@@ -23,11 +39,15 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
         type: 'modifierKey' | 'key',
     ) {
 
+        if ( type != 'modifierKey' && isModifierKey(key) )
+            return;
+
         if ( key.length == 1 )
             key = key.toUpperCase();
+
         
-        if ( type == 'modifierKey' )
-            setStateAction({ ...hotkeyCombinationState, modifierKey: key });
+        if ( type == 'modifierKey' && isModifierKey(key) ) 
+            setStateAction({ ...hotkeyCombinationState, modifierKey: key });        
 
         else if ( type === 'key' )
             setStateAction({ ...hotkeyCombinationState, key: key });
@@ -42,7 +62,7 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
     return (
         <Box sx={{ display: 'flex', direction: 'row', alignItems: 'center' }}>
         
-            <TextField sx={{ maxWidth: 80, margin: 1 }}
+            <TextField sx={{ maxWidth: '115px', margin: 1 }}
                 inputProps={hotkeyInputProps}
                 required                    
                 value={ hotkeyCombinationState?.modifierKey || '' }
@@ -54,7 +74,7 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
 
             <AddSharpIcon/>
 
-            <TextField sx={{ maxWidth: 80, margin: 1 }}
+            <TextField sx={{ maxWidth: '115px', margin: 1 }}
                 inputProps={{ style: { textAlign: 'center' } }}
                 required                    
                 value={ hotkeyCombinationState?.key || '' }
@@ -67,3 +87,4 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
         </Box>
     )
 }
+
