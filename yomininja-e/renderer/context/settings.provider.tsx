@@ -1,24 +1,41 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
-import { SettingsPreset } from "../../electron-src/@core/domain/settings_preset/settings_preset";
-
+import { SettingsPreset, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
 
 export type SettingsContextType = {
-    activeSettingsPreset: SettingsPreset;
-    allSettingsPresets: SettingsPreset[];
+    activeSettingsPreset: SettingsPresetJson;
+    allSettingsPresets: SettingsPresetJson[];
+    updateActivePreset: ( input: Partial<SettingsPresetJson> ) => void;
 };
+
+export interface SettingsPresetFront extends SettingsPresetProps {
+    id: string;
+}
+
 
 export const SettingsContext = createContext( {} as SettingsContextType );
 
 
 export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     
-    const [ activeSettingsPreset, setActiveSettingsPreset ] = useState< SettingsPreset | null >( null );
-    const [ allSettingsPresets, setAllSettingsPresets ] = useState< SettingsPreset[] >( [] );
+    const [ activeSettingsPreset, setActiveSettingsPreset ] = useState< SettingsPresetJson | null >( null );
+    const [ allSettingsPresets, setAllSettingsPresets ] = useState< SettingsPresetJson[] >( [] );
 
-    function activeSettingsPresetHandler( event: Electron.IpcRendererEvent, data: SettingsPreset ) {
-
+    function activeSettingsPresetHandler( event: Electron.IpcRendererEvent, data: SettingsPresetJson ) {
+        
         console.log(data);
-        // setActiveSettingsPreset(activeSettingsPreset);
+        setActiveSettingsPreset( data );
+    }
+
+    function updateActivePreset( updatedPreset: Partial<SettingsPresetJson> ) {
+
+        console.log( updatedPreset );
+
+        setActiveSettingsPreset({
+            ...activeSettingsPreset,
+            ...updatedPreset,
+        });
+
+        
     }
     
     useEffect( () => {
@@ -27,14 +44,15 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
 
         global.ipcRenderer.invoke( 'settings_preset:get_active' );
 
-    }, [ global.ipcRenderer ] );    
+    }, [ global.ipcRenderer ] );
     
     
     return (
         <SettingsContext.Provider
             value={{
                 activeSettingsPreset,
-                allSettingsPresets
+                allSettingsPresets,
+                updateActivePreset
             }}
         >
             {children}
