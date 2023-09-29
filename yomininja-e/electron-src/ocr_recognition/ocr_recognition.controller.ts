@@ -85,7 +85,7 @@ export class OcrRecognitionController {
         });
         
         // View overlay and copy text clipboard
-        globalShortcut.register( 'Alt+C', () => {
+        globalShortcut.register( overlayHotkeys.show, () => {
 
             this.showOverlayWindow();
             this.overlayWindow?.webContents.send( 'user_command:copy_to_clipboard' );
@@ -98,8 +98,11 @@ export class OcrRecognitionController {
             this.overlayWindow?.webContents.send( 'user_command:clear_overlay' );
         });        
         
-        if ( overlayHotkeys.ocr_on_screen_shot ) {
-            uIOhook.start();        
+        uIOhook.stop();
+        uIOhook.start();
+        uIOhook.removeAllListeners();
+
+        if ( overlayHotkeys.ocr_on_screen_shot ) {            
             uIOhook.on( 'keyup', async ( e ) => {  
 
                 if (e.keycode === UiohookKey.PrintScreen) {                

@@ -11,6 +11,7 @@ import { PAGES_DIR } from './util/directories';
 import { ocrRecognitionController } from './ocr_recognition/ocr_recognition.index';
 import { settingsController } from './settings/settings.index';
 import './shared_handlers';
+import { uIOhook } from 'uiohook-napi';
 
 initializeApp();
 
@@ -47,6 +48,8 @@ app.on('ready', async () => {
 app.on('window-all-closed', () => {
 
   globalShortcut.unregisterAll();
+  uIOhook.removeAllListeners();
+  uIOhook.stop();
   app.quit();
 });
 
