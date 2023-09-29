@@ -140,10 +140,7 @@ export default function AppSettingsHotkeys() {
                 hotkeyCombinationState={ clearOverlayKeys }
                 setStateAction={ setClearOverlayKeys }
             />
-
-
             
-            <Divider/>
         </Box>
     )
 }

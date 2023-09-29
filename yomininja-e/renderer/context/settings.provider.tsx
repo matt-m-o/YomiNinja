@@ -1,5 +1,5 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
-import { OverlayHotkeys, OverlayVisualCustomizations, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
+import { OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
 
 export type SettingsContextType = {
     activeSettingsPreset: SettingsPresetJson;
@@ -7,6 +7,7 @@ export type SettingsContextType = {
     updateActivePreset: ( input: Partial<SettingsPresetJson> ) => void;
     updateActivePresetHotkeys: ( newHotkeys: Partial<OverlayHotkeys> ) => void;
     updateActivePresetVisuals: ( newVisuals: Partial< OverlayVisualCustomizations > ) => void;
+    updateActivePresetBehavior: ( newVisuals: Partial< OverlayBehavior > ) => void; 
 };
 
 export interface SettingsPresetFront extends SettingsPresetProps {
@@ -21,6 +22,17 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     
     const [ activeSettingsPreset, setActiveSettingsPreset ] = useState< SettingsPresetJson | null >( null );
     const [ allSettingsPresets, setAllSettingsPresets ] = useState< SettingsPresetJson[] >( [] );
+
+
+    function updateActivePresetBehavior( newBehavior: Partial< OverlayBehavior > ) {
+
+        activeSettingsPreset.overlay.behavior = {
+            ...activeSettingsPreset.overlay.behavior,
+            ...newBehavior,
+        };
+
+        updateActivePreset( activeSettingsPreset );
+    }
 
     function updateActivePresetHotkeys( newHotkeys: Partial< OverlayHotkeys > ) {
 
@@ -93,7 +105,8 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
                 allSettingsPresets,
                 updateActivePreset,
                 updateActivePresetHotkeys,
-                updateActivePresetVisuals
+                updateActivePresetVisuals,
+                updateActivePresetBehavior
             }}
         >
             {children}

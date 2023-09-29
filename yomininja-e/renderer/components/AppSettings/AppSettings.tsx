@@ -3,6 +3,7 @@ import { SettingsContext } from "../../context/settings.provider";
 import { useContext, useEffect } from "react";
 import AppSettingsHotkeys from "./AppSettingsHotkeys";
 import AppSettingsVisuals from "./AppSettingsVisuals";
+import AppSettingsOthers from "./AppSettingsOthers";
 
 
 
@@ -19,7 +20,13 @@ export default function AppSettingsMenu() {
             
             <AppSettingsHotkeys/>
 
+            <Divider/>
+
             <AppSettingsVisuals/>
+
+            <Divider/>
+
+            <AppSettingsOthers/>
 
         </Container>
     )

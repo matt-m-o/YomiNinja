@@ -218,9 +218,6 @@ export default function AppSettingsVisuals() {
             
             </Container>            
 
-                
-
-            <Divider/>
         </Box>
     )
 }
