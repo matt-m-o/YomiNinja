@@ -21,7 +21,7 @@ export type OverlayVisualCustomizations = {
 };
 
 export type OverlayBehavior = {
-    copy_text_on_hover: true;
+    copy_text_on_hover: boolean;
 };
 
 export type OverlayHotkeys = {
