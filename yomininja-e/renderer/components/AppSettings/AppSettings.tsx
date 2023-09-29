@@ -2,6 +2,7 @@ import { Box, Container, Divider, Grid, TextField, Typography } from "@mui/mater
 import { SettingsContext } from "../../context/settings.provider";
 import { useContext, useEffect } from "react";
 import AppSettingsHotkeys from "./AppSettingsHotkeys";
+import AppSettingsVisuals from "./AppSettingsVisuals";
 
 
 
@@ -14,9 +15,11 @@ export default function AppSettingsMenu() {
     }, [activeSettingsPreset] );
 
     return (
-        <Container maxWidth='sm'>
+        <Container maxWidth='md'>
             
             <AppSettingsHotkeys/>
+
+            <AppSettingsVisuals/>
 
         </Container>
     )

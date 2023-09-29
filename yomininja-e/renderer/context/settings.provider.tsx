@@ -1,11 +1,12 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
-import { OverlayHotkeys, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
+import { OverlayHotkeys, OverlayVisualCustomizations, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
 
 export type SettingsContextType = {
     activeSettingsPreset: SettingsPresetJson;
     allSettingsPresets: SettingsPresetJson[];
     updateActivePreset: ( input: Partial<SettingsPresetJson> ) => void;
     updateActivePresetHotkeys: ( newHotkeys: Partial<OverlayHotkeys> ) => void;
+    updateActivePresetVisuals: ( newVisuals: Partial< OverlayVisualCustomizations > ) => void;
 };
 
 export interface SettingsPresetFront extends SettingsPresetProps {
@@ -21,11 +22,31 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     const [ activeSettingsPreset, setActiveSettingsPreset ] = useState< SettingsPresetJson | null >( null );
     const [ allSettingsPresets, setAllSettingsPresets ] = useState< SettingsPresetJson[] >( [] );
 
-    function updateActivePresetHotkeys( newHotkeys: Partial<OverlayHotkeys> ) {
+    function updateActivePresetHotkeys( newHotkeys: Partial< OverlayHotkeys > ) {
 
         activeSettingsPreset.overlay.hotkeys = {
             ...activeSettingsPreset.overlay.hotkeys,
             ...newHotkeys,
+        };
+
+        updateActivePreset( activeSettingsPreset );
+    }
+
+    function updateActivePresetVisuals( newVisuals: Partial< OverlayVisualCustomizations>  ) {
+
+        activeSettingsPreset.overlay.visuals = {
+
+            ...activeSettingsPreset.overlay.visuals,
+
+            ocr_item_box: {                     
+                ...activeSettingsPreset.overlay.visuals.ocr_item_box,
+                ...newVisuals.ocr_item_box,                
+            },
+
+            frame: {
+                ...activeSettingsPreset.overlay.visuals.frame,
+                ...newVisuals.frame,
+            }  
         };
 
         updateActivePreset( activeSettingsPreset );
@@ -71,7 +92,8 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
                 activeSettingsPreset,
                 allSettingsPresets,
                 updateActivePreset,
-                updateActivePresetHotkeys
+                updateActivePresetHotkeys,
+                updateActivePresetVisuals
             }}
         >
             {children}
