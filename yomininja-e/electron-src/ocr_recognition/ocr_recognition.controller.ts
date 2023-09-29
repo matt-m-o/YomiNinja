@@ -28,11 +28,9 @@ export class OcrRecognitionController {
     }
 
     async init() {
-
+        uIOhook.start();
         this.createOverlayWindow();
-        this.registerGlobalShortcuts();
-
-        
+        this.registerGlobalShortcuts();        
     }
 
     async fullScreenOcr( imageBuffer?: Buffer ) {
@@ -102,9 +100,8 @@ export class OcrRecognitionController {
             this.showOverlayWindow();
             this.overlayWindow?.webContents.send( 'user_command:clear_overlay' );
         });        
+                
         
-        uIOhook.stop();
-        uIOhook.start();
         uIOhook.removeAllListeners();
 
         if ( overlayHotkeys.ocr_on_screen_shot ) {            
