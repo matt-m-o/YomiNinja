@@ -2,19 +2,16 @@ import { useContext, useEffect, useState } from 'react';
 import { OcrResult } from '../../electron-src/@core/domain/ocr_result/ocr_result';
 import { styled } from '@mui/material/styles';
 import { OcrResultContext, OcrResultProvider } from '../context/ocr_result.provider';
-import FullscreenOcrResult from '../components/FullscreenOcrResult';
-
-
-const OverlayFrame = styled('div')({
-  border: 'solid 1px red',
-  height: '99.8vh',
-  overflow: 'hidden',
-});
+import FullscreenOcrResult from '../components/OcrOverlay/FullscreenOcrResult';
+import { SettingsContext, SettingsProvider } from '../context/settings.provider';
+import { OverlayFrameVisuals, OverlayOcrItemBoxVisuals } from '../../electron-src/@core/domain/settings_preset/settings_preset';
+import OcrOverlay from '../components/OcrOverlay/OcrOverlay';
 
 
 
 export default function OcrOverlayPage() {
-  
+
+ 
 
   useEffect( () => {
     document.body.style.margin = "0px";
@@ -27,13 +24,13 @@ export default function OcrOverlayPage() {
     <>      
       <title>OCR Overlay - YomiNinja</title>
 
-      <OcrResultProvider>
-        <OverlayFrame>
+      <SettingsProvider>
+        <OcrResultProvider>
 
-          <FullscreenOcrResult />
+          <OcrOverlay/>          
 
-        </OverlayFrame>
-      </OcrResultProvider>
+        </OcrResultProvider>
+      </SettingsProvider>
     </>
     
   );

@@ -1,12 +1,12 @@
-import { useContext, useEffect, useState } from "react";
+import { CSSProperties, useContext, useEffect, useState } from "react";
 import { OcrResultContext } from "../../context/ocr_result.provider";
 import { styled } from "@mui/material";
 import { OcrItemScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
+import { OverlayBehavior, OverlayHotkeys, OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
 
 
 const OcrResultBox = styled('div')({
-    border: 'solid 1px red',
-    borderRadius: '2rem',    
+    border: 'solid',
     position: 'absolute',
     color: 'transparent',
     transformOrigin: 'top left',
@@ -17,17 +17,18 @@ const OcrResultBox = styled('div')({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-
-    ":hover": {
-        backgroundColor: 'black',
-        color: 'white',
-        fontFamily: "arial"
-    }
 });
 
+export type FullscreenOcrResultProps = {
+    ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
+    overlayHotkeys: OverlayHotkeys;
+    overlayBehavior: OverlayBehavior;
+};
 
 
-export default function FullscreenOcrResult() {
+export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
+
+    const { ocrItemBoxVisuals, overlayHotkeys, overlayBehavior } = props;
 
     const { ocrResult } = useContext( OcrResultContext );
     const [ hoveredText, setHoveredText ] = useState< string >('asdf');
@@ -38,20 +39,31 @@ export default function FullscreenOcrResult() {
 
         const { box } = item;
 
+        const OcrResultBox_WithSettings = styled( OcrResultBox )({
+            ":hover": {
+                fontFamily: "arial",
+                backgroundColor: ocrItemBoxVisuals?.background_color || 'black',
+                color: ocrItemBoxVisuals?.text.color || 'white',
+            },
+            borderColor: ocrItemBoxVisuals?.border_color || 'red',
+            borderWidth: ocrItemBoxVisuals?.border_width || '1px',
+            borderRadius: ocrItemBoxVisuals?.border_radius || '2rem',
+        });        
+
         return (
-            <OcrResultBox key={idx}
-                sx={{
+            <OcrResultBox_WithSettings key={idx}
+                style={{                    
                     left: box.position.left + '%',
                     top: box.position.top + '%',
                     transform: `rotate( ${box.angle_degrees}deg )`,
                     minWidth: box.dimensions.width + '%',
                     minHeight: box.dimensions.height + '%',
-                    fontSize: box.dimensions.height * 50 + '%',                    
-                }}
+                    fontSize: box.dimensions.height * 50 + '%',
+                }}                          
                 onMouseEnter={ () => ( setHoveredText( item.text ) ) }
             >
                 { item.text }
-            </OcrResultBox>
+            </OcrResultBox_WithSettings>
         )
     }
 
@@ -77,13 +89,30 @@ export default function FullscreenOcrResult() {
 
     useEffect(() => {
 
-        const handleKeyPress = ( e: KeyboardEvent ) => {
+        console.log('hoveredElement');
+
+        if ( !overlayHotkeys?.copy_text && hoveredElement )
+            return;
+
+        let copyTextHotkey = overlayHotkeys?.copy_text
+            .split('+')
+            .find( value => value != 'undefined' );
+
+        if ( !copyTextHotkey )
+            return;
+
+        if ( copyTextHotkey.length == 1 )
+            copyTextHotkey = copyTextHotkey.toLowerCase();
+
+        // console.log({ copyTextHotkey })
+
+        const handleKeyPress = ( e: KeyboardEvent ) => {            
 
             // console.log(e.key);
-            if ( e.key === 'c' && hoveredElement) {
+            if ( e.key === copyTextHotkey && hoveredElement ) {
                 global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', hoveredText );
             }
-        };
+        };        
 
         document.addEventListener('keyup', handleKeyPress);
 
@@ -91,10 +120,18 @@ export default function FullscreenOcrResult() {
             document.removeEventListener('keyup', handleKeyPress);
         };
 
-    }, [ hoveredElement, global.ipcRenderer ]);
+    }, [ hoveredText, global.ipcRenderer ]);
 
     useEffect( () => {
-        global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', hoveredText );
+
+        console.log({ hoveredText });
+
+        if ( 
+            overlayBehavior?.copy_text_on_hover &&
+            hoveredText
+        )
+            global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', hoveredText );
+
     }, [ hoveredText ] );
 
     return (

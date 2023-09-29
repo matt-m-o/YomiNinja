@@ -28,7 +28,7 @@ export default function AppSettingsVisuals() {
     const { activeSettingsPreset, updateActivePresetVisuals } = useContext( SettingsContext );
 
     const [ ocrItemBoxVisuals, setOcrItemBoxVisuals ] = useState<OverlayOcrItemBoxVisuals>();
-    const [ overlayFrameVisuals, setOverlayFrame ] = useState<OverlayFrameVisuals>();
+    const [ overlayFrameVisuals, setOverlayFrameVisuals ] = useState<OverlayFrameVisuals>();
 
     useEffect( () => {
 
@@ -40,7 +40,7 @@ export default function AppSettingsVisuals() {
         if ( ocr_item_box ) {
 
             setOcrItemBoxVisuals( ocr_item_box );
-            setOverlayFrame( frame );
+            setOverlayFrameVisuals( frame );
         }
 
     }, [ activeSettingsPreset ] );
@@ -87,7 +87,7 @@ export default function AppSettingsVisuals() {
             <Container sx={{ mt: 2, mb: 2 }}>
 
                 <Typography gutterBottom component="div" mb={1}>
-                    OCR Text Boxes
+                    OCR text boxes
                 </Typography>
 
                 <Container sx={{ mt: 2, mb: 2 }}>
@@ -159,7 +159,7 @@ export default function AppSettingsVisuals() {
                 
 
                 <Typography gutterBottom component="div" mb={1}>
-                    Overlay Frame
+                    Overlay frame
                 </Typography>
 
                 <Container sx={{ mt: 2, mb: 2 }}>
