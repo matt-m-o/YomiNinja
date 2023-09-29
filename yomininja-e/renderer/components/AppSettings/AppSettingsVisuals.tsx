@@ -1,7 +1,8 @@
-import { Box, Container, Divider, FormControlLabel, FormGroup, Switch, SxProps, TextField, Theme, Typography, styled } from "@mui/material";
+import { Box, Container, Divider, FormControlLabel, FormGroup, Switch, SxProps, TextField, Theme, Typography, debounce, styled } from "@mui/material";
 import { SettingsContext } from "../../context/settings.provider";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { OverlayFrameVisuals, OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import { throttle } from "lodash";
 
 
 const OverlayFrame = styled('div')({
@@ -27,26 +28,10 @@ export default function AppSettingsVisuals() {
 
     const { activeSettingsPreset, updateActivePresetVisuals } = useContext( SettingsContext );
 
-    const [ ocrItemBoxVisuals, setOcrItemBoxVisuals ] = useState<OverlayOcrItemBoxVisuals>();
-    const [ overlayFrameVisuals, setOverlayFrameVisuals ] = useState<OverlayFrameVisuals>();
+    const ocrItemBoxVisuals: OverlayOcrItemBoxVisuals = activeSettingsPreset?.overlay?.visuals.ocr_item_box;
+    const overlayFrameVisuals: OverlayFrameVisuals = activeSettingsPreset?.overlay?.visuals.frame;    
 
-    useEffect( () => {
-
-        if ( !activeSettingsPreset )
-            return;
-
-        const { ocr_item_box, frame } = activeSettingsPreset?.overlay?.visuals;
-
-        if ( ocr_item_box ) {
-
-            setOcrItemBoxVisuals( ocr_item_box );
-            setOverlayFrameVisuals( frame );
-        }
-
-    }, [ activeSettingsPreset ] );
-
-
-    function updateOcrItemBoxVisuals( update: Partial<OverlayOcrItemBoxVisuals> ) {    
+    const updateOcrItemBoxVisuals = debounce( ( update: Partial<OverlayOcrItemBoxVisuals> ) => {    
         
         // console.log(update);
         
@@ -56,9 +41,9 @@ export default function AppSettingsVisuals() {
                 ...update
             }
         });
-    }
+    }, 100 );
 
-    function updateOverlayFrameVisuals( update: Partial<OverlayFrameVisuals> ) {
+    const updateOverlayFrameVisuals = debounce( ( update: Partial<OverlayFrameVisuals> ) => {
 
         // console.log(update);
         
@@ -68,13 +53,13 @@ export default function AppSettingsVisuals() {
                 ...update
             }
         });
-    }
+    }, 100 );
     
     const textFieldBaseSx: SxProps<Theme> = {
         minWidth: '100px', 
         maxWidth: '110px',
         m: 1,
-    };
+    };    
     
 
     return (
@@ -96,11 +81,12 @@ export default function AppSettingsVisuals() {
                         size='small'
                         type="color"
                         inputProps={{ style: { textAlign: 'center' } }}                        
+                        // value={ ocrItemBoxVisuals?.background_color || '' }
                         value={ ocrItemBoxVisuals?.background_color || '' }
                         onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
-                            updateOcrItemBoxVisuals({                                
+                            updateOcrItemBoxVisuals({
                                 background_color: event.target.value
-                            });
+                            });                            
                         }}
                     />
 
@@ -116,6 +102,7 @@ export default function AppSettingsVisuals() {
                                 }
                             });
                         }}
+                        
                     />
 
                     <TextField label="Border color" sx={textFieldBaseSx}                      
@@ -164,7 +151,7 @@ export default function AppSettingsVisuals() {
 
                 <Container sx={{ mt: 2, mb: 2 }}>
 
-                    <TextField label="Border color" sx={textFieldBaseSx}                      
+                    <TextField label="Border color" sx={textFieldBaseSx}
                         size='small'
                         type="color"                        
                         inputProps={{ style: { textAlign: 'center' } }}                        
