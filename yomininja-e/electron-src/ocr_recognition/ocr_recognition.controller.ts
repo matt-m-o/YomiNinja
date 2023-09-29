@@ -63,17 +63,22 @@ export class OcrRecognitionController {
         console.log('');
     }
 
-    async registerGlobalShortcuts() {
+    async registerGlobalShortcuts( settingsPresetJson?: SettingsPresetJson ) {
 
         if ( !this.overlayWindow )
             return;
 
-        const settingsPreset = await this.getActiveSettingsPresetUseCase.execute({ profileId: activeProfile.id });
+        if ( !settingsPresetJson ) {
+            
+            const settingsPreset = ( await this.getActiveSettingsPresetUseCase.execute({ profileId: activeProfile.id }) );
 
-        if ( !settingsPreset )
+            settingsPresetJson = settingsPreset?.toJson();
+        }
+
+        if ( !settingsPresetJson )
             return;
 
-        const overlayHotkeys = settingsPreset.overlay.hotkeys;
+        const overlayHotkeys = settingsPresetJson.overlay.hotkeys;
 
         globalShortcut.unregisterAll();
 
@@ -145,7 +150,7 @@ export class OcrRecognitionController {
         // this.overlayWindow.setAlwaysOnTop( true, "normal" ); // normal, pop-up-menu och screen-saver
 
         // Prevents black image when using youtube on some browsers (e.g. Brave)
-        this.overlayWindow.setIgnoreMouseEvents( true, { // !showDevTools
+        this.overlayWindow.setIgnoreMouseEvents( !showDevTools, { // !showDevTools
             forward: !showDevTools,
         });
     }
@@ -161,5 +166,20 @@ export class OcrRecognitionController {
         this.overlayWindow.show();
     }
 
+    async refreshActiveSettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
 
+        if ( !settingsPresetJson ) {
+            const settingsPreset = await this.getActiveSettingsPresetUseCase.execute({
+                profileId: activeProfile.id
+            });
+            settingsPresetJson = settingsPreset?.toJson();
+        }
+
+        if ( !settingsPresetJson )
+            return;
+
+        this.registerGlobalShortcuts( settingsPresetJson );
+
+        this.overlayWindow?.webContents.send( 'settings_preset:active_data', settingsPresetJson );
+    }
 }

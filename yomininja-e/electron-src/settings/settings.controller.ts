@@ -30,8 +30,10 @@ export class SettingsController {
 
             if ( !settingsPresetJson )
                 return;
-
+            
             this.mainWindow.webContents.send( 'settings_preset:active_data', settingsPresetJson ); 
+
+            return settingsPresetJson;
         });
         
     }

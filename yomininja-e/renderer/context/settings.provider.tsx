@@ -76,10 +76,10 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
             ...updatedPreset,
         });
 
-        global.ipcRenderer.invoke( 'settings_preset:update', updatedPreset );
+        global.ipcRenderer.invoke( 'settings_preset:update', updatedPreset );            
     }
 
-    function activeSettingsPresetHandler( event: Electron.IpcRendererEvent, data: SettingsPresetJson ) {
+    function activeSettingsPresetHandler( data: SettingsPresetJson ) {
         
         console.log(data);
         setActiveSettingsPreset( data );
@@ -88,9 +88,14 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     
     useEffect( () => {
 
-        global.ipcRenderer.on( 'settings_preset:active_data', activeSettingsPresetHandler );
+        global.ipcRenderer.on( 'settings_preset:active_data', ( event, data: SettingsPresetJson ) => {
+            activeSettingsPresetHandler( data );
+        });
 
-        global.ipcRenderer.invoke( 'settings_preset:get_active' );
+        global.ipcRenderer.invoke( 'settings_preset:get_active' )
+            .then( ( result: SettingsPresetJson ) => {
+                activeSettingsPresetHandler(result);
+            });
 
         return () => {
             global.ipcRenderer.removeAllListeners( 'settings_preset:active_data' );            

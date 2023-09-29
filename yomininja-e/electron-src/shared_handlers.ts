@@ -10,7 +10,7 @@ ipcMain.handle( 'settings_preset:update', async ( event: IpcMainInvokeEvent, mes
     if ( !message )
         return;
 
-    await settingsController.updateSettingsPreset(message);
+    await settingsController.updateSettingsPreset( message );
     
-    ocrRecognitionController.registerGlobalShortcuts();
+    ocrRecognitionController.refreshActiveSettingsPreset( message );
 });
