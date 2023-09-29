@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
-import { OcrResultContext } from "../context/ocr_result.provider";
+import { OcrResultContext } from "../../context/ocr_result.provider";
 import { styled } from "@mui/material";
-import { OcrItemScalable } from "../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
+import { OcrItemScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 
 
 const OcrResultBox = styled('div')({
