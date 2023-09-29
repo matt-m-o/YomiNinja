@@ -1,23 +1,27 @@
 import { randomUUID } from "crypto";
 
+export type OverlayOcrItemBoxVisuals = {
+    border_color: string;
+    border_width: number; // pixels
+    border_radius: number; // pixels
+    background_color: string;    
+    text: {
+        color: string;
+    };
+};
+
+export type OverlayFrameVisuals = {
+    border_color: string;
+    border_width: number; // pixels
+};
+
 export type OverlayVisualCustomizations = {
-    ocr_item_box: {
-        border_color: string;
-        border_width: number; // pixels
-        border_radius: number; // pixels
-        background_color: string;    
-        text: {
-            color: string;
-        }
-    },
-    frame: {
-        border_color: string;
-        border_width: number; // pixels
-    }
-}
+    ocr_item_box: OverlayOcrItemBoxVisuals;
+    frame: OverlayFrameVisuals;
+};
 
 export type OverlayBehavior = {
-    copy_text_on_hover: true,
+    copy_text_on_hover: true;
 };
 
 export type OverlayHotkeys = {
