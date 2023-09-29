@@ -1,4 +1,4 @@
-import { Box, InputBaseComponentProps, TextField } from "@mui/material";
+import { Box, Container, InputBaseComponentProps, SxProps, TextField, Theme, Typography } from "@mui/material";
 import { Dispatch, SetStateAction } from "react";
 import AddSharpIcon from '@mui/icons-material/AddSharp';
 
@@ -19,20 +19,27 @@ function isModifierKey( key: string ): boolean {
 
 
 export interface HotkeyCombination {
-    modifierKey: string;
+    modifierKey?: string;
     key: string;
 }
 
 
 export type HotkeyFieldsProps = {
+    title: string;
     hotkeyCombinationState: HotkeyCombination;
     setStateAction: Dispatch<SetStateAction<HotkeyCombination>>;
+    sx?: SxProps<Theme>;
 };
 
 // Inputs component
 export default function HotkeyFields( props: HotkeyFieldsProps) {
 
-    const { hotkeyCombinationState, setStateAction } = props;
+    const {
+        hotkeyCombinationState,
+        setStateAction,
+        title,
+        sx
+    } = props;
 
     function keyDownHandler(
         { key }: React.KeyboardEvent,
@@ -59,32 +66,47 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
         style: { textAlign: 'center' }
     };
 
-    return (
-        <Box sx={{ display: 'flex', direction: 'row', alignItems: 'center' }}>
-        
-            <TextField sx={{ maxWidth: '115px', margin: 1 }}
-                inputProps={hotkeyInputProps}
-                required                    
-                value={ hotkeyCombinationState?.modifierKey || '' }
+    return (        
+        <Container sx={{ mt: 2, mb: 2, ...sx }}>
+
+            <Typography gutterBottom component="div" margin={0} ml={0}>
+                { title }
+            </Typography>
+
+            <Box sx={{ display: 'flex', direction: 'row', alignItems: 'center', ml: '14px' }}>
                 
-                onKeyDown={ ( event ) => keyDownHandler(
-                    event, 'modifierKey'
-                )}
-            />
+                { hotkeyCombinationState?.modifierKey != 'undefined' && <>
+                    
+                    <TextField sx={{ maxWidth: '124px', margin: 1 }}
+                        size='small'
+                        inputProps={hotkeyInputProps}
+                        required                    
+                        value={ hotkeyCombinationState?.modifierKey || '' }
+                        
+                        onKeyDown={ ( event ) => keyDownHandler(
+                            event, 'modifierKey'
+                        )}
+                    />
 
-            <AddSharpIcon/>
+                    <AddSharpIcon/>
+                    
+                </> }
 
-            <TextField sx={{ maxWidth: '115px', margin: 1 }}
-                inputProps={{ style: { textAlign: 'center' } }}
-                required                    
-                value={ hotkeyCombinationState?.key || '' }
+
+                <TextField sx={{ maxWidth: '124px', margin: 1 }}
+                    size='small'
+                    inputProps={{ style: { textAlign: 'center' } }}
+                    required                    
+                    value={ hotkeyCombinationState?.key || '' }
+                    
+                    onKeyDown={ ( event ) => keyDownHandler(
+                        event, 'key'
+                    )}
+                />
                 
-                onKeyDown={ ( event ) => keyDownHandler(
-                    event, 'key'
-                )}
-            />
+            </Box>
 
-        </Box>
+        </Container>
     )
 }
 
