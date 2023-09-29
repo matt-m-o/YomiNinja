@@ -20,17 +20,19 @@ export type OverlayBehavior = {
     copy_text_on_hover: true,
 };
 
+export type OverlayHotkeys = {
+    ocr: string;
+    ocr_on_screen_shot: boolean; // Perform ocr when pressing "PrintScreen"
+    copy_text: string;
+    show: string;
+    show_and_clear: string;
+};
+
 export type OverlaySettings = {
     visuals: OverlayVisualCustomizations;
-    hotkeys: {
-        ocr: string;
-        ocr_on_screen_shot: boolean; // Perform ocr when pressing "PrintScreen"
-        copy_text: string;
-        show: string;
-        show_and_clear: string;
-    };
+    hotkeys: OverlayHotkeys;
     behavior: OverlayBehavior;
-}
+};
 
 
 export interface SettingsPresetProps {

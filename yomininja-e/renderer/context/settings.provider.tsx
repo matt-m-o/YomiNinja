@@ -1,10 +1,11 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
-import { SettingsPreset, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
+import { OverlayHotkeys, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
 
 export type SettingsContextType = {
     activeSettingsPreset: SettingsPresetJson;
     allSettingsPresets: SettingsPresetJson[];
     updateActivePreset: ( input: Partial<SettingsPresetJson> ) => void;
+    updateActivePresetHotkeys: ( newHotkeys: Partial<OverlayHotkeys> ) => void;
 };
 
 export interface SettingsPresetFront extends SettingsPresetProps {
@@ -20,12 +21,16 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     const [ activeSettingsPreset, setActiveSettingsPreset ] = useState< SettingsPresetJson | null >( null );
     const [ allSettingsPresets, setAllSettingsPresets ] = useState< SettingsPresetJson[] >( [] );
 
-    function activeSettingsPresetHandler( event: Electron.IpcRendererEvent, data: SettingsPresetJson ) {
-        
-        console.log(data);
-        setActiveSettingsPreset( data );
-    }
+    function updateActivePresetHotkeys( newHotkeys: Partial<OverlayHotkeys> ) {
 
+        activeSettingsPreset.overlay.hotkeys = {
+            ...activeSettingsPreset.overlay.hotkeys,
+            ...newHotkeys,
+        };
+
+        updateActivePreset( activeSettingsPreset );
+    }
+    
     function updateActivePreset( updatedPreset: Partial<SettingsPresetJson> ) {
 
         console.log( updatedPreset );
@@ -40,6 +45,13 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
 
         global.ipcRenderer.invoke( 'settings_preset:update', updatedPreset );
     }
+
+    function activeSettingsPresetHandler( event: Electron.IpcRendererEvent, data: SettingsPresetJson ) {
+        
+        console.log(data);
+        setActiveSettingsPreset( data );
+    }
+
     
     useEffect( () => {
 
@@ -58,7 +70,8 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
             value={{
                 activeSettingsPreset,
                 allSettingsPresets,
-                updateActivePreset
+                updateActivePreset,
+                updateActivePresetHotkeys
             }}
         >
             {children}
