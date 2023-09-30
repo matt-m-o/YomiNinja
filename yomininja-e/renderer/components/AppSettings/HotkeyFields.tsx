@@ -27,7 +27,7 @@ export interface HotkeyCombination {
 export type HotkeyFieldsProps = {
     title: string;
     hotkeyCombinationState: HotkeyCombination;
-    setStateAction: Dispatch<SetStateAction<HotkeyCombination>>;
+    onChangeHandler: ( input?: HotkeyCombination ) => void; // Dispatch<SetStateAction<HotkeyCombination>>;
     sx?: SxProps<Theme>;
 };
 
@@ -36,7 +36,7 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
 
     const {
         hotkeyCombinationState,
-        setStateAction,
+        onChangeHandler,
         title,
         sx
     } = props;
@@ -54,10 +54,10 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
 
         
         if ( type == 'modifierKey' && isModifierKey(key) ) 
-            setStateAction({ ...hotkeyCombinationState, modifierKey: key });        
+            onChangeHandler({ ...hotkeyCombinationState, modifierKey: key });        
 
         else if ( type === 'key' )
-            setStateAction({ ...hotkeyCombinationState, key: key });
+            onChangeHandler({ ...hotkeyCombinationState, key: key });
         
         console.log( hotkeyCombinationState );
     }

@@ -9,14 +9,23 @@ export default function AppSettingsHotkeys() {
 
     const { activeSettingsPreset, updateActivePresetHotkeys } = useContext( SettingsContext );
 
-    const [ ocrKeys, setOcrKeys ] = useState< HotkeyCombination >();
-    const [ copyTextKeys, setCopyTextKeys ] = useState< HotkeyCombination >();
-    const [ showOverlayKeys, setShowOverlayKeys ] = useState< HotkeyCombination >();
-    const [ clearOverlayKeys, setClearOverlayKeys ] = useState< HotkeyCombination >();
-    const [ ocrOnPrintScreen, setOcrOnPrintScreen ] = useState< boolean >( false );
-
+    // const [ ocrKeys, setOcrKeys ] = useState< HotkeyCombination >();
+    // const [ copyTextKeys, setCopyTextKeys ] = useState< HotkeyCombination >();
+    // const [ showOverlayKeys, setShowOverlayKeys ] = useState< HotkeyCombination >();
+    // const [ clearOverlayKeys, setClearOverlayKeys ] = useState< HotkeyCombination >();
+    
+    const overlayHotkeys = activeSettingsPreset?.overlay.hotkeys;
+    
+    const ocrKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.ocr );
+    const copyTextKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.copy_text );
+    const showOverlayKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.show );
+    const clearOverlayKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.show_and_clear );
+    // const [ ocrOnPrintScreen, setOcrOnPrintScreen ] = useState< boolean >( Boolean(overlayHotkeys?.ocr_on_screen_shot) );
+    const ocrOnPrintScreen = Boolean(overlayHotkeys?.ocr_on_screen_shot);
 
     function stringToHotkeyCombination( hotkeyString: string ): HotkeyCombination {
+
+        if ( !hotkeyString ) return;
 
         const keys = hotkeyString.split('+');
         if ( hotkeyString.slice( hotkeyString.length - 1 ) === '+' )
@@ -36,66 +45,6 @@ export default function AppSettingsHotkeys() {
         return hotkeyCombination.modifierKey + '+' + hotkeyCombination.key;
     }
 
-    useEffect( () => {
-
-        if ( !activeSettingsPreset )
-            return;
-
-        const { hotkeys } = activeSettingsPreset?.overlay;
-
-        if ( hotkeys ) {
-
-            setOcrKeys( stringToHotkeyCombination(hotkeys.ocr) );
-            setCopyTextKeys( stringToHotkeyCombination(hotkeys.copy_text) );
-            setShowOverlayKeys( stringToHotkeyCombination(hotkeys.show) );
-            setClearOverlayKeys( stringToHotkeyCombination(hotkeys.show_and_clear) );
-            setOcrOnPrintScreen( hotkeys.ocr_on_screen_shot );
-        }
-
-    }, [ activeSettingsPreset ] );
-
-
-    useEffect( () => {
-        
-        if ( 
-            !ocrKeys ||
-            !showOverlayKeys ||
-            !clearOverlayKeys ||
-            !copyTextKeys
-        )
-            return;
-
-        const newOcrHotkeyStr = hotkeyCombinationToString( ocrKeys );
-        const newCopyTextHotkeyStr = hotkeyCombinationToString( copyTextKeys );
-        const newShowOverlayHotkeyStr = hotkeyCombinationToString( showOverlayKeys );
-        const newClearOverlayHotkeyStr = hotkeyCombinationToString( clearOverlayKeys );
-
-        const { hotkeys } = activeSettingsPreset.overlay;
-
-        if ( 
-            hotkeys.ocr != newOcrHotkeyStr ||
-            hotkeys.copy_text != newCopyTextHotkeyStr ||
-            hotkeys.show != newShowOverlayHotkeyStr ||
-            hotkeys.show_and_clear != newClearOverlayHotkeyStr ||
-            hotkeys.ocr_on_screen_shot != ocrOnPrintScreen
-        ) {
-            updateActivePresetHotkeys({
-                ocr: newOcrHotkeyStr,
-                copy_text: newCopyTextHotkeyStr,
-                show: newShowOverlayHotkeyStr,
-                show_and_clear: newClearOverlayHotkeyStr,
-                ocr_on_screen_shot: ocrOnPrintScreen
-            });
-        }
-
-    }, [
-        ocrKeys,
-        showOverlayKeys,
-        copyTextKeys,
-        clearOverlayKeys,
-        ocrOnPrintScreen
-    ]);
-
     
     return (
         <Box sx={{ flexGrow: 1, margin: 1, }}>
@@ -108,37 +57,54 @@ export default function AppSettingsHotkeys() {
             <HotkeyFields
                 title='OCR'
                 hotkeyCombinationState={ ocrKeys }
-                setStateAction={ setOcrKeys }
+                // setStateAction={ setOcrKeys }
+                onChangeHandler={ ( input: HotkeyCombination ) => {
+                    if ( !input ) return;
+                    updateActivePresetHotkeys({ ocr: hotkeyCombinationToString( input ) })
+                }}
                 sx={{ mb: 0 }}
             />
 
             <FormGroup>
-                <FormControlLabel label='OCR on PrintScreen key press (fastest)' sx={{ ml: '40px' }}
+                <FormControlLabel label='Auto OCR on PrintScreen key press (fastest)' sx={{ ml: '40px' }}
                     control={
                         <Switch
                             checked={ocrOnPrintScreen}
-                            onChange={ ( event ) => setOcrOnPrintScreen( event.target.checked ) }
+                            onChange={ ( event ) => {
+                                updateActivePresetHotkeys({
+                                    ocr_on_screen_shot: event.target.checked
+                                });
+                            }}
                         /> 
                     }
-                />                                    
+                />
             </FormGroup>
 
             <HotkeyFields
                 title='Copy text'
                 hotkeyCombinationState={ copyTextKeys }
-                setStateAction={ setCopyTextKeys }
+                onChangeHandler={ ( input: HotkeyCombination ) => {
+                    if ( !input ) return;
+                    updateActivePresetHotkeys({ copy_text: hotkeyCombinationToString( input ) })
+                }}
             />
 
             <HotkeyFields
                 title='Show overlay'
                 hotkeyCombinationState={ showOverlayKeys }
-                setStateAction={ setShowOverlayKeys }
+                onChangeHandler={ ( input: HotkeyCombination ) => {
+                    if ( !input ) return;
+                    updateActivePresetHotkeys({ show: hotkeyCombinationToString( input ) })
+                }}
             />
 
             <HotkeyFields
                 title='Clear overlay'
                 hotkeyCombinationState={ clearOverlayKeys }
-                setStateAction={ setClearOverlayKeys }
+                onChangeHandler={ ( input: HotkeyCombination ) => {
+                    if ( !input ) return;
+                    updateActivePresetHotkeys({ show_and_clear: hotkeyCombinationToString( input ) })
+                }}
             />
             
         </Box>
