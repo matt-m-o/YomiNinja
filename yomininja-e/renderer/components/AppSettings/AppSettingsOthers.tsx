@@ -7,52 +7,30 @@ import { OverlayBehavior } from "../../../electron-src/@core/domain/settings_pre
 // Settings section component
 export default function AppSettingsOthers() {
 
-    const { activeSettingsPreset, updateActivePresetBehavior } = useContext( SettingsContext );   
+    const { activeSettingsPreset, updateActivePresetBehavior } = useContext( SettingsContext );    
 
-    const [ overlayBehavior, setOverlayBehavior ] = useState< OverlayBehavior >();
-
-    useEffect( () => {
-
-        if ( !activeSettingsPreset )
-            return;
-
-        const { behavior } = activeSettingsPreset?.overlay;
-
-        if ( behavior ) {
-
-            setOverlayBehavior( behavior );
-        }
-
-    }, [ activeSettingsPreset ] );
-
-    function updateOverlayBehavior( update: Partial<OverlayBehavior> ) {    
-        
-        // console.log(update);
-        
-        updateActivePresetBehavior({        
-            ...activeSettingsPreset.overlay.behavior,
-            ...update,            
-        });
-    }    
+    const overlayBehavior: OverlayBehavior = activeSettingsPreset?.overlay?.behavior;    
     
 
     return (
         <Box sx={{ flexGrow: 1, margin: 1, }}>
 
             <Typography gutterBottom variant="h6" component="div" margin={2} ml={0}>
-                Other overlay options
+                Overlay Behavior Options
             </Typography>
             
             <Container sx={{ mt: 2, mb: 2 }}>
 
                 <FormGroup>
-                    <FormControlLabel label='Copy text on pointer hover'
+                    <FormControlLabel label='Auto-copy text on hover'
                         control={
                             <Switch
-                                checked={ overlayBehavior?.copy_text_on_hover || false }
-                                onChange={ ( event ) => updateOverlayBehavior( {
-                                    copy_text_on_hover: event.target.checked
-                                })}
+                                checked={ Boolean( overlayBehavior?.copy_text_on_hover ) }
+                                onChange={ ( event ) => {
+                                    updateActivePresetBehavior({
+                                        copy_text_on_hover: event.target.checked
+                                    });
+                                }}
                             /> 
                         }
                     />                                    

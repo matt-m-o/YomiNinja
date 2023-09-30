@@ -23,14 +23,14 @@ export default function AppSettingsMenu() {
         <Container maxWidth='md'>
             
             <AppSettingsHotkeys/>
-
-            <SectionDivider/>
-
-            <AppSettingsVisuals/>
-
+            
             <SectionDivider/>
 
             <AppSettingsOthers/>
+
+            <SectionDivider/>
+
+            <AppSettingsVisuals/>        
 
         </Container>
     )
