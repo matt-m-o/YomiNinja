@@ -3,23 +3,29 @@ import { WindowManager, WindowProperties } from "../../gyp_modules/window_manage
 import { GetSupportedLanguagesUseCase } from "../@core/application/use_cases/get_supported_languages/get_supported_languages.use_case";
 import { RecognizeImageUseCase } from "../@core/application/use_cases/recognize_image/recognize_image.use_case";
 import { OcrResultScalable } from "../@core/domain/ocr_result_scalable/ocr_result_scalable";
+import { GetActiveSettingsPresetUseCase } from "../@core/application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
+import { activeProfile } from "../app_initialization";
+// import sharp from "sharp";
 
 
 export class OcrRecognitionService {
 
     private recognizeImageUseCase: RecognizeImageUseCase;
     private getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
+    private getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;
 
     private windowManager = new WindowManager();
 
     constructor(
         input: {
             recognizeImageUseCase: RecognizeImageUseCase;
-            getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;            
+            getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
+            getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;
         }
     ){
         this.recognizeImageUseCase = input.recognizeImageUseCase;
         this.getSupportedLanguagesUseCase = input.getSupportedLanguagesUseCase;
+        this.getActiveSettingsPresetUseCase = input.getActiveSettingsPresetUseCase;
     }
 
     async recognizeEntireScreen( input: {
@@ -36,6 +42,10 @@ export class OcrRecognitionService {
 
         if ( !imageBuffer )
             return null;
+
+        // console.time("Sharp.resize");
+        // imageBuffer = await sharp( imageBuffer ).resize(1280, 720).toBuffer();
+        // console.timeEnd("Sharp.resize");
 
         return await this.recognizeImageUseCase.execute({
             imageBuffer,
@@ -87,6 +97,10 @@ export class OcrRecognitionService {
         return {
             image: source.thumbnail.toPNG(),
             windowProps
-        }        
+        }
+    }
+
+    async getActiveSettingsPreset() {
+        return await this.getActiveSettingsPresetUseCase.execute({ profileId: activeProfile.id })
     }
 }

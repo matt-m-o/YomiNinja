@@ -5,10 +5,10 @@ import { OcrRecognitionService } from "./ocr_recognition.service";
 
 const ocrRecognitionService = new OcrRecognitionService({
     recognizeImageUseCase: get_RecognizeImageUseCase(),
-    getSupportedLanguagesUseCase: get_GetSupportedLanguagesUseCase()
+    getSupportedLanguagesUseCase: get_GetSupportedLanguagesUseCase(),
+    getActiveSettingsPresetUseCase: get_GetActiveSettingsPresetUseCase(),
 });
 
 export const ocrRecognitionController = new OcrRecognitionController({
-    ocrRecognitionService,
-    getActiveSettingsPresetUseCase: get_GetActiveSettingsPresetUseCase(),
+    ocrRecognitionService,    
 });

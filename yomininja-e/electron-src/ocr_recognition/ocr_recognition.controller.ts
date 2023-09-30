@@ -13,24 +13,29 @@ import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_pre
 export class OcrRecognitionController {
         
     private overlayWindow: BrowserWindow | undefined;
+    private overlayAlwaysOnTop: boolean = false;
     // private windowManager = new WindowManager();
 
-    private ocrRecognitionService: OcrRecognitionService;
-    private getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;
+    private ocrRecognitionService: OcrRecognitionService;    
 
     constructor( input: {        
-        ocrRecognitionService: OcrRecognitionService;
-        getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;
+        ocrRecognitionService: OcrRecognitionService;        
     }) {
 
-        this.ocrRecognitionService = input.ocrRecognitionService;
-        this.getActiveSettingsPresetUseCase = input.getActiveSettingsPresetUseCase;        
+        this.ocrRecognitionService = input.ocrRecognitionService;        
     }
 
     async init() {
         uIOhook.start();
+
+        const settings = await this.ocrRecognitionService.getActiveSettingsPreset();
+
+        if (!settings) return;
+
+        this.overlayAlwaysOnTop = Boolean(settings.overlay.behavior.always_on_top);
+
         this.createOverlayWindow();
-        this.registerGlobalShortcuts();        
+        this.registerGlobalShortcuts( settings.toJson() );        
     }
 
     async fullScreenOcr( imageBuffer?: Buffer ) {
@@ -68,7 +73,7 @@ export class OcrRecognitionController {
 
         if ( !settingsPresetJson ) {
             
-            const settingsPreset = ( await this.getActiveSettingsPresetUseCase.execute({ profileId: activeProfile.id }) );
+            const settingsPreset = await this.ocrRecognitionService.getActiveSettingsPreset();
 
             settingsPresetJson = settingsPreset?.toJson();
         }
@@ -144,7 +149,8 @@ export class OcrRecognitionController {
         if (showDevTools)
             this.overlayWindow.webContents.openDevTools();        
 
-        // this.overlayWindow.setAlwaysOnTop( true, "normal" ); // normal, pop-up-menu och screen-saver
+        
+        this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop && !showDevTools, "normal" ); // normal, pop-up-menu och screen-saver
 
         // Prevents black image when using youtube on some browsers (e.g. Brave)
         this.overlayWindow.setIgnoreMouseEvents( !showDevTools, { // !showDevTools
@@ -159,21 +165,25 @@ export class OcrRecognitionController {
 
         // this.windowManager.setForegroundWindow("OCR Overlay - YomiNinja");
         this.overlayWindow.setAlwaysOnTop( true, "normal" ); // normal, pop-up-menu och screen-saver
-        this.overlayWindow.setAlwaysOnTop( false );
+
+        if ( !this.overlayAlwaysOnTop )
+            this.overlayWindow.setAlwaysOnTop( false );
+
         this.overlayWindow.show();
     }
 
     async refreshActiveSettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
 
         if ( !settingsPresetJson ) {
-            const settingsPreset = await this.getActiveSettingsPresetUseCase.execute({
-                profileId: activeProfile.id
-            });
+            const settingsPreset = await this.ocrRecognitionService.getActiveSettingsPreset();
             settingsPresetJson = settingsPreset?.toJson();
         }
 
         if ( !settingsPresetJson )
             return;
+
+        this.overlayAlwaysOnTop = Boolean( settingsPresetJson.overlay.behavior.always_on_top );
+        this.overlayWindow?.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );
 
         this.registerGlobalShortcuts( settingsPresetJson );
 

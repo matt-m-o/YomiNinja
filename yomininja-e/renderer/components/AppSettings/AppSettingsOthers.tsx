@@ -33,7 +33,19 @@ export default function AppSettingsOthers() {
                                 }}
                             /> 
                         }
-                    />                                    
+                    />
+                    <FormControlLabel label='Always on top'
+                        control={
+                            <Switch
+                                checked={ Boolean( overlayBehavior?.always_on_top ) }
+                                onChange={ ( event ) => {
+                                    updateActivePresetBehavior({
+                                        always_on_top: event.target.checked
+                                    });
+                                }}
+                            /> 
+                        }
+                    />
                 </FormGroup>
             
             </Container>
