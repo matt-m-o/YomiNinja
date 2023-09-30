@@ -72,7 +72,7 @@ export default function AppSettingsVisuals() {
             <Container sx={{ mt: 2, mb: 2 }}>
 
                 <Typography gutterBottom component="div" mb={1}>
-                    OCR text boxes
+                    Extracted text boxes
                 </Typography>
 
                 <Container sx={{ mt: 2, mb: 2 }}>
@@ -198,7 +198,7 @@ export default function AppSettingsVisuals() {
                             borderRadius: ocrItemBoxVisuals?.border_radius
                         }}
                     >
-                        OCR Text
+                        Extracted text
                     </OcrItemBox>
 
                 </OverlayFrame>
