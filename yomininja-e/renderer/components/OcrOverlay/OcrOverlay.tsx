@@ -15,29 +15,10 @@ export default function OcrOverlay() {
 
     const { activeSettingsPreset } = useContext( SettingsContext );
 
-    const [ ocrItemBoxVisuals, setOcrItemBoxVisuals ] = useState<OverlayOcrItemBoxVisuals>();
-    const [ overlayFrameVisuals, setOverlayFrameVisuals ] = useState<OverlayFrameVisuals>();
-    const [ overlayHotkeys, setOverlayHotkeys ] = useState< OverlayHotkeys >();
-    const [ overlayBehavior, setOverlayBehavior ] = useState< OverlayBehavior >();
-    
-
-    useEffect( () => {
-  
-      if ( !activeSettingsPreset )
-          return;      
-  
-      const { ocr_item_box, frame } = activeSettingsPreset?.overlay?.visuals;
-      const { hotkeys, behavior } = activeSettingsPreset?.overlay;
-  
-      if ( ocr_item_box && frame && hotkeys && behavior ) {
-  
-          setOcrItemBoxVisuals( ocr_item_box );
-          setOverlayFrameVisuals( frame );
-          setOverlayHotkeys( hotkeys );
-          setOverlayBehavior( behavior );
-      }
-  
-    }, [ activeSettingsPreset ] );
+    const ocrItemBoxVisuals: OverlayOcrItemBoxVisuals = activeSettingsPreset?.overlay?.visuals.ocr_item_box;
+    const overlayFrameVisuals: OverlayFrameVisuals = activeSettingsPreset?.overlay?.visuals.frame;
+    const overlayHotkeys: OverlayHotkeys = activeSettingsPreset?.overlay?.hotkeys;
+    const overlayBehavior: OverlayBehavior = activeSettingsPreset?.overlay?.behavior;
 
     return (
         <OverlayFrame
