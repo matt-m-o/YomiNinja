@@ -22,6 +22,7 @@ export type OverlayVisualCustomizations = {
 
 export type OverlayBehavior = {
     copy_text_on_hover: boolean;
+    always_on_top: boolean;
 };
 
 export type OverlayHotkeys = {
@@ -85,7 +86,8 @@ export class SettingsPreset {
                 ocr_on_screen_shot: true
             },
             behavior: {
-                copy_text_on_hover: true
+                copy_text_on_hover: true,
+                always_on_top: false,
             }
         },        
 
