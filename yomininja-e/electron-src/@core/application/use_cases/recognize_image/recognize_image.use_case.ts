@@ -3,6 +3,7 @@ import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_resul
 import { Profile } from "../../../domain/profile/profile";
 import { ProfileRepository } from "../../../domain/profile/profile.repository";
 import { SettingsPreset } from "../../../domain/settings_preset/settings_preset";
+import { ImageProcessingAdapter } from "../../adapters/image_processing.adapter";
 import { OcrAdapter } from "../../adapters/ocr.adapter";
 
 
@@ -15,6 +16,7 @@ export class RecognizeImageUseCase {
 
     constructor(
         public ocrAdapters: OcrAdapter[],
+        public imageProcessing: ImageProcessingAdapter,
         public profileRepo: ProfileRepository,
     ) {}
 
@@ -36,15 +38,29 @@ export class RecognizeImageUseCase {
             !activeSettingsPreset
         )
             return null;
-        
+            
+        const ocrAdapter = this.getAdapter( activeSettingsPreset.ocr_engine.ocr_adapter_name );
 
-        const adapter = this.getAdapter( activeSettingsPreset.ocr_adapter_name );
-
-        if ( !adapter )
+        if ( !ocrAdapter )
             return null;
+        
+        const { image_scaling_factor } = activeSettingsPreset.ocr_engine;
 
-        const ocrResult = await adapter.recognize({            
-            imageBuffer: input.imageBuffer,
+        let imageBuffer: Buffer;
+
+        if ( image_scaling_factor != 1 ) {
+            
+            imageBuffer = ( await this.imageProcessing.resize({
+                imageBuffer: input.imageBuffer,
+                scaling_factor: image_scaling_factor,
+            })).resizedImage;
+        }
+        else {
+            imageBuffer = input.imageBuffer;
+        }
+
+        const ocrResult = await ocrAdapter.recognize({
+            imageBuffer,
             languageCode: profile.active_ocr_language.two_letter_code,
         });
 

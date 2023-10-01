@@ -1,5 +1,6 @@
 import { OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
-import { OcrTestAdapter } from "../../../infra/ocr_in_memory.adapter/ocr_test.adapter";
+import { OcrTestAdapter } from "../../../infra/test/ocr_in_memory.adapter/ocr_test.adapter";
+import { ImageProcessingDummyAdapter } from "../../../infra/test/image_processing_dummy.adapter/image_processing_dummy.adapter";
 import { RecognizeImageInput, RecognizeImageUseCase } from "./recognize_image.use_case";
 import { SettingsPreset } from "../../../domain/settings_preset/settings_preset";
 import { DataSource } from 'typeorm';
@@ -74,8 +75,11 @@ describe("Recognize Image Use Case tests", () => {
         ocrTestAdapter = new OcrTestAdapter( ocrTestAdapterResultProps, ocrTestAdapterSupportedLanguages );
         ocrTestAdapter.initialize();
 
+        const imageProcessingDummyAdapter = new ImageProcessingDummyAdapter();
+
         recognizeImageUseCase = new RecognizeImageUseCase(
             [ ocrTestAdapter ],
+            imageProcessingDummyAdapter,
             profileRepo,
         );
 
