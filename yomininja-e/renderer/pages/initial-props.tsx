@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import Layout from '../components/Layout'
-import List from '../components/List'
 import { User } from '../interfaces'
 import { findAll } from '../utils/sample-api'
 
@@ -15,8 +14,7 @@ const WithInitialProps = ({ items }: Props) => {
   return (
     <div>
       <h1>List Example (as Function Component)</h1>
-      <p>You are currently on: {router.pathname}</p>
-      <List items={items} />
+      <p>You are currently on: {router.pathname}</p>      
       <p>
         <Link href="/">Go home</Link>
       </p>

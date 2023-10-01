@@ -4,6 +4,7 @@ import { useContext, useEffect } from "react";
 import AppSettingsHotkeys from "./AppSettingsHotkeys";
 import AppSettingsVisuals from "./AppSettingsVisuals";
 import AppSettingsOthers from "./AppSettingsOthers";
+import AppSettingsOcrEngine from "./AppSettingsOcrEngine";
 
 
 const SectionDivider = styled( Divider )({
@@ -30,7 +31,11 @@ export default function AppSettingsMenu() {
 
             <SectionDivider/>
 
-            <AppSettingsVisuals/>        
+            <AppSettingsVisuals/>
+
+            <SectionDivider/>
+
+            <AppSettingsOcrEngine/>
 
         </Container>
     )

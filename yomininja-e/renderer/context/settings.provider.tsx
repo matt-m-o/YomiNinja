@@ -1,5 +1,6 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
-import { OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
+import { OcrEngineSettings, OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
+import { debounce } from "@mui/material";
 
 export type SettingsContextType = {
     activeSettingsPreset: SettingsPresetJson;
@@ -8,6 +9,7 @@ export type SettingsContextType = {
     updateActivePresetHotkeys: ( newHotkeys: Partial<OverlayHotkeys> ) => void;
     updateActivePresetVisuals: ( newVisuals: Partial< OverlayVisualCustomizations > ) => void;
     updateActivePresetBehavior: ( newVisuals: Partial< OverlayBehavior > ) => void; 
+    updateActivePresetOcrEngine: ( newVisuals: Partial< OcrEngineSettings > ) => void; 
 };
 
 export interface SettingsPresetFront extends SettingsPresetProps {
@@ -23,6 +25,19 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     const [ activeSettingsPreset, setActiveSettingsPreset ] = useState< SettingsPresetJson | null >( null );
     const [ allSettingsPresets, setAllSettingsPresets ] = useState< SettingsPresetJson[] >( [] );
 
+    const updateActivePresetIPC = debounce( ( updatedPreset: SettingsPresetJson ) => {
+        global.ipcRenderer.invoke( 'settings_preset:update', updatedPreset );
+    }, 500 );
+
+    function updateActivePresetOcrEngine( newOcrEngine: Partial< OcrEngineSettings > ) {
+
+        activeSettingsPreset.ocr_engine = {
+            ...activeSettingsPreset?.ocr_engine,
+            ...newOcrEngine,
+        };
+
+        updateActivePreset( activeSettingsPreset );
+    }
 
     function updateActivePresetBehavior( newBehavior: Partial< OverlayBehavior > ) {
 
@@ -66,7 +81,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     
     function updateActivePreset( updatedPreset: Partial<SettingsPresetJson> ) {
 
-        console.log( updatedPreset );
+        // console.log( updatedPreset );
 
         if ( !updatedPreset )
             return;
@@ -76,7 +91,8 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
             ...updatedPreset,
         });
 
-        global.ipcRenderer.invoke( 'settings_preset:update', updatedPreset );            
+        // global.ipcRenderer.invoke( 'settings_preset:update', updatedPreset );
+        updateActivePresetIPC( activeSettingsPreset );
     }
 
     function activeSettingsPresetHandler( data: SettingsPresetJson ) {
@@ -111,7 +127,8 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
                 updateActivePreset,
                 updateActivePresetHotkeys,
                 updateActivePresetVisuals,
-                updateActivePresetBehavior
+                updateActivePresetBehavior,
+                updateActivePresetOcrEngine
             }}
         >
             {children}
