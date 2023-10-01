@@ -15,5 +15,6 @@ export interface OcrAdapter {
 
 export enum OcrAdapterStatus {
     Enabled = "Enabled",
-    Disabled = "Disabled"    
+    Disabled = "Disabled",
+    Restarting = "Restarting"
 }

@@ -7,7 +7,7 @@ import { GetSupportedLanguagesResponse__Output } from "../../../../grpc/rpc/ocr_
 import { ocrServiceProto } from "../../../../grpc/grpc_protos";
 import { RecognizeBytesRequest } from "../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
 import { join } from "path";
-import { spawn } from 'child_process';
+import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { dialog } from 'electron';
 import isDev from 'electron-is-dev';
 import { BIN_DIR } from "../../../util/directories";
@@ -20,6 +20,7 @@ export class PpOcrAdapter implements OcrAdapter {
     public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
     private ocrServiceClient: OCRServiceClient | null = null;
     private idCounter: number = 0;
+    private ppocrServiceProcess: ChildProcessWithoutNullStreams;
 
     constructor() {
 
@@ -38,15 +39,16 @@ export class PpOcrAdapter implements OcrAdapter {
             serviceAddress,
             grpc.credentials.createInsecure()
         );
+
         this.status = OcrAdapterStatus.Enabled;
     }
 
     async recognize( input: OcrRecognitionInput ): Promise< OcrResult | null > {
 
-        console.time('PpOcrAdapter.recognize');
-        
-        if ( this.status != OcrAdapterStatus.Enabled )
-            return null;        
+        console.time('PpOcrAdapter.recognize');        
+
+        const ok = await this.ppocrServiceProcessHealthCheck();
+        if ( !ok ) return null;
 
         const requestInput: RecognizeBytesRequest = {
             id: this.idCounter.toString(),
@@ -113,35 +115,58 @@ export class PpOcrAdapter implements OcrAdapter {
         const executable = join( cwd + "/ppocr_infer_service_grpc.exe" );
 
         // Replace 'your_program.exe' with the actual .exe file path you want to run
-        const childProcess = spawn( executable, [/* command line arguments */], { cwd } );
+        this.ppocrServiceProcess = spawn( executable, [/* command line arguments */], { cwd } );
 
         // Handle stdout and stderr data
-        childProcess.stdout.on('data', ( data: string ) => {
+        this.ppocrServiceProcess.stdout.on('data', ( data: string ) => {
 
             if ( data.includes('[INFO-JSON]:') ) {
 
                 const jsonData = JSON.parse( data.toString().split('[INFO-JSON]:')[1] );
 
                 if ( 'server_address' in jsonData )
-                    this.initialize( jsonData.server_address );                                
+                    this.initialize( jsonData.server_address );
             }
             
             console.log(`stdout: ${data}`);        
         });
 
-        childProcess.stderr.on('data', (data) => {
+        this.ppocrServiceProcess.stderr.on('data', (data) => {
             console.error(`stderr: ${data}`);
         });
 
         // Handle process exit
-        childProcess.on('close', (code) => {
+        this.ppocrServiceProcess.on('close', (code) => {
             console.log(`ppocr_infer_service_grpc.exe process exited with code ${code}`);
         });
 
         process.on('exit', () => {
             // Ensure the child process is killed before exiting
-            childProcess.kill('SIGTERM'); // You can use 'SIGINT' or 'SIGKILL' as well
+            this.ppocrServiceProcess.kill('SIGTERM'); // You can use 'SIGINT' or 'SIGKILL' as well
         });
           
+    }
+
+    restartProcess() {
+        this.status = OcrAdapterStatus.Restarting;
+        this.ppocrServiceProcess.kill('SIGTERM');
+        this.startProcess();
+    }
+
+    // Checks if the ppocrService is enabled.
+    async ppocrServiceProcessHealthCheck(): Promise< boolean > {
+
+        let triesCounter = 0;
+
+        while( this.status != OcrAdapterStatus.Enabled ) {
+
+            // Waiting for 1 second
+            await new Promise( (resolve) => setTimeout(resolve, 1000) );
+            triesCounter++;
+
+            if ( triesCounter > 15 ) return false;
+        }
+
+        return true
     }
 }
