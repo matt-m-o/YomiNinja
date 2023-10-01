@@ -12,6 +12,7 @@ container_registry.bind( Registry.RecognizeImageUseCase ).toDynamicValue( (conte
         [
             context.container.get( Registry.PpOcrAdapter ),
         ],
+        context.container.get( Registry.SharpImageProcessingAdapter ),
         context.container.get( Registry.ProfileTypeOrmRepository ),
     );
 }).inSingletonScope();

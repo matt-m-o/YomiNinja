@@ -5,7 +5,6 @@ import { RecognizeImageUseCase } from "../@core/application/use_cases/recognize_
 import { OcrResultScalable } from "../@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { GetActiveSettingsPresetUseCase } from "../@core/application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
 import { activeProfile } from "../app_initialization";
-// import sharp from "sharp";
 
 
 export class OcrRecognitionService {
@@ -43,10 +42,6 @@ export class OcrRecognitionService {
         if ( !imageBuffer )
             return null;
 
-        // console.time("Sharp.resize");
-        // imageBuffer = await sharp( imageBuffer ).resize(1280, 720).toBuffer();
-        // console.timeEnd("Sharp.resize");
-
         return await this.recognizeImageUseCase.execute({
             imageBuffer,
             profileId: profileId
@@ -75,8 +70,8 @@ export class OcrRecognitionService {
         const sources = await desktopCapturer.getSources({
             types: sourceTypes,
             thumbnailSize: {
-                width: windowProps?.size.width || 1280, // workAreaSize.width, // 2560 // 1920
-                height: windowProps?.size.height || 720, // workAreaSize.height, // 1440 // 1080
+                width: windowProps?.size.width || 1920, // workAreaSize.width, // 2560 // 1920 // 1280
+                height: windowProps?.size.height || 1080, // workAreaSize.height, // 1440 // 1080 // 720
             },
         });
         

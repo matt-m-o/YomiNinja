@@ -45,13 +45,16 @@ describe("UpdateSettingsPresetUseCase tests", () => {
 
         input.name = 'custom 1';
         input.overlay.hotkeys.ocr = 'Ctrl+D';
+        input.ocr_engine.image_scaling_factor = 0.5;
 
-        await updateSettingsPresetUseCase.execute( input );   
+        await updateSettingsPresetUseCase.execute( input );
         
         const foundPreset = await settingsPresetRepo.findOne({ id: defaultPreset.id });
 
         expect( foundPreset?.name ).toStrictEqual( input.name );
         expect( foundPreset?.overlay.hotkeys.ocr ).toStrictEqual( input.overlay.hotkeys.ocr );
+        expect( foundPreset?.ocr_engine.image_scaling_factor )
+            .toStrictEqual( input.ocr_engine.image_scaling_factor );
     });
     
 });

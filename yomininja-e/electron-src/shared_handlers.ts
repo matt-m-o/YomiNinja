@@ -8,7 +8,7 @@ import { ocrRecognitionController } from "./ocr_recognition/ocr_recognition.inde
 ipcMain.handle( 'settings_preset:update', async ( event: IpcMainInvokeEvent, message: SettingsPresetJson ) => {
 
     if ( !message )
-        return;
+        return;    
 
     await settingsController.updateSettingsPreset( message );
     

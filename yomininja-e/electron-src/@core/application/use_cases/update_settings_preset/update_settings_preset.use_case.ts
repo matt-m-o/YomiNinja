@@ -18,7 +18,8 @@ export class UpdateSettingsPresetUseCase {
             return;
 
         settingsPreset.name = input.name;
-        settingsPreset.updateOverlaySettings(input.overlay);
+        settingsPreset.updateOverlaySettings( input.overlay );
+        settingsPreset.updateOcrEngineSettings( input.ocr_engine );
 
         await this.settingsPresetRepo.update( settingsPreset );
     }

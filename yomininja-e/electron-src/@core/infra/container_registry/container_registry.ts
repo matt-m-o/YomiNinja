@@ -12,6 +12,7 @@ export const Registry = {
 
     // Adapters
     PpOcrAdapter: Symbol.for('PpOcrAdapter'),
+    SharpImageProcessingAdapter: Symbol.for('SharpImageProcessingAdapter'),
 
     // Use Cases
     RecognizeImageUseCase: Symbol.for('RecognizeImageUseCase'),

@@ -84,7 +84,7 @@ export class SettingsPreset {
             },
             hotkeys: {
                 ocr: 'Alt+S',
-                copy_text: 'C',
+                copy_text: 'undefined+C',
                 show: 'Alt+C',
                 show_and_clear: 'Alt+V',
                 ocr_on_screen_shot: true
@@ -194,7 +194,7 @@ export class SettingsPreset {
             image_scaling_factor = Math.max( 0.1, Math.min(1, image_scaling_factor ));
 
             // Ensure 1 decimal place of precision
-            image_scaling_factor = Math.round( image_scaling_factor * 10) / 10;
+            image_scaling_factor = Math.round( image_scaling_factor * 100) / 100;
         }
         else {
             image_scaling_factor = this.ocr_engine.image_scaling_factor;

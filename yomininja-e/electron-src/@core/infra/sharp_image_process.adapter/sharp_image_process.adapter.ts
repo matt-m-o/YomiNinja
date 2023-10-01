@@ -5,11 +5,16 @@ export class SharpImageProcessingAdapter implements ImageProcessingAdapter {
     
     async resize( input: ImageResizeInput ): Promise< ImageResizeOutput > {
 
+        console.time("Sharp.resize");
+
         const { imageBuffer, scaling_factor } = input;        
 
         const sharpInstance = sharp( imageBuffer );
 
+        
         if ( scaling_factor == 1 ) {
+
+            console.timeEnd("Sharp.resize");
             return {
                 resizedImage: imageBuffer,
             }
@@ -22,18 +27,18 @@ export class SharpImageProcessingAdapter implements ImageProcessingAdapter {
         
         if ( !width || !height ) {
 
+            console.timeEnd("Sharp.resize");
             return {
                 resizedImage: imageBuffer
             };
         }
         
-        const newWidth = width * scaling_factor;
-        const newHeight = height * scaling_factor;
-        
-        const resizedImage = await sharpInstance.resize( newWidth, newHeight ).toBuffer();
+        const newWidth = Math.floor( width * scaling_factor );
+        const newHeight = Math.floor( height * scaling_factor );        
 
+        console.timeEnd("Sharp.resize");
         return {
-            resizedImage,
+            resizedImage: await sharpInstance.resize( newWidth, newHeight ).toBuffer(),
             width: newWidth,
             height: newHeight
         }

@@ -1,4 +1,4 @@
-import { OcrResult_CreationInput } from "../../domain/ocr_result/ocr_result";
+import { OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
 import { OcrTestAdapter } from "./ocr_test.adapter";
 
 describe("OCR Test Adapter tests", () => {
