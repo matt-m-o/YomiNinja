@@ -1,5 +1,10 @@
 import { randomUUID } from "crypto";
 
+export type OcrEngineSettings = {
+    ocr_adapter_name?: string;
+    image_scaling_factor: number; // from 0.1 to 1.0. Two decimal places shouldn't be allow.
+};
+
 export type OverlayOcrItemBoxVisuals = {
     border_color: string;
     border_width: number; // pixels
@@ -36,14 +41,13 @@ export type OverlayHotkeys = {
 export type OverlaySettings = {
     visuals: OverlayVisualCustomizations;
     hotkeys: OverlayHotkeys;
-    behavior: OverlayBehavior;
+    behavior: OverlayBehavior;    
 };
-
 
 export interface SettingsPresetProps {
     name: string;    
     overlay: OverlaySettings;
-    ocr_adapter_name?: string;
+    ocr_engine: OcrEngineSettings;
     created_at: Date;
     updated_at: Date;
 };
@@ -89,7 +93,10 @@ export class SettingsPreset {
                 copy_text_on_hover: true,
                 always_on_top: false,
             }
-        },        
+        },
+        ocr_engine: {
+            image_scaling_factor: 1
+        },
 
         created_at: new Date(),
         updated_at: new Date()
@@ -115,7 +122,7 @@ export class SettingsPreset {
     
     get name(){ return this.props.name; }    
     get overlay(){ return this.props.overlay; }
-    get ocr_adapter_name() { return this.props.ocr_adapter_name; }
+    get ocr_engine() { return this.props.ocr_engine; }
 
     get created_at(){ return this.props.created_at; }
     get updated_at(){ return this.props.updated_at; }
@@ -146,6 +153,8 @@ export class SettingsPreset {
             }
         };
     }
+
+    protected set ocr_engine( data: OcrEngineSettings ){ this.props.ocr_engine = data; }
     
     protected set created_at( date: Date ){ this.props.created_at = date; }
     protected set updated_at( date: Date ){ this.props.updated_at = date; }
@@ -172,6 +181,30 @@ export class SettingsPreset {
                 ...this.overlay.behavior,
                 ...overlayUpdate.behavior
             }
+        };
+    }
+
+    updateOcrEngineSettings( update: Partial< OcrEngineSettings > ) {
+
+        let { image_scaling_factor } = update;
+
+        if ( image_scaling_factor != undefined ) {
+
+            // Minimum 0.1, Maximum 1
+            image_scaling_factor = Math.max( 0.1, Math.min(1, image_scaling_factor ));
+
+            // Ensure 1 decimal place of precision
+            image_scaling_factor = Math.round( image_scaling_factor * 10) / 10;
+        }
+        else {
+            image_scaling_factor = this.ocr_engine.image_scaling_factor;
+        }
+
+
+        this.props.ocr_engine = {
+            ...this.props.ocr_engine,
+            ...update,
+            image_scaling_factor
         };
     }
 

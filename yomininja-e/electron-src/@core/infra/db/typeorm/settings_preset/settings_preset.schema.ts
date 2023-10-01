@@ -20,9 +20,13 @@ export const SettingsPresetTypeOrmSchema = new EntitySchema< SettingsPreset >({
         name: {
             type: String,
             length: 100,
-        },        
+        },
 
         overlay: {
+            type: 'json',
+        },
+
+        ocr_engine: {
             type: 'json',
         },
 
