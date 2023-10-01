@@ -1,6 +1,6 @@
 import { OcrResult, OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
 import { OcrAdapter, OcrRecognitionInput } from "../../adapters/ocr.adapter";
-import { OcrTestAdapter } from "../../../infra/ocr_in_memory.adapter/ocr_test.adapter";
+import { OcrTestAdapter } from "../../../infra/test/ocr_in_memory.adapter/ocr_test.adapter";
 import { GetSupportedLanguagesUseCase } from "./get_supported_languages.use_case";
 
 

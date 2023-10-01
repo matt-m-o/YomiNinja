@@ -1,5 +1,5 @@
-import { OcrItem, OcrResult, OcrResultContextResolution, OcrResult_CreationInput } from "../../domain/ocr_result/ocr_result";
-import { OcrAdapter, OcrAdapterStatus, OcrRecognitionInput } from "../../application/adapters/ocr.adapter";
+import { OcrItem, OcrResult, OcrResultContextResolution, OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
+import { OcrAdapter, OcrAdapterStatus, OcrRecognitionInput } from "../../../application/adapters/ocr.adapter";
 
 export class OcrTestAdapter implements OcrAdapter {
 
