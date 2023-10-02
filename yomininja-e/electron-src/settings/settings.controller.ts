@@ -1,6 +1,6 @@
 import { BrowserWindow, IpcMainInvokeEvent } from "electron";
 import { SettingsService } from "./settings.service";
-import { activeProfile } from "../app_initialization";
+import { activeProfile } from "../@core/infra/app_initialization";
 import { ipcMain } from 'electron';
 import { SettingsPreset, SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 

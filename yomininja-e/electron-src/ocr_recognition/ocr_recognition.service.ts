@@ -4,7 +4,7 @@ import { GetSupportedLanguagesUseCase } from "../@core/application/use_cases/get
 import { RecognizeImageUseCase } from "../@core/application/use_cases/recognize_image/recognize_image.use_case";
 import { OcrResultScalable } from "../@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { GetActiveSettingsPresetUseCase } from "../@core/application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
-import { activeProfile } from "../app_initialization";
+import { getActiveProfile } from "../@core/infra/app_initialization";
 import { OcrAdapter } from "../@core/application/adapters/ocr.adapter";
 
 
@@ -100,7 +100,9 @@ export class OcrRecognitionService {
     }
 
     async getActiveSettingsPreset() {
-        return await this.getActiveSettingsPresetUseCase.execute({ profileId: activeProfile.id })
+        return await this.getActiveSettingsPresetUseCase.execute({
+            profileId: getActiveProfile().id
+        });
     }
 
 

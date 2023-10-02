@@ -48,7 +48,7 @@ export class PpOcrAdapter implements OcrAdapter {
 
     async recognize( input: OcrRecognitionInput ): Promise< OcrResult | null > {
 
-        console.time('PpOcrAdapter.recognize');        
+        // console.time('PpOcrAdapter.recognize');        
 
         const ok = await this.ppocrServiceProcessHealthCheck();
         if ( !ok ) return null;
@@ -77,8 +77,8 @@ export class PpOcrAdapter implements OcrAdapter {
         )
             return null;
         
-        console.timeEnd('PpOcrAdapter.recognize');
-        // return null;
+        // console.timeEnd('PpOcrAdapter.recognize');
+        
         return OcrResult.create({
             id: parseInt(clientResponse.id),
             context_resolution: clientResponse.context_resolution,

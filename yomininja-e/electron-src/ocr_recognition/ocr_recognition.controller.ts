@@ -4,7 +4,7 @@ import { join } from "path";
 import { format } from 'url';
 import { PAGES_DIR } from "../util/directories";
 import { uIOhook, UiohookKey } from 'uiohook-napi'
-import { activeProfile } from "../app_initialization";
+import { activeProfile, getActiveProfile } from "../@core/infra/app_initialization";
 import { OcrRecognitionService } from "./ocr_recognition.service";
 import { GetActiveSettingsPresetUseCase } from "../@core/application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
 import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
@@ -46,11 +46,11 @@ export class OcrRecognitionController {
         console.time('fullScreenOcr');
 
         try {
-            // console.log(activeProfile);            
+            // console.log(activeProfile);
 
             const ocrResultScalable = await this.ocrRecognitionService.recognizeEntireScreen({
                 imageBuffer,
-                profileId: activeProfile.id
+                profileId: getActiveProfile().id
             });            
 
             if ( !this.overlayWindow )

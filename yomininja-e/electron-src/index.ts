@@ -3,7 +3,7 @@ import { join } from 'path';
 import { format } from 'url';
 
 // Packages
-import { initializeApp } from './app_initialization';
+import { initializeApp } from './@core/infra/app_initialization';
 import { BrowserWindow, app, ipcMain, IpcMainEvent, IpcMainInvokeEvent, clipboard, globalShortcut } from 'electron';
 import isDev from 'electron-is-dev';
 import prepareNext from 'electron-next';
@@ -13,7 +13,7 @@ import { settingsController } from './settings/settings.index';
 import './shared_handlers';
 import { uIOhook } from 'uiohook-napi';
 
-initializeApp();
+
 
 
 // Prepare the renderer once the app is ready
@@ -38,10 +38,13 @@ app.on('ready', async () => {
         slashes: true,
       });
 
-  mainWindow.loadURL(url);
-
-  ocrRecognitionController.init( mainWindow );
-  settingsController.init( mainWindow );
+  
+  initializeApp()
+    .then( () => {
+      mainWindow.loadURL(url);
+      ocrRecognitionController.init( mainWindow );
+      settingsController.init( mainWindow );
+    });
 });
 
 // Quit the app once all windows are closed
