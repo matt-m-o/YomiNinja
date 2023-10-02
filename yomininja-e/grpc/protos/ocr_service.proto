@@ -6,6 +6,7 @@ service OCRService {
   rpc RecognizeBytes (RecognizeBytesRequest) returns (RecognizeDefaultResponse) {}
   rpc RecognizeBase64 (RecognizeBase64Request) returns (RecognizeDefaultResponse) {}
   rpc GetSupportedLanguages (GetSupportedLanguagesRequest) returns (GetSupportedLanguagesResponse) {}
+  rpc UpdateSettingsPreset (UpdateSettingsPresetRequest) returns (UpdateSettingsPresetResponse) {}
 }
 
 message RecognizeBytesRequest {
@@ -51,4 +52,14 @@ message GetSupportedLanguagesRequest {
 }
 message GetSupportedLanguagesResponse {
   repeated string language_codes = 1;
+}
+
+
+message UpdateSettingsPresetRequest {
+  int32 maximum_image_width = 1; // ppocr "max_side_length"
+  int32 cpu_threads = 2;
+}
+
+message UpdateSettingsPresetResponse {
+  bool success = 1;
 }
