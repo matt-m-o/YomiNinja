@@ -3,13 +3,15 @@ import { randomUUID } from "crypto";
 export type OcrEngineSettings = {
     ocr_adapter_name?: string;
     image_scaling_factor: number; // from 0.1 to 1.0. Two decimal places shouldn't be allow.
+    max_image_width: number;
+    cpu_threads: number;
 };
 
 export type OverlayOcrItemBoxVisuals = {
     border_color: string;
     border_width: number; // pixels
     border_radius: number; // pixels
-    background_color: string;    
+    background_color: string;
     text: {
         color: string;
     };
@@ -41,7 +43,7 @@ export type OverlayHotkeys = {
 export type OverlaySettings = {
     visuals: OverlayVisualCustomizations;
     hotkeys: OverlayHotkeys;
-    behavior: OverlayBehavior;    
+    behavior: OverlayBehavior;
 };
 
 export interface SettingsPresetProps {
@@ -95,7 +97,9 @@ export class SettingsPreset {
             }
         },
         ocr_engine: {
-            image_scaling_factor: 1
+            image_scaling_factor: 1,
+            max_image_width: 1600,
+            cpu_threads: 8,
         },
 
         created_at: new Date(),
@@ -186,26 +190,46 @@ export class SettingsPreset {
 
     updateOcrEngineSettings( update: Partial< OcrEngineSettings > ) {
 
-        let { image_scaling_factor } = update;
+        let { image_scaling_factor, max_image_width } = update;
 
-        if ( image_scaling_factor != undefined ) {
+        image_scaling_factor = this.ocrEngineImageScalingFactorValidation( image_scaling_factor );
 
-            // Minimum 0.1, Maximum 1
-            image_scaling_factor = Math.max( 0.1, Math.min(1, image_scaling_factor ));
-
-            // Ensure 1 decimal place of precision
-            image_scaling_factor = Math.round( image_scaling_factor * 100) / 100;
-        }
-        else {
-            image_scaling_factor = this.ocr_engine.image_scaling_factor;
-        }
-
+        max_image_width = this.ocrEngineMaxImageWidthValidation( max_image_width );
 
         this.props.ocr_engine = {
             ...this.props.ocr_engine,
             ...update,
-            image_scaling_factor
+            image_scaling_factor,
+            max_image_width
         };
+    }
+
+    private ocrEngineImageScalingFactorValidation( imageScalingFactor?: number ) {
+        if ( imageScalingFactor != undefined ) {
+
+            // Minimum 0.1, Maximum 1
+            imageScalingFactor = Math.max( 0.1, Math.min(1, imageScalingFactor ));
+
+            // Ensure 1 decimal place of precision
+            imageScalingFactor = Math.round( imageScalingFactor * 100) / 100;
+        }
+        else {
+            imageScalingFactor = this.ocr_engine.image_scaling_factor;
+        }
+
+        return imageScalingFactor;
+    }
+
+    private ocrEngineMaxImageWidthValidation( maxImageWidth?: number ) {        
+
+        if ( 
+            !maxImageWidth ||
+            maxImageWidth % 32 != 0 || // Must be multiple of 32
+            maxImageWidth < 0
+        )
+            return this.ocr_engine.max_image_width;        
+
+        return maxImageWidth;
     }
 
     toJson(): SettingsPresetJson {

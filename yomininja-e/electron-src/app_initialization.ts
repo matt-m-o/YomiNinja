@@ -4,6 +4,7 @@ import { Profile } from './@core/domain/profile/profile';
 import { SettingsPreset } from "./@core/domain/settings_preset/settings_preset";
 import { get_MainDataSource } from "./@core/infra/container_registry/db_registry";
 import { get_LanguageRepository, get_ProfileRepository, get_SettingsPresetRepository } from "./@core/infra/container_registry/repositories_registry";
+import os from 'os';
 
 export let activeProfile: Profile;
 
@@ -24,7 +25,8 @@ export async function initializeApp() {
         if ( !defaultSettingsPreset ) {
 
             // Creating default settings preset
-            defaultSettingsPreset = SettingsPreset.create()
+            defaultSettingsPreset = SettingsPreset.create();
+            defaultSettingsPreset.updateOcrEngineSettings({ cpu_threads: os.cpus().length });
             await settingsPresetRepo.insert( defaultSettingsPreset );
         }
 

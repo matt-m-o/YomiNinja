@@ -66,7 +66,7 @@ describe( "SettingsPreset tests", () => {
     });
 
 
-    it( "should define a SettingsPreset and change ocr engine settings, while preventing invalid values", () => {
+    it( "should define a SettingsPreset and change image_scaling_factor, while preventing invalid values", () => {
         
         const settingsPreset = SettingsPreset.create({ name: 'custom 1' });        
 
@@ -92,12 +92,12 @@ describe( "SettingsPreset tests", () => {
         expect( settingsPreset.ocr_engine.image_scaling_factor )
             .toStrictEqual( 0.1 );
 
-        // Prevent image_scaling_factor from having more than 1 decimal place
+        // Prevent image_scaling_factor from having more than 2 decimal place
         settingsPreset.updateOcrEngineSettings({
-            image_scaling_factor: 0.15
+            image_scaling_factor: 0.155
         });
         expect( settingsPreset.ocr_engine.image_scaling_factor )
-            .toStrictEqual( 0.2 );            
+            .toStrictEqual( 0.16 );            
 
         // Allow image_scaling_factor to be great
         settingsPreset.updateOcrEngineSettings({
@@ -106,6 +106,45 @@ describe( "SettingsPreset tests", () => {
         expect( settingsPreset.ocr_engine.image_scaling_factor )
             .toStrictEqual( 0.8 );
 
+    });
+
+
+    it( "should define a SettingsPreset and change max_image_width, while preventing invalid values", () => {
+        
+        const settingsPreset = SettingsPreset.create({ name: 'custom 1' });        
+
+        const oldOcrEngineSettings = cloneDeep( settingsPreset.ocr_engine );
+
+        // Prevent max_image_width from being not multiple of 32
+        settingsPreset.updateOcrEngineSettings({
+            max_image_width: 1270
+        });
+        expect( settingsPreset.ocr_engine.max_image_width )
+            .toStrictEqual( oldOcrEngineSettings.max_image_width );
+
+
+        // Prevent max_image_width from being a float
+        settingsPreset.updateOcrEngineSettings({
+            max_image_width: 1280.5
+        });
+        expect( settingsPreset.ocr_engine.max_image_width )
+            .toStrictEqual( oldOcrEngineSettings.max_image_width );
+
+
+        // Prevent max_image_width from being a float
+        settingsPreset.updateOcrEngineSettings({
+            max_image_width: 1280.5
+        });
+        expect( settingsPreset.ocr_engine.max_image_width )
+            .toStrictEqual( oldOcrEngineSettings.max_image_width );
+
+      
+        // Prevent max_image_width from being undefined
+        settingsPreset.updateOcrEngineSettings({
+            max_image_width: undefined
+        });
+        expect( settingsPreset.ocr_engine.max_image_width )
+            .toStrictEqual( oldOcrEngineSettings.max_image_width );
     });
 
 });
