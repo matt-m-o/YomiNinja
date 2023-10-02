@@ -184,7 +184,7 @@ export default function AppSettingsVisuals() {
                 
                 <OverlayFrame
                     sx={{
-                        ml: 35,
+                        ml: '35px',
                         border: `solid ${overlayFrameVisuals?.border_width}px`,
                         borderColor: overlayFrameVisuals?.border_color
                     }}
