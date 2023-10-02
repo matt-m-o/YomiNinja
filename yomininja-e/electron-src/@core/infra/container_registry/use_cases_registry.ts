@@ -33,6 +33,7 @@ container_registry.bind( Registry.GetActiveSettingsPresetUseCase ).toDynamicValu
 container_registry.bind( Registry.UpdateSettingsPresetUseCase ).toDynamicValue( (context) => {
     return new UpdateSettingsPresetUseCase(
         context.container.get( Registry.SettingsPresetTypeOrmRepository ),
+        context.container.get( Registry.PpOcrAdapter ),
     );
 }).inSingletonScope();
 

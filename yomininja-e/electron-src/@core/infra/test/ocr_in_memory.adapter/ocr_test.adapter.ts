@@ -1,5 +1,26 @@
 import { OcrItem, OcrResult, OcrResultContextResolution, OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
 import { OcrAdapter, OcrAdapterStatus, OcrRecognitionInput } from "../../../application/adapters/ocr.adapter";
+import { OcrEngineSettings } from "../../../domain/settings_preset/settings_preset";
+
+const ocrTestAdapterResultProps: OcrResult_CreationInput = {
+    id: 1,
+    context_resolution: {
+        width: 1920,
+        height: 1080,                        
+    },
+    results: [
+        {
+            text: "recognized_text",
+            score: 0.99,
+            box: {
+                top_left: { x: 0, y: 0 },
+                top_right: { x: 10, y: 0 },
+                bottom_left: { x: 0, y: 10 },
+                bottom_right: { x: 10, y: 10 },
+            }
+        }
+    ]
+};
 
 export class OcrTestAdapter implements OcrAdapter {
 
@@ -9,8 +30,8 @@ export class OcrTestAdapter implements OcrAdapter {
     private idCounter: number = 0;
 
     constructor(
-        public baseResultProps: OcrResult_CreationInput,
-        public supportedLanguages: string[],
+        public baseResultProps: OcrResult_CreationInput = ocrTestAdapterResultProps,
+        public supportedLanguages: string[] = [ "en", "ja" ],
     ) {}
 
     initialize() {
@@ -36,5 +57,9 @@ export class OcrTestAdapter implements OcrAdapter {
     async getSupportedLanguages(): Promise< string[] > {        
         
         return this.supportedLanguages;
+    }
+
+    async updateSettings( input: OcrEngineSettings ): Promise< boolean > {
+        return true;
     }
 }

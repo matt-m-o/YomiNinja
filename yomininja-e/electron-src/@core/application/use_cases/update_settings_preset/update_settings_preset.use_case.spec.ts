@@ -3,6 +3,8 @@ import { SettingsPresetTypeOrmSchema } from "../../../infra/db/typeorm/settings_
 import SettingsPresetTypeOrmRepository from "../../../infra/db/typeorm/settings_preset/settings_preset.typeorm.repository";
 import { DataSource } from 'typeorm';
 import { UpdateSettingsPresetUseCase, UpdateSettingsPreset_Input } from "./update_settings_preset.use_case";
+import { OcrTestAdapter } from "../../../infra/test/ocr_in_memory.adapter/ocr_test.adapter";
+import { cloneDeep } from "lodash";
 
 describe("UpdateSettingsPresetUseCase tests", () => {
     
@@ -31,7 +33,8 @@ describe("UpdateSettingsPresetUseCase tests", () => {
             dataSource.getRepository( SettingsPreset )
         );
         updateSettingsPresetUseCase = new UpdateSettingsPresetUseCase(
-            settingsPresetRepo
+            settingsPresetRepo,
+            new OcrTestAdapter()
         );
             
         defaultPreset = SettingsPreset.create();
@@ -47,7 +50,7 @@ describe("UpdateSettingsPresetUseCase tests", () => {
         input.overlay.hotkeys.ocr = 'Ctrl+D';
         input.ocr_engine.image_scaling_factor = 0.5;
 
-        await updateSettingsPresetUseCase.execute( input );
+        const output = await updateSettingsPresetUseCase.execute( input );
         
         const foundPreset = await settingsPresetRepo.findOne({ id: defaultPreset.id });
 
@@ -55,6 +58,29 @@ describe("UpdateSettingsPresetUseCase tests", () => {
         expect( foundPreset?.overlay.hotkeys.ocr ).toStrictEqual( input.overlay.hotkeys.ocr );
         expect( foundPreset?.ocr_engine.image_scaling_factor )
             .toStrictEqual( input.ocr_engine.image_scaling_factor );
+
+        expect( output.restartOcrAdapter ).toBeFalsy();
     });
     
+    it("should update the default settings preset and output.restartOcrAdapter must be truthy", async () => {        
+
+        const input: UpdateSettingsPreset_Input = cloneDeep( defaultPreset.toJson() );
+
+       
+        input.ocr_engine.cpu_threads = 1;
+        input.ocr_engine.max_image_width = 1280;
+
+        const output = await updateSettingsPresetUseCase.execute( input );
+        
+        const foundPreset = await settingsPresetRepo.findOne({ id: defaultPreset.id });
+
+        
+        expect( foundPreset?.ocr_engine.cpu_threads )
+            .toStrictEqual( input.ocr_engine.cpu_threads );
+
+        expect( foundPreset?.ocr_engine.max_image_width )
+            .toStrictEqual( input.ocr_engine.max_image_width );
+
+        expect( output.restartOcrAdapter ).toBeTruthy();
+    });
 });

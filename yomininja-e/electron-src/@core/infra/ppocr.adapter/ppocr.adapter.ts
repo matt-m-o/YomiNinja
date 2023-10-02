@@ -11,6 +11,9 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { dialog } from 'electron';
 import isDev from 'electron-is-dev';
 import { BIN_DIR } from "../../../util/directories";
+import { OcrEngineSettings } from "../../domain/settings_preset/settings_preset";
+import { UpdateSettingsPresetResponse__Output } from "../../../../grpc/rpc/ocr_service/UpdateSettingsPresetResponse";
+import { UpdateSettingsPresetRequest } from "../../../../grpc/rpc/ocr_service/UpdateSettingsPresetRequest";
 
 
 export class PpOcrAdapter implements OcrAdapter {
@@ -169,4 +172,23 @@ export class PpOcrAdapter implements OcrAdapter {
 
         return true
     }
+
+    async updateSettings( input: OcrEngineSettings ): Promise< boolean > {
+
+        const requestInput: UpdateSettingsPresetRequest = {
+            max_image_width: input.max_image_width,
+            cpu_threads: input.cpu_threads
+        };    
+        
+        const clientResponse = await new Promise< UpdateSettingsPresetResponse__Output | undefined >(
+            (resolve, reject) => this.ocrServiceClient?.UpdateSettingsPreset( requestInput, ( error, response ) => {
+                if (error) {
+                    return reject(error)
+                }
+                resolve(response);
+            })
+        );        
+        
+        return Boolean( clientResponse?.success );
+    }   
 }

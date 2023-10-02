@@ -10,7 +10,11 @@ ipcMain.handle( 'settings_preset:update', async ( event: IpcMainInvokeEvent, mes
     if ( !message )
         return;    
 
-    await settingsController.updateSettingsPreset( message );
+    const { restartOcrAdapter } = await settingsController.updateSettingsPreset( message );
     
     ocrRecognitionController.refreshActiveSettingsPreset( message );
+
+    return {
+        restartOcrAdapter
+    };
 });

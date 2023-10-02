@@ -51,6 +51,6 @@ export class SettingsController {
 
     async updateSettingsPreset( settingsPresetJson: SettingsPresetJson ) {
 
-        await this.settingsService.updateSettingsPreset( settingsPresetJson );
+        return await this.settingsService.updateSettingsPreset( settingsPresetJson );
     }
 }

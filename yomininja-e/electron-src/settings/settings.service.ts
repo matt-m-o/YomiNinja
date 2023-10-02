@@ -25,8 +25,8 @@ export class SettingsService {
         });
     }
 
-    async updateSettingsPreset( settingsPresetJson: SettingsPresetJson ): Promise< void > {
+    async updateSettingsPreset( settingsPresetJson: SettingsPresetJson ) {
 
-        await this.updateSettingsPresetUseCase.execute( settingsPresetJson );
+        return await this.updateSettingsPresetUseCase.execute( settingsPresetJson );
     }
 }
