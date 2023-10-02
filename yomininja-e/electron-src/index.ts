@@ -40,7 +40,7 @@ app.on('ready', async () => {
 
   mainWindow.loadURL(url);
 
-  ocrRecognitionController.init();
+  ocrRecognitionController.init( mainWindow );
   settingsController.init( mainWindow );
 });
 

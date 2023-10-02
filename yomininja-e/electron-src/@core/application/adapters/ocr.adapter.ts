@@ -13,6 +13,7 @@ export interface OcrAdapter {
     recognize: ( input: OcrRecognitionInput ) => Promise< OcrResult | null >;
     getSupportedLanguages: () => Promise< string[] >; // Get this by calling the grpc stub or reading it's config files
     updateSettings: ( input: OcrEngineSettings ) => Promise< boolean >;
+    restart: ( callback: () => void ) => void;
 }
 
 export enum OcrAdapterStatus {

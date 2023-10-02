@@ -32,7 +32,7 @@ export class OcrTestAdapter implements OcrAdapter {
     constructor(
         public baseResultProps: OcrResult_CreationInput = ocrTestAdapterResultProps,
         public supportedLanguages: string[] = [ "en", "ja" ],
-    ) {}
+    ) {}    
 
     initialize() {
         this.status = OcrAdapterStatus.Enabled; 
@@ -61,5 +61,9 @@ export class OcrTestAdapter implements OcrAdapter {
 
     async updateSettings( input: OcrEngineSettings ): Promise< boolean > {
         return true;
+    }
+
+    restart( callback: () => void ): void {
+        callback();
     }
 }

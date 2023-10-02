@@ -18,3 +18,8 @@ ipcMain.handle( 'settings_preset:update', async ( event: IpcMainInvokeEvent, mes
         restartOcrAdapter
     };
 });
+
+ipcMain.handle( 'ocr_recognition:restart_engine', async ( event: IpcMainInvokeEvent, message: SettingsPresetJson ) => {
+
+    ocrRecognitionController.restartEngine();
+});

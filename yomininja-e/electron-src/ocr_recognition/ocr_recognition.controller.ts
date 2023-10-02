@@ -11,7 +11,8 @@ import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_pre
 
 
 export class OcrRecognitionController {
-        
+    
+    private mainWindow: BrowserWindow | undefined;
     private overlayWindow: BrowserWindow | undefined;
     private overlayAlwaysOnTop: boolean = false;
     // private windowManager = new WindowManager();
@@ -21,12 +22,14 @@ export class OcrRecognitionController {
     constructor( input: {        
         ocrRecognitionService: OcrRecognitionService;        
     }) {
-
-        this.ocrRecognitionService = input.ocrRecognitionService;        
+        this.ocrRecognitionService = input.ocrRecognitionService;    
     }
 
-    async init() {
+    async init( mainWindow: BrowserWindow ) {
+        
         uIOhook.start();
+
+        this.mainWindow = mainWindow;
 
         const settings = await this.ocrRecognitionService.getActiveSettingsPreset();
 
@@ -188,5 +191,18 @@ export class OcrRecognitionController {
         this.registerGlobalShortcuts( settingsPresetJson );
 
         this.overlayWindow?.webContents.send( 'settings_preset:active_data', settingsPresetJson );
+    }
+
+    restartEngine() {
+
+        // Adding a time gap to make sure it has enough time to complete anything it might be doing
+        setTimeout( () => {
+            this.ocrRecognitionService.restartOcrAdapter( () => {
+
+                if ( !this.mainWindow ) return;
+
+                this.mainWindow.webContents.send( 'ocr_recognition:ocr_engine_restarted' );
+            });
+        }, 3000 );
     }
 }

@@ -5,6 +5,7 @@ import { RecognizeImageUseCase } from "../@core/application/use_cases/recognize_
 import { OcrResultScalable } from "../@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { GetActiveSettingsPresetUseCase } from "../@core/application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
 import { activeProfile } from "../app_initialization";
+import { OcrAdapter } from "../@core/application/adapters/ocr.adapter";
 
 
 export class OcrRecognitionService {
@@ -12,6 +13,7 @@ export class OcrRecognitionService {
     private recognizeImageUseCase: RecognizeImageUseCase;
     private getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
     private getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;
+    private ocrAdapter: OcrAdapter;
 
     private windowManager = new WindowManager();
 
@@ -20,11 +22,13 @@ export class OcrRecognitionService {
             recognizeImageUseCase: RecognizeImageUseCase;
             getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
             getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;
+            ocrAdapter: OcrAdapter;
         }
     ){
         this.recognizeImageUseCase = input.recognizeImageUseCase;
         this.getSupportedLanguagesUseCase = input.getSupportedLanguagesUseCase;
         this.getActiveSettingsPresetUseCase = input.getActiveSettingsPresetUseCase;
+        this.ocrAdapter = input.ocrAdapter;
     }
 
     async recognizeEntireScreen( input: {
@@ -97,5 +101,11 @@ export class OcrRecognitionService {
 
     async getActiveSettingsPreset() {
         return await this.getActiveSettingsPresetUseCase.execute({ profileId: activeProfile.id })
+    }
+
+
+    restartOcrAdapter( callback:() => void ) {
+
+        this.ocrAdapter.restart( callback );    
     }
 }

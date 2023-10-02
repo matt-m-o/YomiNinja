@@ -150,25 +150,21 @@ export class PpOcrAdapter implements OcrAdapter {
           
     }
 
-    restartProcess() {
-        this.status = OcrAdapterStatus.Restarting;
-        this.ppocrServiceProcess.kill('SIGTERM');
-        this.startProcess();
-    }
-
     // Checks if the ppocrService is enabled.
     async ppocrServiceProcessHealthCheck(): Promise< boolean > {
-
+        
         let triesCounter = 0;
 
         while( this.status != OcrAdapterStatus.Enabled ) {
 
             // Waiting for 1 second
-            await new Promise( (resolve) => setTimeout(resolve, 1000) );
+            await new Promise( (resolve) => setTimeout(resolve, 2000) );
             triesCounter++;
 
+            console.log('ppocrServiceProcessHealthCheck: '+ triesCounter);
+
             if ( triesCounter > 15 ) return false;
-        }
+        }        
 
         return true
     }
@@ -190,5 +186,25 @@ export class PpOcrAdapter implements OcrAdapter {
         );        
         
         return Boolean( clientResponse?.success );
-    }   
+    }
+
+    async restart( callback: () => void ): Promise< void > {
+
+        this.restartProcess();
+
+        const ok = await this.ppocrServiceProcessHealthCheck();
+
+        if (!ok) return;
+
+        console.log("PPOCR Adapter restarted successfully");
+
+        callback();
+
+    };
+
+    private restartProcess() {
+        this.status = OcrAdapterStatus.Restarting;
+        this.ppocrServiceProcess.kill('SIGTERM');
+        this.startProcess();
+    }
 }
