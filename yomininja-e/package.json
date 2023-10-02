@@ -39,8 +39,7 @@
     "sharp": "^0.32.6",
     "sqlite3": "^5.1.6",
     "typeorm": "^0.3.17",
-    "uiohook-napi": "^1.5.2",
-    "win-control": "^0.3.1"
+    "uiohook-napi": "^1.5.2"
   },
   "devDependencies": {
     "@emotion/react": "^11.11.1",
@@ -69,7 +68,8 @@
     "files": [
       "main",
       "renderer/out",
-      "**/*.proto"
+      "**/*.proto",
+      "build"
     ],
     "extraResources": [
       {
