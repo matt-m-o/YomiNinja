@@ -1,4 +1,4 @@
-import { Box, Container, Divider, FormControlLabel, FormGroup, Popover, Slider, Stack, Switch, SxProps, TextField, Theme, Typography, debounce, styled } from "@mui/material";
+import { Alert, Backdrop, Box, CircularProgress, Container, Divider, FormControlLabel, FormGroup, Popover, Slider, Snackbar, Stack, Switch, SxProps, TextField, Theme, Typography, debounce, styled } from "@mui/material";
 import { SettingsContext } from "../../context/settings.provider";
 import { useContext, useEffect, useState } from "react";
 import { OcrEngineSettings, OverlayBehavior } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
@@ -36,9 +36,55 @@ export default function AppSettingsOcrEngine() {
         </Box>
     );
     
+    function triggerOcrEngineRestart() {
+        global.ipcRenderer.invoke( 'ocr_recognition:restart_engine' );
+        setOpenBackdrop( true );
+    }
+
+    useEffect( () => {
+
+        global.ipcRenderer.on( 'ocr_recognition:ocr_engine_restarted', ( ) => {
+            setOpenBackdrop( false );
+            setOpenSnackbar( true );
+        });
+        
+        return () => {
+            global.ipcRenderer.removeAllListeners( 'ocr_recognition:ocr_engine_restarted' );            
+        }
+    }, [ global.ipcRenderer ] );
+    
+    
+    const [ openBackdrop, setOpenBackdrop ] = useState(false);
+    const backdrop = (
+        <Backdrop
+            sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+            open={openBackdrop}            
+        >
+            <CircularProgress color="inherit" />
+        </Backdrop>
+    )
+    
+    const [ openSnackbar, setOpenSnackbar ] = useState(false);
+    const snackbar = (
+        <Snackbar open={openSnackbar} autoHideDuration={6000}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            onClose={ () => setOpenSnackbar(false) }
+            sx={{ minWidth: '300px' }}
+        >
+            <Alert severity="info" sx={{ width: '100%' }}
+                onClose={ () => setOpenSnackbar(false) }
+            >
+                OCR Engine restarted!
+            </Alert>
+        </Snackbar>
+    )
+
 
     return (
         <Box sx={{ flexGrow: 1, margin: 1, }}>
+
+            {backdrop}
+            {snackbar}
 
             <Typography gutterBottom variant="h6" component="div" margin={2} ml={0}>
                 OCR Engine
@@ -169,6 +215,7 @@ export default function AppSettingsOcrEngine() {
 
                 <Button variant="contained"
                     startIcon={<RestartAltRoundedIcon />}
+                    onClick={triggerOcrEngineRestart}
                 >
                     Restart OCR Engine
                 </Button>

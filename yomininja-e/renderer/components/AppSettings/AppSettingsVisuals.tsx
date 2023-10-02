@@ -81,7 +81,6 @@ export default function AppSettingsVisuals() {
                         size='small'
                         type="color"
                         inputProps={{ style: { textAlign: 'center' } }}                        
-                        // value={ ocrItemBoxVisuals?.background_color || '' }
                         value={ ocrItemBoxVisuals?.background_color || '' }
                         onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
                             updateOcrItemBoxVisuals({
@@ -93,7 +92,7 @@ export default function AppSettingsVisuals() {
                     <TextField label="Text color" sx={textFieldBaseSx}                      
                         size='small'
                         type="color"
-                        inputProps={{ style: { textAlign: 'center' } }}                        
+                        inputProps={{ style: { textAlign: 'center' } }}
                         value={ ocrItemBoxVisuals?.text.color || '' }
                         onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
                             updateOcrItemBoxVisuals({                                
@@ -179,12 +178,13 @@ export default function AppSettingsVisuals() {
 
 
 
-                <Typography gutterBottom component="div" margin={0} mb={1} mt={5}>
+                <Typography gutterBottom component="div" margin={0} mb={2} mt={5}>
                     Overlay preview
                 </Typography>
                 
                 <OverlayFrame
                     sx={{
+                        ml: 35,
                         border: `solid ${overlayFrameVisuals?.border_width}px`,
                         borderColor: overlayFrameVisuals?.border_color
                     }}
