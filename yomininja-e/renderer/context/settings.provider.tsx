@@ -25,9 +25,13 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     const [ activeSettingsPreset, setActiveSettingsPreset ] = useState< SettingsPresetJson | null >( null );
     const [ allSettingsPresets, setAllSettingsPresets ] = useState< SettingsPresetJson[] >( [] );
 
-    const updateActivePresetIPC = debounce( ( updatedPreset: SettingsPresetJson ) => {
-        global.ipcRenderer.invoke( 'settings_preset:update', updatedPreset );
-    }, 500 );
+    const updateActivePresetIPC = debounce( async ( updatedPreset: SettingsPresetJson ) => {
+
+        const { restartOcrAdapter } = await global.ipcRenderer.invoke( 'settings_preset:update', updatedPreset );
+
+        console.log({ restartOcrAdapter });
+
+    }, 1500 );
 
     function updateActivePresetOcrEngine( newOcrEngine: Partial< OcrEngineSettings > ) {
 
@@ -81,16 +85,16 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     
     function updateActivePreset( updatedPreset: Partial<SettingsPresetJson> ) {
 
-        // console.log( updatedPreset );
+        console.log( updatedPreset );
 
         if ( !updatedPreset )
             return;
-
+        
         setActiveSettingsPreset({
             ...activeSettingsPreset,
             ...updatedPreset,
         });
-
+        
         // global.ipcRenderer.invoke( 'settings_preset:update', updatedPreset );
         updateActivePresetIPC( activeSettingsPreset );
     }
