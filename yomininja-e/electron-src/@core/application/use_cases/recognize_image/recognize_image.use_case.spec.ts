@@ -1,6 +1,6 @@
 import { OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
-import { OcrTestAdapter } from "../../../infra/test/ocr_in_memory.adapter/ocr_test.adapter";
-import { ImageProcessingDummyAdapter } from "../../../infra/test/image_processing_dummy.adapter/image_processing_dummy.adapter";
+import { FakeOcrTestAdapter } from "../../../infra/test/fake_ocr.adapter/fake_ocr.adapter";
+import { FakeImageProcessingAdapter } from "../../../infra/test/fake_image_processing.adapter/fake_image_processing.adapter.adapter";
 import { RecognizeImageInput, RecognizeImageUseCase } from "./recognize_image.use_case";
 import { SettingsPreset } from "../../../domain/settings_preset/settings_preset";
 import { DataSource } from 'typeorm';
@@ -36,7 +36,7 @@ describe("Recognize Image Use Case tests", () => {
     const ocrTestAdapterSupportedLanguages = [ "en", "ja" ];
     
 
-    let ocrTestAdapter: OcrTestAdapter;
+    let ocrTestAdapter: FakeOcrTestAdapter;
     let recognizeImageUseCase: RecognizeImageUseCase;
 
     let profile: Profile;
@@ -72,10 +72,10 @@ describe("Recognize Image Use Case tests", () => {
 
         await profileRepo.insert( profile );
         
-        ocrTestAdapter = new OcrTestAdapter( ocrTestAdapterResultProps, ocrTestAdapterSupportedLanguages );
+        ocrTestAdapter = new FakeOcrTestAdapter( ocrTestAdapterResultProps, ocrTestAdapterSupportedLanguages );
         ocrTestAdapter.initialize();
 
-        const imageProcessingDummyAdapter = new ImageProcessingDummyAdapter();
+        const imageProcessingDummyAdapter = new FakeImageProcessingAdapter();
 
         recognizeImageUseCase = new RecognizeImageUseCase(
             [ ocrTestAdapter ],

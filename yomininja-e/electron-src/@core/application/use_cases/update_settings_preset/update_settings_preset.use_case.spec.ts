@@ -3,7 +3,7 @@ import { SettingsPresetTypeOrmSchema } from "../../../infra/db/typeorm/settings_
 import SettingsPresetTypeOrmRepository from "../../../infra/db/typeorm/settings_preset/settings_preset.typeorm.repository";
 import { DataSource } from 'typeorm';
 import { UpdateSettingsPresetUseCase, UpdateSettingsPreset_Input } from "./update_settings_preset.use_case";
-import { OcrTestAdapter } from "../../../infra/test/ocr_in_memory.adapter/ocr_test.adapter";
+import { FakeOcrTestAdapter } from "../../../infra/test/fake_ocr.adapter/fake_ocr.adapter";
 import { cloneDeep } from "lodash";
 
 describe("UpdateSettingsPresetUseCase tests", () => {
@@ -34,7 +34,7 @@ describe("UpdateSettingsPresetUseCase tests", () => {
         );
         updateSettingsPresetUseCase = new UpdateSettingsPresetUseCase(
             settingsPresetRepo,
-            new OcrTestAdapter()
+            new FakeOcrTestAdapter()
         );
             
         defaultPreset = SettingsPreset.create();

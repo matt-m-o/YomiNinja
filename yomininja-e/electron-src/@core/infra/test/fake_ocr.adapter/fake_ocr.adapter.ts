@@ -22,10 +22,10 @@ const ocrTestAdapterResultProps: OcrResult_CreationInput = {
     ]
 };
 
-export class OcrTestAdapter implements OcrAdapter {
+export class FakeOcrTestAdapter implements OcrAdapter {
 
     static _name: string = "OcrTestAdapter";
-    public readonly name: string = OcrTestAdapter._name;
+    public readonly name: string = FakeOcrTestAdapter._name;
     public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
     private idCounter: number = 0;
 

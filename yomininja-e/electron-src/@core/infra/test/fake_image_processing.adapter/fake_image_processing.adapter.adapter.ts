@@ -1,7 +1,7 @@
 import { ImageProcessingAdapter, ImageResizeInput, ImageResizeOutput } from "../../../application/adapters/image_processing.adapter";
 
 
-export class ImageProcessingDummyAdapter implements ImageProcessingAdapter {
+export class FakeImageProcessingAdapter implements ImageProcessingAdapter {
 
     public dummyImageSize = {
         width: 1920,

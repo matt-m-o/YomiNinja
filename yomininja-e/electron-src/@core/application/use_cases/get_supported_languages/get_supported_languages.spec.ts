@@ -1,6 +1,6 @@
 import { OcrResult, OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
 import { OcrAdapter, OcrRecognitionInput } from "../../adapters/ocr.adapter";
-import { OcrTestAdapter } from "../../../infra/test/ocr_in_memory.adapter/ocr_test.adapter";
+import { FakeOcrTestAdapter } from "../../../infra/test/fake_ocr.adapter/fake_ocr.adapter";
 import { GetSupportedLanguagesUseCase } from "./get_supported_languages.use_case";
 
 
@@ -30,12 +30,12 @@ describe("Get Supported Languages Use Case tests", () => {
     const ocrTestAdapterSupportedLanguages = [ "en", "ja" ];
     
 
-    let ocrTestAdapter: OcrTestAdapter;
+    let ocrTestAdapter: FakeOcrTestAdapter;
     let getSupportedLanguages: GetSupportedLanguagesUseCase;
 
     beforeEach( () => {
 
-        ocrTestAdapter = new OcrTestAdapter( ocrTestAdapterResultProps, ocrTestAdapterSupportedLanguages );
+        ocrTestAdapter = new FakeOcrTestAdapter( ocrTestAdapterResultProps, ocrTestAdapterSupportedLanguages );
         ocrTestAdapter.initialize();
         getSupportedLanguages = new GetSupportedLanguagesUseCase( [ ocrTestAdapter ] );        
     });
@@ -52,7 +52,7 @@ describe("Get Supported Languages Use Case tests", () => {
         const result = await getSupportedLanguages.execute();
 
         expect( result.length > 0 ).toBeTruthy();
-        expect( result[0].adapterName ).toStrictEqual( OcrTestAdapter._name );
+        expect( result[0].adapterName ).toStrictEqual( FakeOcrTestAdapter._name );
         expect( result[0].languageCodes ).toStrictEqual( ocrTestAdapterSupportedLanguages );       
     });
     

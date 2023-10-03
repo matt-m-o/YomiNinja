@@ -1,14 +1,14 @@
 import { ImageResizeInput } from "../../../application/adapters/image_processing.adapter";
-import { ImageProcessingDummyAdapter } from "./image_processing_dummy.adapter";
+import { FakeImageProcessingAdapter } from "./fake_image_processing.adapter.adapter";
 
 
 describe( 'ImageProcessingDummyAdapter tests', () => {
 
-    let imageProcessingAdapter: ImageProcessingDummyAdapter;
+    let imageProcessingAdapter: FakeImageProcessingAdapter;
 
     beforeEach( () => {
 
-        imageProcessingAdapter = new ImageProcessingDummyAdapter();
+        imageProcessingAdapter = new FakeImageProcessingAdapter();
     })
 
     it('should resize a 1920x1080 image using a 0.5 scaling factor', async () => {

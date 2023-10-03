@@ -1,5 +1,5 @@
 import { OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
-import { OcrTestAdapter } from "./ocr_test.adapter";
+import { FakeOcrTestAdapter } from "./fake_ocr.adapter";
 
 describe("OCR Test Adapter tests", () => {
                 
@@ -26,11 +26,11 @@ describe("OCR Test Adapter tests", () => {
     const ocrTestAdapterSupportedLanguages = [ "en", "ja" ];
     
 
-    let ocrTestAdapter: OcrTestAdapter;    
+    let ocrTestAdapter: FakeOcrTestAdapter;    
 
     beforeEach( () => {
 
-        ocrTestAdapter = new OcrTestAdapter( ocrTestAdapterBaseProps, ocrTestAdapterSupportedLanguages );
+        ocrTestAdapter = new FakeOcrTestAdapter( ocrTestAdapterBaseProps, ocrTestAdapterSupportedLanguages );
         ocrTestAdapter.initialize();
     });
 
