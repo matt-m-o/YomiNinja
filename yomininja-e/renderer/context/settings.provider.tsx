@@ -12,10 +12,6 @@ export type SettingsContextType = {
     updateActivePresetOcrEngine: ( newVisuals: Partial< OcrEngineSettings > ) => void; 
 };
 
-export interface SettingsPresetFront extends SettingsPresetProps {
-    id: string;
-}
-
 
 export const SettingsContext = createContext( {} as SettingsContextType );
 
