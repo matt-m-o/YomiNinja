@@ -13,12 +13,15 @@ export const Registry = {
     // Adapters
     PpOcrAdapter: Symbol.for('PpOcrAdapter'),
     SharpImageProcessingAdapter: Symbol.for('SharpImageProcessingAdapter'),
+    GithubAppVersionProviderAdapter: Symbol.for('GithubAppVersionProviderAdapter'),
+    FakeAppVersionProviderAdapter: Symbol.for('FakeAppVersionProviderAdapter'),
 
     // Use Cases
     RecognizeImageUseCase: Symbol.for('RecognizeImageUseCase'),
     GetSupportedLanguagesUseCase: Symbol.for('GetSupportedLanguagesUseCase'),
     GetActiveSettingsPresetUseCase: Symbol.for('GetActiveSettingsPresetUseCase'),
     UpdateSettingsPresetUseCase: Symbol.for('UpdateSettingsPresetUseCase'),
+    CheckForAppUpdatesUseCase: Symbol.for('CheckForAppUpdatesUseCase'),
 
     // Repositories
     SettingsPresetInMemoryRepository: Symbol.for('SettingsPresetInMemoryRepository'),

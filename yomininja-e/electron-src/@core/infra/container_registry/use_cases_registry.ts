@@ -5,6 +5,7 @@ import { RecognizeImageUseCase } from "../../application/use_cases/recognize_ima
 import { get_SettingsPresetRepository } from "./repositories_registry";
 import { GetActiveSettingsPresetUseCase } from "../../application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
 import { UpdateSettingsPresetUseCase } from "../../application/use_cases/update_settings_preset/update_settings_preset.use_case";
+import { CheckForAppUpdatesUseCase } from "../../application/use_cases/check_for_app_updates/check_for_app_updates.use_case";
 
 
 container_registry.bind( Registry.RecognizeImageUseCase ).toDynamicValue( (context) => {
@@ -37,6 +38,12 @@ container_registry.bind( Registry.UpdateSettingsPresetUseCase ).toDynamicValue( 
     );
 }).inSingletonScope();
 
+container_registry.bind( Registry.CheckForAppUpdatesUseCase ).toDynamicValue( (context) => {
+    return new CheckForAppUpdatesUseCase(
+        context.container.get( Registry.FakeAppVersionProviderAdapter ),
+    );
+}).inSingletonScope();
+
 
 
 export function get_RecognizeImageUseCase(): RecognizeImageUseCase {
@@ -53,4 +60,8 @@ export function get_GetActiveSettingsPresetUseCase(): GetActiveSettingsPresetUse
 
 export function get_UpdateSettingsPresetUseCase(): UpdateSettingsPresetUseCase {    
     return container_registry.get< UpdateSettingsPresetUseCase >( Registry.UpdateSettingsPresetUseCase );
+}
+
+export function get_CheckForAppUpdatesUseCase(): CheckForAppUpdatesUseCase {    
+    return container_registry.get< CheckForAppUpdatesUseCase >( Registry.CheckForAppUpdatesUseCase );
 }
