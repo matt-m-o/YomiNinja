@@ -1,5 +1,5 @@
 import { app } from "electron";
-import { AppVersionProviderAdapter } from "../../application/adapters/app_version_provider.adapter";
+import { AppVersionProviderAdapter } from "../../../application/adapters/app_version_provider.adapter";
 import axios, { AxiosInstance } from 'axios';
 import semver from 'semver';
 
