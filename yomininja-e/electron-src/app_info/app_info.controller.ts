@@ -1,5 +1,6 @@
-import { BrowserWindow, ipcMain } from "electron";
+import { BrowserWindow, ipcMain, shell } from "electron";
 import { AppInfoService } from "./app_info.service";
+import { get_AppGithubUrl } from "../@core/infra/container_registry/adapters_registry";
 
 
 export class AppInfoController {
@@ -19,8 +20,15 @@ export class AppInfoController {
         this.mainWindow = mainWindow;
 
         ipcMain.handle( 'app_info:get_update_check', async () => {
-
             return this.appInfoService.checkForAppUpdates();
         });
+
+        ipcMain.handle( 'app_info:open_releases_page', async () => {
+            this.openAppReleasesPage();
+        });
+    }
+
+    openAppReleasesPage() {
+        shell.openExternal( get_AppGithubUrl() + '/releases' );        
     }
 }

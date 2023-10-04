@@ -15,7 +15,7 @@ container_registry.bind( Registry.SharpImageProcessingAdapter ).toDynamicValue( 
 }).inSingletonScope();
 
 container_registry.bind( Registry.GithubAppVersionProviderAdapter ).toDynamicValue( (context) => {
-    return new GithubAppVersionProviderAdapter({ githubRepoUrl: 'https://github.com/matt-m-o/YomiNinja' });
+    return new GithubAppVersionProviderAdapter({ githubRepoUrl: get_AppGithubUrl() });
 }).inSingletonScope();
 
 container_registry.bind( Registry.FakeAppVersionProviderAdapter ).toDynamicValue( (context) => {
@@ -38,4 +38,8 @@ export function get_GithubAppVersionProviderAdapter(): GithubAppVersionProviderA
 
 export function get_FakeAppVersionProviderAdapter(): FakeAppVersionProviderAdapter {
     return container_registry.get< FakeAppVersionProviderAdapter >( Registry.FakeAppVersionProviderAdapter );
+}
+
+export function get_AppGithubUrl(): string {
+    return 'https://github.com/matt-m-o/YomiNinja';
 }
