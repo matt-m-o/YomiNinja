@@ -1,5 +1,5 @@
 import { useContext, useEffect } from "react";
-import { AppInfoContext } from "../../context/app_info.provider";
+import { AppInfoContext, GithubReleasesLink } from "../../context/app_info.provider";
 import { Box, Typography, styled } from "@mui/material";
 import Image  from 'next/image';
 import Link from "next/link";
@@ -17,7 +17,7 @@ const AppNameFirstLetter = styled('span')({
 
 const AboutText = styled(Typography)({
     marginTop: '0.3rem',
-    marginBottom: '0.3rem',
+    marginBottom: '0.5rem',
     fontSize: '1.2rem'
 });
 
@@ -25,14 +25,7 @@ export default function AppInfo() {
 
     const { versionInfo, runUpdateCheck } = useContext( AppInfoContext );
     
-    const githubReleasesLink = (
-        <Link href='#'
-            style={{ color: 'white' }}
-            onClick={ () => global.ipcRenderer.invoke('app_info:open_releases_page') }
-            >
-            GitHub
-        </Link>
-    )
+    
 
     let versionText = 'Version: '+ versionInfo.runningVersion;
     versionText +=  versionInfo.isUpToDate ? ' (latest)' : '';
@@ -41,7 +34,7 @@ export default function AppInfo() {
 
     const logoDarkSrc = '/logos/v1-alt-3.svg';
 
-    const size = 300;
+    const size = 280;
     const width = size;
     const height = size;
 
@@ -76,20 +69,22 @@ export default function AppInfo() {
                 <Box display='flex' flexDirection='column' justifyContent='center' ml={5}>
 
                     <Box>
-                        <AppName/>                                            
+                        <AppName/>
                         <AboutText sx={{ mb: 0 }} >
                             {versionText}
                         </AboutText>
                         <AboutText sx={{ mt: 0 }}>
-                            ✨{newVersionText}{githubReleasesLink}.
+                            ✨{newVersionText} <GithubReleasesLink />
                         </AboutText>
                     </Box>
 
-                    <AboutText> Yomi Ninja provides seamless text extraction right from your screen,
-                    making it easy to copy text from images, videos, and games without switching applications.</AboutText>
+                    <Box>
+                        <AboutText> Yomi Ninja provides seamless text extraction right from your screen,
+                        making it easy to copy text from images, videos, and games without switching applications.</AboutText>
 
-                    {/* <P> Perfect for language learners and anyone who values efficient text handling. </P> */}
-                    <AboutText> Dictionary look-ups with a simple hover and other features are coming soon. </AboutText>
+                        {/* <AboutText> Perfect for language learners and anyone who values efficient text handling. </AboutText> */}
+                        <AboutText> Built-in pop-up dictionary for look-ups with a simple hover and many other features are coming soon. </AboutText>
+                    </Box>                    
                   
                 </Box>
                 
