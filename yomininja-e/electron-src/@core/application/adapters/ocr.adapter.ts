@@ -3,7 +3,7 @@ import { OcrEngineSettings } from "../../domain/settings_preset/settings_preset"
 
 export type OcrRecognitionInput = {    
     imageBuffer: Buffer;
-    languageCode: string;
+    languageCode: string; // Two letters
 };
 
 export interface OcrAdapter {     

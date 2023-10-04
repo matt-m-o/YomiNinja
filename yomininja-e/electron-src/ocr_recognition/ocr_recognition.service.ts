@@ -6,6 +6,7 @@ import { OcrResultScalable } from "../@core/domain/ocr_result_scalable/ocr_resul
 import { GetActiveSettingsPresetUseCase } from "../@core/application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
 import { getActiveProfile } from "../@core/infra/app_initialization";
 import { OcrAdapter } from "../@core/application/adapters/ocr.adapter";
+import { ChangeActiveOcrLanguageUseCase } from "../@core/application/use_cases/change_active_ocr_language/change_active_ocr_language.use_case";
 
 
 export class OcrRecognitionService {
@@ -13,6 +14,7 @@ export class OcrRecognitionService {
     private recognizeImageUseCase: RecognizeImageUseCase;
     private getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
     private getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;
+    private changeActiveOcrLanguageUseCase: ChangeActiveOcrLanguageUseCase;
     private ocrAdapter: OcrAdapter;
 
     private windowManager = new WindowManager();
@@ -22,12 +24,14 @@ export class OcrRecognitionService {
             recognizeImageUseCase: RecognizeImageUseCase;
             getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
             getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;
+            changeActiveOcrLanguageUseCase: ChangeActiveOcrLanguageUseCase;
             ocrAdapter: OcrAdapter;
         }
     ){
         this.recognizeImageUseCase = input.recognizeImageUseCase;
         this.getSupportedLanguagesUseCase = input.getSupportedLanguagesUseCase;
         this.getActiveSettingsPresetUseCase = input.getActiveSettingsPresetUseCase;
+        this.changeActiveOcrLanguageUseCase = input.changeActiveOcrLanguageUseCase;
         this.ocrAdapter = input.ocrAdapter;
     }
 
@@ -109,5 +113,14 @@ export class OcrRecognitionService {
     restartOcrAdapter( callback:() => void ) {
 
         this.ocrAdapter.restart( callback );    
+    }
+
+    changeActiveOcrLanguage( input: { languageCode: string, profileId: string }): void {
+    
+        this.changeActiveOcrLanguageUseCase.execute({
+            languageCode: input.languageCode,
+            profileId: input.profileId,
+        })
+        
     }
 }

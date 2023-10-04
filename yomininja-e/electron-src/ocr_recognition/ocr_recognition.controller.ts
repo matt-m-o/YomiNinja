@@ -6,7 +6,6 @@ import { PAGES_DIR } from "../util/directories";
 import { uIOhook, UiohookKey } from 'uiohook-napi'
 import { activeProfile, getActiveProfile } from "../@core/infra/app_initialization";
 import { OcrRecognitionService } from "./ocr_recognition.service";
-import { GetActiveSettingsPresetUseCase } from "../@core/application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
 import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 
 

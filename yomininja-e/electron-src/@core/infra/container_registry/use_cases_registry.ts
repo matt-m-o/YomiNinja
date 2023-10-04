@@ -6,6 +6,7 @@ import { get_SettingsPresetRepository } from "./repositories_registry";
 import { GetActiveSettingsPresetUseCase } from "../../application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
 import { UpdateSettingsPresetUseCase } from "../../application/use_cases/update_settings_preset/update_settings_preset.use_case";
 import { CheckForAppUpdatesUseCase } from "../../application/use_cases/check_for_app_updates/check_for_app_updates.use_case";
+import { ChangeActiveOcrLanguageUseCase } from "../../application/use_cases/change_active_ocr_language/change_active_ocr_language.use_case";
 
 
 container_registry.bind( Registry.RecognizeImageUseCase ).toDynamicValue( (context) => {
@@ -44,6 +45,13 @@ container_registry.bind( Registry.CheckForAppUpdatesUseCase ).toDynamicValue( (c
     );
 }).inSingletonScope();
 
+container_registry.bind( Registry.ChangeActiveOcrLanguageUseCase ).toDynamicValue( (context) => {
+    return new ChangeActiveOcrLanguageUseCase(
+        context.container.get( Registry.ProfileTypeOrmRepository ),
+        context.container.get( Registry.LanguageTypeOrmRepository ),
+    );
+}).inSingletonScope();
+
 
 
 export function get_RecognizeImageUseCase(): RecognizeImageUseCase {
@@ -64,4 +72,8 @@ export function get_UpdateSettingsPresetUseCase(): UpdateSettingsPresetUseCase {
 
 export function get_CheckForAppUpdatesUseCase(): CheckForAppUpdatesUseCase {    
     return container_registry.get< CheckForAppUpdatesUseCase >( Registry.CheckForAppUpdatesUseCase );
+}
+
+export function get_ChangeActiveOcrLanguageUseCase(): ChangeActiveOcrLanguageUseCase {    
+    return container_registry.get< ChangeActiveOcrLanguageUseCase >( Registry.ChangeActiveOcrLanguageUseCase );
 }
