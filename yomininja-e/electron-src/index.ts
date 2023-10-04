@@ -12,6 +12,7 @@ import { ocrRecognitionController } from './ocr_recognition/ocr_recognition.inde
 import { settingsController } from './settings/settings.index';
 import './shared_handlers';
 import { uIOhook } from 'uiohook-napi';
+import { appInfoController } from './app_info/app_info.index';
 
 
 
@@ -44,6 +45,7 @@ app.on('ready', async () => {
       mainWindow.loadURL(url);
       ocrRecognitionController.init( mainWindow );
       settingsController.init( mainWindow );
+      appInfoController.init( mainWindow );
     });
 });
 

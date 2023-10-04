@@ -21,11 +21,11 @@ export class AppInfoService {
         if ( 
             !this.appVersionCheckedAt ||
             differenceInMinutes( new Date(), this.appVersionCheckedAt ) > 15
-        ) {
+        ) {            
             this.appVersionCheckedAt = new Date();
             this.latestAppVersionCheck = await this.checkForAppUpdatesUseCase.execute();
-        }
-        
+        }        
+
         return this.latestAppVersionCheck;
     }
 }

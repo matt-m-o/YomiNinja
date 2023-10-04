@@ -7,6 +7,6 @@ const appInfoService = new AppInfoService({
     checkForAppUpdatesUseCase: get_CheckForAppUpdatesUseCase()
 });
 
-export const ocrRecognitionController = new AppInfoController({
+export const appInfoController = new AppInfoController({
     appInfoService,
 });
