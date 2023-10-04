@@ -37,7 +37,7 @@ describe("ChangeActiveOcrLanguageUseCase tests", () => {
         await dataSource.getRepository( SettingsPreset ).insert( settingsPreset );        
 
         const languageJa = Language.create({ name: 'japanese', two_letter_code: 'ja' });
-        const languageEn = Language.create({ name: 'english', two_letter_code: 'en' });        
+        const languageEn = Language.create({ name: 'english', two_letter_code: 'en' });
 
         profileRepo = new ProfileTypeOrmRepository( dataSource.getRepository( Profile ) );
         const languageRepo = new LanguageTypeOrmRepository( dataSource.getRepository( Language ) );        

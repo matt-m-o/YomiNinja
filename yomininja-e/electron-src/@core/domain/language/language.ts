@@ -62,4 +62,15 @@ export class Language {
 
         this.props.three_letter_code = value;
     }
+
+    toJson(): LanguageJson {
+        return {
+            id: this.id,
+            ...this.props,
+        }
+    }
+}
+
+export interface LanguageJson extends LanguageProps {
+    id: string;
 }

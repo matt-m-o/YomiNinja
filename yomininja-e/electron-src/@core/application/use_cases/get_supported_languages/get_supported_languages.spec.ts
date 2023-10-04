@@ -2,6 +2,10 @@ import { OcrResult, OcrResult_CreationInput } from "../../../domain/ocr_result/o
 import { OcrAdapter, OcrRecognitionInput } from "../../adapters/ocr.adapter";
 import { FakeOcrTestAdapter } from "../../../infra/test/fake_ocr.adapter/fake_ocr.adapter";
 import { GetSupportedLanguagesUseCase } from "./get_supported_languages.use_case";
+import { DataSource } from "typeorm";
+import { LanguageTypeOrmSchema } from "../../../infra/db/typeorm/language/language.schema";
+import { Language } from "../../../domain/language/language";
+import LanguageTypeOrmRepository from "../../../infra/db/typeorm/language/language.typeorm.repository";
 
 
 
@@ -28,16 +32,37 @@ describe("Get Supported Languages Use Case tests", () => {
     };
 
     const ocrTestAdapterSupportedLanguages = [ "en", "ja" ];
-    
+    let languagesInRepo: Language[];
 
     let ocrTestAdapter: FakeOcrTestAdapter;
+    let languagesRepo: LanguageTypeOrmRepository;
     let getSupportedLanguages: GetSupportedLanguagesUseCase;
 
-    beforeEach( () => {
+    beforeEach( async () => {
+
+        let dataSource = new DataSource({
+            type: 'sqlite',
+            database: ':memory:',
+            synchronize: true,
+            logging: false,
+            entities: [                
+                LanguageTypeOrmSchema
+            ],
+        });
+
+        await dataSource.initialize();
+        
+        const languageEn = Language.create({ name: 'english', two_letter_code: 'en' });    
+
+        languagesRepo = new LanguageTypeOrmRepository( dataSource.getRepository( Language ) );
+
+        await languagesRepo.insert( languageEn );
+
+        languagesInRepo = await languagesRepo.getAll();
 
         ocrTestAdapter = new FakeOcrTestAdapter( ocrTestAdapterResultProps, ocrTestAdapterSupportedLanguages );
         ocrTestAdapter.initialize();
-        getSupportedLanguages = new GetSupportedLanguagesUseCase( [ ocrTestAdapter ] );        
+        getSupportedLanguages = new GetSupportedLanguagesUseCase( [ ocrTestAdapter ], languagesRepo );        
     });
 
     it("should check if the use case has an adapter", () => {
@@ -46,14 +71,51 @@ describe("Get Supported Languages Use Case tests", () => {
         expect( getSupportedLanguages.ocrAdapters[0] ).toStrictEqual( ocrTestAdapter );
     });
 
-    it("should recognize using an OCR test adapter", async () => {
-
+    it("should the available language, excluding languages that aren't in repository", async () => {
 
         const result = await getSupportedLanguages.execute();
 
-        expect( result.length > 0 ).toBeTruthy();
+        expect( result.length == 1 ).toBeTruthy();
         expect( result[0].adapterName ).toStrictEqual( FakeOcrTestAdapter._name );
-        expect( result[0].languageCodes ).toStrictEqual( ocrTestAdapterSupportedLanguages );       
+    
+        expect( result[0].languages ).toHaveLength( 1 );        
     });
     
+
+    it("should return all available languages, returning only english", async () => {
+
+        const result = await getSupportedLanguages.execute();
+
+        expect( result.length == 1 ).toBeTruthy();
+        expect( result[0].adapterName ).toStrictEqual( FakeOcrTestAdapter._name );
+    
+        expect( result[0].languages ).toHaveLength( 1 );
+
+        const english = result[0].languages[0];
+
+        expect( english.name ).toStrictEqual('english');
+        expect( english.two_letter_code ).toStrictEqual('en');
+    });
+
+
+    it("should return all available languages, returning both english and japanese", async () => {
+
+        await languagesRepo.insert( Language.create( { name:'japanese', two_letter_code: 'ja'  }) );
+
+        const result = await getSupportedLanguages.execute();
+
+        expect( result.length == 1 ).toBeTruthy();            
+        expect( result[0].languages ).toHaveLength( 2 );
+
+        const english = result[0].languages.find( language => language.two_letter_code === 'en' );
+        const japanese = result[0].languages.find( language => language.two_letter_code === 'ja' );
+        
+        expect( english ).toBeDefined();
+        expect( english?.name ).toStrictEqual('english');
+        expect( english?.two_letter_code ).toStrictEqual('en');
+
+        expect( japanese ).toBeDefined();
+        expect( japanese?.name ).toStrictEqual('japanese');
+        expect( japanese?.two_letter_code ).toStrictEqual('ja');
+    });
 });
