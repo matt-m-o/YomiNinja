@@ -42,8 +42,8 @@ export class OcrRecognitionController {
     }
 
     async fullScreenOcr( imageBuffer?: Buffer ) {
-        console.log('');
-        console.time('fullScreenOcr');
+        // console.log('');
+        // console.time('fullScreenOcr');
 
         try {
             // console.log(activeProfile);
@@ -65,8 +65,8 @@ export class OcrRecognitionController {
         } catch (error) {
             console.error( error );
         }
-        console.timeEnd('fullScreenOcr');
-        console.log('');
+        // console.timeEnd('fullScreenOcr');
+        // console.log('');
     }
 
     async registerGlobalShortcuts( settingsPresetJson?: SettingsPresetJson ) {
