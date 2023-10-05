@@ -8,8 +8,6 @@ import { activeProfile, getActiveProfile } from "../@core/infra/app_initializati
 import { OcrRecognitionService } from "./ocr_recognition.service";
 import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 import { LanguageJson } from "../@core/domain/language/language";
-
-
 export class OcrRecognitionController {
     
     private mainWindow: BrowserWindow | undefined;
@@ -184,6 +182,8 @@ export class OcrRecognitionController {
         if ( !this.overlayAlwaysOnTop )
             this.overlayWindow.setAlwaysOnTop( false );
 
+        this.setOverlayDisplay();
+
         this.overlayWindow.show();
     }
 
@@ -216,5 +216,21 @@ export class OcrRecognitionController {
                 this.mainWindow.webContents.send( 'ocr_recognition:ocr_engine_restarted' );
             });
         }, 3000 );
+    }
+
+    setOverlayDisplay() {
+        console.time("setOverlayDisplay");
+
+        if ( !this.overlayWindow ) return;
+        
+        if ( screen.getAllDisplays().length > 1 ) {
+            
+            const { getCursorScreenPoint, getDisplayNearestPoint } = screen;
+
+            const currentScreen = getDisplayNearestPoint( getCursorScreenPoint() );
+            this.overlayWindow.setBounds(currentScreen.workArea);
+        }
+
+        console.timeEnd("setOverlayDisplay");
     }
 }
