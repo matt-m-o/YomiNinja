@@ -7,14 +7,14 @@ import { GetActiveSettingsPresetUseCase } from "../@core/application/use_cases/g
 import { getActiveProfile } from "../@core/infra/app_initialization";
 import { OcrAdapter } from "../@core/application/adapters/ocr.adapter";
 import { ChangeActiveOcrLanguageUseCase } from "../@core/application/use_cases/change_active_ocr_language/change_active_ocr_language.use_case";
+import { Language } from "../@core/domain/language/language";
 
 
 export class OcrRecognitionService {
 
     private recognizeImageUseCase: RecognizeImageUseCase;
     private getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
-    private getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;
-    private changeActiveOcrLanguageUseCase: ChangeActiveOcrLanguageUseCase;
+    private getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;    
     private ocrAdapter: OcrAdapter;
 
     private windowManager = new WindowManager();
@@ -30,8 +30,7 @@ export class OcrRecognitionService {
     ){
         this.recognizeImageUseCase = input.recognizeImageUseCase;
         this.getSupportedLanguagesUseCase = input.getSupportedLanguagesUseCase;
-        this.getActiveSettingsPresetUseCase = input.getActiveSettingsPresetUseCase;
-        this.changeActiveOcrLanguageUseCase = input.changeActiveOcrLanguageUseCase;
+        this.getActiveSettingsPresetUseCase = input.getActiveSettingsPresetUseCase;        
         this.ocrAdapter = input.ocrAdapter;
     }
 
@@ -109,18 +108,15 @@ export class OcrRecognitionService {
         });
     }
 
-
     restartOcrAdapter( callback:() => void ) {
 
         this.ocrAdapter.restart( callback );    
-    }
+    }    
 
-    changeActiveOcrLanguage( input: { languageCode: string, profileId: string }): void {
-    
-        this.changeActiveOcrLanguageUseCase.execute({
-            languageCode: input.languageCode,
-            profileId: input.profileId,
-        })
-        
+    async getSupportedLanguages( ): Promise<Language[]> {
+
+        const results = await this.getSupportedLanguagesUseCase.execute();       
+
+        return results.map( result => result.languages ).flat(1);
     }
 }
