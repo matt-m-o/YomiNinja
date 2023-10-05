@@ -6,14 +6,23 @@ import { SettingsProvider } from '../context/settings.provider';
 import { AppInfoProvider } from '../context/app_info.provider';
 import AppInfo from '../components/AppInfo/AppInfo';
 import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
+import HomeContent from '../components/HomeComponents/HomeContent';
+import { LanguagesProvider } from '../context/languages.provider';
+import { Profile } from '../../electron-src/@core/domain/profile/profile';
+import { ProfileProvider } from '../context/profile.provider';
 
 export default function IndexPage() {
-
 
   const settingsTabContents = (
     <SettingsProvider>
       <AppSettingsMenu/>
     </SettingsProvider>
+  );
+
+  const homeTabContents = (
+    <LanguagesProvider>
+      <HomeContent/>
+    </LanguagesProvider>
   )
 
   const layoutProps: LayoutProps = {
@@ -23,7 +32,7 @@ export default function IndexPage() {
           text: 'Home',
           icon: <Home/>,
         },
-        tabContent: <div> HOME CONTENT </div>
+        tabContent: homeTabContents
       },
       {
         tabLabel: {
@@ -43,9 +52,13 @@ export default function IndexPage() {
   };
 
   return (
-    <AppInfoProvider>
-      <Layout {...layoutProps}/>
-    </AppInfoProvider>
+    <ProfileProvider>
+      <AppInfoProvider>
+
+        <Layout {...layoutProps}/>
+        
+      </AppInfoProvider>
+    </ProfileProvider>
   );
 }
 
