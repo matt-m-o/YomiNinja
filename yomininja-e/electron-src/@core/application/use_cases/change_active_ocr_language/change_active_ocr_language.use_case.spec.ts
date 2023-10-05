@@ -59,20 +59,20 @@ describe("ChangeActiveOcrLanguageUseCase tests", () => {
 
     });
 
-    it("should the active ocr language from japanese to english", async () => {
+    it("should get the active ocr language from japanese to english", async () => {
 
         const input: ChangeActiveLanguage_Input = {
             profileId: initialProfile.id,
             languageCode: 'ja'
         };
 
-        expect( initialProfile.active_ocr_language.three_letter_code ).toStrictEqual('ja');
+        expect( initialProfile.active_ocr_language.two_letter_code ).toStrictEqual('ja');
 
         await changeActiveOcrLanguageUseCase.execute( input );
         
         const currentProfile = await profileRepo.findOne({ id: initialProfile.id });
 
-        expect( currentProfile?.active_ocr_language.three_letter_code ).toStrictEqual('ja');        
+        expect( currentProfile?.active_ocr_language.two_letter_code ).toStrictEqual('ja');        
     });
     
 });
