@@ -26,7 +26,7 @@ export class Language {
         
         this.props = {
             ...input,
-            three_letter_code: input?.two_letter_code || undefined
+            three_letter_code: input?.three_letter_code || undefined
         };        
     }
 
@@ -57,7 +57,7 @@ export class Language {
         if ( !value )
             value = undefined;
 
-        if ( value?.length != 2 )
+        if ( value?.length != 3 )
             return;
 
         this.props.three_letter_code = value;
