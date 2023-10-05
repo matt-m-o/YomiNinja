@@ -7,6 +7,7 @@ import { uIOhook, UiohookKey } from 'uiohook-napi'
 import { activeProfile, getActiveProfile } from "../@core/infra/app_initialization";
 import { OcrRecognitionService } from "./ocr_recognition.service";
 import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
+import { LanguageJson } from "../@core/domain/language/language";
 
 
 export class OcrRecognitionController {
@@ -14,14 +15,14 @@ export class OcrRecognitionController {
     private mainWindow: BrowserWindow | undefined;
     private overlayWindow: BrowserWindow | undefined;
     private overlayAlwaysOnTop: boolean = false;
-    // private windowManager = new WindowManager();
+    // private windowManager = new WindowManager();    
 
     private ocrRecognitionService: OcrRecognitionService;    
 
     constructor( input: {        
         ocrRecognitionService: OcrRecognitionService;        
     }) {
-        this.ocrRecognitionService = input.ocrRecognitionService;    
+        this.ocrRecognitionService = input.ocrRecognitionService;
     }
 
     async init( mainWindow: BrowserWindow ) {
@@ -37,7 +38,19 @@ export class OcrRecognitionController {
         this.overlayAlwaysOnTop = Boolean(settings.overlay.behavior.always_on_top);
 
         this.createOverlayWindow();
-        this.registerGlobalShortcuts( settings.toJson() );        
+        this.registerGlobalShortcuts( settings.toJson() );
+        this.registersIpcHandlers();
+    }
+    
+    private registersIpcHandlers() {        
+
+        ipcMain.handle( 'ocr_recognition:get_supported_languages',
+            async ( event: IpcMainInvokeEvent ) => {            
+
+                return ( await this.ocrRecognitionService.getSupportedLanguages() )
+                    .map( language => language.toJson() );                
+            }
+        );
     }
 
     async fullScreenOcr( imageBuffer?: Buffer ) {
@@ -106,7 +119,7 @@ export class OcrRecognitionController {
 
             this.showOverlayWindow();
             this.overlayWindow?.webContents.send( 'user_command:clear_overlay' );
-        });        
+        });
                 
         
         uIOhook.removeAllListeners();

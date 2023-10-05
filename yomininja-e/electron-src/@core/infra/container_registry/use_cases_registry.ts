@@ -7,6 +7,7 @@ import { GetActiveSettingsPresetUseCase } from "../../application/use_cases/get_
 import { UpdateSettingsPresetUseCase } from "../../application/use_cases/update_settings_preset/update_settings_preset.use_case";
 import { CheckForAppUpdatesUseCase } from "../../application/use_cases/check_for_app_updates/check_for_app_updates.use_case";
 import { ChangeActiveOcrLanguageUseCase } from "../../application/use_cases/change_active_ocr_language/change_active_ocr_language.use_case";
+import { GetProfileUseCase } from "../../application/use_cases/get_profile/get_profile.use_case";
 
 
 container_registry.bind( Registry.RecognizeImageUseCase ).toDynamicValue( (context) => {
@@ -20,9 +21,10 @@ container_registry.bind( Registry.RecognizeImageUseCase ).toDynamicValue( (conte
 }).inSingletonScope();
 
 container_registry.bind( Registry.GetSupportedLanguagesUseCase ).toDynamicValue( (context) => {
-    return new GetSupportedLanguagesUseCase( [
-        context.container.get( Registry.PpOcrAdapter ),
-    ]);
+    return new GetSupportedLanguagesUseCase(
+        [ context.container.get( Registry.PpOcrAdapter ) ],
+        context.container.get( Registry.LanguageTypeOrmRepository ),
+    );
 }).inSingletonScope();
 
 
@@ -52,6 +54,13 @@ container_registry.bind( Registry.ChangeActiveOcrLanguageUseCase ).toDynamicValu
     );
 }).inSingletonScope();
 
+container_registry.bind( Registry.GetProfileUseCase ).toDynamicValue( (context) => {
+    return new GetProfileUseCase(
+        context.container.get( Registry.ProfileTypeOrmRepository ),        
+    );
+}).inSingletonScope();
+
+
 
 
 export function get_RecognizeImageUseCase(): RecognizeImageUseCase {
@@ -76,4 +85,8 @@ export function get_CheckForAppUpdatesUseCase(): CheckForAppUpdatesUseCase {
 
 export function get_ChangeActiveOcrLanguageUseCase(): ChangeActiveOcrLanguageUseCase {    
     return container_registry.get< ChangeActiveOcrLanguageUseCase >( Registry.ChangeActiveOcrLanguageUseCase );
+}
+
+export function get_GetProfileUseCase(): GetProfileUseCase {    
+    return container_registry.get< GetProfileUseCase >( Registry.GetProfileUseCase );
 }

@@ -23,6 +23,7 @@ export const Registry = {
     UpdateSettingsPresetUseCase: Symbol.for('UpdateSettingsPresetUseCase'),
     CheckForAppUpdatesUseCase: Symbol.for('CheckForAppUpdatesUseCase'),
     ChangeActiveOcrLanguageUseCase: Symbol.for('ChangeActiveOcrLanguageUseCase'),
+    GetProfileUseCase: Symbol.for('GetProfileUseCase'),
 
     // Repositories
     SettingsPresetInMemoryRepository: Symbol.for('SettingsPresetInMemoryRepository'),

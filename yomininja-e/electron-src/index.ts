@@ -13,6 +13,7 @@ import { settingsController } from './settings/settings.index';
 import './shared_handlers';
 import { uIOhook } from 'uiohook-napi';
 import { appInfoController } from './app_info/app_info.index';
+import { profileController } from './profile/profile.index';
 
 
 
@@ -46,6 +47,7 @@ app.on('ready', async () => {
       ocrRecognitionController.init( mainWindow );
       settingsController.init( mainWindow );
       appInfoController.init( mainWindow );
+      profileController.init( mainWindow );
     });
 });
 

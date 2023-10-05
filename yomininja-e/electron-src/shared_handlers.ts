@@ -23,3 +23,4 @@ ipcMain.handle( 'ocr_recognition:restart_engine', async ( event: IpcMainInvokeEv
 
     ocrRecognitionController.restartEngine();
 });
+
