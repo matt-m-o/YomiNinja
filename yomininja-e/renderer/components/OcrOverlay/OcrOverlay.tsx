@@ -7,8 +7,9 @@ import FullscreenOcrResult from "./FullscreenOcrResult";
 
 const OverlayFrame = styled('div')({
     border: 'solid 1px',
-    height: '99.4vh',
+    height: '100vh',
     overflow: 'hidden',
+    boxSizing: 'border-box'
 });
 
 export default function OcrOverlay() {
