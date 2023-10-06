@@ -1,7 +1,10 @@
 import { useContext, useEffect } from "react"
 import { LanguagesContext } from "../../context/languages.provider";
-import { Autocomplete, Box, Container, TextField } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Box, Container, FormControlLabel, FormGroup, TextField, TextFieldProps, Typography } from "@mui/material";
 import { ProfileContext } from "../../context/profile.provider";
+import CaptureSourceMenu from "./CaptureSourceMenu";
+import { CaptureSourceProvider } from "../../context/capture_source.provider";
+
 
 
 function capitalize( text: string ) {
@@ -20,7 +23,7 @@ export default function HomeContent() {
 
     function handleLanguageSelectChange( languageName: string ) {
 
-        console.log({ languageName });
+        if (!languageName) return;        
 
         const language = languages?.find( language => language.name === languageName.toLowerCase() );
 
@@ -30,25 +33,48 @@ export default function HomeContent() {
     }
 
 
+    function CustomTextField( props: { label?: string, width?: string } & TextFieldProps ) {
+        return (
+            <FormControlLabel label={props.label}
+                sx={{
+                    // minWidth: '150px',
+                    // width: 'max-content',
+                    // maxWidth: props.width,
+                    alignItems: 'start',
+                    ml: '10px',
+                    mr: '10px'
+                }}
+                labelPlacement="top"                
+                control={
+                    <TextField {...props } label='' sx={{ width: props.width }}/>
+                }
+            />
+        )        
+    }
 
 
     return (
-        <>
-            <Box display='flex' justifyContent='center'>
+        
+        <Box display='flex' justifyContent='center' flexDirection='column' maxWidth={800} m={'auto'}>
 
-                <Autocomplete autoHighlight                    
+            <Box display='flex' justifyContent='center' flexDirection='row'> 
+                <Autocomplete autoHighlight
                     renderInput={ (params) => {
-                        return <TextField {...params}  />
+                        return <CustomTextField {...params} label='OCR Language' width='200px' />
                     }}
                     value={ activeOcrLanguage || 'english' }
                     onChange={(event: any, newValue: string | null) => {
                         handleLanguageSelectChange( newValue );
-                    }}                    
+                    }}
                     options={ languageOptions || [] }
-                    sx={{ width: 190 }}                
-                />
-
+                />                
             </Box>
-        </>
+                
+            <CaptureSourceProvider>
+                <CaptureSourceMenu/>
+            </CaptureSourceProvider>
+            
+        </Box>
+        
     )
 }
