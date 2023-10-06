@@ -10,13 +10,23 @@ import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_pre
 import { LanguageJson } from "../@core/domain/language/language";
 import { CaptureSource } from "./common/types";
 
+
+const entireScreenAutoCaptureSource: CaptureSource = {
+    id: '',
+    name: 'Entire screen (auto selected)',
+    displayId: -1
+}
+
 export class OcrRecognitionController {
     
     private mainWindow: BrowserWindow | undefined;
     private overlayWindow: BrowserWindow | undefined;
     private overlayAlwaysOnTop: boolean = false;
-    private autoDetectDisplay: boolean = true;
-    private selectedDisplay: Electron.Display;
+    
+    private captureSourceDisplay: Electron.Display | undefined;    
+    private userPreferredDisplayId: number | undefined; // Will be used instead of autoDetectDisplay
+    private userPreferredWindowId: number | undefined;
+
     // private windowManager = new WindowManager();
     private ocrRecognitionService: OcrRecognitionService;
 
@@ -41,7 +51,7 @@ export class OcrRecognitionController {
         this.createOverlayWindow();
         this.registerGlobalShortcuts( settings.toJson() );
         this.registersIpcHandlers();        
-        this.handleDisplayDetection();
+        this.handleCaptureSourceSelection();
     }
     
     private registersIpcHandlers() {        
@@ -57,7 +67,54 @@ export class OcrRecognitionController {
         ipcMain.handle( 'ocr_recognition:get_capture_sources',
             async ( event: IpcMainInvokeEvent ): Promise< CaptureSource[] > => {
 
-                return await this.ocrRecognitionService.getAllCaptureSources();                    
+                const sources = await this.ocrRecognitionService.getAllCaptureSources();
+
+                console.log("Capture sources (displays): ")
+                const displaysSources = sources.filter( source => source.displayId )                
+                
+                // If there are more than 1 display, the auto capture source option must be available
+                if ( displaysSources.length > 1 )
+                    sources.unshift( entireScreenAutoCaptureSource );
+
+                return sources;
+            }
+        );
+
+        ipcMain.handle( 'ocr_recognition:get_active_capture_source',
+            async ( event: IpcMainInvokeEvent ): Promise< CaptureSource > => {
+
+                const sources = await this.ocrRecognitionService.getAllCaptureSources();
+                
+                let activeSource: CaptureSource | undefined;
+
+                if ( this.userPreferredDisplayId )
+                    activeSource = sources.find( source => source.displayId === this.userPreferredDisplayId );
+
+                if ( this.userPreferredWindowId )
+                    activeSource = sources.find( source => source.id.includes( String(this.userPreferredWindowId) ) );
+
+                if ( !activeSource ) {
+                    activeSource = {
+                        ...entireScreenAutoCaptureSource,
+                        name: "Entire screen"
+                    };
+                }
+
+                return activeSource || entireScreenAutoCaptureSource;
+            }
+        );
+
+        ipcMain.handle( 'ocr_recognition:set_capture_source',
+            async ( event: IpcMainInvokeEvent, message: CaptureSource ): Promise< void > => {
+
+                this.userPreferredDisplayId = message?.displayId && message?.displayId > 0 ? 
+                    message.displayId :
+                    undefined;                
+
+                if ( !message?.displayId )
+                    this.userPreferredWindowId = Number( message.id.split(':')[1] );
+                else
+                    this.userPreferredWindowId = undefined;
             }
         );
     }
@@ -69,12 +126,12 @@ export class OcrRecognitionController {
         try {
             // console.log(activeProfile);
 
-            this.handleDisplayDetection();
+            this.handleCaptureSourceSelection();
 
             const ocrResultScalable = await this.ocrRecognitionService.recognizeEntireScreen({
                 imageBuffer,
                 profileId: getActiveProfile().id,
-                display: this.selectedDisplay
+                display: this.captureSourceDisplay
             });
 
             if ( !this.overlayWindow )
@@ -196,7 +253,7 @@ export class OcrRecognitionController {
         if ( !this.overlayAlwaysOnTop )
             this.overlayWindow.setAlwaysOnTop( false );
 
-        this.setOverlayDisplay();
+        this.setOverlayBounds();
 
         this.overlayWindow.show();
     }
@@ -232,20 +289,36 @@ export class OcrRecognitionController {
         }, 3000 );
     }
 
-    setOverlayDisplay() {
-        console.time("setOverlayDisplay");
+    setOverlayBounds() {
+        console.time("setOverlayBounds");
 
         if ( !this.overlayWindow ) return;        
         
-        this.overlayWindow.setBounds( this.selectedDisplay.workArea );
+        if (
+            this.captureSourceDisplay
+            // this.captureSourceWindow
+        )
+            this.overlayWindow.setBounds( this.captureSourceDisplay?.workArea );
 
-        console.timeEnd("setOverlayDisplay");
+        console.timeEnd("setOverlayBounds");
     }
 
-    handleDisplayDetection() {
+    handleCaptureSourceSelection() {
 
-        if ( this.autoDetectDisplay )
-            this.selectedDisplay = this.ocrRecognitionService.getCurrentDisplay();
+        console.log({
+            userPreferredDisplayId: this.userPreferredDisplayId,
+            userPreferredWindowId: this.userPreferredWindowId
+        })
+
+        if ( 
+            !this.userPreferredDisplayId &&
+            !this.userPreferredWindowId
+        ) {
+            this.captureSourceDisplay = this.ocrRecognitionService.getCurrentDisplay();
+        }
+
+        if ( this.userPreferredDisplayId )
+            this.captureSourceDisplay = this.ocrRecognitionService.getDisplay( this.userPreferredDisplayId );
     }
     
 }

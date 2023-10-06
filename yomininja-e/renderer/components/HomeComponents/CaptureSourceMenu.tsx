@@ -24,7 +24,7 @@ export default function CaptureSourceMenu() {
         captureSources
     } = useContext( CaptureSourceContext );
 
-    const [ selectedSource, setSelectedSource ] = useState<CaptureSource>();
+    // const [ selectedSource, setSelectedSource ] = useState<CaptureSource>();
     
     const [ tab, setTab ] = useState('1');
     const [ accordionExpanded, setAccordionExpanded ] = useState(false);
@@ -37,9 +37,9 @@ export default function CaptureSourceMenu() {
         setTab(newValue);
     };
 
-    function handleSourceClick( source: CaptureSource ) {
-        setSelectedSource( source );        
+    function handleSourceClick( source: CaptureSource ) {        
         setAccordionExpanded( false );
+        updateActiveCaptureSource( source );
     }
 
     async function getMediaStream( input: { mediaSourceId: string, maxWidth: number }): Promise<MediaStream> {
@@ -80,7 +80,7 @@ export default function CaptureSourceMenu() {
 
         const { captureSource } = props;
 
-        const sx: SxProps<Theme> = captureSource.id === selectedSource?.id ?
+        const sx: SxProps<Theme> = captureSource.id === activeCaptureSource?.id ?
             {
                 border: 'solid 1px',
                 borderColor: defaultTheme.palette.action.active
@@ -134,7 +134,7 @@ export default function CaptureSourceMenu() {
                     <Typography sx={{ mr: 1}}>
                         Capture source:
                     </Typography>
-                    <Typography color='#90caf9' >{selectedSource?.name}</Typography>
+                    <Typography color='#90caf9' >{activeCaptureSource?.name}</Typography>
                 </AccordionSummary>
 
                 <AccordionDetails>

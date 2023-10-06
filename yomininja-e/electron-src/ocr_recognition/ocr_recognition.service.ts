@@ -142,6 +142,11 @@ export class OcrRecognitionService {
     }
 
 
+    getDisplay( id: number ): Electron.Display | undefined {
+        return screen.getAllDisplays()
+            .find( display => display.id === id );
+    }
+
     getCurrentDisplay(): Electron.Display {
         
         // screen.getAllDisplays().forEach( ({ id, label }, idx ) => console.log({
