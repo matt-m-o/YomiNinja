@@ -8,7 +8,8 @@ import { activeProfile, getActiveProfile } from "../@core/infra/app_initializati
 import { OcrRecognitionService } from "./ocr_recognition.service";
 import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 import { LanguageJson } from "../@core/domain/language/language";
-import { CaptureSource, DisplayJson } from "./common/types";
+import { CaptureSource } from "./common/types";
+
 export class OcrRecognitionController {
     
     private mainWindow: BrowserWindow | undefined;
