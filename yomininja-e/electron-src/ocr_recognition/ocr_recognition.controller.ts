@@ -8,14 +8,16 @@ import { activeProfile, getActiveProfile } from "../@core/infra/app_initializati
 import { OcrRecognitionService } from "./ocr_recognition.service";
 import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 import { LanguageJson } from "../@core/domain/language/language";
+import { CaptureSource, DisplayJson } from "./common/types";
 export class OcrRecognitionController {
     
     private mainWindow: BrowserWindow | undefined;
     private overlayWindow: BrowserWindow | undefined;
     private overlayAlwaysOnTop: boolean = false;
-    // private windowManager = new WindowManager();    
-
-    private ocrRecognitionService: OcrRecognitionService;    
+    private autoDetectDisplay: boolean = true;
+    private selectedDisplay: Electron.Display;
+    // private windowManager = new WindowManager();
+    private ocrRecognitionService: OcrRecognitionService;
 
     constructor( input: {        
         ocrRecognitionService: OcrRecognitionService;        
@@ -37,7 +39,8 @@ export class OcrRecognitionController {
 
         this.createOverlayWindow();
         this.registerGlobalShortcuts( settings.toJson() );
-        this.registersIpcHandlers();
+        this.registersIpcHandlers();        
+        this.handleDisplayDetection();
     }
     
     private registersIpcHandlers() {        
@@ -49,6 +52,13 @@ export class OcrRecognitionController {
                     .map( language => language.toJson() );                
             }
         );
+
+        ipcMain.handle( 'ocr_recognition:get_capture_sources',
+            async ( event: IpcMainInvokeEvent ): Promise< CaptureSource[] > => {
+
+                return await this.ocrRecognitionService.getAllCaptureSources();                    
+            }
+        );
     }
 
     async fullScreenOcr( imageBuffer?: Buffer ) {
@@ -58,10 +68,13 @@ export class OcrRecognitionController {
         try {
             // console.log(activeProfile);
 
+            this.handleDisplayDetection();
+
             const ocrResultScalable = await this.ocrRecognitionService.recognizeEntireScreen({
                 imageBuffer,
-                profileId: getActiveProfile().id
-            });            
+                profileId: getActiveProfile().id,
+                display: this.selectedDisplay
+            });
 
             if ( !this.overlayWindow )
                 this.createOverlayWindow();
@@ -221,16 +234,17 @@ export class OcrRecognitionController {
     setOverlayDisplay() {
         console.time("setOverlayDisplay");
 
-        if ( !this.overlayWindow ) return;
+        if ( !this.overlayWindow ) return;        
         
-        if ( screen.getAllDisplays().length > 1 ) {
-            
-            const { getCursorScreenPoint, getDisplayNearestPoint } = screen;
-
-            const currentScreen = getDisplayNearestPoint( getCursorScreenPoint() );
-            this.overlayWindow.setBounds(currentScreen.workArea);
-        }
+        this.overlayWindow.setBounds( this.selectedDisplay.workArea );
 
         console.timeEnd("setOverlayDisplay");
     }
+
+    handleDisplayDetection() {
+
+        if ( this.autoDetectDisplay )
+            this.selectedDisplay = this.ocrRecognitionService.getCurrentDisplay();
+    }
+    
 }

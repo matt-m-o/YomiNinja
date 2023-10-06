@@ -8,7 +8,8 @@ import { getActiveProfile } from "../@core/infra/app_initialization";
 import { OcrAdapter } from "../@core/application/adapters/ocr.adapter";
 import { ChangeActiveOcrLanguageUseCase } from "../@core/application/use_cases/change_active_ocr_language/change_active_ocr_language.use_case";
 import { Language } from "../@core/domain/language/language";
-
+import { screen } from 'electron';
+import { CaptureSource } from "./common/types";
 
 export class OcrRecognitionService {
 
@@ -37,12 +38,14 @@ export class OcrRecognitionService {
     async recognizeEntireScreen( input: {
         imageBuffer?: Buffer,
         profileId: string,
+        display?: Electron.Display,
+        windowName?: string,
     }): Promise< OcrResultScalable | null > {
 
-        let { imageBuffer, profileId } = input;
+        let { imageBuffer, profileId, display, windowName } = input;
 
         if ( !imageBuffer ) {
-            const { image } = await this.takeScreenshot( 'Entire screen' );
+            const { image } = await this.takeScreenshot({ display, windowName });
             imageBuffer = image;
         }
 
@@ -55,41 +58,59 @@ export class OcrRecognitionService {
         });
     }
 
-    private async takeScreenshot( target = 'Entire screen' ): Promise<{
+    private async takeScreenshot( input: { display?: Electron.Display, windowName?: string }): Promise<{
         image?: Buffer,
         windowProps?: WindowProperties
     }> {
+
+        const { display, windowName } = input;
 
         console.time('takeScreenshot');
 
         // const { workAreaSize } = screen.getPrimaryDisplay();
         let sourceTypes: ( 'window' | 'screen' )[] = [];
+        // sourceTypes.push('window'); // ! Just for testing
 
         let windowProps: WindowProperties | undefined;
 
-        if ( target === 'Entire screen' )
+        if ( display )
             sourceTypes.push('screen');
-        else{
+        else if (windowName){
             sourceTypes.push('window');
-            windowProps = this.windowManager.getWindowProperties( target );
+            windowProps = this.windowManager.getWindowProperties( windowName );
         }
 
         const sources = await desktopCapturer.getSources({
             types: sourceTypes,
             thumbnailSize: {
-                width: windowProps?.size.width || 1920, // workAreaSize.width, // 2560 // 1920 // 1280
-                height: windowProps?.size.height || 1080, // workAreaSize.height, // 1440 // 1080 // 720
+                width: windowProps?.size.width || display?.size.width || 1920, // workAreaSize.width, // 2560 // 1920 // 1280
+                height: windowProps?.size.height || display?.size.width || 1080, // workAreaSize.height, // 1440 // 1080 // 720
             },
         });
         
-        const source = sources.find( source => source.name.includes( target ) );
+        let source: Electron.DesktopCapturerSource | undefined;
+
+        if ( display ) {
+            
+            source = sources.find( source => source.display_id.includes( display.id.toString() ) );
+
+            if ( !source )
+                source = sources.find( source => source.name.includes( 'Entire screen' ) );
+        }
+        else if ( windowName ) {
+            source = sources.find( source => source.name.includes( windowName ) );
+        }
+
+        sources.forEach( ({ id, display_id, name } ) => console.log({
+            id, display_id, name
+        }));
 
         console.timeEnd('takeScreenshot');
 
         if ( !source )
             return {};
 
-        if ( target === 'Entire screen' ) {
+        if ( display ) {
             
             return {
                 image: source.thumbnail.toPNG()
@@ -118,5 +139,38 @@ export class OcrRecognitionService {
         const results = await this.getSupportedLanguagesUseCase.execute();       
 
         return results.map( result => result.languages ).flat(1);
+    }
+
+
+    getCurrentDisplay(): Electron.Display {
+        
+        // screen.getAllDisplays().forEach( ({ id, label }, idx ) => console.log({
+        //     idx, id, label
+        // }));
+            
+        const { getCursorScreenPoint, getDisplayNearestPoint } = screen;
+        
+        return getDisplayNearestPoint( getCursorScreenPoint() );
+    }
+
+    getAllDisplays(): Electron.Display[] {
+        return screen.getAllDisplays();
+    }
+
+    async getAllCaptureSources(): Promise< CaptureSource[] > {
+        
+        const sources = await desktopCapturer.getSources({
+            types: [ 'screen', 'window' ],
+            thumbnailSize: {
+                width: 0,
+                height: 0,
+            },
+        });
+
+        return sources.map( source => ({
+            id: source.id,
+            displayId: Number(source.display_id),
+            name: source.name
+        }));
     }
 }
