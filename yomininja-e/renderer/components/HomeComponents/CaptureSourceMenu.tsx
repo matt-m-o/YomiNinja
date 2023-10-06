@@ -88,10 +88,17 @@ export default function CaptureSourceMenu() {
 
 
         return <>
-            <Button onClick={ () => handleSourceClick(captureSource) } sx={{ ...sx, minWidth: 'min-content' }}>
+            <Button onClick={ () => handleSourceClick(captureSource) } sx={{ ...sx, width: 'max-content' }}>
                 <Box display='flex' flexDirection='column' alignItems='center' key={captureSource.id}>
                     <VideoElement mediaSourceId={captureSource.id} maxWidth={180} />
-                    <Typography align="center" sx={{ textTransform: 'initial' }}>
+                    <Typography align="center" 
+                        sx={{ 
+                            textTransform: 'initial',
+                            textOverflow: 'ellipsis',
+                            overflow: 'hidden',
+                            whiteSpace: 'nowrap',
+                            width: '180px'
+                        }}>
                         {captureSource.name}
                     </Typography>
                 </Box>
@@ -103,8 +110,8 @@ export default function CaptureSourceMenu() {
 
         return (<>
             { items?.map( ( item, idx ) => (
-                <Grid item xs={2} sm={4} md={4} key={idx} 
-                    sx={{ display: 'flex', justifyContent: 'center' }}
+                <Grid item key={idx}
+                    // sx={{ display: 'flex', justifyContent: 'center' }}
                 >
                     <CaptureSourceButton captureSource={item}/>
                 </Grid>
@@ -139,15 +146,15 @@ export default function CaptureSourceMenu() {
                                 <Tab label="Window" value="2" />
                             </TabList>
                         </Box>
-                        <TabPanel value="1">                    
-                            <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 1, sm: 6, md: 12 }}>
+                        <TabPanel value="1" >
+                            <Grid container spacing={{ xs: 2, md: 8 }} columns={{ xs: 1, sm: 4, md: 12 }}>
                                 <CaptureSourceList
                                     items={ captureSources?.filter( item => item?.displayId ) }
                                 />
                             </Grid>
                         </TabPanel>
                         <TabPanel value="2">
-                            <Grid container spacing={{ xs: 2, md: 6 }} columns={{ xs: 1, sm: 4, md: 12 }}>
+                            <Grid container spacing={{ xs: 2, md: 8 }} columns={{ xs: 1, sm: 4, md: 12 }} >
                                 <CaptureSourceList
                                     items={ captureSources?.filter( item => !item?.displayId ) }
                                 />
@@ -157,6 +164,8 @@ export default function CaptureSourceMenu() {
                     </TabContext>
 
                 </AccordionDetails>
+
+                
 
             </Accordion>
             
