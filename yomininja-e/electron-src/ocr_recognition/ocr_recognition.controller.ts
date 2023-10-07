@@ -9,6 +9,8 @@ import { OcrRecognitionService } from "./ocr_recognition.service";
 import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 import { LanguageJson } from "../@core/domain/language/language";
 import { CaptureSource, ExternalWindow } from "./common/types";
+import { TaskbarProperties } from "../../gyp_modules/window_management/window_manager";
+import sharp from "sharp";
 
 
 const entireScreenAutoCaptureSource: CaptureSource = {
@@ -19,18 +21,21 @@ const entireScreenAutoCaptureSource: CaptureSource = {
 
 export class OcrRecognitionController {
     
+    private ocrRecognitionService: OcrRecognitionService;
+    
     private mainWindow: BrowserWindow | undefined;
     private overlayWindow: BrowserWindow | undefined;
     private overlayAlwaysOnTop: boolean = false;
     
     private captureSourceDisplay: Electron.Display | undefined;        
     private userPreferredDisplayId: number | undefined; // Will be used instead of autoDetectDisplay
-
+    
     private captureSourceWindow: ExternalWindow | undefined;
     private userPreferredWindowId: number | undefined;
-
-    // private windowManager = new WindowManager();
-    private ocrRecognitionService: OcrRecognitionService;
+    
+    private taskbar: TaskbarProperties;
+    
+    private displayCount = 1;
 
     constructor( input: {        
         ocrRecognitionService: OcrRecognitionService;        
@@ -54,6 +59,10 @@ export class OcrRecognitionController {
         this.registerGlobalShortcuts( settings.toJson() );
         this.registersIpcHandlers();        
         this.handleCaptureSourceSelection();
+
+        this.taskbar = this.ocrRecognitionService.getTaskbar();
+
+        this.displayCount = this.ocrRecognitionService.getAllDisplays().length;
     }
     
     private registersIpcHandlers() {        
@@ -116,20 +125,14 @@ export class OcrRecognitionController {
                 if ( !message?.displayId )
                     this.userPreferredWindowId = Number( message.id.split(':')[1] );
                 else
-                    this.userPreferredWindowId = undefined;
-
-                console.log('ocr_recognition:set_capture_source: ');
-                console.log({
-                    userPreferredDisplayId: this.userPreferredDisplayId,
-                    userPreferredWindowId: this.userPreferredWindowId,
-                });
+                    this.userPreferredWindowId = undefined;                
             }
         );
     }
 
-    async recognize( imageBuffer?: Buffer ) {
-        // console.log('');
-        // console.time('fullScreenOcr');
+    async recognize( entireScreenImage?: Buffer, runFullScreenImageCheck?: boolean ) {
+        console.log('');
+        // console.time('controller.recognize');
 
         try {
             // console.log(activeProfile);
@@ -137,7 +140,7 @@ export class OcrRecognitionController {
             await this.handleCaptureSourceSelection();
 
             const ocrResultScalable = await this.ocrRecognitionService.recognize({
-                imageBuffer,
+                imageBuffer: entireScreenImage,
                 profileId: getActiveProfile().id,
                 display: this.captureSourceDisplay,
                 window: this.captureSourceWindow,
@@ -146,17 +149,25 @@ export class OcrRecognitionController {
             if ( !this.overlayWindow )
                 this.createOverlayWindow();
 
+            // console.timeEnd('controller.recognize');
+
             if ( !this.overlayWindow )
                 return;
 
-            this.overlayWindow.webContents.send( 'ocr:result', ocrResultScalable );
+            this.overlayWindow.webContents.send( 'ocr:result', ocrResultScalable );            
+
+            let isFullScreenImage = true;
+
+            if ( entireScreenImage && runFullScreenImageCheck)
+                isFullScreenImage = await this.isFullScreenImage(entireScreenImage);             
+
+            this.setOverlayBounds( isFullScreenImage ? 'fullscreen' :  'maximized' );
             this.showOverlayWindow();
 
         } catch (error) {
             console.error( error );
         }
-        // console.timeEnd('fullScreenOcr');
-        // console.log('');
+        console.log('');
     }
 
     async registerGlobalShortcuts( settingsPresetJson?: SettingsPresetJson ) {
@@ -205,9 +216,25 @@ export class OcrRecognitionController {
         if ( overlayHotkeys.ocr_on_screen_shot ) {            
             uIOhook.on( 'keyup', async ( e ) => {  
 
-                if (e.keycode === UiohookKey.PrintScreen) {                
-                    await this.recognize( clipboard.readImage().toPNG() );                
+                if (e.keycode === UiohookKey.PrintScreen) {
+                                        
+                    const runFullScreenImageCheck = e.altKey && !this.taskbar.auto_hide;
+
+                    // console.log({ runFullScreenImageCheck });
+                    // console.log({ userPreferredDisplayId: this.userPreferredDisplayId });
+                    // console.log({ captureSourceDisplay: this.captureSourceDisplay });
+
+                    if (
+                        this.userPreferredDisplayId ||
+                        this.userPreferredWindowId ||
+                        this.displayCount > 1 && !e.altKey
+                    )
+                        await this.recognize();
+
+                    else
+                        await this.recognize( clipboard.readImage().toPNG(), runFullScreenImageCheck );                                    
                 }
+                
             });
         }
     }
@@ -260,9 +287,7 @@ export class OcrRecognitionController {
         this.overlayWindow.setAlwaysOnTop( true, "normal" ); // normal, pop-up-menu och screen-saver
 
         if ( !this.overlayAlwaysOnTop )
-            this.overlayWindow.setAlwaysOnTop( false );
-
-        this.setOverlayBounds();
+            this.overlayWindow.setAlwaysOnTop( false );        
 
         this.overlayWindow.show();
     }
@@ -298,13 +323,23 @@ export class OcrRecognitionController {
         }, 3000 );
     }
 
-    setOverlayBounds() {
+    setOverlayBounds( entireScreenMode: 'fullscreen' | 'maximized' = 'fullscreen' ) {
         console.time("setOverlayBounds");
 
         if ( !this.overlayWindow ) return;
         
-        if ( this.captureSourceDisplay )
-            this.overlayWindow.setBounds( this.captureSourceDisplay?.workArea );
+        if ( this.captureSourceDisplay ) {            
+            
+            this.overlayWindow.setBounds({                
+                ...this.captureSourceDisplay?.workArea,
+            });
+            
+            if ( entireScreenMode === 'fullscreen' )
+                this.overlayWindow.setFullScreen( entireScreenMode === 'fullscreen' );
+
+            if ( entireScreenMode === 'maximized')
+                this.overlayWindow.maximize();
+        }
 
         else if ( this.captureSourceWindow ) {
 
@@ -358,14 +393,38 @@ export class OcrRecognitionController {
     }
 
     async handleCaptureSourceSelection() {
+        console.time('handleCaptureSourceSelection');
 
-        console.log({
-            userPreferredDisplayId: this.userPreferredDisplayId,
-            userPreferredWindowId: this.userPreferredWindowId
-        });
+        // console.log({
+        //     userPreferredDisplayId: this.userPreferredDisplayId,
+        //     userPreferredWindowId: this.userPreferredWindowId
+        // });
 
         this.handleDisplaySource();
         await this.handleWindowSource();
+
+        console.timeEnd('handleCaptureSourceSelection');
+    }
+
+    private async isFullScreenImage( imageBuffer: Buffer ): Promise<boolean> {
+
+        const metadata = await sharp(imageBuffer).metadata();
+
+        if ( 
+            !this.captureSourceDisplay ||
+            !metadata?.width ||
+            !metadata?.height
+         )
+            return false;        
+
+        if ( 
+            metadata.width >= this.captureSourceDisplay?.size.width &&
+            metadata.height >= this.captureSourceDisplay?.size.height
+        ) {
+            return true;
+        }
+
+        return false
     }
 
 }
