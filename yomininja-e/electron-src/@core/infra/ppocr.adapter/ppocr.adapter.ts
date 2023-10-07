@@ -24,6 +24,7 @@ export class PpOcrAdapter implements OcrAdapter {
     private ocrServiceClient: OCRServiceClient | null = null;
     private idCounter: number = 0;
     private ppocrServiceProcess: ChildProcessWithoutNullStreams;
+    private recognitionCallOnHold: OcrRecognitionInput | undefined;
 
     constructor() {
 
@@ -47,18 +48,28 @@ export class PpOcrAdapter implements OcrAdapter {
     }
 
     async recognize( input: OcrRecognitionInput ): Promise< OcrResult | null > {
-
-        // console.time('PpOcrAdapter.recognize');        
-
-        const ok = await this.ppocrServiceProcessHealthCheck();
+        
+        if ( this.status === OcrAdapterStatus.Processing ) {
+            this.recognitionCallOnHold = input;
+            console.log('holding recognition input');
+            return null;
+        }
+        else {
+            this.recognitionCallOnHold = undefined;            
+        }
+        
+        const ok = await this.ppocrServiceProcessStatusCheck();        
         if ( !ok ) return null;
-
+        
         const requestInput: RecognizeBytesRequest = {
             id: this.idCounter.toString(),
             image_bytes: input.imageBuffer,
             language_code: input.languageCode            
         };        
-        
+
+        console.log('holding processing input');
+        this.status = OcrAdapterStatus.Processing;
+        // console.time('PpOcrAdapter.recognize');        
         const clientResponse = await new Promise< RecognizeDefaultResponse__Output | undefined >(
             (resolve, reject) => this.ocrServiceClient?.RecognizeBytes( requestInput, ( error, response ) => {
                 if (error) {
@@ -67,6 +78,13 @@ export class PpOcrAdapter implements OcrAdapter {
                 resolve(response);
             })
         );
+        // console.timeEnd('PpOcrAdapter.recognize');
+        this.status = OcrAdapterStatus.Enabled;
+        
+        // Throwing away current response an returning newest call result
+        if ( this.recognitionCallOnHold ){
+            return await this.recognize( this.recognitionCallOnHold );
+        }
 
         if ( !clientResponse )
             return null;
@@ -77,7 +95,6 @@ export class PpOcrAdapter implements OcrAdapter {
         )
             return null;
         
-        // console.timeEnd('PpOcrAdapter.recognize');
         
         return OcrResult.create({
             id: parseInt(clientResponse.id),
@@ -141,6 +158,9 @@ export class PpOcrAdapter implements OcrAdapter {
         // Handle process exit
         this.ppocrServiceProcess.on('close', (code) => {
             console.log(`ppocr_infer_service_grpc.exe process exited with code ${code}`);
+
+            if ( this.status != OcrAdapterStatus.Restarting )
+                this.restart( () => {} );
         });
 
         process.on('exit', () => {
@@ -151,7 +171,7 @@ export class PpOcrAdapter implements OcrAdapter {
     }
 
     // Checks if the ppocrService is enabled.
-    async ppocrServiceProcessHealthCheck(): Promise< boolean > {
+    async ppocrServiceProcessStatusCheck(): Promise< boolean > {
         
         let triesCounter = 0;
 
@@ -161,10 +181,10 @@ export class PpOcrAdapter implements OcrAdapter {
             await new Promise( (resolve) => setTimeout(resolve, 2000) );
             triesCounter++;
 
-            console.log('ppocrServiceProcessHealthCheck: '+ triesCounter);
+            console.log('ppocrServiceProcessStatusCheck: '+ triesCounter);
 
             if ( triesCounter > 15 ) return false;
-        }        
+        }
 
         return true
     }
@@ -192,7 +212,7 @@ export class PpOcrAdapter implements OcrAdapter {
 
         this.restartProcess();
 
-        const ok = await this.ppocrServiceProcessHealthCheck();
+        const ok = await this.ppocrServiceProcessStatusCheck();
 
         if (!ok) return;
 
