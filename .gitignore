@@ -1,3 +1,5 @@
 **/bin/*
 copy_ppocr_build.bat
 .vscode/c_cpp_properties.json
+yomininja-e/.vscode/c_cpp_properties.json
+yomininja-e/.vscode/settings.json

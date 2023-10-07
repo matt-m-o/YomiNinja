@@ -1,19 +1,22 @@
 import bindings from 'bindings';
 
 export type WindowProperties = {
+    title: string;
+    handle: number;
     size: {
-        width: number,
-        height: number
-    },
+        width: number;
+        height: number;
+    };
     position: {
-        x: number,
-        y: number
-    }
+        x: number;
+        y: number;
+    };
 }
 
 interface WindowManagerCppInterface {
-    setForegroundWindow( windowTitle: string ): string; // Set window to front
-    getWindowProperties( windowTitle: string ): WindowProperties;
+    setForegroundWindow( windowHandle: number ): void; // Set window to front
+    getWindowProperties( windowHandle: number ): WindowProperties;
+    getAllWindows(): any;
 };
 
 export class WindowManager {
@@ -25,13 +28,31 @@ export class WindowManager {
         this.windowManager = bindings('window_manager_win32') as WindowManagerCppInterface;
     }
 
-    setForegroundWindow( windowTitle: string ): void {
+    setForegroundWindow( windowHandle: number ): void {
 
-        this.windowManager.setForegroundWindow( windowTitle );
+        this.windowManager.setForegroundWindow( windowHandle );
+    }
+    
+    getWindow( windowHandle: number  ): WindowProperties {        
+
+        const result = this.windowManager.getWindowProperties( windowHandle );
+        this.fixTitle([result]);
+
+        return result;
     }
 
-    getWindowProperties( windowTitle: string  ): WindowProperties {
+    getAllWindows(): WindowProperties[] {
 
-        return this.windowManager.getWindowProperties( windowTitle );
+        const result = this.windowManager.getAllWindows();
+        this.fixTitle(result);
+
+        return result;
+    }
+
+    private fixTitle( items: WindowProperties[] ) {
+
+        items.forEach( (item: any) => {    
+            item.title = item.title.replace( '\x00', '' );            
+        });
     }
 }
