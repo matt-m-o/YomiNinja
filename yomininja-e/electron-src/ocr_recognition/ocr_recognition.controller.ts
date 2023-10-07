@@ -8,7 +8,7 @@ import { activeProfile, getActiveProfile } from "../@core/infra/app_initializati
 import { OcrRecognitionService } from "./ocr_recognition.service";
 import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 import { LanguageJson } from "../@core/domain/language/language";
-import { CaptureSource } from "./common/types";
+import { CaptureSource, ExternalWindow } from "./common/types";
 
 
 const entireScreenAutoCaptureSource: CaptureSource = {
@@ -23,8 +23,10 @@ export class OcrRecognitionController {
     private overlayWindow: BrowserWindow | undefined;
     private overlayAlwaysOnTop: boolean = false;
     
-    private captureSourceDisplay: Electron.Display | undefined;    
+    private captureSourceDisplay: Electron.Display | undefined;        
     private userPreferredDisplayId: number | undefined; // Will be used instead of autoDetectDisplay
+
+    private captureSourceWindow: ExternalWindow | undefined;
     private userPreferredWindowId: number | undefined;
 
     // private windowManager = new WindowManager();
@@ -69,7 +71,7 @@ export class OcrRecognitionController {
 
                 const sources = await this.ocrRecognitionService.getAllCaptureSources();
 
-                console.log("Capture sources (displays): ")
+                // console.log("Capture sources (displays): ")
                 const displaysSources = sources.filter( source => source.displayId )                
                 
                 // If there are more than 1 display, the auto capture source option must be available
@@ -115,23 +117,30 @@ export class OcrRecognitionController {
                     this.userPreferredWindowId = Number( message.id.split(':')[1] );
                 else
                     this.userPreferredWindowId = undefined;
+
+                console.log('ocr_recognition:set_capture_source: ');
+                console.log({
+                    userPreferredDisplayId: this.userPreferredDisplayId,
+                    userPreferredWindowId: this.userPreferredWindowId,
+                });
             }
         );
     }
 
-    async fullScreenOcr( imageBuffer?: Buffer ) {
+    async recognize( imageBuffer?: Buffer ) {
         // console.log('');
         // console.time('fullScreenOcr');
 
         try {
             // console.log(activeProfile);
 
-            this.handleCaptureSourceSelection();
+            await this.handleCaptureSourceSelection();
 
-            const ocrResultScalable = await this.ocrRecognitionService.recognizeEntireScreen({
+            const ocrResultScalable = await this.ocrRecognitionService.recognize({
                 imageBuffer,
                 profileId: getActiveProfile().id,
-                display: this.captureSourceDisplay
+                display: this.captureSourceDisplay,
+                window: this.captureSourceWindow,
             });
 
             if ( !this.overlayWindow )
@@ -173,7 +182,7 @@ export class OcrRecognitionController {
         globalShortcut.register( overlayHotkeys.ocr, async () => {            
 
             this.overlayWindow?.webContents.send( 'user_command:clear_overlay' );
-            await this.fullScreenOcr();            
+            await this.recognize();            
         });
         
         // View overlay and copy text clipboard
@@ -197,7 +206,7 @@ export class OcrRecognitionController {
             uIOhook.on( 'keyup', async ( e ) => {  
 
                 if (e.keycode === UiohookKey.PrintScreen) {                
-                    await this.fullScreenOcr( clipboard.readImage().toPNG() );                
+                    await this.recognize( clipboard.readImage().toPNG() );                
                 }
             });
         }
@@ -292,33 +301,71 @@ export class OcrRecognitionController {
     setOverlayBounds() {
         console.time("setOverlayBounds");
 
-        if ( !this.overlayWindow ) return;        
+        if ( !this.overlayWindow ) return;
         
-        if (
-            this.captureSourceDisplay
-            // this.captureSourceWindow
-        )
+        if ( this.captureSourceDisplay )
             this.overlayWindow.setBounds( this.captureSourceDisplay?.workArea );
+
+        else if ( this.captureSourceWindow ) {
+
+            const targetWindowBounds = {
+                width: this.captureSourceWindow.size.width,
+                height: this.captureSourceWindow.size.height,
+                x: this.captureSourceWindow.position.x,
+                y: this.captureSourceWindow.position.y,
+            };
+
+            // Handling potential issues with DIP
+            let dipRect = screen.screenToDipRect( this.overlayWindow, targetWindowBounds );
+            this.overlayWindow.setBounds( dipRect );
+
+            // Might be necessary calculate and set twice
+            // dipRect = screen.screenToDipRect( this.overlayWindow, targetWindowBounds )
+            // this.overlayWindow.setBounds( dipRect );
+        }
 
         console.timeEnd("setOverlayBounds");
     }
 
-    handleCaptureSourceSelection() {
 
-        console.log({
-            userPreferredDisplayId: this.userPreferredDisplayId,
-            userPreferredWindowId: this.userPreferredWindowId
-        })
+    handleDisplaySource() {
+
+        if ( this.userPreferredDisplayId ) {
+            this.captureSourceDisplay = this.ocrRecognitionService.getDisplay( this.userPreferredDisplayId );
+            return;
+        }
 
         if ( 
             !this.userPreferredDisplayId &&
             !this.userPreferredWindowId
-        ) {
+        ) 
             this.captureSourceDisplay = this.ocrRecognitionService.getCurrentDisplay();
-        }
+        else 
+            this.captureSourceDisplay = undefined;
 
-        if ( this.userPreferredDisplayId )
-            this.captureSourceDisplay = this.ocrRecognitionService.getDisplay( this.userPreferredDisplayId );
+        // console.log({ display_id: this.captureSourceDisplay?.id })
     }
-    
+
+    async handleWindowSource() {      
+        
+        if ( this.userPreferredWindowId )
+            this.captureSourceWindow = await this.ocrRecognitionService.getExternalWindow( this?.userPreferredWindowId );
+
+        else 
+            this.captureSourceWindow = undefined;
+        
+        // console.log(this.captureSourceWindow);
+    }
+
+    async handleCaptureSourceSelection() {
+
+        console.log({
+            userPreferredDisplayId: this.userPreferredDisplayId,
+            userPreferredWindowId: this.userPreferredWindowId
+        });
+
+        this.handleDisplaySource();
+        await this.handleWindowSource();
+    }
+
 }
