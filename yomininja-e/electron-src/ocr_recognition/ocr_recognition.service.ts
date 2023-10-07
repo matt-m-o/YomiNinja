@@ -10,6 +10,7 @@ import { ChangeActiveOcrLanguageUseCase } from "../@core/application/use_cases/c
 import { Language } from "../@core/domain/language/language";
 import { screen } from 'electron';
 import { CaptureSource, ExternalWindow } from "./common/types";
+import sharp from 'sharp';
 
 export class OcrRecognitionService {
 
@@ -49,7 +50,14 @@ export class OcrRecognitionService {
             imageBuffer = image;
         }
         else if (window) {
-            // ! crop image according to window
+            // cropping image according to window properties
+            imageBuffer = await sharp(imageBuffer).extract({
+                    left: window.position.x,
+                    top: window.position.y,
+                    width: window.size.width,
+                    height: window.size.height,
+                })
+                .toBuffer();
         }
 
         if ( !imageBuffer )
