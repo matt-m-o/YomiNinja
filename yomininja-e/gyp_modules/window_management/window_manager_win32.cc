@@ -1,38 +1,73 @@
 #include <napi.h>
 #include <windows.h> // ! Platform specific
+#include <dwmapi.h>
+
+#pragma comment(lib, "Dwmapi.lib") // Link with Dwmapi.lib
 
 
-// Structure to store window information
-struct WindowInfo {
-  std::wstring title;
-  RECT rect;
-  HWND hwnd;
+struct WindowSize {
+  int width;
+  int height;
 };
+struct WindowPosition {
+  int x;
+  int y;
+};
+
+
+struct WindowProps {
+  int handle;
+  std::string title;
+  WindowSize size;
+  WindowPosition position;
+};
+
+std::string titleToUtf8( const std::wstring &title ) {
+
+  // Convert the wide character title to a UTF-8 string for JavaScript
+  int utf8Length = WideCharToMultiByte(CP_UTF8, 0, title.c_str(), -1, nullptr, 0, nullptr, nullptr);
+  std::string utf8Title(utf8Length, '\0');
+  WideCharToMultiByte(CP_UTF8, 0, title.c_str(), -1, &utf8Title[0], utf8Length, nullptr, nullptr);
+
+  return utf8Title;
+}
+
+WindowProps getWindowProps( HWND &hwnd ) {
+
+  RECT rect;
+  DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, &rect, sizeof(RECT));
+
+  wchar_t w_title[256];
+  GetWindowTextW(hwnd, w_title, sizeof(w_title));
+  auto const title_ws = std::wstring(w_title);
+
+  auto const utf8Title = titleToUtf8( title_ws );
+
+  auto const hwnd_value = reinterpret_cast<int64_t>(hwnd);
+
+  WindowProps props;
+  props.title = utf8Title;
+  props.handle = hwnd_value;
+
+  props.size.width = rect.right - rect.left;
+  props.size.height = rect.bottom - rect.top;
+
+  props.position.x = rect.left;
+  props.position.y = rect.top;    
+
+  return props;
+}
 
 // Callback function to retrieve window information and store it in the array
 BOOL CALLBACK EnumWindowsCallback(HWND hwnd, LPARAM lParam) {
 
   if (IsWindowVisible(hwnd) && !IsIconic(hwnd)) {
 
-    std::vector<WindowInfo>* windowInfoArray = reinterpret_cast<std::vector<WindowInfo>*>(lParam);
+    std::vector<WindowProps>* windowPropsArray = reinterpret_cast<std::vector<WindowProps>*>(lParam);
 
-    WindowInfo info;
-    // Get the window title as a wide character string
-    wchar_t w_title[256];
-    GetWindowTextW(hwnd, w_title, sizeof(w_title));
-
-    // Convert the wide character title to a UTF-8 string
-    info.title = std::wstring(w_title);
-
-    // Get the window position and size
-    GetWindowRect(hwnd, &info.rect);
-
-    // Store the window handle (HWND)
-    info.hwnd = hwnd;
-
-    // Store the window info in the array
-    windowInfoArray->push_back(info);
-
+    WindowProps props = getWindowProps(hwnd);
+    
+    windowPropsArray->push_back(props);
   }
 
   return true; // Continue enumeration
@@ -86,34 +121,28 @@ class WindowManager : public Napi::Addon< WindowManager > {
       return env.Null();
     }
 
-    Napi::Object result = Napi::Object::New(env);
+    Napi::Object window = Napi::Object::New(env);
 
     if (hwnd != NULL) {
-      RECT rect;
-      GetWindowRect(hwnd, &rect);
 
-      wchar_t w_title[256];
-      GetWindowTextW(hwnd, w_title, sizeof(w_title));
-      auto const title_ws = std::wstring(w_title);
+      auto const props = getWindowProps(hwnd);
 
-      auto const utf8Title = titleToUtf8( title_ws );
-
-      result.Set( "title", utf8Title );
-      result.Set( "handle", hwnd_value );
+      window.Set( "title", props.title );
+      window.Set( "handle", props.handle );
       
-      Napi::Object size = Napi::Object::New(env);
-      size.Set( "width", rect.right - rect.left );
-      size.Set( "height", rect.bottom - rect.top );
+      Napi::Object size = Napi::Object::New(env);      
+      size.Set( "width", props.size.width );
+      size.Set( "height", props.size.height );
 
       Napi::Object position = Napi::Object::New(env);
-      position.Set( "x", rect.left );
-      position.Set( "y", rect.top );
-
-      result.Set( "size", size );
-      result.Set( "position", position );
+      position.Set( "x", props.position.x );
+      position.Set( "y", props.position.y );
+      
+      window.Set( "size", size );
+      window.Set( "position", position );
     }
 
-    return result;
+    return window;
   }
 
   Napi::Value getAllWindows( const Napi::CallbackInfo& info ) {
@@ -121,45 +150,44 @@ class WindowManager : public Napi::Addon< WindowManager > {
     Napi::Env env = info.Env();
     
     // Create an array to store window information
-    std::vector<WindowInfo> windowInfoArray;
+    std::vector<WindowProps> windowPropsArray;
 
     // Enumerate all top-level windows and populate the array
-    EnumWindows(EnumWindowsCallback, reinterpret_cast<LPARAM>(&windowInfoArray));
+    EnumWindows(EnumWindowsCallback, reinterpret_cast<LPARAM>(&windowPropsArray));
 
     // Create a result array to hold the extracted data
-    Napi::Array result = Napi::Array::New(env, windowInfoArray.size());
+    Napi::Array results = Napi::Array::New(env, windowPropsArray.size());
 
-    for (size_t i = 0; i < windowInfoArray.size(); i++) {
-      Napi::Object windowInfo = Napi::Object::New(env);
-      
-      // Convert the wide character title to a UTF-8 string for JavaScript
-      auto const utf8Title = titleToUtf8( windowInfoArray[i].title );
-      
-      windowInfo.Set("title", Napi::String::New(env, utf8Title));
-      windowInfo.Set("handle", Napi::Number::New(env, reinterpret_cast<int64_t>(windowInfoArray[i].hwnd))); // Convert HWND to a number
+    for (size_t i = 0; i < windowPropsArray.size(); i++) {
 
-      auto const rect = windowInfoArray[i].rect;
+      const auto props = windowPropsArray[i];
+      
+      Napi::Object window = Napi::Object::New(env);      
+      
+      window.Set("title", props.title);
+      window.Set("handle", props.handle);
+      
 
       Napi::Object size = Napi::Object::New(env);
-      size.Set( "width", rect.right - rect.left );
-      size.Set( "height", rect.bottom - rect.top );
+      size.Set( "width", props.size.width );
+      size.Set( "height", props.size.height );
 
       Napi::Object position = Napi::Object::New(env);
-      position.Set( "x", rect.left );
-      position.Set( "y", rect.top );
+      position.Set( "x", props.position.x );
+      position.Set( "y", props.position.y );
 
-      windowInfo.Set( "size", size );
-      windowInfo.Set( "position", position );
+      window.Set( "size", size );
+      window.Set( "position", position );
 
-      result.Set(i, windowInfo);
+      results.Set(i, window);
     }
 
-    return result;
+    return results;
   }
 
 private:
 
-  HWND getWindow( const std::string window_title_str ) {
+  HWND getWindowByTitle( const std::string window_title_str ) {
 
     std::wstring window_title_wstr = std::wstring( window_title_str.begin(), window_title_str.end() );
 
@@ -171,16 +199,6 @@ private:
 
   HWND getWindowByHandle( const int handle ) {
     return reinterpret_cast<HWND>(static_cast<intptr_t>(handle));    
-  }
-
-  std::string titleToUtf8( const std::wstring &title ) {
-
-    // Convert the wide character title to a UTF-8 string for JavaScript
-    int utf8Length = WideCharToMultiByte(CP_UTF8, 0, title.c_str(), -1, nullptr, 0, nullptr, nullptr);
-    std::string utf8Title(utf8Length, '\0');
-    WideCharToMultiByte(CP_UTF8, 0, title.c_str(), -1, &utf8Title[0], utf8Length, nullptr, nullptr);
-
-    return utf8Title;
   }
 
 };

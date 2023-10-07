@@ -53,6 +53,7 @@
     "@types/bindings": "^1.5.2",
     "@types/inversify": "^2.0.33",
     "@types/jest": "^29.5.5",
+    "@types/jsesc": "^3.0.1",
     "@types/lodash": "^4.14.198",
     "@types/node": "^14.14.6",
     "@types/react": "^18.2.0",
