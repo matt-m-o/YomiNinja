@@ -1,5 +1,5 @@
 import { desktopCapturer } from "electron";
-import { WindowManager, WindowProperties } from "../../gyp_modules/window_management/window_manager";
+import { TaskbarProperties, WindowManager, WindowProperties } from "../../gyp_modules/window_management/window_manager";
 import { GetSupportedLanguagesUseCase } from "../@core/application/use_cases/get_supported_languages/get_supported_languages.use_case";
 import { RecognizeImageUseCase } from "../@core/application/use_cases/recognize_image/recognize_image.use_case";
 import { OcrResultScalable } from "../@core/domain/ocr_result_scalable/ocr_result_scalable";
@@ -210,5 +210,10 @@ export class OcrRecognitionService {
             displayId: Number(source.display_id),
             name: source.name
         }));
+    }
+
+    getTaskbar(): TaskbarProperties {
+
+        return this.windowManager.getTaskbar();
     }
 }

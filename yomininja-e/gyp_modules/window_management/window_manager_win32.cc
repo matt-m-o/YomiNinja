@@ -5,11 +5,11 @@
 #pragma comment(lib, "Dwmapi.lib") // Link with Dwmapi.lib
 
 
-struct WindowSize {
+struct Size {
   int width;
   int height;
 };
-struct WindowPosition {
+struct Position {
   int x;
   int y;
 };
@@ -18,8 +18,8 @@ struct WindowPosition {
 struct WindowProps {
   int handle;
   std::string title;
-  WindowSize size;
-  WindowPosition position;
+  Size size;
+  Position position;
 };
 
 std::string titleToUtf8( const std::wstring &title ) {
@@ -73,6 +73,46 @@ BOOL CALLBACK EnumWindowsCallback(HWND hwnd, LPARAM lParam) {
   return true; // Continue enumeration
 }
 
+
+struct TaskbarProps {
+  Size size;
+  Position position;
+  bool auto_hide;
+};
+
+TaskbarProps getTaskbarInfo() {
+  APPBARDATA abd;
+  abd.cbSize = sizeof(APPBARDATA);
+
+  // Send the message to get taskbar information
+  UINT taskbar_state = (UINT)SHAppBarMessage(ABM_GETSTATE, &abd);
+  bool auto_hide = (taskbar_state & ABS_AUTOHIDE) != 0;
+
+  if (auto_hide) {
+    // If the taskbar is set to auto-hide, we need to temporarily unhide it
+    SHAppBarMessage(ABM_ACTIVATE, &abd);
+    // Give it some time to unhide
+    Sleep(1000);
+  }
+
+  // Get the taskbar information
+  SHAppBarMessage(ABM_GETTASKBARPOS, &abd);
+
+  TaskbarProps taskbar_props;
+  taskbar_props.position.x = abd.rc.left;
+  taskbar_props.position.y = abd.rc.top;
+  taskbar_props.size.width = abd.rc.right - abd.rc.left;
+  taskbar_props.size.height = abd.rc.bottom - abd.rc.top;
+  taskbar_props.auto_hide = auto_hide;
+
+  if (auto_hide) {
+    // If the taskbar was set to auto-hide, hide it again
+    SHAppBarMessage(ABM_ACTIVATE, &abd);
+  }
+
+  return taskbar_props;
+}
+
 class WindowManager : public Napi::Addon< WindowManager > {
     
  public:
@@ -81,7 +121,8 @@ class WindowManager : public Napi::Addon< WindowManager > {
     DefineAddon(exports, {      
       InstanceMethod("setForegroundWindow", &WindowManager::setForegroundWindow, napi_enumerable),
       InstanceMethod("getWindowProperties", &WindowManager::getWindowProperties, napi_enumerable),
-      InstanceMethod("getAllWindows", &WindowManager::getAllWindows, napi_enumerable)
+      InstanceMethod("getAllWindows", &WindowManager::getAllWindows, napi_enumerable),
+      InstanceMethod("getTaskBarProps", &WindowManager::getTaskBarProps, napi_enumerable),      
     });
   }
 
@@ -162,7 +203,7 @@ class WindowManager : public Napi::Addon< WindowManager > {
 
       const auto props = windowPropsArray[i];
       
-      Napi::Object window = Napi::Object::New(env);      
+      Napi::Object window = Napi::Object::New(env);
       
       window.Set("title", props.title);
       window.Set("handle", props.handle);
@@ -183,6 +224,28 @@ class WindowManager : public Napi::Addon< WindowManager > {
     }
 
     return results;
+  }
+
+  Napi::Value getTaskBarProps( const Napi::CallbackInfo& info ) {
+
+    Napi::Env env = info.Env();
+
+    TaskbarProps props = getTaskbarInfo();
+
+    Napi::Object size = Napi::Object::New(env);  
+    size.Set("width", props.size.width);
+    size.Set("height", props.size.height);
+
+    Napi::Object position = Napi::Object::New(env);
+    position.Set("x", props.position.x);
+    position.Set("y", props.position.y);
+
+    Napi::Object taskbar = Napi::Object::New(env);
+    taskbar.Set("size", size);
+    taskbar.Set("position", position);
+    taskbar.Set("auto_hide", props.auto_hide);
+
+    return taskbar;
   }
 
 private:

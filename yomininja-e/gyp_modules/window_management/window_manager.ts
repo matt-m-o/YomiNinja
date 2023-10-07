@@ -1,22 +1,32 @@
 import bindings from 'bindings';
 
+type Size = {
+    width: number;
+    height: number;
+};
+type Position = {
+    x: number;
+    y: number;
+};
+
 export type WindowProperties = {
     title: string;
     handle: number;
-    size: {
-        width: number;
-        height: number;
-    };
-    position: {
-        x: number;
-        y: number;
-    };
-}
+    size: Size;
+    position: Position;
+};
+
+export type TaskbarProperties = {
+    size: Size;
+    position: Position;
+    auto_hide: boolean;
+};
 
 interface WindowManagerCppInterface {
     setForegroundWindow( windowHandle: number ): void; // Set window to front
     getWindowProperties( windowHandle: number ): WindowProperties;
     getAllWindows(): any;
+    getTaskBarProps(): TaskbarProperties;
 };
 
 export class WindowManager {
@@ -47,6 +57,10 @@ export class WindowManager {
         this.fixTitle(result);
 
         return result;
+    }
+
+    getTaskbar(): TaskbarProperties {
+        return this.windowManager.getTaskBarProps();
     }
 
     private fixTitle( items: WindowProperties[] ) {
