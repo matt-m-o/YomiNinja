@@ -5,6 +5,7 @@ export type CaptureSourceContextType = {
     updateActiveCaptureSource: ( update: CaptureSource ) => Promise< void >;
     activeCaptureSource: CaptureSource;
     captureSources: CaptureSource[];
+    refreshCaptureSources: () => void; 
 };
 
 
@@ -39,6 +40,10 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
         console.log(source);
         setActiveCaptureSource(source);
     }
+
+    async function refreshCaptureSources() {
+        getCaptureSources();
+    }
     
     useEffect( () => {
 
@@ -52,8 +57,9 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
         <CaptureSourceContext.Provider
             value={{
                 updateActiveCaptureSource,
+                refreshCaptureSources,
                 activeCaptureSource,
-                captureSources
+                captureSources,
             }}
         >            
             {children}

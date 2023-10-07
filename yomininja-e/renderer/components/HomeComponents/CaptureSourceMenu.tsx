@@ -20,8 +20,9 @@ export default function CaptureSourceMenu() {
 
     const {
         activeCaptureSource,
+        captureSources,
         updateActiveCaptureSource,
-        captureSources
+        refreshCaptureSources,
     } = useContext( CaptureSourceContext );
 
     // const [ selectedSource, setSelectedSource ] = useState<CaptureSource>();
@@ -30,7 +31,11 @@ export default function CaptureSourceMenu() {
     const [ accordionExpanded, setAccordionExpanded ] = useState(false);
 
     function accordionHandleChange( event: React.SyntheticEvent, newValue: boolean ) {
+
         setAccordionExpanded(newValue);
+
+        if ( newValue )
+            refreshCaptureSources();
     };
 
     function tabHandleChange(event: React.SyntheticEvent, newValue: string) {
