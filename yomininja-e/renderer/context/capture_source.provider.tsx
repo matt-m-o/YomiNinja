@@ -46,10 +46,7 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
     }
     
     useEffect( () => {
-
-        getCaptureSources();
         getActiveCaptureSource();
-        
     }, [ global.ipcRenderer ] );
 
     

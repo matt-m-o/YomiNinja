@@ -7,7 +7,6 @@ import { uIOhook, UiohookKey } from 'uiohook-napi'
 import { activeProfile, getActiveProfile } from "../@core/infra/app_initialization";
 import { OcrRecognitionService } from "./ocr_recognition.service";
 import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
-import { LanguageJson } from "../@core/domain/language/language";
 import { CaptureSource, ExternalWindow } from "./common/types";
 import { TaskbarProperties } from "../../gyp_modules/window_management/window_manager";
 import sharp from "sharp";

@@ -52,7 +52,7 @@ export default function CaptureSourceMenu() {
         const stream: MediaStream = await ( navigator.mediaDevices as any).getUserMedia({
             audio: false,
             video: {               
-                mandatory: {                              
+                mandatory: {
                     chromeMediaSource: 'desktop',
                     chromeMediaSourceId: input.mediaSourceId,
                     maxWidth: input.maxWidth,
@@ -104,7 +104,7 @@ export default function CaptureSourceMenu() {
                             whiteSpace: 'nowrap',
                             width: '180px'
                         }}>
-                        {captureSource.name}
+                        { captureSource?.name }
                     </Typography>
                 </Box>
             </Button>
@@ -140,7 +140,7 @@ export default function CaptureSourceMenu() {
                         Capture source:
                     </Typography>
                     <Typography color='#90caf9' sx={{ fontSize: '1.15rem', mr: 1 }} >
-                        {activeCaptureSource?.name}
+                        { activeCaptureSource?.name }
                     </Typography>
                 </AccordionSummary>
 
