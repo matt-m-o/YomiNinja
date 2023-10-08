@@ -10,6 +10,7 @@ import HomeContent from '../components/HomeComponents/HomeContent';
 import { LanguagesProvider } from '../context/languages.provider';
 import { Profile } from '../../electron-src/@core/domain/profile/profile';
 import { ProfileProvider } from '../context/profile.provider';
+import { CaptureSourceProvider } from '../context/capture_source.provider';
 
 export default function IndexPage() {
 
@@ -17,7 +18,7 @@ export default function IndexPage() {
     <AppSettingsMenu/>    
   );
 
-  const homeTabContents = (
+  const homeTabContents = (    
     <LanguagesProvider>
       <HomeContent/>
     </LanguagesProvider>
@@ -50,15 +51,17 @@ export default function IndexPage() {
   };
 
   return (
-    <ProfileProvider>
-      <AppInfoProvider>
-        <SettingsProvider>
+    <CaptureSourceProvider>
+      <ProfileProvider>
+        <AppInfoProvider>
+          <SettingsProvider>          
 
-        <Layout {...layoutProps}/>
-        
-        </SettingsProvider>
-      </AppInfoProvider>
-    </ProfileProvider>
+          <Layout {...layoutProps}/>
+          
+          </SettingsProvider>
+        </AppInfoProvider>
+      </ProfileProvider>
+    </CaptureSourceProvider>
   );
 }
 

@@ -25,7 +25,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
 
         const { restartOcrAdapter } = await global.ipcRenderer.invoke( 'settings_preset:update', updatedPreset );
 
-        console.log({ restartOcrAdapter });
+        // console.log({ restartOcrAdapter });
 
     }, 1500 );
 
@@ -81,7 +81,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     
     function updateActivePreset( updatedPreset: Partial<SettingsPresetJson> ) {
 
-        console.log( updatedPreset );
+        // console.log( updatedPreset );
 
         if ( !updatedPreset )
             return;
@@ -97,7 +97,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
 
     function activeSettingsPresetHandler( data: SettingsPresetJson ) {
         
-        console.log(data);
+        // console.log(data);
         setActiveSettingsPreset( data );
     }
 

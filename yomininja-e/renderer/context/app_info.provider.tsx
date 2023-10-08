@@ -30,7 +30,7 @@ export const AppInfoProvider = ( { children }: PropsWithChildren ) => {
 
         const result: CheckForAppUpdates_Output = await global.ipcRenderer.invoke( 'app_info:get_update_check' );
 
-        console.log( result );
+        // console.log( result );
 
         setVersionInfo( result );
 

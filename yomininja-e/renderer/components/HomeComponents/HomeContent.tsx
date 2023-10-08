@@ -70,10 +70,8 @@ export default function HomeContent() {
                     options={ languageOptions || [] }
                 />                
             </Box>
-                
-            <CaptureSourceProvider>
-                <CaptureSourceMenu/>
-            </CaptureSourceProvider>
+                            
+            <CaptureSourceMenu/>            
 
             <HotkeyHints/>
             
