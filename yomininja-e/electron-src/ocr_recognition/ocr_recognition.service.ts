@@ -51,13 +51,7 @@ export class OcrRecognitionService {
         }
         else if (window) {
             // cropping image according to window properties
-            imageBuffer = await sharp(imageBuffer).extract({
-                    left: window.position.x,
-                    top: window.position.y,
-                    width: window.size.width,
-                    height: window.size.height,
-                })
-                .toBuffer();
+            imageBuffer = await this.cropWindowFromImage( window, imageBuffer );
         }
 
         if ( !imageBuffer )
@@ -73,18 +67,15 @@ export class OcrRecognitionService {
         image?: Buffer,
         window?: ExternalWindow
     }> {
+        console.time('takeScreenshot');        
 
         const { display, window } = input;
 
-        // console.time('takeScreenshot');
-
-        // const { workAreaSize } = screen.getPrimaryDisplay();
-        let sourceTypes: ( 'window' | 'screen' )[] = [];
-        // sourceTypes.push('window'); // ! Just for testing        
+        let sourceTypes: ( 'window' | 'screen' )[] = [];          
 
         if ( display )
             sourceTypes.push('screen');
-        else if (window)
+        else if ( window )
             sourceTypes.push('window');
 
         const sources = await desktopCapturer.getSources({
@@ -98,21 +89,22 @@ export class OcrRecognitionService {
         let source: Electron.DesktopCapturerSource | undefined;
 
         if ( display ) {
-            
-            source = sources.find( source => source.display_id.includes( display.id.toString() ) );
+            const displayId = display.id.toString();
+            source = sources.find( source => source.display_id.includes( displayId ) );
 
             if ( !source )
                 source = sources.find( source => source.name.includes( 'Entire screen' ) );
         }
         else if ( window ) {
-            source = sources.find( source => source.id.includes( String(window.id) ) );
+            const windowId = window.id.toString();
+            source = sources.find( source => source.id.includes( windowId ) );
         }
 
         // sources.forEach( ({ id, display_id, name } ) => console.log({
         //     id, display_id, name
         // }));
 
-        // console.timeEnd('takeScreenshot');
+        console.timeEnd('takeScreenshot');
 
         if ( !source )
             return {};
@@ -215,5 +207,26 @@ export class OcrRecognitionService {
     getTaskbar(): TaskbarProperties {
 
         return this.windowManager.getTaskbar();
+    }
+
+    async cropWindowFromImage( window: ExternalWindow, image: Buffer ): Promise<Buffer> {
+
+        // console.log('cropping window from image')
+
+        const metadata = await sharp(image).metadata();
+
+        if (
+            metadata.width == window.size.width &&            
+            metadata.height == window.size.height
+        )
+            return image;
+
+        return await sharp(image).extract({
+                left: window.position.x,
+                top: window.position.y,
+                width: window.size.width,
+                height: window.size.height,
+            })
+            .toBuffer();    
     }
 }
