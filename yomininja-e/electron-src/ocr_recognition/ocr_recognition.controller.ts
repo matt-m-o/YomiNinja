@@ -254,6 +254,14 @@ export class OcrRecognitionController {
             },
         });
 
+        this.overlayWindow.on( 'close', ( e ) => {
+            e.preventDefault();
+        });
+
+        this.mainWindow?.on( 'closed', () => {
+            this.overlayWindow?.destroy();
+        });
+
         const url = isDev
         ? 'http://localhost:8000/ocr-overlay'
         : format({
