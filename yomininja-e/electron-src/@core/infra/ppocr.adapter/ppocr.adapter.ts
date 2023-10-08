@@ -67,7 +67,7 @@ export class PpOcrAdapter implements OcrAdapter {
             language_code: input.languageCode            
         };        
 
-        console.log('holding processing input');
+        console.log('processing recognition input');
         this.status = OcrAdapterStatus.Processing;
         // console.time('PpOcrAdapter.recognize');        
         const clientResponse = await new Promise< RecognizeDefaultResponse__Output | undefined >(
