@@ -16,10 +16,6 @@ export default function AppSettingsMenu() {
 
     const { activeSettingsPreset, updateActivePreset } = useContext( SettingsContext );    
 
-    useEffect( () => {
-
-    }, [activeSettingsPreset] );
-
     return (
         <Container maxWidth='md'>
             

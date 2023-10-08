@@ -14,9 +14,7 @@ import { ProfileProvider } from '../context/profile.provider';
 export default function IndexPage() {
 
   const settingsTabContents = (
-    <SettingsProvider>
-      <AppSettingsMenu/>
-    </SettingsProvider>
+    <AppSettingsMenu/>    
   );
 
   const homeTabContents = (
@@ -54,9 +52,11 @@ export default function IndexPage() {
   return (
     <ProfileProvider>
       <AppInfoProvider>
+        <SettingsProvider>
 
         <Layout {...layoutProps}/>
         
+        </SettingsProvider>
       </AppInfoProvider>
     </ProfileProvider>
   );

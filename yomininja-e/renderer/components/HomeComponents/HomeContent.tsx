@@ -4,6 +4,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Box, Conta
 import { ProfileContext } from "../../context/profile.provider";
 import CaptureSourceMenu from "./CaptureSourceMenu";
 import { CaptureSourceProvider } from "../../context/capture_source.provider";
+import HotkeyHints from "./HotkeyHints";
 
 
 
@@ -73,6 +74,8 @@ export default function HomeContent() {
             <CaptureSourceProvider>
                 <CaptureSourceMenu/>
             </CaptureSourceProvider>
+
+            <HotkeyHints/>
             
         </Box>
         
