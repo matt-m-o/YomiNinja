@@ -11,7 +11,9 @@ import Typography from '@mui/material/Typography';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import Divider from '@mui/material/Divider';
 import { ListItemIcon, ListItemText, SxProps, Tab, Tabs, Theme } from '@mui/material';
-
+import TabContext from '@mui/lab/TabContext';
+import TabPanel from'@mui/lab/TabPanel';
+import TabList from '@mui/lab/TabList';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -19,7 +21,7 @@ interface TabPanelProps {
   value: number;
 }
 
-function TabPanel(props: TabPanelProps) {
+function TabPanelCustom(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
   return (
@@ -67,14 +69,14 @@ export type LayoutProps = {
 
 export default function Layout( { contents }: LayoutProps) {  
 
-  const [ open, setOpen ] = useState(true);
+  const [ open, setOpen ] = useState(false);
   const toggleDrawer = () => {
-      setOpen(!open);
+    setOpen(!open);
   };
 
   // Tabs
-  const [ activeTab, setActiveTab ] = React.useState(0);
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+  const [ activeTab, setActiveTab ] = React.useState('0');
+  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setActiveTab(newValue);
   };  
 
@@ -105,6 +107,8 @@ export default function Layout( { contents }: LayoutProps) {
 
   return (
     <ThemeProvider theme={defaultTheme}>
+
+      <TabContext value={activeTab}>
       <Box sx={{ display: 'flex', height: '100vh' }}>
   
         <CssBaseline />
@@ -112,7 +116,12 @@ export default function Layout( { contents }: LayoutProps) {
         <AppBar position="absolute" open={open}>
           <Toolbar variant={toolbarVariant}
             sx={{              
-              pr: '24px', // keep right padding when drawer closed              
+              pr: '24px', // keep right padding when drawer closed
+              backgroundColor: (theme) =>
+              theme.palette.mode === 'light'
+                ? theme.palette.grey[100]
+                : theme.palette.grey[1000],
+                
             }}
           >
   
@@ -163,10 +172,9 @@ export default function Layout( { contents }: LayoutProps) {
           </Toolbar>
           <Divider />          
 
-          <Tabs
+          <TabList
             orientation="vertical"
-            variant="standard"
-            value={activeTab}
+            variant="standard"            
             onChange={handleChange}
             aria-label="Vertical tabs example"
             TabIndicatorProps={{
@@ -182,9 +190,9 @@ export default function Layout( { contents }: LayoutProps) {
             }}          
           >
             { tabLabelsComponents.map( ( component, idx ) => (
-              <Tab label={component} {...a11yProps(0)} sx={tabSx} key={idx} />
+              <Tab label={component} {...a11yProps(0)} sx={tabSx} key={idx} value={idx.toString()}/>
             ))}
-          </Tabs>
+          </TabList>
 
         </Drawer>
         
@@ -203,13 +211,14 @@ export default function Layout( { contents }: LayoutProps) {
           <Toolbar variant={toolbarVariant}/> {/* Just to make sure the content won't get covered by the actual toolbar  */}          
 
           { contents.map( ( { tabContent }, idx ) => (
-            <TabPanel value={activeTab} index={idx} key={idx}>
+            <TabPanel value={idx.toString()} key={idx}>
               {tabContent}              
             </TabPanel>
           ))}
           
         </Box>
       </Box>
+      </TabContext>
   
     </ThemeProvider>
   );

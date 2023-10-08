@@ -18,7 +18,11 @@ export default function AppSettingsOcrEngine() {
     const [ maxImageWidth, setMaxImageWidth ] = useState( ocrEngineSettings?.max_image_width || 1920 );
     const [ cpuThreads, setCpuThreads ] = useState( ocrEngineSettings?.cpu_threads || 2 );    
 
-    const deviceCpuThreads = navigator.hardwareConcurrency;
+    let deviceCpuThreads: number = 2;
+
+    useEffect( () => {
+        deviceCpuThreads = navigator?.hardwareConcurrency;
+    }, [] )
 
     useEffect( () => {
 

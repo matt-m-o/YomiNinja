@@ -27,10 +27,10 @@ export default function AppInfo() {
     
     
 
-    let versionText = 'Version: '+ versionInfo.runningVersion;
-    versionText +=  versionInfo.isUpToDate ? ' (latest)' : '';
+    let versionText = 'Version: '+ versionInfo?.runningVersion;
+    versionText +=  versionInfo?.isUpToDate ? ' (latest)' : '';
 
-    let newVersionText: string | undefined = versionInfo.isUpToDate ? undefined : 'Newer version available on ';
+    let newVersionText: string | undefined = versionInfo?.isUpToDate ? undefined : 'Newer version available on ';
 
     const logoDarkSrc = '/logos/v1-alt-3.svg';
 
