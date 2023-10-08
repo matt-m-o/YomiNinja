@@ -15,7 +15,7 @@ import sharp from "sharp";
 
 const entireScreenAutoCaptureSource: CaptureSource = {
     id: '',
-    name: 'Entire screen (auto selected)',
+    name: 'Entire screen',
     displayId: -1
 }
 
@@ -32,6 +32,8 @@ export class OcrRecognitionController {
     
     private captureSourceWindow: ExternalWindow | undefined;
     private userPreferredWindowId: number | undefined;
+
+    private activeCaptureSource: CaptureSource;
     
     private taskbar: TaskbarProperties;
     
@@ -62,7 +64,7 @@ export class OcrRecognitionController {
 
         this.taskbar = this.ocrRecognitionService.getTaskbar();
 
-        this.displayCount = this.ocrRecognitionService.getAllDisplays().length;
+        this.activeCaptureSource = entireScreenAutoCaptureSource;
     }
     
     private registersIpcHandlers() {        
@@ -93,25 +95,7 @@ export class OcrRecognitionController {
 
         ipcMain.handle( 'ocr_recognition:get_active_capture_source',
             async ( event: IpcMainInvokeEvent ): Promise< CaptureSource > => {
-
-                const sources = await this.ocrRecognitionService.getAllCaptureSources();
-                
-                let activeSource: CaptureSource | undefined;
-
-                if ( this.userPreferredDisplayId )
-                    activeSource = sources.find( source => source.displayId === this.userPreferredDisplayId );
-
-                if ( this.userPreferredWindowId )
-                    activeSource = sources.find( source => source.id.includes( String(this.userPreferredWindowId) ) );
-
-                if ( !activeSource ) {
-                    activeSource = {
-                        ...entireScreenAutoCaptureSource,
-                        name: "Entire screen"
-                    };
-                }
-
-                return activeSource || entireScreenAutoCaptureSource;
+                return this.activeCaptureSource;
             }
         );
 
@@ -125,7 +109,9 @@ export class OcrRecognitionController {
                 if ( !message?.displayId )
                     this.userPreferredWindowId = Number( message.id.split(':')[1] );
                 else
-                    this.userPreferredWindowId = undefined;                
+                    this.userPreferredWindowId = undefined;
+
+                this.activeCaptureSource = message;                
             }
         );
     }
@@ -213,7 +199,7 @@ export class OcrRecognitionController {
         
         uIOhook.removeAllListeners();
 
-        if ( overlayHotkeys.ocr_on_screen_shot ) {            
+        if ( overlayHotkeys.ocr_on_screen_shot ) {
             uIOhook.on( 'keyup', async ( e ) => {  
 
                 if (e.keycode === UiohookKey.PrintScreen) {
@@ -223,11 +209,11 @@ export class OcrRecognitionController {
                     // console.log({ runFullScreenImageCheck });
                     // console.log({ userPreferredDisplayId: this.userPreferredDisplayId });
                     // console.log({ captureSourceDisplay: this.captureSourceDisplay });
-
+                    
                     if (
                         this.userPreferredDisplayId ||
                         this.userPreferredWindowId ||
-                        this.displayCount > 1 && !e.altKey
+                        screen.getAllDisplays().length > 1 && !e.altKey // If the user didn't press the "Alt" key, the clipboard image will contain all displays causing problems
                     )
                         await this.recognize();
 
