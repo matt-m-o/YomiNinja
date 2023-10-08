@@ -135,11 +135,13 @@ export default function CaptureSourceMenu() {
         >
             
             <Accordion expanded={accordionExpanded} onChange={accordionHandleChange}>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography sx={{ mr: 1}}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ height: 60 }}>
+                    <Typography sx={{ fontSize: '1.15rem', mr: 1 }}>
                         Capture source:
                     </Typography>
-                    <Typography color='#90caf9' >{activeCaptureSource?.name}</Typography>
+                    <Typography color='#90caf9' sx={{ fontSize: '1.15rem', mr: 1 }} >
+                        {activeCaptureSource?.name}
+                    </Typography>
                 </AccordionSummary>
 
                 <AccordionDetails>
