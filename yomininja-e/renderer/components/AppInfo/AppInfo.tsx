@@ -54,7 +54,7 @@ export default function AppInfo() {
     return(
         <>
             <Box display='flex' flexDirection='row' justifyContent='center' padding={10}>
-                <Image
+                {/* <Image
                     src= {logoDarkSrc}
                     width={width}
                     height={height}
@@ -64,7 +64,7 @@ export default function AppInfo() {
                         backgroundColor: 'white', // #929397
                         borderRadius: '100%'
                     }}
-                />
+                /> */}
 
                 <Box display='flex' flexDirection='column' justifyContent='center' ml={5}>
 
