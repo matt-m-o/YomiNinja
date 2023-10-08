@@ -16,7 +16,7 @@ export default function AppSettingsOthers() {
         <Box sx={{ flexGrow: 1, margin: 1, }}>
 
             <Typography gutterBottom variant="h6" component="div" margin={2} ml={0}>
-                Overlay Behavior Options
+                Overlay Behavior
             </Typography>
             
             <Container sx={{ mt: 2, mb: 2 }}>
