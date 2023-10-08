@@ -27,10 +27,10 @@ export class OcrRecognitionController {
     private overlayAlwaysOnTop: boolean = false;
     
     private captureSourceDisplay: Electron.Display | undefined;        
-    private userPreferredDisplayId: number | undefined;
+    private userSelectedDisplayId: number | undefined;
     
     private captureSourceWindow: ExternalWindow | undefined;
-    private userPreferredWindowId: number | undefined;
+    private userSelectedWindowId: number | undefined;
 
     private activeCaptureSource: CaptureSource;
     
@@ -99,14 +99,14 @@ export class OcrRecognitionController {
         ipcMain.handle( 'ocr_recognition:set_capture_source',
             async ( event: IpcMainInvokeEvent, message: CaptureSource ): Promise< void > => {
 
-                this.userPreferredDisplayId = message?.displayId && message?.displayId > 0 ? 
+                this.userSelectedDisplayId = message?.displayId && message?.displayId > 0 ? 
                     message.displayId :
                     undefined;                
 
                 if ( !message?.displayId )
-                    this.userPreferredWindowId = Number( message.id.split(':')[1] );
+                    this.userSelectedWindowId = Number( message.id.split(':')[1] );
                 else
-                    this.userPreferredWindowId = undefined;
+                    this.userSelectedWindowId = undefined;
 
                 this.activeCaptureSource = message;                
             }
@@ -115,7 +115,7 @@ export class OcrRecognitionController {
 
     async recognize( entireScreenImage?: Buffer, runFullScreenImageCheck?: boolean ) {
         console.log('');
-        // console.time('controller.recognize');
+        console.time('controller.recognize');
 
         try {
             // console.log(activeProfile);
@@ -132,12 +132,12 @@ export class OcrRecognitionController {
             if ( !this.overlayWindow )
                 this.createOverlayWindow();
 
-            // console.timeEnd('controller.recognize');
+            console.timeEnd('controller.recognize');
 
             if ( !this.overlayWindow )
                 return;
 
-            this.overlayWindow.webContents.send( 'ocr:result', ocrResultScalable );            
+            this.overlayWindow.webContents.send( 'ocr:result', ocrResultScalable );
 
             let isFullScreenImage = true;
 
@@ -197,25 +197,38 @@ export class OcrRecognitionController {
         uIOhook.removeAllListeners();
 
         if ( overlayHotkeys.ocr_on_screen_shot ) {
-            uIOhook.on( 'keyup', async ( e ) => {  
+            uIOhook.on( 'keyup', async ( e ) => {
 
-                if (e.keycode === UiohookKey.PrintScreen) {
+                if ( e.keycode !== UiohookKey.PrintScreen ) return;
+                
                                         
-                    const runFullScreenImageCheck = e.altKey && !this.taskbar.auto_hide;
+                const runFullScreenImageCheck = e.altKey && !this.taskbar.auto_hide;
 
-                    // console.log({ runFullScreenImageCheck });
-                    // console.log({ userPreferredDisplayId: this.userPreferredDisplayId });
-                    // console.log({ captureSourceDisplay: this.captureSourceDisplay });
+                // console.log({ runFullScreenImageCheck });
+                // console.log({ userPreferredDisplayId: this.userPreferredDisplayId });
+                // console.log({ captureSourceDisplay: this.captureSourceDisplay });
+
+                const multipleDisplays = screen.getAllDisplays().length > 1;
+                const isWindowImage = Boolean(e.altKey);
+                
+
+                if ( multipleDisplays ) {
+
+                    if ( !isWindowImage )
+                        return this.recognize();
                     
-                    if (
-                        this.userPreferredDisplayId ||
-                        this.userPreferredWindowId ||
-                        screen.getAllDisplays().length > 1 && !e.altKey // If the user didn't press the "Alt" key, the clipboard image will contain all displays causing problems
-                    )
-                        await this.recognize();
+                    if ( isWindowImage && this.userSelectedWindowId )
+                        return this.recognize( clipboard.readImage().toPNG() );
 
                     else
-                        await this.recognize( clipboard.readImage().toPNG(), runFullScreenImageCheck );                                    
+                        return this.recognize( clipboard.readImage().toPNG(), runFullScreenImageCheck );
+                }
+                else {
+
+                    if ( this.userSelectedWindowId )
+                        return this.recognize( clipboard.readImage().toPNG() );
+
+                    return this.recognize( clipboard.readImage().toPNG(), runFullScreenImageCheck );
                 }
                 
             });
@@ -356,14 +369,14 @@ export class OcrRecognitionController {
 
     handleDisplaySource() {
 
-        if ( this.userPreferredDisplayId ) {
-            this.captureSourceDisplay = this.ocrRecognitionService.getDisplay( this.userPreferredDisplayId );
+        if ( this.userSelectedDisplayId ) {
+            this.captureSourceDisplay = this.ocrRecognitionService.getDisplay( this.userSelectedDisplayId );
             return;
         }
 
         if ( 
-            !this.userPreferredDisplayId &&
-            !this.userPreferredWindowId
+            !this.userSelectedDisplayId &&
+            !this.userSelectedWindowId
         ) 
             this.captureSourceDisplay = this.ocrRecognitionService.getCurrentDisplay();
         else 
@@ -374,8 +387,8 @@ export class OcrRecognitionController {
 
     async handleWindowSource() {      
         
-        if ( this.userPreferredWindowId )
-            this.captureSourceWindow = await this.ocrRecognitionService.getExternalWindow( this?.userPreferredWindowId );
+        if ( this.userSelectedWindowId )
+            this.captureSourceWindow = await this.ocrRecognitionService.getExternalWindow( this?.userSelectedWindowId );
 
         else 
             this.captureSourceWindow = undefined;
