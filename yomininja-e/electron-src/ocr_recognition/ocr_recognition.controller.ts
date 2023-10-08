@@ -27,16 +27,14 @@ export class OcrRecognitionController {
     private overlayAlwaysOnTop: boolean = false;
     
     private captureSourceDisplay: Electron.Display | undefined;        
-    private userPreferredDisplayId: number | undefined; // Will be used instead of autoDetectDisplay
+    private userPreferredDisplayId: number | undefined;
     
     private captureSourceWindow: ExternalWindow | undefined;
     private userPreferredWindowId: number | undefined;
 
     private activeCaptureSource: CaptureSource;
     
-    private taskbar: TaskbarProperties;
-    
-    private displayCount = 1;
+    private taskbar: TaskbarProperties;    
 
     constructor( input: {        
         ocrRecognitionService: OcrRecognitionService;        
