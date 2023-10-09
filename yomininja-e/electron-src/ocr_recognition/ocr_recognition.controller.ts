@@ -16,9 +16,8 @@ export class OcrRecognitionController {
     
     private ocrRecognitionService: OcrRecognitionService;
     
-    private mainWindow: BrowserWindow | undefined;
-    private overlayWindow: BrowserWindow | undefined;
-    private overlayAlwaysOnTop: boolean = false;
+    private mainWindow: BrowserWindow;
+    private overlayWindow: BrowserWindow;    
     
     private captureSourceDisplay: Electron.Display | undefined;        
     private userSelectedDisplayId: number | undefined;
@@ -28,7 +27,9 @@ export class OcrRecognitionController {
 
     private activeCaptureSource: CaptureSource;
     
-    private taskbar: TaskbarProperties;    
+    private taskbar: TaskbarProperties;
+
+    private globalShortcutAccelerators: string[] = [];
 
     constructor( input: {        
         ocrRecognitionService: OcrRecognitionService;        
@@ -36,19 +37,20 @@ export class OcrRecognitionController {
         this.ocrRecognitionService = input.ocrRecognitionService;
     }
 
-    async init( mainWindow: BrowserWindow ) {
+    async init( input: {
+        mainWindow: BrowserWindow,
+        overlayWindow: BrowserWindow,
+    }) {
         
         uIOhook.start();
 
-        this.mainWindow = mainWindow;
+        this.mainWindow = input.mainWindow;
+        this.overlayWindow = input.overlayWindow;
 
         const settings = await this.ocrRecognitionService.getActiveSettingsPreset();
 
-        if (!settings) return;
-
-        this.overlayAlwaysOnTop = Boolean(settings.overlay.behavior.always_on_top);
-
-        this.createOverlayWindow();
+        if (!settings) return;        
+        
         this.registerGlobalShortcuts( settings.toJson() );
         this.registersIpcHandlers();        
         this.handleCaptureSourceSelection();
@@ -58,7 +60,7 @@ export class OcrRecognitionController {
         this.activeCaptureSource = entireScreenAutoCaptureSource;
     }
     
-    private registersIpcHandlers() {        
+    private registersIpcHandlers() {
 
         ipcMain.handle( 'ocr_recognition:get_supported_languages',
             async ( event: IpcMainInvokeEvent ) => {            
@@ -113,16 +115,10 @@ export class OcrRecognitionController {
                 profileId: getActiveProfile().id,
                 display: this.captureSourceDisplay,
                 window: this.captureSourceWindow,
-            });
-
-            if ( !this.overlayWindow )
-                this.createOverlayWindow();
+            });            
 
             console.timeEnd('controller.recognize');
-            console.log('');
-
-            if ( !this.overlayWindow )
-                return;
+            console.log('');            
 
             this.overlayWindow.webContents.send( 'ocr:result', ocrResultScalable );
 
@@ -140,10 +136,7 @@ export class OcrRecognitionController {
     }
 
     async registerGlobalShortcuts( settingsPresetJson?: SettingsPresetJson ) {
-
-        if ( !this.overlayWindow )
-            return;
-
+        
         if ( !settingsPresetJson ) {
             
             const settingsPreset = await this.ocrRecognitionService.getActiveSettingsPreset();
@@ -156,7 +149,7 @@ export class OcrRecognitionController {
 
         const overlayHotkeys = settingsPresetJson.overlay.hotkeys;
 
-        globalShortcut.unregisterAll();
+        this.unregisterGlobalShortcuts();
 
         // Electron full screen OCR
         globalShortcut.register( overlayHotkeys.ocr, async () => {            
@@ -164,24 +157,9 @@ export class OcrRecognitionController {
             this.overlayWindow?.webContents.send( 'user_command:clear_overlay' );
             await this.recognize();            
         });
+        this.globalShortcutAccelerators.push( overlayHotkeys.ocr );
         
-        // View overlay and copy text clipboard
-        globalShortcut.register( overlayHotkeys.show, () => {
-
-            this.showOverlayWindow();
-            this.overlayWindow?.webContents.send( 'user_command:copy_to_clipboard' );
-        });
-
-        // View overlay and clear
-        globalShortcut.register( overlayHotkeys.show_and_clear, () => {
-
-            this.showOverlayWindow();
-            this.overlayWindow?.webContents.send( 'user_command:clear_overlay' );
-        });
-                
         
-        uIOhook.removeAllListeners();
-
         if ( overlayHotkeys.ocr_on_screen_shot ) {
             uIOhook.on( 'keyup', async ( e ) => {
 
@@ -221,83 +199,32 @@ export class OcrRecognitionController {
         }
     }
 
-    private createOverlayWindow() {
+    private unregisterGlobalShortcuts() {
 
-        this.overlayWindow = new BrowserWindow({            
-            // show: true,
-            fullscreen: true,
-            frame: false,
-            transparent: true,
-            autoHideMenuBar: true,
-            webPreferences: {
-                nodeIntegration: false, // false
-                contextIsolation: false,
-                preload: join(__dirname, '../preload.js'),                
-            },
+        this.globalShortcutAccelerators.forEach( accelerator => {
+            globalShortcut.unregister( accelerator );
         });
 
-        this.overlayWindow.on( 'close', ( e ) => {
-            e.preventDefault();
-        });
+        uIOhook.removeAllListeners();
 
-        this.mainWindow?.on( 'closed', () => {
-            this.overlayWindow?.destroy();
-        });
-
-        const url = isDev
-        ? 'http://localhost:8000/ocr-overlay'
-        : format({
-            pathname: join( PAGES_DIR, '/ocr-overlay.html' ),
-            protocol: 'file:',
-            slashes: true,
-        });
-
-        this.overlayWindow.loadURL(url);
-        // this.overlayWindow.maximize();        
-        
-        const showDevTools = isDev && false;
-        if (showDevTools)
-            this.overlayWindow.webContents.openDevTools();        
-
-        
-        this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop && !showDevTools, "normal" ); // normal, pop-up-menu och screen-saver
-
-        // Prevents black image when using youtube on some browsers (e.g. Brave)
-        this.overlayWindow.setIgnoreMouseEvents( !showDevTools, { // !showDevTools
-            forward: !showDevTools,
-        });
+        this.globalShortcutAccelerators = [];
     }
 
     private showOverlayWindow() {
-
-        if ( !this.overlayWindow )
-            return;
-
-        // this.windowManager.setForegroundWindow("OCR Overlay - YomiNinja");
-        this.overlayWindow.setAlwaysOnTop( true, "normal" ); // normal, pop-up-menu och screen-saver
-
-        if ( !this.overlayAlwaysOnTop )
-            this.overlayWindow.setAlwaysOnTop( false );        
-
         this.overlayWindow.show();
     }
 
     async refreshActiveSettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
 
         if ( !settingsPresetJson ) {
-            const settingsPreset = await this.ocrRecognitionService.getActiveSettingsPreset();
-            settingsPresetJson = settingsPreset?.toJson();
+            settingsPresetJson = ( await this.ocrRecognitionService.getActiveSettingsPreset() )
+                ?.toJson();
         }
 
         if ( !settingsPresetJson )
-            return;
+            return;        
 
-        this.overlayAlwaysOnTop = Boolean( settingsPresetJson.overlay.behavior.always_on_top );
-        this.overlayWindow?.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );
-
-        this.registerGlobalShortcuts( settingsPresetJson );
-
-        this.overlayWindow?.webContents.send( 'settings_preset:active_data', settingsPresetJson );
+        this.registerGlobalShortcuts( settingsPresetJson );        
     }
 
     restartEngine() {
@@ -314,9 +241,7 @@ export class OcrRecognitionController {
     }
 
     setOverlayBounds( entireScreenMode: 'fullscreen' | 'maximized' = 'fullscreen' ) {
-        console.time("setOverlayBounds");
-
-        if ( !this.overlayWindow ) return;
+        console.time("setOverlayBounds");        
         
         if ( this.captureSourceDisplay ) {            
             
