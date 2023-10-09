@@ -5,18 +5,12 @@ import { format } from 'url';
 import { PAGES_DIR } from "../util/directories";
 import { uIOhook, UiohookKey } from 'uiohook-napi'
 import { activeProfile, getActiveProfile } from "../@core/infra/app_initialization";
-import { OcrRecognitionService } from "./ocr_recognition.service";
+import { OcrRecognitionService, entireScreenAutoCaptureSource } from "./ocr_recognition.service";
 import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 import { CaptureSource, ExternalWindow } from "./common/types";
 import { TaskbarProperties } from "../../gyp_modules/window_management/window_manager";
 import sharp from "sharp";
 
-
-const entireScreenAutoCaptureSource: CaptureSource = {
-    id: '',
-    name: 'Entire screen',
-    displayId: -1
-}
 
 export class OcrRecognitionController {
     
@@ -78,14 +72,6 @@ export class OcrRecognitionController {
             async ( event: IpcMainInvokeEvent ): Promise< CaptureSource[] > => {
 
                 const sources = await this.ocrRecognitionService.getAllCaptureSources();
-
-                // console.log("Capture sources (displays): ")
-                const displaysSources = sources.filter( source => source.displayId )                
-                
-                // If there are more than 1 display, the auto capture source option must be available
-                if ( displaysSources.length > 1 )
-                    sources.unshift( entireScreenAutoCaptureSource );
-
                 return sources;
             }
         );
@@ -133,6 +119,7 @@ export class OcrRecognitionController {
                 this.createOverlayWindow();
 
             console.timeEnd('controller.recognize');
+            console.log('');
 
             if ( !this.overlayWindow )
                 return;
@@ -150,7 +137,6 @@ export class OcrRecognitionController {
         } catch (error) {
             console.error( error );
         }
-        console.log('');
     }
 
     async registerGlobalShortcuts( settingsPresetJson?: SettingsPresetJson ) {
@@ -358,7 +344,7 @@ export class OcrRecognitionController {
             let dipRect = screen.screenToDipRect( this.overlayWindow, targetWindowBounds );
             this.overlayWindow.setBounds( dipRect );
 
-            // Might be necessary calculate and set twice
+            // Might be necessary to calculate and set twice
             // dipRect = screen.screenToDipRect( this.overlayWindow, targetWindowBounds )
             // this.overlayWindow.setBounds( dipRect );
         }
@@ -380,9 +366,7 @@ export class OcrRecognitionController {
         ) 
             this.captureSourceDisplay = this.ocrRecognitionService.getCurrentDisplay();
         else 
-            this.captureSourceDisplay = undefined;
-
-        // console.log({ display_id: this.captureSourceDisplay?.id })
+            this.captureSourceDisplay = undefined;        
     }
 
     async handleWindowSource() {      
@@ -391,23 +375,14 @@ export class OcrRecognitionController {
             this.captureSourceWindow = await this.ocrRecognitionService.getExternalWindow( this?.userSelectedWindowId );
 
         else 
-            this.captureSourceWindow = undefined;
-        
-        // console.log(this.captureSourceWindow);
+            this.captureSourceWindow = undefined;            
     }
 
     async handleCaptureSourceSelection() {
-        console.time('handleCaptureSourceSelection');
-
-        // console.log({
-        //     userPreferredDisplayId: this.userPreferredDisplayId,
-        //     userPreferredWindowId: this.userPreferredWindowId
-        // });
-
+        // console.time('handleCaptureSourceSelection');
         this.handleDisplaySource();
         await this.handleWindowSource();
-
-        console.timeEnd('handleCaptureSourceSelection');
+        // console.timeEnd('handleCaptureSourceSelection');
     }
 
     private async isFullScreenImage( imageBuffer: Buffer ): Promise<boolean> {

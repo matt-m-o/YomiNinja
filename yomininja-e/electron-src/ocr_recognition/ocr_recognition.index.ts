@@ -7,8 +7,7 @@ import { OcrRecognitionService } from "./ocr_recognition.service";
 const ocrRecognitionService = new OcrRecognitionService({
     recognizeImageUseCase: get_RecognizeImageUseCase(),
     getSupportedLanguagesUseCase: get_GetSupportedLanguagesUseCase(),
-    getActiveSettingsPresetUseCase: get_GetActiveSettingsPresetUseCase(),
-    changeActiveOcrLanguageUseCase: get_ChangeActiveOcrLanguageUseCase(),
+    getActiveSettingsPresetUseCase: get_GetActiveSettingsPresetUseCase(),    
     ocrAdapter: get_PpOcrAdapter(),
 });
 

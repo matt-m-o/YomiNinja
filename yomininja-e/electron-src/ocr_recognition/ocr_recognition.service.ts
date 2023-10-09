@@ -12,6 +12,13 @@ import { screen } from 'electron';
 import { CaptureSource, ExternalWindow } from "./common/types";
 import sharp from 'sharp';
 
+
+export const entireScreenAutoCaptureSource: CaptureSource = {
+    id: '',
+    name: 'Entire screen',
+    displayId: -1
+};
+
 export class OcrRecognitionService {
 
     private recognizeImageUseCase: RecognizeImageUseCase;
@@ -25,8 +32,7 @@ export class OcrRecognitionService {
         input: {
             recognizeImageUseCase: RecognizeImageUseCase;
             getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
-            getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;
-            changeActiveOcrLanguageUseCase: ChangeActiveOcrLanguageUseCase;
+            getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;            
             ocrAdapter: OcrAdapter;
         }
     ){
@@ -197,11 +203,19 @@ export class OcrRecognitionService {
             },
         });
 
-        return sources.map( source => ({
+        const results: CaptureSource[] = sources.map( source => ({
             id: source.id,
             displayId: Number(source.display_id),
             name: source.name
         }));
+
+        const displaysSources = sources.filter( source => source.display_id );
+            
+        // If there are more than 1 display, the auto capture source option must be available
+        if ( displaysSources.length > 1 )
+            results.unshift( entireScreenAutoCaptureSource );
+
+        return results;
     }
 
     getTaskbar(): TaskbarProperties {
