@@ -14,6 +14,7 @@ import './shared_handlers';
 import { uIOhook } from 'uiohook-napi';
 import { appInfoController } from './app_info/app_info.index';
 import { profileController } from './profile/profile.index';
+import { overlayController } from './overlay/overlay.index';
 
 
 
@@ -25,6 +26,7 @@ app.on('ready', async () => {
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 700,
+    autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: false,
@@ -42,9 +44,12 @@ app.on('ready', async () => {
 
   
   initializeApp()
-    .then( () => {
+    .then( async () => {
       mainWindow.loadURL(url);
-      ocrRecognitionController.init( mainWindow );
+
+      const overlayWindow = await overlayController.init( mainWindow );
+
+      ocrRecognitionController.init({ mainWindow, overlayWindow });
       settingsController.init( mainWindow );
       appInfoController.init( mainWindow );
       profileController.init( mainWindow );
@@ -58,10 +63,4 @@ app.on('window-all-closed', () => {
   uIOhook.removeAllListeners();
   uIOhook.stop();
   app.quit();
-});
-
-
-ipcMain.handle( 'user_command:copy_to_clipboard', ( event: IpcMainInvokeEvent, message: string ) => {
-  if (message)
-      clipboard.writeText(message);
 });
