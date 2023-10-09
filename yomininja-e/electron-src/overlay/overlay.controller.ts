@@ -15,6 +15,8 @@ export class OverlayController {
     private windowManager: WindowManager;
 
     private overlayAlwaysOnTop: boolean = true;
+    private showYomichanWindowOnCopy: boolean = true;
+
     private globalShortcutAccelerators: string[] = [];
 
     constructor( input: {
@@ -30,15 +32,21 @@ export class OverlayController {
         const settingsJson = (await this.overlayService.getActiveSettingsPreset())
             ?.toJson()
 
-        if ( settingsJson )
-            this.overlayAlwaysOnTop = Boolean( settingsJson.overlay.behavior.always_on_top);
+        if ( settingsJson ) {
+
+            this.overlayAlwaysOnTop = Boolean( settingsJson.overlay.behavior.always_on_top );
+            this.showYomichanWindowOnCopy = Boolean( settingsJson.overlay.behavior.show_yomichan_window_on_copy );
+        }
 
         this.createOverlayWindow();
         this.registersIpcHandlers();
+        this.registerGlobalShortcuts();
 
-        this.overlayWindow.on( 'show', () => {
+        this.overlayWindow.on( 'show', ( ) => {
             this.showOverlayWindow();
         });
+
+        this.windowManager = new WindowManager();
 
         return this.overlayWindow;
     }
@@ -101,7 +109,11 @@ export class OverlayController {
           
             const yomichanWindow = windows.find( window => window.title.includes( '- Yomichan Search' ) );
           
-            if ( !yomichanWindow ) return;
+            if ( 
+                !yomichanWindow ||
+                !this.showYomichanWindowOnCopy
+            ) 
+                return;
           
             this.windowManager.setForegroundWindow( yomichanWindow.handle );
           
@@ -152,12 +164,14 @@ export class OverlayController {
     }
 
     private showOverlayWindow() {
+        
+        const overlayWindowHandle = Number(this.overlayWindow.getMediaSourceId().split(':')[1]);
 
-        // this.windowManager.setForegroundWindow("OCR Overlay - YomiNinja");
+        this.windowManager.setForegroundWindow( overlayWindowHandle );
+        this.overlayWindow.setAlwaysOnTop( false, "normal" );
         this.overlayWindow.setAlwaysOnTop( true, "normal" ); // normal, pop-up-menu och screen-saver
-
-        if ( !this.overlayAlwaysOnTop )
-            this.overlayWindow.setAlwaysOnTop( false );        
+        
+        this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop );
     }
 
     async refreshActiveSettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
@@ -170,6 +184,8 @@ export class OverlayController {
         if ( !settingsPresetJson ) return;
 
         this.overlayAlwaysOnTop = Boolean( settingsPresetJson.overlay.behavior.always_on_top );
+        this.showYomichanWindowOnCopy = Boolean( settingsPresetJson.overlay.behavior.show_yomichan_window_on_copy );
+        
         this.overlayWindow?.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );
 
         this.registerGlobalShortcuts( settingsPresetJson );

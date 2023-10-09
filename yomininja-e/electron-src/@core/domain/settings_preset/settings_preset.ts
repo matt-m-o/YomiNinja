@@ -30,6 +30,7 @@ export type OverlayVisualCustomizations = {
 export type OverlayBehavior = {
     copy_text_on_hover: boolean;
     always_on_top: boolean;
+    show_yomichan_window_on_copy: boolean;
 };
 
 export type OverlayHotkeys = {
@@ -37,7 +38,7 @@ export type OverlayHotkeys = {
     ocr_on_screen_shot: boolean; // Perform ocr when pressing "PrintScreen"
     copy_text: string;
     show: string;
-    show_and_clear: string;
+    show_and_clear: string;    
 };
 
 export type OverlaySettings = {
@@ -89,11 +90,12 @@ export class SettingsPreset {
                 copy_text: 'undefined+C',
                 show: 'Alt+C',
                 show_and_clear: 'Alt+V',
-                ocr_on_screen_shot: true
+                ocr_on_screen_shot: true,                
             },
             behavior: {
                 copy_text_on_hover: true,
                 always_on_top: false,
+                show_yomichan_window_on_copy: true,
             }
         },
         ocr_engine: {

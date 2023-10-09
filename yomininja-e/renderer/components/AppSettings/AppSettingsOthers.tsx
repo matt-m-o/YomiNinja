@@ -22,6 +22,18 @@ export default function AppSettingsOthers() {
             <Container sx={{ mt: 2, mb: 2 }}>
 
                 <FormGroup>
+                    <FormControlLabel label='Always on top'
+                        control={
+                            <Switch
+                                checked={ Boolean( overlayBehavior?.always_on_top ) }
+                                onChange={ ( event ) => {
+                                    updateActivePresetBehavior({
+                                        always_on_top: event.target.checked
+                                    });
+                                }}
+                            /> 
+                        }
+                    />
                     <FormControlLabel label='Auto-copy text on hover'
                         control={
                             <Switch
@@ -34,13 +46,13 @@ export default function AppSettingsOthers() {
                             /> 
                         }
                     />
-                    <FormControlLabel label='Always on top'
+                    <FormControlLabel label='Show Yomichan window on text copy'
                         control={
                             <Switch
-                                checked={ Boolean( overlayBehavior?.always_on_top ) }
+                                checked={ Boolean( overlayBehavior?.show_yomichan_window_on_copy ) }
                                 onChange={ ( event ) => {
                                     updateActivePresetBehavior({
-                                        always_on_top: event.target.checked
+                                        show_yomichan_window_on_copy: event.target.checked
                                     });
                                 }}
                             /> 
