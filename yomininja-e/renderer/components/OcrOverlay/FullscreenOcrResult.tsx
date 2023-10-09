@@ -58,7 +58,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
             if ( e.key === copyTextHotkey && hoveredText ) {
                 global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', hoveredText );
             }
-        };        
+        };
 
         document.addEventListener('keyup', handleKeyPress);
 
@@ -108,6 +108,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                     fontSize: box.dimensions.height * 50 + '%',
                 }}                          
                 onMouseEnter={ () => setHoveredText( ocrItem.text ) }
+                onMouseLeave={ () => setHoveredText( '' ) }
             >
                 { ocrItem.text }
             </Box>
