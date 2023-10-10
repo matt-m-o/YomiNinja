@@ -1,7 +1,3 @@
-// Native
-import { join } from 'path';
-import { format } from 'url';
-
 // Packages
 import { initializeApp } from './@core/infra/app_initialization';
 import { BrowserWindow, app, ipcMain, IpcMainEvent, IpcMainInvokeEvent, clipboard, globalShortcut } from 'electron';
@@ -15,6 +11,7 @@ import { uIOhook } from 'uiohook-napi';
 import { appInfoController } from './app_info/app_info.index';
 import { profileController } from './profile/profile.index';
 import { overlayController } from './overlay/overlay.index';
+import { mainController } from './main/main.index';
 
 
 
@@ -23,30 +20,13 @@ import { overlayController } from './overlay/overlay.index';
 app.on('ready', async () => {
   await prepareNext('./renderer');
 
-  const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 700,
-    autoHideMenuBar: true,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: false,
-      preload: join(__dirname, 'preload.js'),
-    },
-  });
-
-  const url = isDev
-    ? 'http://localhost:8000/'
-    : format({
-        pathname: join( PAGES_DIR, '/index.html'),
-        protocol: 'file:',
-        slashes: true,
-      });
-
+  const mainWindow = await mainController.init();  
   
   initializeApp()
     .then( async () => {
-      mainWindow.loadURL(url);
 
+      await mainController.loadMainPage();
+      
       const overlayWindow = await overlayController.init( mainWindow );
 
       ocrRecognitionController.init({ mainWindow, overlayWindow });
