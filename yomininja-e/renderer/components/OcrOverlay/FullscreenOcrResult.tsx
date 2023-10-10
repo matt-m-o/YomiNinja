@@ -86,7 +86,14 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
         const { box } = ocrItem;
 
-        const Box = styled( BaseOcrResultBox )({
+        let isVertical = box.dimensions.height > ( box.dimensions.width * 1.40);
+
+        const fontSize = isVertical ? box.dimensions.width * 90 : box.dimensions.height * 60;
+
+        if ( box.angle_degrees < -70 )
+            isVertical = true;
+
+        const Box = styled( BaseOcrResultBox )({            
             ":hover": {
                 fontFamily: "arial",
                 backgroundColor: ocrItemBoxVisuals?.background_color || 'black',
@@ -95,6 +102,8 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
             borderColor: ocrItemBoxVisuals?.border_color || 'red',
             borderWidth: ocrItemBoxVisuals?.border_width || '1px',
             borderRadius: ocrItemBoxVisuals?.border_radius || '2rem',
+            writingMode: isVertical ? 'vertical-rl' :'inherit',
+            textOrientation: isVertical ? 'upright' :'inherit',
         });
 
         return (
@@ -105,7 +114,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                     transform: `rotate( ${box.angle_degrees}deg )`,
                     minWidth: box.dimensions.width + '%',
                     minHeight: box.dimensions.height + '%',
-                    fontSize: box.dimensions.height * 50 + '%',
+                    fontSize: fontSize + '%',
                 }}                          
                 onMouseEnter={ () => setHoveredText( ocrItem.text ) }
                 onMouseLeave={ () => setHoveredText( '' ) }
