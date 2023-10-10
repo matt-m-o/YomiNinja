@@ -1,6 +1,6 @@
 import { useContext, useEffect } from "react"
 import { LanguagesContext } from "../../context/languages.provider";
-import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Box, Button, Card, CardContent, Container, FormControlLabel, FormGroup, Grid, TextField, TextFieldProps, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Box, Button, Card, CardActions, CardContent, Container, FormControlLabel, FormGroup, Grid, TextField, TextFieldProps, Typography } from "@mui/material";
 import { ProfileContext } from "../../context/profile.provider";
 import CaptureSourceMenu from "./CaptureSourceMenu";
 import { CaptureSourceContext, CaptureSourceProvider } from "../../context/capture_source.provider";
@@ -117,28 +117,23 @@ export default function HomeContent() {
 
                 <CardContent>
 
-                    <Typography mb={5} mt={1} fontSize='1.2rem'>
+                    <Typography mb={7} mt={1} fontSize='1.2rem'>
                         The overlay can be operated using the following hotkeys. <br/>                        
                     </Typography>
 
-                    <HotkeyHints/>
+                    <HotkeyHints/>                  
 
-                    <Box mt={5}>
-                        <Accordion variant="outlined">
-
-                            <AccordionSummary expandIcon={< ExpandMoreIcon />}>
-                                Hints
-                            </AccordionSummary>
-                            <AccordionDetails>
-
-                                <Typography fontSize='1.2rem'>
-                                    Use the PrintScreen key to achieve the lowest latency. <br/><br/>
-                                    Auto-copy text and many other features can be customized in the settings screen. <br/>
-                                </Typography>
-
-                            </AccordionDetails>
-                        </Accordion>
-                    </Box>
+                    <ul
+                        style={{
+                            fontSize: '1.0rem',
+                            color: 'lightgray',
+                            lineHeight: 2,
+                            marginTop: 56,
+                        }}
+                    >
+                        <li>Achieve the lowest latency by using the "PrintScreen" key.</li>
+                        <li>Customize hotkeys, text auto-copy, and more in the settings menu.</li>
+                    </ul>
 
                 </CardContent>
 
