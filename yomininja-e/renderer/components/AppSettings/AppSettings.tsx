@@ -1,4 +1,4 @@
-import { Box, Container, Divider, Grid, TextField, Typography, styled } from "@mui/material";
+import { Box, Card, CardContent, Container, Divider, Grid, TextField, Typography, styled } from "@mui/material";
 import { SettingsContext } from "../../context/settings.provider";
 import { useContext, useEffect } from "react";
 import AppSettingsHotkeys from "./AppSettingsHotkeys";
@@ -17,22 +17,31 @@ export default function AppSettingsMenu() {
     const { activeSettingsPreset, updateActivePreset } = useContext( SettingsContext );    
 
     return (
-        <Container maxWidth='md'>
-            
-            <AppSettingsHotkeys/>
-            
-            <SectionDivider/>
+        <Card variant="elevation" sx={{ borderRadius: 4 }}>
 
-            <AppSettingsOthers/>
+            <CardContent>
 
-            <SectionDivider/>
+                <Container maxWidth='md'>
+                
+                    <AppSettingsHotkeys/>
+                    
+                    <SectionDivider/>
 
-            <AppSettingsVisuals/>
+                    <AppSettingsOthers/>
 
-            <SectionDivider/>
+                    <SectionDivider/>
 
-            <AppSettingsOcrEngine/>
+                    <AppSettingsVisuals/>
 
-        </Container>
+                    <SectionDivider/>
+
+                    <AppSettingsOcrEngine/>
+
+                </Container>
+
+            </CardContent>
+
+        </Card>
+        
     )
 }
