@@ -46,7 +46,16 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
     }
     
     useEffect( () => {
+
         getActiveCaptureSource();
+
+        global.ipcRenderer.on( 'ocr_recognition:active_capture_source', ( event, data: CaptureSource ) => {
+            setActiveCaptureSource( data );
+        });
+        
+        return () => {
+            global.ipcRenderer.removeAllListeners( 'ocr_recognition:active_capture_source' );            
+        }
     }, [ global.ipcRenderer ] );
 
     

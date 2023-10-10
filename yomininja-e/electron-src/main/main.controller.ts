@@ -74,6 +74,7 @@ export class MainController {
                 contextIsolation: false,
                 preload: join(__dirname, '../preload.js'),
             },
+            title: 'Capture source selection - YomiNinja'
         });
 
         this.captureSourceWindow.on( 'close', () => {

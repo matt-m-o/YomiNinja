@@ -112,7 +112,7 @@ export default function HotkeyHints() {
                 flexDirection='column'
                 alignItems='center'
                 justifyContent='center'
-                m='auto' mt={10} width='100%'
+                m='auto' width='100%'                
             >
                         
                 { createHotkeyHint( 'OCR', ocrHotkeysStrings ) }

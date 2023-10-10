@@ -96,7 +96,12 @@ export class OcrRecognitionController {
                 else
                     this.userSelectedWindowId = undefined;
 
-                this.activeCaptureSource = message;                
+                this.activeCaptureSource = message;
+
+                this.mainWindow.webContents.send(
+                    'ocr_recognition:active_capture_source',
+                    this.activeCaptureSource
+                ); 
             }
         );
     }

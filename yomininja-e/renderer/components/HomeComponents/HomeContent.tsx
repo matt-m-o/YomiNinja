@@ -1,10 +1,13 @@
 import { useContext, useEffect } from "react"
 import { LanguagesContext } from "../../context/languages.provider";
-import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Box, Container, FormControlLabel, FormGroup, TextField, TextFieldProps, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Box, Button, Card, CardContent, Container, FormControlLabel, FormGroup, TextField, TextFieldProps, Typography } from "@mui/material";
 import { ProfileContext } from "../../context/profile.provider";
 import CaptureSourceMenu from "./CaptureSourceMenu";
-import { CaptureSourceProvider } from "../../context/capture_source.provider";
+import { CaptureSourceContext, CaptureSourceProvider } from "../../context/capture_source.provider";
 import HotkeyHints from "./HotkeyHints";
+import { ScreenshotMonitorRounded } from "@mui/icons-material";
+import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 
 
@@ -16,6 +19,8 @@ export default function HomeContent() {
 
     const { languages } = useContext( LanguagesContext );
     const { profile, changeActiveOcrLanguage } = useContext( ProfileContext );
+
+    const { activeCaptureSource } = useContext( CaptureSourceContext );
 
 
     const activeOcrLanguage: string = capitalize(profile?.active_ocr_language.name);
@@ -42,10 +47,10 @@ export default function HomeContent() {
                     // width: 'max-content',
                     // maxWidth: props.width,
                     alignItems: 'start',
-                    ml: '10px',
-                    mr: '10px'
+                    // ml: '10px',
+                    // mr: '10px'
                 }}
-                labelPlacement="top"                
+                labelPlacement="top"
                 control={
                     <TextField {...props } label='' sx={{ width: props.width }}/>
                 }
@@ -53,27 +58,93 @@ export default function HomeContent() {
         )        
     }
 
+    function openCaptureSourceSelectionWindow() {
+        global.ipcRenderer.invoke('main:show_capture_source_selection');
+    }
 
     return (
         
         <Box display='flex' justifyContent='center' flexDirection='column' maxWidth={800} m={'auto'}>
 
-            <Box display='flex' justifyContent='center' flexDirection='row'> 
-                <Autocomplete autoHighlight
-                    renderInput={ (params) => {
-                        return <CustomTextField {...params} label='OCR Language' width='200px' />
-                    }}
-                    value={ activeOcrLanguage || 'english' }
-                    onChange={(event: any, newValue: string | null) => {
-                        handleLanguageSelectChange( newValue );
-                    }}
-                    options={ languageOptions || [] }
-                />                
-            </Box>
-                            
-            <CaptureSourceMenu/>            
+            <Card variant="elevation" sx={{ borderRadius: 4, mb: 4, pl: 1, pr: 1 }}>
+                <CardContent>
 
-            <HotkeyHints/>
+                    <Typography mb={5} mt={1} fontSize='1.2rem'>
+                        Select a capture source and the language that matches its content.
+                    </Typography>
+
+                    <Box display='flex' m='auto'>
+
+                        <FormControlLabel label={'Capture source'}
+                            sx={{
+                                alignItems: 'start',                            
+                            }}
+                            labelPlacement="top"
+                            control={
+                                <Button variant="outlined" size="large"
+                                    startIcon={<ScreenshotMonitorRounded/>}
+                                    endIcon={ <MoreVertRoundedIcon/> }
+                                    onClick={ openCaptureSourceSelectionWindow }
+                                    sx={{
+                                        width: 'max-content',
+                                        height: '56px',                                    
+                                    }}
+                                >                
+                                    <Typography color='#90caf9' fontSize='0.85rem' >
+                                        {activeCaptureSource?.name}
+                                    </Typography>
+                                </Button>
+                            }
+                        />
+
+                        <Autocomplete autoHighlight
+                            renderInput={ (params) => {
+                                return <CustomTextField {...params} label='OCR language' width='200px' />
+                            }}
+                            value={ activeOcrLanguage || 'english' }
+                            onChange={(event: any, newValue: string | null) => {
+                                handleLanguageSelectChange( newValue );
+                            }}
+                            options={ languageOptions || [] }
+                        />                        
+
+                    </Box>
+
+                </CardContent>
+            </Card>
+            
+            
+            <Card variant="elevation" sx={{ borderRadius: 4, pl: 1, pr: 1  }}>
+
+                <CardContent>
+
+                    <Typography mb={5} mt={1} fontSize='1.2rem'>
+                        The overlay can be operated using the following hotkeys. <br/>                        
+                    </Typography>
+
+                    <HotkeyHints/>
+
+                    <Box mt={5}>
+                        <Accordion variant="outlined">
+
+                            <AccordionSummary expandIcon={< ExpandMoreIcon />}>
+                                Hints
+                            </AccordionSummary>
+                            <AccordionDetails>
+
+                                <Typography fontSize='1.2rem'>
+                                    Use the PrintScreen key to achieve the lowest latency. <br/><br/>
+                                    Auto-copy text and many other features can be customized in the settings screen. <br/>
+                                </Typography>
+
+                            </AccordionDetails>
+                        </Accordion>
+                    </Box>
+
+                </CardContent>
+
+            </Card>
+        
             
         </Box>
         

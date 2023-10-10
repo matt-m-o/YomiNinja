@@ -14,6 +14,7 @@ import { ListItemIcon, ListItemText, SxProps, Tab, Tabs, Theme } from '@mui/mate
 import TabContext from '@mui/lab/TabContext';
 import TabPanel from'@mui/lab/TabPanel';
 import TabList from '@mui/lab/TabList';
+import { defaultTheme } from './Theme';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -47,13 +48,6 @@ function a11yProps(index: number) {
     'aria-controls': `vertical-tabpanel-${index}`,
   };
 }
-
-
-const defaultTheme = createTheme({
-  palette: {
-    mode: 'dark'
-  }
-});
 
 export type LayoutProps = {
   contents: {
@@ -106,9 +100,7 @@ export default function Layout( { contents }: LayoutProps) {
   ));
 
   return (
-    <ThemeProvider theme={defaultTheme}>
-
-      <TabContext value={activeTab}>
+    <TabContext value={activeTab}>
       <Box sx={{ display: 'flex', height: '100vh' }}>
   
         <CssBaseline />
@@ -218,8 +210,6 @@ export default function Layout( { contents }: LayoutProps) {
           
         </Box>
       </Box>
-      </TabContext>
-  
-    </ThemeProvider>
+    </TabContext>
   );
 }
