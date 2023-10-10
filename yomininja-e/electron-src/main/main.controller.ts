@@ -32,6 +32,11 @@ export class MainController {
             },
         });
 
+        this.mainWindow.on( 'close', () => {
+            if ( this.captureSourceWindow )
+                this.captureSourceWindow.close();
+        });
+
         return this.mainWindow;
     }
 
