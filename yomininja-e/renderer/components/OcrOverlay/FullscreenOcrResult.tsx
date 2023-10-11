@@ -88,7 +88,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
         let isVertical = box.dimensions.height > ( box.dimensions.width * 1.40);
 
-        const fontSize = isVertical ? box.dimensions.width * 90 : box.dimensions.height * 60;
+        const fontSize = isVertical ? box.dimensions.width * 90 : box.dimensions.height * 65;
 
         if ( box.angle_degrees < -70 )
             isVertical = true;
@@ -110,10 +110,10 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
             <Box
                 style={{                    
                     left: box.position.left + '%',
-                    top: box.position.top + '%',
+                    top: box.position.top * 0.994 + '%',
                     transform: `rotate( ${box.angle_degrees}deg )`,
                     minWidth: box.dimensions.width + '%',
-                    minHeight: box.dimensions.height + '%',
+                    maxHeight: box.dimensions.height *1.10 + '%',
                     fontSize: fontSize + '%',
                 }}                          
                 onMouseEnter={ () => setHoveredText( ocrItem.text ) }
