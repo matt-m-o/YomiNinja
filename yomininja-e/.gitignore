@@ -45,3 +45,6 @@ dist/
 
 # database
 data/
+
+# third-party-licenses
+third-party-licenses.txt
