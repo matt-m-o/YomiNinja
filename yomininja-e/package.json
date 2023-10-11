@@ -93,7 +93,11 @@
         "from": "third-party-licenses.txt",
         "to": "./"
       }
-    ]
+    ],
+    "directories":{
+      "buildResources":"electron_resources",
+      "output":"dist"
+    }
   },
   "jest": {
     "moduleFileExtensions": [
