@@ -53,10 +53,15 @@ export const AppInfoProvider = ( { children }: PropsWithChildren ) => {
         <Snackbar open={openSnackbar}
             anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             onClose={ () => setOpenSnackbar(false) }
-            sx={{ minWidth: '300px' }}
+            sx={{ minWidth: '300px', alignItems: 'center' }}
         >
-            <Alert severity="info" sx={{ width: '100%' }}
-                onClose={ () => setOpenSnackbar(false) }
+            <Alert severity="info" 
+                sx={{
+                    width: '100%',
+                    alignItems: 'center',
+                    fontSize: '1.2rem'
+                }}
+                onClose={ () => setOpenSnackbar(false) }                
             >
                 New version available on <GithubReleasesLink/>!
             </Alert>
@@ -73,7 +78,7 @@ export const AppInfoProvider = ( { children }: PropsWithChildren ) => {
     function openGithubRepoPage(){
         global.ipcRenderer.invoke('app_info:open_github_repo_page');
     }
-    
+
     function openPatreonPage(){
         global.ipcRenderer.invoke('app_info:open_patreon_page');
     }

@@ -1,6 +1,6 @@
 {
   "name": "yomininja-e",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "main": "main/electron-src/index.js",
   "productName": "YomiNinja",
@@ -21,14 +21,14 @@
     "build-electron": "tsc -p electron-src",
     "build": "npm run build-renderer && npm run build-electron",
     "pack-app": "npm run build && electron-builder --dir",
-    "dist": "npm run genereate-licenses && npm run build && electron-builder",
+    "dist": "npm run generate-licenses && npm run build && electron-builder",
     "type-check": "tsc -p ./renderer/tsconfig.json && tsc -p ./electron-src/tsconfig.json",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "grpc-types": "proto-loader-gen-types --longs=String --enums=String --defaults --keep-case --oneofs --grpcLib=@grpc/grpc-js --outDir=./grpc/rpc ./grpc/protos/ocr_service.proto",
     "gyp-build": "node-gyp clean && node-gyp configure && node-gyp build",
-    "genereate-licenses": "npx generate-license-file --input package.json --output third-party-licenses.txt --overwrite"
+    "generate-licenses": "npx generate-license-file --input package.json --output third-party-licenses.txt --overwrite"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.9.3",

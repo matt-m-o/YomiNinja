@@ -61,7 +61,7 @@ export default function HomeContent() {
         
         <Box display='flex' justifyContent='center' flexDirection='column' m={'auto'}>
 
-            <Card variant="elevation" sx={{ borderRadius: 4, mb: 4, pl: 1, pr: 1 }}>
+            <Card variant="elevation" sx={{ borderRadius: 4, mb: 3, pl: 1, pr: 1 }}>
                 <CardContent>
 
                     <Typography mb={5} mt={1} fontSize='1.2rem'>
