@@ -1,10 +1,13 @@
-import { useContext, useEffect } from "react";
+import { PropsWithChildren, ReactNode, useContext, useEffect } from "react";
 import { AppInfoContext, GithubReleasesLink } from "../../context/app_info.provider";
-import { Box, Typography, styled } from "@mui/material";
+import { Box, Grid, Typography, styled } from "@mui/material";
 import Image  from 'next/image';
 import Link from "next/link";
 import { Stick, Sirin_Stencil } from 'next/font/google'
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
+import patreonIcon from "../../public/logos/PATREON_SYMBOL_1_WHITE_RGB.svg";
+import githubIcon from "../../public/logos/github-mark-white.svg";
+
 
 const AppNameFont = Stick({ // Stick | Sirin_Stencil
     weight: '400',
@@ -16,29 +19,31 @@ const AppNameFirstLetter = styled('span')({
 });
 
 const AboutText = styled(Typography)({
-    marginTop: '0.3rem',
+    marginTop: '0.5rem',
     marginBottom: '0.5rem',
+    lineHeight: '1.9rem',
     fontSize: '1.2rem'
+});
+
+const LinkWithoutDecoration = styled(Link)({
+    color: 'inherit',
+    textDecoration: 'unset'
 });
 
 export default function AppInfo() {
 
-    const { versionInfo, runUpdateCheck } = useContext( AppInfoContext );
+    const {
+        versionInfo,
+        runUpdateCheck,
+        openGithubRepoPage,
+        openPatreonPage
+    } = useContext( AppInfoContext );
     
-    
-
     let versionText = 'Version: '+ versionInfo?.runningVersion;
     versionText +=  versionInfo?.isUpToDate ? ' (latest)' : '';
 
-    let newVersionText: string | undefined = versionInfo?.isUpToDate ? undefined : 'Newer version available on ';
+    let newVersionText: string | undefined = versionInfo?.isUpToDate ? undefined : 'Newer version available on ';    
 
-    const logoDarkSrc = '/logos/v1-alt-3.svg';
-
-    const size = 280;
-    const width = size;
-    const height = size;
-
-   
 
     const AppName = ( props ) => (
         <Typography variant="h4" mb={1} {...props}>
@@ -48,25 +53,28 @@ export default function AppInfo() {
 
     useEffect( () => {
         runUpdateCheck();
-    }, [])
+    }, []);
+
+    const IconWithLink = ( props: { onClick: () => void, children: ReactNode } ) => (
+        <LinkWithoutDecoration href='#' onClick={ props.onClick }>
+            <Box display='flex' flexDirection='column' alignItems='center'>
+                { props.children }                
+            </Box>
+        </LinkWithoutDecoration>
+    );
     
 
     return(
         <>
-            <Box display='flex' flexDirection='row' justifyContent='center' padding={10}>
-                {/* <Image
-                    src= {logoDarkSrc}
-                    width={width}
-                    height={height}
-                    priority={true}
-                    alt=""
-                    style={{
-                        backgroundColor: 'white', // #929397
-                        borderRadius: '100%'
-                    }}
-                /> */}
+            <Box display='flex' flexDirection='column' justifyContent='center' 
+                m='auto'
+                pl={5}
+                pr={5}
+                pt={1}
+                maxWidth='1000px'
+            >
 
-                <Box display='flex' flexDirection='column' justifyContent='center' ml={5}>
+                <Box display='flex' flexDirection='column' justifyContent='center' mb={6}>
 
                     <Box>
                         <AppName/>
@@ -78,16 +86,71 @@ export default function AppInfo() {
                         </AboutText>
                     </Box>
 
-                    <Box>
-                        <AboutText> Yomi Ninja provides seamless text extraction right from your screen,
-                        making it easy to copy text from images, videos, and games without switching applications or devices.</AboutText>
+                    <Box mt={2}>
+
+                        <AboutText> 
+                            Yomi Ninja provides seamless text extraction right from your screen,
+                            making it easy to copy text from images, videos, and games without switching applications or devices.
+                        </AboutText>
 
                         <AboutText> Perfect for language learners and anyone who values an efficient workflow. </AboutText>
                         
-                        <AboutText> Built-in pop-up dictionary for look-ups with a simple hover and many other features are coming soon. </AboutText>
-                    </Box>                    
+                        <AboutText> Built-in pop-up dictionary for look-ups with a simple hover and many other features are coming soon. </AboutText>                        
+                        
+                    </Box>
+
+                    <AboutText sx={{ fontSize: '1.35rem', mt: '2rem', lineHeight: '2.1rem' }}>
+                        If you enjoy the project and would like to contribute to its growth,
+                        check out the page.<br/>
+                        You can have access to the latest features and bug fixes before the public release.
+                    </AboutText>
                   
-                </Box>
+                </Box>                
+                
+                
+                <Grid container justifyContent="center" 
+                    spacing={{ xs: 20, md: 40 }}
+                    columns={{ xs: 1, sm: 2}}
+                    flexGrow={1}
+                >
+
+                    <Grid item>
+                        <IconWithLink onClick={ openPatreonPage }>
+                            <Image
+                                priority
+                                src={patreonIcon}                            
+                                alt="Support the project on Patreon"
+                                height={60}
+                            />
+                            <Typography mt={2} textAlign='center'
+                                fontSize={'1.25rem'}
+                                fontWeight={600}
+                            >
+                                Patreon page
+                            </Typography>
+                        </IconWithLink>
+                    </Grid>
+                    
+                    
+                    <Grid item>
+                        <IconWithLink onClick={ openGithubRepoPage }>
+                            <Image
+                                priority
+                                src={githubIcon}
+                                alt="GitHub repository"
+                                height={60}                            
+                                />
+                            <Typography mt={2} textAlign='center'
+                                fontWeight={600}
+                                fontSize={'1.25rem'}
+                                >
+                                GitHub repository
+                            </Typography>                                                        
+                        </IconWithLink>
+                    </Grid>
+                    
+
+                </Grid>                
                 
             </Box>
                         

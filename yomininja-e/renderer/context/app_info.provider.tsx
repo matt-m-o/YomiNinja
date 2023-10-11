@@ -5,8 +5,10 @@ import { CheckForAppUpdates_Output } from '../../electron-src/@core/application/
 
 
 export type AppInfoContextType = {
+    versionInfo: CheckForAppUpdates_Output;
     runUpdateCheck: () => Promise< CheckForAppUpdates_Output>;
-    versionInfo: CheckForAppUpdates_Output;    
+    openGithubRepoPage: () => void;
+    openPatreonPage: () => void;
 };
 
 export const GithubReleasesLink = ( props?: { sx?: SxProps<Theme> } ) => (
@@ -16,6 +18,7 @@ export const GithubReleasesLink = ( props?: { sx?: SxProps<Theme> } ) => (
         GitHub
     </Link>
 );
+
 
 
 export const AppInfoContext = createContext( {} as AppInfoContextType );
@@ -65,14 +68,24 @@ export const AppInfoProvider = ( { children }: PropsWithChildren ) => {
         if ( !versionInfo?.isUpToDate )
             setOpenSnackbar(true);
 
-    }, [versionInfo] )
+    }, [versionInfo] );
+
+    function openGithubRepoPage(){
+        global.ipcRenderer.invoke('app_info:open_github_repo_page');
+    }
+    
+    function openPatreonPage(){
+        global.ipcRenderer.invoke('app_info:open_patreon_page');
+    }
     
     
     return (
         <AppInfoContext.Provider
             value={{
+                versionInfo,
                 runUpdateCheck,
-                versionInfo,                
+                openPatreonPage,
+                openGithubRepoPage
             }}
         >
             {newVersionNotification}

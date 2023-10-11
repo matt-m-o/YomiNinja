@@ -23,12 +23,20 @@ export class AppInfoController {
             return this.appInfoService.checkForAppUpdates();
         });
 
-        ipcMain.handle( 'app_info:open_releases_page', async () => {
-            this.openAppReleasesPage();
-        });
+        ipcMain.handle( 'app_info:open_releases_page', this.openAppReleasesPage );
+        ipcMain.handle( 'app_info:open_patreon_page', this.openPatreonPage );
+        ipcMain.handle( 'app_info:open_github_repo_page', this.openGithubRepoPage );
     }
 
     openAppReleasesPage() {
         shell.openExternal( get_AppGithubUrl() + '/releases' );        
+    }    
+
+    openGithubRepoPage() {
+        shell.openExternal( get_AppGithubUrl() );
+    }
+
+    openPatreonPage() {
+        shell.openExternal( 'https://www.patreon.com/YomiNinja' );
     }
 }
