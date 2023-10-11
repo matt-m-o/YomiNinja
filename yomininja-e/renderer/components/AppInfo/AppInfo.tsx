@@ -80,9 +80,10 @@ export default function AppInfo() {
 
                     <Box>
                         <AboutText> Yomi Ninja provides seamless text extraction right from your screen,
-                        making it easy to copy text from images, videos, and games without switching applications.</AboutText>
+                        making it easy to copy text from images, videos, and games without switching applications or devices.</AboutText>
 
-                        {/* <AboutText> Perfect for language learners and anyone who values efficient text handling. </AboutText> */}
+                        <AboutText> Perfect for language learners and anyone who values an efficient workflow. </AboutText>
+                        
                         <AboutText> Built-in pop-up dictionary for look-ups with a simple hover and many other features are coming soon. </AboutText>
                     </Box>                    
                   

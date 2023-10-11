@@ -65,7 +65,7 @@ export default function HomeContent() {
                 <CardContent>
 
                     <Typography mb={5} mt={1} fontSize='1.2rem'>
-                        Select a capture source and the language that matches its content.
+                        Select a capture source and the language that matches its content
                     </Typography>
 
                     <Grid container justifyContent="center" spacing={{ xs: 2, md: 2 }} columns={{ xs: 1, sm: 4, md: 12 }} sx={{ flexGrow: 1  }} >
@@ -118,7 +118,7 @@ export default function HomeContent() {
                 <CardContent>
 
                     <Typography mb={7} mt={1} fontSize='1.2rem'>
-                        The overlay can be operated using the following hotkeys. <br/>                        
+                        The overlay can be operated by using the following hotkeys <br/>                        
                     </Typography>
 
                     <HotkeyHints/>                  

@@ -55,7 +55,7 @@ export const AppInfoProvider = ( { children }: PropsWithChildren ) => {
             <Alert severity="info" sx={{ width: '100%' }}
                 onClose={ () => setOpenSnackbar(false) }
             >
-                Newer version available on <GithubReleasesLink/>!
+                New version available on <GithubReleasesLink/>!
             </Alert>
         </Snackbar>
     );
