@@ -72,16 +72,16 @@ export class SettingsPreset {
         overlay: {
             visuals: {
                 frame: {
-                    border_color: 'red',
+                    border_color: "#e21212", // Red
                     border_width: 1
                 },
                 ocr_item_box: {
-                    background_color: 'black',
-                    border_color: 'red',
+                    background_color: '#000000', // Black
+                    border_color: "#e21212", // Red
                     border_radius: 10,
                     border_width: 1,
                     text: {
-                        color: 'white',
+                        color: "#ffffff", // White
                     }
                 }
             },
@@ -94,7 +94,7 @@ export class SettingsPreset {
             },
             behavior: {
                 copy_text_on_hover: true,
-                always_on_top: false,
+                always_on_top: true,
                 show_yomichan_window_on_copy: true,
             }
         },
