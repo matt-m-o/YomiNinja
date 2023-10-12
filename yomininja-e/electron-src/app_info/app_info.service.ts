@@ -24,7 +24,7 @@ export class AppInfoService {
         ) {            
             this.appVersionCheckedAt = new Date();
             this.latestAppVersionCheck = await this.checkForAppUpdatesUseCase.execute();
-        }        
+        }
 
         return this.latestAppVersionCheck;
     }

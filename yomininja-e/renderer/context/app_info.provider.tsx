@@ -1,5 +1,4 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
-import { OcrEngineSettings, OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
 import { Alert, Link, Snackbar, SxProps, Theme, debounce } from "@mui/material";
 import { CheckForAppUpdates_Output } from '../../electron-src/@core/application/use_cases/check_for_app_updates/check_for_app_updates.use_case'
 
@@ -70,8 +69,12 @@ export const AppInfoProvider = ( { children }: PropsWithChildren ) => {
 
     useEffect( () => {
 
-        if ( !versionInfo?.isUpToDate )
+        if ( !versionInfo ) return;
+
+        if ( !versionInfo.isUpToDate )
             setOpenSnackbar(true);
+
+        // console.log(versionInfo)
 
     }, [versionInfo] );
 
