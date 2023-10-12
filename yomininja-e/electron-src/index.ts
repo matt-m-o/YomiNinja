@@ -25,14 +25,14 @@ app.on('ready', async () => {
   initializeApp()
     .then( async () => {
 
-      await mainController.loadMainPage();
-      
       const overlayWindow = await overlayController.init( mainWindow );
-
+      
       ocrRecognitionController.init({ mainWindow, overlayWindow });
+      mainController.loadMainPage();
       settingsController.init( mainWindow );
       appInfoController.init( mainWindow );
       profileController.init( mainWindow );
+      
     });
 });
 
