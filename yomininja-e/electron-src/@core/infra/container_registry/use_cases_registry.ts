@@ -43,7 +43,7 @@ container_registry.bind( Registry.UpdateSettingsPresetUseCase ).toDynamicValue( 
 
 container_registry.bind( Registry.CheckForAppUpdatesUseCase ).toDynamicValue( (context) => {
     return new CheckForAppUpdatesUseCase(
-        context.container.get( Registry.FakeAppVersionProviderAdapter ),
+        context.container.get( Registry.GithubAppVersionProviderAdapter ),
     );
 }).inSingletonScope();
 

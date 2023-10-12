@@ -38,7 +38,7 @@ export class GithubAppVersionProviderAdapter implements AppVersionProviderAdapte
 
         const latest = this.releases[0];
 
-        const tagName = semver.valid( latest.tag_name );
+        const tagName = semver.valid( latest?.tag_name );
 
         if ( !tagName )
             throw new Error('invalid-semver-tag');
