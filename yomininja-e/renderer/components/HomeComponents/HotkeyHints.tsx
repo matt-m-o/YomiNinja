@@ -106,15 +106,14 @@ export default function HotkeyHints() {
         ocrHotkeysStrings.push( 'PrintScreen' );    
 
     return (
-        <Box minWidth='100%' >
+        <Box maxWidth='600px' m='auto'>
 
             <Box display='flex' 
                 flexDirection='column'
                 alignItems='center'
                 justifyContent='center'
-                m='auto' width='100%'                
+                m='auto' width='100%'
             >
-                        
                 { createHotkeyHint( 'OCR', ocrHotkeysStrings ) }
                 { createHotkeyHint( 'Copy text', [overlayHotkeys?.copy_text] ) }
                 { createHotkeyHint( 'Show overlay', [overlayHotkeys?.show] ) }
