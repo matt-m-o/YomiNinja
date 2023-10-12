@@ -22,7 +22,7 @@ export class MainController {
 
     private createMainWindow(): BrowserWindow {
         this.mainWindow = new BrowserWindow({
-            width: 800,
+            width: 1100,
             height: 700,
             autoHideMenuBar: true,
             webPreferences: {
@@ -45,6 +45,7 @@ export class MainController {
         ipcMain.handle( 'main:show_capture_source_selection', ( event: IpcMainInvokeEvent, message: string ) => {
             this.createCaptureSourceSelectionWindow();
         });
+        
         ipcMain.handle( 'main:close_capture_source_selection', ( event: IpcMainInvokeEvent, message: string ) => {
             this.captureSourceWindow?.close();
             this.captureSourceWindow = null;
