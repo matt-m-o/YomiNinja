@@ -81,9 +81,12 @@ export default function AppInfo() {
                         <AboutText sx={{ mb: 0 }} >
                             {versionText}
                         </AboutText>
-                        <AboutText sx={{ mt: 0 }}>
-                            ✨{newVersionText} <GithubReleasesLink />
-                        </AboutText>
+
+                        { !versionInfo.isUpToDate &&
+                            <AboutText sx={{ mt: 0 }}>
+                                ✨{newVersionText} <GithubReleasesLink />
+                            </AboutText>
+                        }
                     </Box>
 
                     <Box mt={2}>
