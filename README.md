@@ -2,6 +2,10 @@
 
 YomiNinja is an application for extracting text from any type of visual content.
 
+
+https://github.com/matt-m-o/YomiNinja/assets/25914763/1868db47-5b50-44c1-a5b3-694d46c69e28
+
+
 The extracted text is displayed over the original content, allowing for quick look-ups with pop-up dictionaries like Yomichan. <br>
 This feature is especially beneficial for language learners who study through videos or games.  <br>
 It overlays the original content, minimizing distractions and simplifying the process of looking up unfamiliar words
@@ -54,3 +58,4 @@ It supports dozens of languages, that will be integrated into this application i
 ### Inspired by:
 - [Yomichan](https://github.com/FooSoft/yomichan)
 - [Manga OCR](https://github.com/kha-white/manga-ocr)
+- [kanjitomo-ocr](https://github.com/sakarika/kanjitomo-ocr)
