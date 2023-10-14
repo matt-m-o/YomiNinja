@@ -42,8 +42,10 @@ You need Windows 10 or 11 and [VCRedist Runtimes](https://www.techpowerup.com/do
 
 YomiNinja currently supports text extraction in:
 
-- Japanese
 - English
+- Japanese
+- Chinese
+- Korean
 
 Currently, PaddleOCR is used for text extraction, which generally produces very good results in Asian languages such as Chinese or Japanese.
 It supports dozens of languages, that will be integrated into this application in the future. <br>

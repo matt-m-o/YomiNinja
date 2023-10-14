@@ -14,6 +14,8 @@ async function populateLanguagesRepository( languageRepo: LanguageTypeOrmReposit
     const languages: Language_CreationInput[] = [
         { name: 'japanese', two_letter_code: 'ja' },
         { name: 'english', two_letter_code: 'en' },
+        { name: 'chinese', two_letter_code: 'ch' },
+        { name: 'korean', two_letter_code: 'ko' },
     ]
     for ( const data of languages ) {
         const exists = await languageRepo.findOne({ two_letter_code: data.two_letter_code });
