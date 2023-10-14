@@ -92,7 +92,8 @@ export default function AppInfo() {
                     <Box mt={2}>
 
                         <AboutText> 
-                            Yomi Ninja provides seamless text extraction right from your screen,
+                            YomiNinja is an application for extracting text from any type of visual content.
+
                             making it easy to copy text from images, videos, and games without switching applications or devices.
                         </AboutText>
 
@@ -104,7 +105,7 @@ export default function AppInfo() {
 
                     <AboutText sx={{ fontSize: '1.35rem', mt: '2rem', lineHeight: '2.1rem' }}>
                         If you enjoy the project and would like to contribute to its growth,
-                        check out the page.<br/>
+                        check out the Patreon page.<br/>
                         You can have access to the latest features and bug fixes before the public release.
                     </AboutText>
                   
