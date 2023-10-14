@@ -6,9 +6,10 @@ YomiNinja is an application for extracting text from any type of visual content.
 https://github.com/matt-m-o/YomiNinja/assets/25914763/1868db47-5b50-44c1-a5b3-694d46c69e28
 
 
-The extracted text is displayed over the original content, allowing for quick look-ups with pop-up dictionaries like Yomichan. <br>
-This feature is especially beneficial for language learners who study through videos or games.  <br>
-It overlays the original content, minimizing distractions and simplifying the process of looking up unfamiliar words
+The extracted text overlays the original content, allowing for quick look-ups with pop-up dictionaries like Yomichan. <br>
+It minimizes distractions and simplifies the process of looking up unfamiliar words. <br>
+This feature is especially beneficial for language learners who study through videos or games.  
+
 
 YomiNinja is perfect for:
 
@@ -51,6 +52,25 @@ YomiNinja currently supports text extraction in:
 Currently, PaddleOCR is used for text extraction, which generally produces very good results in Asian languages such as Chinese or Japanese.
 It supports dozens of languages, that will be integrated into this application in the future. <br>
 
+### Building
+1. Clone git repository
+```commandline
+git clone https://github.com/matt-m-o/YomiNinja.git && cd YomiNinja
+```
+2. Download and extract the latest build of [PPOCR-Inference-Service](https://github.com/matt-m-o/PPOCR-Inference-Service) inside the "./bin/ppocr" directory.
+3. Install node modules
+```commandline
+cd yomininja-e && npm install
+```
+4. Generate gRPC Protobuf types
+```commandline
+npm run grpc-types
+```
+5. Build distribution
+```commandline
+npm run dist
+```
+   
 ### OCR Engines
 
 - [PPOCR-Inference-Service](https://github.com/matt-m-o/PPOCR-Inference-Service)
