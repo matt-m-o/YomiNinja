@@ -113,7 +113,8 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                     top: box.position.top * 0.994 + '%',
                     transform: `rotate( ${box.angle_degrees}deg )`,
                     minWidth: box.dimensions.width + '%',
-                    maxHeight: box.dimensions.height *1.10 + '%',
+                    minHeight: box.dimensions.height + '%',
+                    maxHeight: box.dimensions.height *1.10 + '%',            
                     fontSize: fontSize + '%',
                 }}                          
                 onMouseEnter={ () => setHoveredText( ocrItem.text ) }
