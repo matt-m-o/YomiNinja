@@ -15,8 +15,9 @@ export default function AppSettingsOcrEngine() {
     const ocrEngineSettings: OcrEngineSettings = activeSettingsPreset?.ocr_engine;
     
     const [ imageScalingFactor, setImageScalingFactor ] = useState( ocrEngineSettings?.image_scaling_factor || 1 );
+    const [ invertColors, setInvertColors ] = useState( ocrEngineSettings?.invert_colors || false );
     const [ maxImageWidth, setMaxImageWidth ] = useState( ocrEngineSettings?.max_image_width || 1920 );
-    const [ cpuThreads, setCpuThreads ] = useState( ocrEngineSettings?.cpu_threads || 2 );    
+    const [ cpuThreads, setCpuThreads ] = useState( ocrEngineSettings?.cpu_threads || 2 );
 
     let deviceCpuThreads: number = 2;
 
@@ -96,6 +97,18 @@ export default function AppSettingsOcrEngine() {
             
             <Container sx={{ mt: 2, mb: 4 }}>
 
+                <FormControlLabel label='Invert image colors'
+                    control={
+                        <Switch
+                            checked={ Boolean( invertColors ) }
+                            onChange={ ( event ) => {
+                                setInvertColors( event.target.checked );
+                                updateActivePresetOcrEngine({ invert_colors: event.target.checked });
+                            }}
+                        /> 
+                    }
+                />
+
                 <Typography gutterBottom component="div" margin={2} mb={1} ml={0} fontSize={'1.1rem'}>
                     Image scaling factor
                 </Typography>
@@ -121,7 +134,7 @@ export default function AppSettingsOcrEngine() {
                         }}
                         onChangeCommitted={ () => {
                             console.log({ imageScalingFactor });
-                            updateActivePresetOcrEngine({ image_scaling_factor: imageScalingFactor })
+                            updateActivePresetOcrEngine({ image_scaling_factor: imageScalingFactor });
                         }}
                     />
 

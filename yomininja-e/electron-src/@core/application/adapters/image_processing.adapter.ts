@@ -11,5 +11,6 @@ export type ImageResizeOutput = {
 }
 
 export interface ImageProcessingAdapter {
-    resize: ( input: ImageResizeInput ) => Promise< ImageResizeOutput >;    
+    resize: ( input: ImageResizeInput ) => Promise< ImageResizeOutput >;
+    invertColors: ( imageBuffer: Buffer ) => Promise< Buffer >;
 }
