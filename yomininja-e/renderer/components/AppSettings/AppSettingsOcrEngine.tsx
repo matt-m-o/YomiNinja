@@ -19,12 +19,6 @@ export default function AppSettingsOcrEngine() {
     const [ maxImageWidth, setMaxImageWidth ] = useState( ocrEngineSettings?.max_image_width || 1920 );
     const [ cpuThreads, setCpuThreads ] = useState( ocrEngineSettings?.cpu_threads || 2 );
 
-    let deviceCpuThreads: number = 2;
-
-    useEffect( () => {
-        deviceCpuThreads = navigator?.hardwareConcurrency;
-    }, [] )
-
     useEffect( () => {
 
         if ( !ocrEngineSettings ) return;
@@ -203,7 +197,7 @@ export default function AppSettingsOcrEngine() {
                     <Slider
                         marks
                         min={1}
-                        max={ deviceCpuThreads }
+                        max={ navigator.hardwareConcurrency }
                         step={1}
                         valueLabelDisplay="auto"
                         value={ cpuThreads }
