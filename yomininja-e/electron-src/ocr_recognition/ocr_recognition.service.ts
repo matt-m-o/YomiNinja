@@ -73,7 +73,7 @@ export class OcrRecognitionService {
         image?: Buffer,
         window?: ExternalWindow
     }> {
-        console.time('takeScreenshot');        
+        // console.time('takeScreenshot');        
 
         const { display, window } = input;
 
@@ -110,7 +110,7 @@ export class OcrRecognitionService {
         //     id, display_id, name
         // }));
 
-        console.timeEnd('takeScreenshot');
+        // console.timeEnd('takeScreenshot');
 
         if ( !source )
             return {};
