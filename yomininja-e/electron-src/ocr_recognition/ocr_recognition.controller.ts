@@ -107,8 +107,8 @@ export class OcrRecognitionController {
     }
 
     async recognize( entireScreenImage?: Buffer, runFullScreenImageCheck?: boolean ) {
-        console.log('');
-        console.time('controller.recognize');
+        // console.log('');
+        // console.time('controller.recognize');
 
         try {
             // console.log(activeProfile);
@@ -122,8 +122,8 @@ export class OcrRecognitionController {
                 window: this.captureSourceWindow,
             });            
 
-            console.timeEnd('controller.recognize');
-            console.log('');            
+            // console.timeEnd('controller.recognize');
+            // console.log('');            
 
             this.overlayWindow.webContents.send( 'ocr:result', ocrResultScalable );
 
@@ -246,7 +246,7 @@ export class OcrRecognitionController {
     }
 
     setOverlayBounds( entireScreenMode: 'fullscreen' | 'maximized' = 'fullscreen' ) {
-        console.time("setOverlayBounds");        
+        // console.time("setOverlayBounds");        
         
         if ( this.captureSourceDisplay ) {            
             
@@ -279,7 +279,7 @@ export class OcrRecognitionController {
             // this.overlayWindow.setBounds( dipRect );
         }
 
-        console.timeEnd("setOverlayBounds");
+        // console.timeEnd("setOverlayBounds");
     }
 
 
