@@ -19,7 +19,7 @@ YomiNinja is perfect for:
 
 ### Installation
 
-You need Windows 10 or 11 and [VCRedist Runtimes](https://www.techpowerup.com/download/visual-c-redistributable-runtime-package-all-in-one/) installed. <br>
+You need Windows 10 or 11 and [VCRedist](https://www.techpowerup.com/download/visual-c-redistributable-runtime-package-all-in-one/) installed. <br>
 
 [Download](https://github.com/matt-m-o/YomiNinja/releases) and install the latest release.
 
