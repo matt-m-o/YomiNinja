@@ -23,6 +23,13 @@ You need Windows 10 or 11 and [VCRedist](https://www.techpowerup.com/download/vi
 
 [Download](https://github.com/matt-m-o/YomiNinja/releases) and install the latest release.
 
+Currently, the Yomichan extension is required for dictionary look-ups:
+1. Install [Yomichan](https://foosoft.net/projects/yomichan/).
+2. Go to the Yomichan settings.
+3. Find and enable the clipboard monitoring option.
+
+   - Chromium: `Enable background clipboard text monitoring`
+   - Firefox: `Enable native popups when copying Japanese text`
 
 ### Current features
 
