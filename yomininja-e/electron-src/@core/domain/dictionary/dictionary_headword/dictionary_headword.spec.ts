@@ -16,17 +16,22 @@ describe('DictionaryHeadword tests', () => {
     let dictionaryTagPn: DictionaryTag;
     let dictionaryTagRk: DictionaryTag;
     let dictionaryTagUk: DictionaryTag;
-
+    
     let asokoDefinition: DictionaryDefinition;    
-
+    
     beforeEach( () => {
-
+        
         rawDictionaryTags = getRawDictionaryTags();
         rawDictionaryDefinitions = getRawDictionaryDefinitions();
+        console.log(rawDictionaryDefinitions)
 
         const rawPnTag = rawDictionaryTags.find( rawTag => rawTag.name == 'pn' );
         const rawUkTag = rawDictionaryTags.find( rawTag => rawTag.name == 'uk' );
-        const rawRkTag = rawDictionaryTags.find( rawTag => rawTag.name == 'rk' ); 
+        const rawRkTag = rawDictionaryTags.find( rawTag => rawTag.name == 'rK' ); 
+
+        expect( rawPnTag ).toBeDefined();
+        expect( rawUkTag ).toBeDefined();
+        expect( rawRkTag ).toBeDefined();
 
         if ( !rawPnTag || !rawUkTag || !rawRkTag ) return;
 
@@ -46,10 +51,12 @@ describe('DictionaryHeadword tests', () => {
         });
 
         asokoRawDefinition = rawDictionaryDefinitions.find( rawDefinition => rawDefinition.reading == 'あそこ' );
-                
+        expect( asokoRawDefinition ).toBeDefined();
     });
 
     it('should define a dictionary headword', () => {
+
+        expect( asokoRawDefinition ).toBeDefined();
 
         if ( !asokoRawDefinition ) return;
 
@@ -59,6 +66,7 @@ describe('DictionaryHeadword tests', () => {
         };
 
         const dictionaryHeadword = DictionaryHeadword.create(input);
+        expect( dictionaryHeadword.getPopularityScore() ).toStrictEqual( 0 );
 
         asokoDefinition = DictionaryDefinition.create({
             dictionary_headword_id: dictionaryHeadword.id,
@@ -66,13 +74,14 @@ describe('DictionaryHeadword tests', () => {
             popularity_score: asokoRawDefinition.popularity,
             tags: [ dictionaryTagPn, dictionaryTagUk ],
             dictionary_id: 'qwer'
-        });
+        });        
 
         dictionaryHeadword.addDefinition( asokoDefinition );
-
         expect( dictionaryHeadword.id ).toBeDefined();
         expect( dictionaryHeadword.definitions ).toHaveLength( 1 );
         expect( dictionaryHeadword.definitions[0] ).toStrictEqual( asokoDefinition );
-        expect( dictionaryHeadword.definitions[0].id ).toStrictEqual( dictionaryHeadword.id );        
+        expect( dictionaryHeadword.definitions[0].dictionary_headword_id )
+            .toStrictEqual( dictionaryHeadword.id );
+        expect( dictionaryHeadword.getPopularityScore() ).toStrictEqual( 3 );
     });
 });

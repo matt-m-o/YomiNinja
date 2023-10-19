@@ -9,14 +9,17 @@ export type DictionaryHeadwordConstructorProps = {
     id?: DictionaryHeadwordId;
     term: string;
     reading: string;
-    definitions?: DictionaryDefinition[];
-    tags?: DictionaryTag[];
+    definitions: DictionaryDefinition[];
+    tags: DictionaryTag[];
 }
 
 export interface DictionaryHeadwordCreationInput extends Omit<
     DictionaryHeadwordConstructorProps,
     'id' | 'definitions' | 'tags'
-> {};
+> {
+    definitions?: DictionaryDefinition[];
+    tags?: DictionaryTag[];
+};
 
 // Entity represent the a dictionary Headword or Heading ( unique combination of a "term" and "reading" )
 export class DictionaryHeadword {
@@ -38,13 +41,15 @@ export class DictionaryHeadword {
 
         this.term = props.term,
         this.reading = props.reading;
-        this.definitions = props.definitions || [];
-        this.tags = props.tags || [];
+        this.definitions = props.definitions;
+        this.tags = props.tags;
     }
 
     static create( input: DictionaryHeadwordCreationInput ) {
         return new DictionaryHeadword({
-            ...input
+            ...input,
+            definitions: input.definitions || [],
+            tags: input.tags || [],
         });
     }
 
@@ -54,7 +59,15 @@ export class DictionaryHeadword {
         //     return;
 
         this.definitions.push( definition );
-    }    
+    }
+
+    getPopularityScore(): number {      
+
+        return Math.max(
+            ...this.definitions.map( definition => definition.popularity_score ),
+            0
+        );    
+    }
 
     static generateId( input: { term: string, reading: string } ): DictionaryHeadwordId {
         return input.term + '/' + input.reading;
