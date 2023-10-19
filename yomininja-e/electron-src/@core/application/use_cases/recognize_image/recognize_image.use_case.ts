@@ -44,9 +44,12 @@ export class RecognizeImageUseCase {
         if ( !ocrAdapter )
             return null;
         
-        const { image_scaling_factor } = activeSettingsPreset.ocr_engine;
+        const {
+            image_scaling_factor,
+            invert_colors
+        } = activeSettingsPreset.ocr_engine;
 
-        let imageBuffer: Buffer;
+        let imageBuffer: Buffer = input.imageBuffer;
 
         if ( image_scaling_factor != 1 ) {
             
@@ -55,8 +58,9 @@ export class RecognizeImageUseCase {
                 scaling_factor: image_scaling_factor,
             })).resizedImage;
         }
-        else {
-            imageBuffer = input.imageBuffer;
+        
+        if ( invert_colors ) {
+            imageBuffer = await this.imageProcessing.invertColors( imageBuffer );
         }
 
         const ocrResult = await ocrAdapter.recognize({

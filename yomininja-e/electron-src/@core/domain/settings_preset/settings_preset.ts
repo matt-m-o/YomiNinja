@@ -5,6 +5,7 @@ export type OcrEngineSettings = {
     image_scaling_factor: number; // from 0.1 to 1.0. Two decimal places shouldn't be allow.
     max_image_width: number;
     cpu_threads: number;
+    invert_colors: boolean;
 };
 
 export type OverlayOcrItemBoxVisuals = {
@@ -102,6 +103,7 @@ export class SettingsPreset {
             image_scaling_factor: 1,
             max_image_width: 1600,
             cpu_threads: 8,
+            invert_colors: false,
         },
 
         created_at: new Date(),
