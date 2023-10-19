@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-export interface DictionaryId extends String {};
+export type DictionaryId = string;
 
 export type DictionaryConstructorProps = {
     id?: DictionaryId;
@@ -22,6 +22,8 @@ export class Dictionary {
     enabled: boolean;
 
     constructor( props: DictionaryConstructorProps ) {
+
+        if (!props) return;
 
         this.id = props.id || Dictionary.createId();
         this.name = props.name;

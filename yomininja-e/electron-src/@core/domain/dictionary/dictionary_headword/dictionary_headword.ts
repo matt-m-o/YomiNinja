@@ -2,7 +2,7 @@ import { DictionaryDefinition } from "../dictionary_entry_definition/dictionary_
 import { DictionaryTag } from "../dictionary_tag/dictionary_tag";
 
 
-export interface DictionaryHeadwordId extends String {};
+export type DictionaryHeadwordId = string;
 
 
 export type DictionaryHeadwordConstructorProps = {
@@ -29,6 +29,8 @@ export class DictionaryHeadword {
 
     protected constructor( props: DictionaryHeadwordConstructorProps ) {
 
+        if (!props) return;
+
         this.id = props?.id || DictionaryHeadword.generateId({
             term: props.term,
             reading: props.reading,
@@ -54,7 +56,7 @@ export class DictionaryHeadword {
         this.definitions.push( definition );
     }    
 
-    static generateId( input: { term: string, reading: string } ): string {
+    static generateId( input: { term: string, reading: string } ): DictionaryHeadwordId {
         return input.term + '/' + input.reading;
     }
 }

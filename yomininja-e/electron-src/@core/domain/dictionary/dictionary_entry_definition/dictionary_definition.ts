@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { DictionaryTag } from "../dictionary_tag/dictionary_tag";
 import { DictionaryHeadwordId } from '../dictionary_headword/dictionary_headword';
 
-export interface DictionaryDefinitionId extends String {};
+export type DictionaryDefinitionId = string;
 
 export type DictionaryDefinitionConstructorProps = {
     id?: DictionaryDefinitionId;
@@ -27,6 +27,8 @@ export class DictionaryDefinition {
     
     protected constructor( props: DictionaryDefinitionConstructorProps ) {
 
+        if (!props) return;
+
         this.id = props?.id || DictionaryDefinition.generateId();
 
         this.dictionary_headword_id = props.dictionary_headword_id;
@@ -43,7 +45,7 @@ export class DictionaryDefinition {
     }
 
     
-    static generateId(): string {
+    static generateId(): DictionaryDefinitionId {
 
         // ! might change to use a hashing function
         return crypto.randomUUID();

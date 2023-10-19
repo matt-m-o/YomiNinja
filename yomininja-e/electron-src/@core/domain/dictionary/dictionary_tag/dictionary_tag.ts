@@ -1,6 +1,6 @@
 import { DictionaryId } from "../dictionary";
 
-export interface DictionaryTagId extends String {};
+export type DictionaryTagId = string;
 
 export type DictionaryTagConstructorProps = {
     id?: string; // !change it to "number" later
@@ -27,6 +27,8 @@ export class DictionaryTag {
 
     protected constructor( props: DictionaryTagConstructorProps ) {
 
+        if (!props) return; // to prevent issues with ORMs
+
         this.id = props?.id || DictionaryTag.generateId({
             dictionary_id: props.dictionary_id,
             tag_name: props.name
@@ -47,7 +49,7 @@ export class DictionaryTag {
     }
 
     // ! might change to a hashing function
-    static generateId( input: { dictionary_id: string, tag_name: string } ): string {
+    static generateId( input: { dictionary_id: string, tag_name: string } ): DictionaryTagId {
         return input.dictionary_id + '/' + input.tag_name;
     }
 }
