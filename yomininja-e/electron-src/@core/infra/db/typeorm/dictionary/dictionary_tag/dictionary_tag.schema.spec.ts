@@ -27,7 +27,7 @@ describe( 'DictionaryTag Entity Schema tests', () => {
 
         rawDictionaryTags = getRawDictionaryTags();
 
-        rawPnTag = rawDictionaryTags.find( item => item.name === 'pn' );        
+        rawPnTag = rawDictionaryTags.find( item => item.name === 'pn' );
     });
 
     it("should insert a tag", async () => {
