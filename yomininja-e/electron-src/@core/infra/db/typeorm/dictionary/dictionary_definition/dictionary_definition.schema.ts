@@ -46,7 +46,19 @@ export const DictionaryDefinitionTypeOrmSchema = new EntitySchema< DictionaryDef
                 name: 'dictionary_definitions_tags',
             },
             cascade: false,
+            default: [],
+            eager: true,
         },
+        headword: {
+            type: 'many-to-one',
+            target: 'DictionaryHeadword',
+            joinColumn: {
+                name: 'dictionary_headword_id',                
+            },
+            inverseSide: 'definitions',
+            createForeignKeyConstraints: false,
+            default: []
+        }
     },
 
     indices: [

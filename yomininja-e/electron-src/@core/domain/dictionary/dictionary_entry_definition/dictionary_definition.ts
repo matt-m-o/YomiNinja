@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { DictionaryTag } from "../dictionary_tag/dictionary_tag";
-import { DictionaryHeadwordId } from '../dictionary_headword/dictionary_headword';
+import { DictionaryHeadword, DictionaryHeadwordId } from '../dictionary_headword/dictionary_headword';
 
 export type DictionaryDefinitionId = string;
 
@@ -11,9 +11,13 @@ export type DictionaryDefinitionConstructorProps = {
     tags: DictionaryTag[];
     popularity_score: number;
     dictionary_id: string;
+    headword?: DictionaryHeadword;
 }
 
-export interface DictionaryDefinitionCreationInput extends Omit< DictionaryDefinitionConstructorProps, 'id' > {};
+export interface DictionaryDefinitionCreationInput extends Omit<
+    DictionaryDefinitionConstructorProps,
+    'id'
+> {};
 
 // Entity based on Yomichan Term banks
 export class DictionaryDefinition {
@@ -24,6 +28,7 @@ export class DictionaryDefinition {
     tags: DictionaryTag[];
     popularity_score: number;
     dictionary_id: string;
+    headword?: DictionaryHeadword;
     
     protected constructor( props: DictionaryDefinitionConstructorProps ) {
 
@@ -36,6 +41,7 @@ export class DictionaryDefinition {
         this.tags = props.tags;
         this.popularity_score = props.popularity_score;
         this.dictionary_id = props.dictionary_id;
+        this.headword = props?.headword;
     }
 
     static create( input: DictionaryDefinitionCreationInput ) {
