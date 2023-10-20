@@ -1,7 +1,7 @@
 
 
 import { EntitySchema } from 'typeorm';
-import { DictionaryDefinition } from '../../../../../domain/dictionary/dictionary_entry_definition/dictionary_definition';
+import { DictionaryDefinition } from '../../../../../domain/dictionary/dictionary_definition/dictionary_definition';
 import { generateIndexName } from '../../common/schema_helpers';
 
 
