@@ -72,17 +72,20 @@ describe( "Dictionary Tag TypeOrm Repository tests", () => {
         expect( rawUkTag ).toBeDefined();
         if( !rawUkTag ) return;
         
-        const ukDictionaryTag = DictionaryTag.create({ ...rawUkTag, dictionary_id: 'asdf' });
+        const ukDictionaryTag = DictionaryTag.create({ ...rawUkTag, dictionary_id: 'zxcv' });
         await ormRepo.save([
             dictionaryTag,
             ukDictionaryTag
         ]);        
 
-        const foundTags = await repo.getAll();        
+        const foundTags = await repo.getAll();
 
         expect( foundTags ).toHaveLength( 2 );
         expect( foundTags[0] ).toStrictEqual( dictionaryTag );
         expect( foundTags[1] ).toStrictEqual( ukDictionaryTag );
+
+        const foundTagsWithDictId = await repo.getAll( 'zxcv' );
+        expect( foundTagsWithDictId ).toHaveLength( 1 );
     });
 
     it('should delete one', async () => {
