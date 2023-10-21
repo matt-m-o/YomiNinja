@@ -21,22 +21,41 @@ export default class DictionaryHeadwordTypeOrmRepository implements DictionaryHe
     
     async findOne( params: DictionaryHeadwordFindOneInput ): Promise< DictionaryHeadword | null > {
 
-        return this.ormRepo.findOne({
+        const headword = await this.ormRepo.findOne({
             where: {
                 ...params,
             },
             relations: [ 'tags', 'definitions' ]
         });
+
+        this.runNullCheck( headword );
+
+        return headword;
     }
 
     async findMany( params: DictionaryHeadwordFindManyInput ): Promise< DictionaryHeadword[] | null > {
-        return this.ormRepo.find({
+
+        const headword = await this.ormRepo.find({
             where: params,
             relations: [ 'tags', 'definitions' ]
         });
+
+        this.runNullCheck( headword );
+
+        return headword;
     }
 
     async delete( id: string ): Promise< void> {
         await this.ormRepo.delete( { id } );
+    }
+
+    private runNullCheck( input?: DictionaryHeadword | DictionaryHeadword[] | null ) {
+
+        if ( !input ) return;
+
+        if ( Array.isArray(input) )
+            input.forEach( item => item.nullCheck() );
+        else 
+            input.nullCheck();
     }
 }
