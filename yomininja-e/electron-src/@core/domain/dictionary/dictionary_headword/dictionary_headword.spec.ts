@@ -1,6 +1,6 @@
 import { RawDictionaryDefinition, getRawDictionaryDefinitions } from "../common/test/dictionary_definition_test_data";
 import { RawDictionaryTag, getRawDictionaryTags } from "../common/test/dictionary_tag_test_data";
-import { DictionaryDefinition } from "../dictionary_entry_definition/dictionary_definition";
+import { DictionaryDefinition } from "../dictionary_definition/dictionary_definition";
 import { DictionaryTag } from "../dictionary_tag/dictionary_tag";
 import { DictionaryHeadword, DictionaryHeadwordCreationInput } from "./dictionary_headword";
 
@@ -23,7 +23,6 @@ describe('DictionaryHeadword tests', () => {
         
         rawDictionaryTags = getRawDictionaryTags();
         rawDictionaryDefinitions = getRawDictionaryDefinitions();
-        console.log(rawDictionaryDefinitions)
 
         const rawPnTag = rawDictionaryTags.find( rawTag => rawTag.name == 'pn' );
         const rawUkTag = rawDictionaryTags.find( rawTag => rawTag.name == 'uk' );
