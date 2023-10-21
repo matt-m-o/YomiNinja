@@ -1,4 +1,4 @@
-import { DictionaryDefinition } from "../dictionary_entry_definition/dictionary_definition";
+import { DictionaryDefinition } from "../dictionary_definition/dictionary_definition";
 import { DictionaryTag } from "../dictionary_tag/dictionary_tag";
 
 
@@ -41,8 +41,8 @@ export class DictionaryHeadword {
 
         this.term = props.term,
         this.reading = props.reading;
-        this.definitions = props.definitions;
-        this.tags = props.tags;
+        this.definitions = props?.definitions || [];
+        this.tags = props?.tags || [];
     }
 
     static create( input: DictionaryHeadwordCreationInput ) {
@@ -67,6 +67,11 @@ export class DictionaryHeadword {
             ...this.definitions.map( definition => definition.popularity_score ),
             0
         );    
+    }
+
+    nullCheck() {
+        this.definitions = this.definitions || [];
+        this.tags = this.tags || [];
     }
 
     static generateId( input: { term: string, reading: string } ): DictionaryHeadwordId {
