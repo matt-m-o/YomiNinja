@@ -2,10 +2,11 @@ import './container_registry/container_registry';
 import { Language, Language_CreationInput } from '../domain/language/language';
 import { Profile } from '../domain/profile/profile';
 import { SettingsPreset } from "../domain/settings_preset/settings_preset";
-import { get_MainDataSource } from "./container_registry/db_registry";
+import { get_DictionaryDataSource, get_MainDataSource } from "./container_registry/db_registry";
 import { get_LanguageRepository, get_ProfileRepository, get_SettingsPresetRepository } from "./container_registry/repositories_registry";
 import os from 'os';
 import LanguageTypeOrmRepository from './db/typeorm/language/language.typeorm.repository';
+
 
 export let activeProfile: Profile;
 
@@ -32,8 +33,8 @@ export async function initializeApp() {
     try {
 
         // Initializing database
-        const mainDataSource = await get_MainDataSource();
-        await mainDataSource.initialize();
+        await get_MainDataSource().initialize();
+        await get_DictionaryDataSource().initialize();
 
         // Getting repositories 
         const languageRepo = get_LanguageRepository();
