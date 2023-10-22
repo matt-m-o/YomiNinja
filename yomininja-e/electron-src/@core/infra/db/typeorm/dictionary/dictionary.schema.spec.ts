@@ -43,7 +43,6 @@ describe( 'Dictionary Entity Schema tests', () => {
                 id: dictionary.id
             },
         });
-        foundDictionary?.nullCheck();
 
         expect( foundDictionary ).toBeDefined();        
         expect( foundDictionary ).toStrictEqual( dictionary );        
