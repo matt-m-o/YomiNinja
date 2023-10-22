@@ -28,6 +28,36 @@ export function getRawDictionaryDefinitions(): RawDictionaryDefinition[] {
             ],
             sequence: 1000320,
             term_tags: "rK"
-        }    
+        },
+        {            
+            term: "彼処",
+            reading: "あそこ",
+            definition_tags: "n uk",
+            rule_id: "",
+            popularity: 1,
+            definitions: [
+                "that far",
+                "that much",
+                "that point"
+            ],
+            sequence: 1000320,
+            term_tags: "rK"
+        },
+        {
+            term: "彼処",
+            reading: "あすこ",
+            definition_tags: "pn uk",
+            rule_id: "",
+            popularity: 3,
+            definitions: [
+              "there",
+              "over there",
+              "that place",
+              "yonder",
+              "you-know-where"
+            ],
+            sequence: 1000320,
+            term_tags: "rK"
+        }
     ]
 }
