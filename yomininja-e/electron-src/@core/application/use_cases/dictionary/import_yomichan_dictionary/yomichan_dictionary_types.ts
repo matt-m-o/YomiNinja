@@ -1,4 +1,10 @@
 
+export type YomichanDictionaryIndex = {
+    title: string;
+    format: number;
+    revision: number;
+    sequenced: boolean;
+}
 
 export type YomichanTagBankItem = {
     name: string;
