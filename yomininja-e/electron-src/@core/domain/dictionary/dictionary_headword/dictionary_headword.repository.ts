@@ -13,7 +13,6 @@ export type DictionaryHeadwordFindOneInput = {
 export type DictionaryHeadwordFindManyInput = {    
     term?: DictionaryHeadwordId;
     reading?: DictionaryId;
-    dictionaryIds?: DictionaryId[];
 }
 
 export interface DictionaryHeadwordRepository {

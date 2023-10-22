@@ -36,7 +36,10 @@ export default class DictionaryHeadwordTypeOrmRepository implements DictionaryHe
     async findMany( params: DictionaryHeadwordFindManyInput ): Promise< DictionaryHeadword[] | null > {
 
         const headword = await this.ormRepo.find({
-            where: params,
+            where: {
+                term: params?.term,
+                reading: params?.reading,
+            },
             relations: [ 'tags', 'definitions' ]
         });
 
