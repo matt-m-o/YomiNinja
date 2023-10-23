@@ -156,7 +156,7 @@ export class ImportYomichanDictionaryUseCase {
             let definitionTags: DictionaryTag[] = [];
 
             const definitionTagNames = yomichanTerm?.definition_tags?.split(' ') || [];
-            definitionTagNames.forEach( item => {             
+            definitionTagNames.forEach( item => {
 
                     const dictionaryTag = tagMap.get( item );
                     if ( !dictionaryTag ) return;

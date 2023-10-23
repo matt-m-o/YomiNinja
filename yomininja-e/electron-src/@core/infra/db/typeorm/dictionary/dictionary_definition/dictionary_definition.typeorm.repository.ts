@@ -9,7 +9,14 @@ export default class DictionaryDefinitionTypeOrmRepository implements Dictionary
     constructor ( private ormRepo: Repository< DictionaryDefinition > ) {}
 
     async insert( definitions: DictionaryDefinition[] ): Promise< void > {
-        await this.ormRepo.save( definitions );
+
+        const batchSize = 200;
+
+        for (let i = 0; i < definitions.length; i += batchSize) {
+
+            const batch = definitions.slice(i, i + batchSize);
+            await this.ormRepo.save( batch );
+        }    
     }
     
     async findOne( params: DictionaryDefinitionFindOneInput ): Promise< DictionaryDefinition | null > {

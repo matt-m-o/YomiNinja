@@ -12,6 +12,7 @@ import { appInfoController } from './app_info/app_info.index';
 import { profileController } from './profile/profile.index';
 import { overlayController } from './overlay/overlay.index';
 import { mainController } from './main/main.index';
+import { dictionariesController } from './dictionaries/dictionaries.index';
 
 
 
@@ -32,7 +33,8 @@ app.on('ready', async () => {
       settingsController.init( mainWindow );
       appInfoController.init( mainWindow );
       profileController.init( mainWindow );
-      
+      dictionariesController.init( mainWindow );
+
     });
 });
 
