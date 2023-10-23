@@ -2,7 +2,7 @@ import { Dictionary, DictionaryId } from "../../../../domain/dictionary/dictiona
 import { DictionaryRepository } from "../../../../domain/dictionary/dictionary.repository";
 import { DictionaryDefinition } from "../../../../domain/dictionary/dictionary_definition/dictionary_definition";
 import { DictionaryDefinitionRepository } from "../../../../domain/dictionary/dictionary_definition/dictionary_definition.repository";
-import { DictionaryHeadword } from "../../../../domain/dictionary/dictionary_headword/dictionary_headword";
+import { DictionaryHeadword, DictionaryHeadwordId } from "../../../../domain/dictionary/dictionary_headword/dictionary_headword";
 import { DictionaryHeadwordRepository } from "../../../../domain/dictionary/dictionary_headword/dictionary_headword.repository";
 import { DictionaryTag } from "../../../../domain/dictionary/dictionary_tag/dictionary_tag";
 import { DictionaryTagRepository } from "../../../../domain/dictionary/dictionary_tag/dictionary_tag.repository";
@@ -130,6 +130,7 @@ export class ImportYomichanDictionaryUseCase {
         const tagMap = new Map< string, DictionaryTag >();
         dictionaryTags.forEach( tag => tagMap.set( tag.name, tag ) );
 
+        const headwordMap = new Map< string, DictionaryHeadword >();
         const newDefinitions: DictionaryDefinition[] = [];
         
         for ( const yomichanTerm of termBank ) {
@@ -139,18 +140,20 @@ export class ImportYomichanDictionaryUseCase {
                 term: yomichanTerm.term
             });            
 
-            const headwordExists = await this.headwordsRepo.exist({
-                id: dictionary_headword_id
-            });
+            const headwordExists = await this.headwordExists(
+                dictionary_headword_id,
+                headwordMap,
+            );
 
             if ( !headwordExists ) {
                 
-                await this.headwordsRepo.insert([
+                headwordMap.set( 
+                    dictionary_headword_id,
                     DictionaryHeadword.create({
                         term: yomichanTerm.term,
                         reading: yomichanTerm.reading
                     })
-                ]);
+                );
             }
             
             let definitionTags: DictionaryTag[] = [];
@@ -172,8 +175,26 @@ export class ImportYomichanDictionaryUseCase {
                 popularity_score: yomichanTerm.popularity,
             }));
         }
-            
+        
+        
+        await this.headwordsRepo.insert(
+            Array.from(  headwordMap.values() )
+        );
+
         await this.definitionsRepo.insert( newDefinitions );
+    }
+
+    private async headwordExists(
+        headwordId: DictionaryHeadwordId,
+        headwordMap: Map< string, DictionaryHeadword >,
+    ): Promise< boolean > {
+
+        const existsInMap = Boolean( headwordMap.get(headwordId) );
+        if ( existsInMap ) return existsInMap;
+
+        return await this.headwordsRepo.exist({
+            id: headwordId
+        });        
     }
 }
 
