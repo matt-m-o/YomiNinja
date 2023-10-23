@@ -27,7 +27,7 @@ export const mainDataSourceOptions: DataSourceOptions = {
 export const dictionaryDataSourceOptions: DataSourceOptions = {
     type: 'sqlite',
     synchronize: true,
-    database: join( './data/dict.db' ),
+    database: join( './data/dict.db' ), // :memory: | join( './data/dict.db' )
     logging: false,
     entities: [
         DictionaryTypeOrmSchema,

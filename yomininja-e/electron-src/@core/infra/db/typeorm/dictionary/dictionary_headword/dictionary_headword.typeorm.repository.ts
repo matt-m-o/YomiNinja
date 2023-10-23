@@ -8,8 +8,15 @@ export default class DictionaryHeadwordTypeOrmRepository implements DictionaryHe
 
     constructor ( private ormRepo: Repository< DictionaryHeadword > ) {}
 
-    async insert( definitions: DictionaryHeadword[] ): Promise< void > {
-        await this.ormRepo.save( definitions );
+    async insert( headwords: DictionaryHeadword[] ): Promise< void > {
+
+        const batchSize = 1000;
+
+        for ( let i = 0; i < headwords.length; i += batchSize ) {
+
+            const batch = headwords.slice( i, i + batchSize );
+            await this.ormRepo.save( batch );
+        }
     }
 
     async exist( params: DictionaryHeadwordFindOneInput ): Promise< boolean > {        

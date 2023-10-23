@@ -10,13 +10,13 @@ export default class DictionaryDefinitionTypeOrmRepository implements Dictionary
 
     async insert( definitions: DictionaryDefinition[] ): Promise< void > {
 
-        const batchSize = 200;
+        const batchSize = 1000;
 
         for (let i = 0; i < definitions.length; i += batchSize) {
 
             const batch = definitions.slice(i, i + batchSize);
             await this.ormRepo.save( batch );
-        }    
+        }
     }
     
     async findOne( params: DictionaryDefinitionFindOneInput ): Promise< DictionaryDefinition | null > {
