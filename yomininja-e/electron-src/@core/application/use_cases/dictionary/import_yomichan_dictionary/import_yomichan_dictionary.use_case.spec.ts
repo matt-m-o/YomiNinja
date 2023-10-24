@@ -149,7 +149,7 @@ describe('ImportYomichanDictionaryUseCase tests', () => {
         const headwords = await headwordsRepo.findMany({});
         expect( headwords ).toBeDefined();
         expect( headwords )
-            .toHaveLength( 2 );
+            .toHaveLength( 4 );
 
 
         const headwordId = headwords?.[0].id || '';
