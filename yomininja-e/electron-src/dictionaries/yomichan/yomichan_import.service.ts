@@ -4,7 +4,6 @@ import fsPromises from 'fs/promises';
 import { YomichanDictionaryIndex, YomichanTagBankItem, YomichanTermBankItem } from "../../@core/application/use_cases/dictionary/import_yomichan_dictionary/yomichan_dictionary_types";
 import path, { join } from "path";
 // import isDev from 'electron-is-dev';
-import { DATA_DIR } from "../../util/directories";
 import StreamZip from 'node-stream-zip';
 import { Language } from "../../@core/domain/language/language";
 
@@ -62,7 +61,7 @@ export class YomichanImportService {
             });
 
             importedTermBanks++;
-            console.log({ importedTermBanks });            
+            console.log({ importedTermBanks });
         }
     }
 
