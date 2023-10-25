@@ -3,6 +3,7 @@ import { OcrResultContext } from "../../context/ocr_result.provider";
 import { styled } from "@mui/material";
 import { OcrItemScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { OverlayBehavior, OverlayHotkeys, OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import { DictionaryContext } from "../../context/dictionary.provider";
 
 
 const BaseOcrResultBox = styled('div')({
@@ -31,7 +32,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
     const { ocrItemBoxVisuals, overlayHotkeys, overlayBehavior } = props;
 
     const { ocrResult } = useContext( OcrResultContext );
-    const [ hoveredText, setHoveredText ] = useState< string >('');
+    const [ hoveredText, setHoveredText ] = useState< string >('');    
     
     useEffect(() => {
 
@@ -75,8 +76,9 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         if ( 
             overlayBehavior?.copy_text_on_hover &&
             hoveredText
-        )
-            global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', hoveredText );
+        ) {
+            global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', hoveredText );            
+        }
 
     }, [ hoveredText ] );
 
@@ -107,7 +109,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         });
 
         return (
-            <Box
+            <Box className="extracted-text"
                 style={{                    
                     left: box.position.left + '%',
                     top: box.position.top * 0.994 + '%',
