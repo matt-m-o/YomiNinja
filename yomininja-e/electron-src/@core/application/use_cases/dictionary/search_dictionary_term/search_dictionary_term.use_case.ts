@@ -24,7 +24,7 @@ export class SearchDictionaryTermUseCase {
 
         const { term } = input;
 
-        const headwords = await this.headwordsRepo.findMany({
+        const headwords = await this.headwordsRepo.findManyLike({
             term,
         });
 

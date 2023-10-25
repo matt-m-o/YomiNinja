@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { FindOptionsWhere, Raw, Repository } from "typeorm";
 import { DictionaryHeadwordFindManyInput, DictionaryHeadwordFindOneInput, DictionaryHeadwordRepository } from "../../../../../domain/dictionary/dictionary_headword/dictionary_headword.repository";
 import { DictionaryHeadword } from "../../../../../domain/dictionary/dictionary_headword/dictionary_headword";
 
@@ -53,6 +53,34 @@ export default class DictionaryHeadwordTypeOrmRepository implements DictionaryHe
         this.runNullCheck( headword );
 
         return headword;
+    }
+
+    async findManyLike( input: DictionaryHeadwordFindManyInput ): Promise< DictionaryHeadword[] > {
+
+        const { term, reading } = input;        
+
+        const where: FindOptionsWhere< DictionaryHeadword > = {};
+
+        if ( !term && !reading ) return [];
+
+        if (term) {
+            where.term = Raw(
+                alias => `:searchValue LIKE ${alias} || '%'`, { searchValue: term }
+            );
+        }
+
+        if (reading) {
+            where.reading = Raw(
+                alias => `:searchValue LIKE ${alias} || '%'`, { searchValue: reading }
+            );
+        }
+
+        const headwords = await this.ormRepo.find({
+            where,
+            relations: [ 'tags', 'definitions' ]
+        });
+
+        return headwords;
     }
 
     async delete( id: string ): Promise< void> {

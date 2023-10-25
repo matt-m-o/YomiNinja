@@ -151,6 +151,40 @@ describe( "Dictionary Headword TypeOrm Repository tests", () => {
         expect( foundHeadwords?.[1] ).toStrictEqual( headword2 );
     });
 
+    it('should find MANY LIKE term or reading', async () => {
+
+        if (!rawDefinition) return;
+
+        const headword2 = DictionaryHeadword.create({
+            ...rawDefinition,
+            tags: [ dictionaryTag ],
+            definitions: [],
+            term: rawDefinition.term + 'Z',
+            reading: rawDefinition.reading+'ZED'
+        });        
+        await ormRepo.save([
+            headword,
+            headword2
+        ]);
+
+        const foundHeadwordsByTerm = await repo.findManyLike({
+            term: headword2.term,
+        });
+
+        expect( foundHeadwordsByTerm ).toHaveLength( 2 );
+        expect( foundHeadwordsByTerm?.[0] ).toStrictEqual( headword );
+        expect( foundHeadwordsByTerm?.[1] ).toStrictEqual( headword2 );
+
+
+        const foundHeadwordsByReading = await repo.findManyLike({
+            reading: headword2.reading
+        });
+
+        expect( foundHeadwordsByReading ).toHaveLength( 2 );
+        expect( foundHeadwordsByReading?.[0] ).toStrictEqual( headword );
+        expect( foundHeadwordsByReading?.[1] ).toStrictEqual( headword2 );
+    });
+
     it('should delete one', async () => {
         
         await ormRepo.save([ headword ]);        

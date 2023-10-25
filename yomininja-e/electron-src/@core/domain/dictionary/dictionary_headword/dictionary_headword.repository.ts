@@ -25,5 +25,7 @@ export interface DictionaryHeadwordRepository {
 
     findMany( input: DictionaryHeadwordFindManyInput ): Promise< DictionaryHeadword[] | null >;
 
+    findManyLike( input: DictionaryHeadwordFindManyInput ): Promise< DictionaryHeadword[] >;
+
     delete( id: string ): Promise< void >;
 }
