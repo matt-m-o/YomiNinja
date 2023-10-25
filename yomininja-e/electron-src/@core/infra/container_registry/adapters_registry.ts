@@ -33,7 +33,7 @@ export function get_SharpImageProcessingAdapter(): SharpImageProcessingAdapter {
 }
 
 export function get_GithubAppVersionProviderAdapter(): GithubAppVersionProviderAdapter {
-    return container_registry.get< GithubAppVersionProviderAdapter >( Registry.FakeAppVersionProviderAdapter );
+    return container_registry.get< GithubAppVersionProviderAdapter >( Registry.GithubAppVersionProviderAdapter );
 }
 
 export function get_FakeAppVersionProviderAdapter(): FakeAppVersionProviderAdapter {
