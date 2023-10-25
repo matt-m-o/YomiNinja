@@ -13,6 +13,7 @@ export class DictionariesController {
     private dictionariesService: DictionariesService;
 
     private mainWindow: BrowserWindow;
+    private overlayWindow: BrowserWindow;
 
     constructor( input: {
         yomichanImportService: YomichanImportService,
@@ -23,16 +24,36 @@ export class DictionariesController {
         this.dictionariesService = input.dictionariesService;
     }
 
-    init( mainWindow: BrowserWindow ) {
+    init( input: { 
+        mainWindow: BrowserWindow,
+        overlayWindow: BrowserWindow,
+    }) {
 
-        this.mainWindow = mainWindow;
+        this.mainWindow = input.mainWindow;
+        this.overlayWindow = input.overlayWindow;
+
+        this.registersIpcHandlers();
 
         // this.importDictionary({
         //     format: 'yomichan',
         //     sourceLanguage: Language.create({ name: 'japanese', two_letter_code: 'ja' }).toJson(),
         //     targetLanguage: Language.create({ name: 'english', two_letter_code: 'en' }).toJson(),
         //     zipFilePath: './data/jmdict_english.zip',
-        // });                
+        //        
+    }
+
+    private registersIpcHandlers() {
+
+        ipcMain.handle( 'dictionaries:search', 
+            async ( event: IpcMainInvokeEvent, message: string ): Promise< DictionaryHeadword[] > => {
+
+                if ( !message || message.length === 0 ) return[];                
+
+                const result = await this.search( message );                
+
+                return result;
+            }
+        );
     }
 
     importDictionary( 

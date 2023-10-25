@@ -33,7 +33,7 @@ app.on('ready', async () => {
       settingsController.init( mainWindow );
       appInfoController.init( mainWindow );
       profileController.init( mainWindow );
-      dictionariesController.init( mainWindow );
+      dictionariesController.init({ mainWindow, overlayWindow });
 
     });
 });

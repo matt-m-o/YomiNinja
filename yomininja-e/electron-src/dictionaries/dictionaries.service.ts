@@ -39,10 +39,8 @@ export class DictionariesService {
         });
 
         const headwords = await this.searchDictionaryTermUseCase.execute({
-            term: terms[0]
+            term: terms.join('')
         });
-
-        console.log(headwords);
 
         return headwords;
     }
