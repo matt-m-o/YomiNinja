@@ -16,6 +16,7 @@ export const Registry = {
     SharpImageProcessingAdapter: Symbol.for('SharpImageProcessingAdapter'),
     GithubAppVersionProviderAdapter: Symbol.for('GithubAppVersionProviderAdapter'),
     FakeAppVersionProviderAdapter: Symbol.for('FakeAppVersionProviderAdapter'),
+    KuromojiTermExtractor: Symbol.for('KuromojiTermExtractor'),
 
     // Use Cases
     RecognizeImageUseCase: Symbol.for('RecognizeImageUseCase'),
@@ -26,6 +27,8 @@ export const Registry = {
     ChangeActiveOcrLanguageUseCase: Symbol.for('ChangeActiveOcrLanguageUseCase'),
     GetProfileUseCase: Symbol.for('GetProfileUseCase'),
     ImportYomichanDictionaryUseCase: Symbol.for('ImportYomichanDictionaryUseCase'),
+    ExtractTermsFromTextUseCase: Symbol.for('ExtractTermsFromTextUseCase'),
+    SearchDictionaryTermUseCase: Symbol.for('SearchDictionaryTermUseCase'),
 
     // Repositories
     SettingsPresetInMemoryRepository: Symbol.for('SettingsPresetInMemoryRepository'),

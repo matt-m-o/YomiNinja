@@ -9,6 +9,8 @@ import { CheckForAppUpdatesUseCase } from "../../application/use_cases/check_for
 import { ChangeActiveOcrLanguageUseCase } from "../../application/use_cases/change_active_ocr_language/change_active_ocr_language.use_case";
 import { GetProfileUseCase } from "../../application/use_cases/get_profile/get_profile.use_case";
 import { ImportYomichanDictionaryUseCase } from "../../application/use_cases/dictionary/import_yomichan_dictionary/import_yomichan_dictionary.use_case";
+import { ExtractTermsFromTextUseCase } from "../../application/use_cases/dictionary/extract_terms_from_text/extract_terms_from_text.use_case";
+import { SearchDictionaryTermUseCase } from "../../application/use_cases/dictionary/search_dictionary_term/search_dictionary_term.use_case";
 
 
 container_registry.bind( Registry.RecognizeImageUseCase )
@@ -95,6 +97,30 @@ container_registry.bind( Registry.ImportYomichanDictionaryUseCase )
     .inSingletonScope();
 
 
+container_registry.bind( Registry.ExtractTermsFromTextUseCase )
+    .toDynamicValue( (context) => {
+        return new ExtractTermsFromTextUseCase({
+            termExtractor: context.container.get(
+                Registry.KuromojiTermExtractor
+            )
+        })
+    });
+
+container_registry.bind( Registry.SearchDictionaryTermUseCase )
+    .toDynamicValue( (context) => {
+        return new SearchDictionaryTermUseCase({
+            dictionariesRepo: context.container.get(
+                Registry.DictionaryTypeOrmRepository
+            ),
+            headwordsRepo: context.container.get(
+                Registry.DictionaryHeadwordTypeOrmRepository
+            ),
+        })
+    });
+
+    
+
+
 export function get_RecognizeImageUseCase(): RecognizeImageUseCase {
     return container_registry.get< RecognizeImageUseCase >( Registry.RecognizeImageUseCase )
 }
@@ -124,6 +150,15 @@ export function get_GetProfileUseCase(): GetProfileUseCase {
 }
 
 
+
 export function get_ImportYomichanDictionaryUseCase(): ImportYomichanDictionaryUseCase {    
     return container_registry.get< ImportYomichanDictionaryUseCase >( Registry.ImportYomichanDictionaryUseCase );
+}
+
+export function get_ExtractTermsFromTextUseCase(): ExtractTermsFromTextUseCase {    
+    return container_registry.get< ExtractTermsFromTextUseCase >( Registry.ExtractTermsFromTextUseCase );
+}
+
+export function get_SearchDictionaryTermUseCase(): SearchDictionaryTermUseCase {    
+    return container_registry.get< SearchDictionaryTermUseCase >( Registry.SearchDictionaryTermUseCase );
 }
