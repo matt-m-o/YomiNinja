@@ -37,7 +37,7 @@ describe('ExtractTermsFromTextUseCase tests', () => {
 
         const output = await useCase.execute( input );
 
-        expect( output ).toHaveLength( 2 );
+        expect( output ).toHaveLength( 3 );
     });
     
 });

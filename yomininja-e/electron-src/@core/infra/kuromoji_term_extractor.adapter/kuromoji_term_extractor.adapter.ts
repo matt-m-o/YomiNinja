@@ -6,10 +6,16 @@ import * as kuromoji from 'kuromoji';
 // Basic term extractor for development purposes
 export class KuromojiTermExtractor implements TermExtractorAdapter {
 
-    tokenizer: kuromoji.Tokenizer< kuromoji.IpadicFeatures >;    
+    tokenizer: kuromoji.Tokenizer< kuromoji.IpadicFeatures >;
+
+    constructor() {
+        this.init();
+    }
 
     async init(): Promise< void > {
-        this.tokenizer = await this.getTokenizer();
+
+        if ( !this.tokenizer )
+            this.tokenizer = await this.getTokenizer();
     }
 
     private getTokenizer(): Promise< kuromoji.Tokenizer< kuromoji.IpadicFeatures > > {
@@ -26,9 +32,13 @@ export class KuromojiTermExtractor implements TermExtractorAdapter {
 
     getTerms( input: GetTermsInput ): string[] {
 
-        const { text } = input;        
+        const { text } = input;
 
-        const tokens = this.tokenizer.tokenize( text );        
+        if ( !this.tokenizer )  {
+            while ( !this.tokenizer ) {}
+        }
+
+        const tokens = this.tokenizer.tokenize( text );
         
         const terms: string[] = tokens.map( token => token.basic_form )
             .filter( term => {
