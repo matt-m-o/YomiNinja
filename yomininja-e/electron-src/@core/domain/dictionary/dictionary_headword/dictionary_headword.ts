@@ -5,20 +5,23 @@ import { DictionaryTag } from "../dictionary_tag/dictionary_tag";
 export type DictionaryHeadwordId = string;
 
 
+
 export type DictionaryHeadwordConstructorProps = {
     id?: DictionaryHeadwordId;
     term: string;
     reading: string;
     definitions: DictionaryDefinition[];
     tags: DictionaryTag[];
+    furigana?: string;
 }
 
 export interface DictionaryHeadwordCreationInput extends Omit<
     DictionaryHeadwordConstructorProps,
-    'id' | 'definitions' | 'tags'
+    'id' | 'definitions' | 'tags' | 'furigana'
 > {
     definitions?: DictionaryDefinition[];
     tags?: DictionaryTag[];
+    furigana?: string;
 };
 
 // Entity represent the a dictionary Headword or Heading ( unique combination of a "term" and "reading" )
@@ -29,6 +32,7 @@ export class DictionaryHeadword {
     reading: string;
     definitions: DictionaryDefinition[];
     tags: DictionaryTag[];
+    furigana?: string | null;
 
     protected constructor( props: DictionaryHeadwordConstructorProps ) {
 
@@ -43,13 +47,15 @@ export class DictionaryHeadword {
         this.reading = props.reading;
         this.definitions = props?.definitions || [];
         this.tags = props?.tags || [];
+        this.furigana = props?.furigana || null;
     }
 
     static create( input: DictionaryHeadwordCreationInput ) {
         return new DictionaryHeadword({
             ...input,
-            definitions: input.definitions || [],
-            tags: input.tags || [],
+            definitions: input?.definitions || [],
+            tags: input?.tags || [],
+            furigana: input?.furigana
         });
     }
 
@@ -59,6 +65,14 @@ export class DictionaryHeadword {
         //     return;
 
         this.definitions.push( definition );
+    }
+
+    addTag( tag: DictionaryTag ) {
+        this.tags.push( tag );
+    }
+
+    addFurigana( furigana: string ) {
+        this.furigana = furigana;
     }
 
     getPopularityScore(): number {      

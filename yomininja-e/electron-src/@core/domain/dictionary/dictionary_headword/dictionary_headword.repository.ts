@@ -17,7 +17,9 @@ export type DictionaryHeadwordFindManyInput = {
 
 export interface DictionaryHeadwordRepository {
 
-    insert( definitions: DictionaryHeadword[] ): Promise< void >;
+    insert( headwords: DictionaryHeadword[] ): Promise< void >;
+
+    update( headwords: DictionaryHeadword[] ): Promise< void >;
 
     exist( params: DictionaryHeadwordFindOneInput ): Promise< boolean >;
     

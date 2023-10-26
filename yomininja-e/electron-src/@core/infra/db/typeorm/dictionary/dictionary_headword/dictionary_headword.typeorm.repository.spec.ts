@@ -9,6 +9,7 @@ import { DictionaryHeadwordTypeOrmSchema } from '../dictionary_headword/dictiona
 import { DictionaryHeadword } from '../../../../../domain/dictionary/dictionary_headword/dictionary_headword';
 import { DictionaryHeadwordRepository } from '../../../../../domain/dictionary/dictionary_headword/dictionary_headword.repository';
 import DictionaryHeadwordTypeOrmRepository from './dictionary_headword.typeorm.repository';
+import { getRawFuriganaDictionaryItems } from '../../../../../application/use_cases/dictionary/import_furigana_dictionary/furigana_dictionary_test_data';
 
 
 describe( "Dictionary Headword TypeOrm Repository tests", () => {
@@ -77,12 +78,17 @@ describe( "Dictionary Headword TypeOrm Repository tests", () => {
             popularity_score: rawDefinition.popularity,
             tags: [ dictionaryTag ]
         });
-        await dataSource.getRepository( DictionaryDefinition ).save( definition );        
+        await dataSource.getRepository( DictionaryDefinition ).save( definition ); 
+        
+        const furigana = getRawFuriganaDictionaryItems()
+            .find( item => item.text == rawDefinition?.term && item.reading == rawDefinition.reading )
+            ?.furigana;
 
         headword = DictionaryHeadword.create({
             ...rawDefinition,
             tags: [ dictionaryTag ],
             definitions: [ definition ],
+            furigana,
         });
 
     });
@@ -95,10 +101,11 @@ describe( "Dictionary Headword TypeOrm Repository tests", () => {
             where: {
                 id: headword.id
             },
-            relations: [ 'tags', 'definitions' ],            
+            relations: [ 'tags', 'definitions' ],
         });
 
         expect( foundHeadword ).toStrictEqual( headword );
+        expect( foundHeadword?.furigana ).toBeDefined();
     });
 
     it('should check if EXISTS', async () => {

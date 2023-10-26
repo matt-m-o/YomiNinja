@@ -29,6 +29,11 @@ export const DictionaryHeadwordTypeOrmSchema = new EntitySchema< DictionaryHeadw
             length: 100,
         },
 
+        furigana: {
+            type: String,
+            nullable: true,
+        },
+
     },
 
     relations: {

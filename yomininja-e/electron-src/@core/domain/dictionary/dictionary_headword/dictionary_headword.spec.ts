@@ -2,7 +2,7 @@ import { RawDictionaryDefinition, getRawDictionaryDefinitions } from "../common/
 import { RawDictionaryTag, getRawDictionaryTags } from "../common/test/dictionary_tag_test_data";
 import { DictionaryDefinition } from "../dictionary_definition/dictionary_definition";
 import { DictionaryTag } from "../dictionary_tag/dictionary_tag";
-import { DictionaryHeadword, DictionaryHeadwordCreationInput } from "./dictionary_headword";
+import { DictionaryHeadword, DictionaryHeadwordCreationInput, Furigana } from "./dictionary_headword";
 
 
 
@@ -82,5 +82,15 @@ describe('DictionaryHeadword tests', () => {
         expect( dictionaryHeadword.definitions[0].dictionary_headword_id )
             .toStrictEqual( dictionaryHeadword.id );
         expect( dictionaryHeadword.getPopularityScore() ).toStrictEqual( 3 );
+
+        const furigana: Furigana[] =  [
+            { 
+                ruby: dictionaryHeadword.term,
+                rt: dictionaryHeadword.reading
+            }
+        ];
+        dictionaryHeadword.addFurigana( furigana );
+        expect( dictionaryHeadword.furigana ).toBeDefined();
+        expect( dictionaryHeadword.furigana ).toStrictEqual( furigana );
     });
 });
