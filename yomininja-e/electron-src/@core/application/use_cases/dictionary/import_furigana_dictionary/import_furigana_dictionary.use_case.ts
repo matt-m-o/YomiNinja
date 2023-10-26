@@ -25,6 +25,9 @@ export class ImportFuriganaDictionaryUseCase {
         
         for ( const item of items ) {
 
+            if ( !item?.text || !item?.reading )
+                continue;
+
             const headwordId = DictionaryHeadword.generateId({
                 term: item.text,
                 reading: item.reading,
@@ -43,8 +46,11 @@ export class ImportFuriganaDictionaryUseCase {
 
             headwords.push(headword);
         }        
-        
-        await this.headwordsRepo.update( headwords );
+            
+            
+        await this.headwordsRepo.update( headwords )
+            .catch( console.error );
+            
     }
 }
 

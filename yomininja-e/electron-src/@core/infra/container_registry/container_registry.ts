@@ -29,6 +29,7 @@ export const Registry = {
     ImportYomichanDictionaryUseCase: Symbol.for('ImportYomichanDictionaryUseCase'),
     ExtractTermsFromTextUseCase: Symbol.for('ExtractTermsFromTextUseCase'),
     SearchDictionaryTermUseCase: Symbol.for('SearchDictionaryTermUseCase'),
+    ImportFuriganaDictionaryUseCase: Symbol.for('ImportFuriganaDictionaryUseCase'),
 
     // Repositories
     SettingsPresetInMemoryRepository: Symbol.for('SettingsPresetInMemoryRepository'),

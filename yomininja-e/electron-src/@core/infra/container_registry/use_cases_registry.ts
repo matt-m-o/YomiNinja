@@ -11,6 +11,7 @@ import { GetProfileUseCase } from "../../application/use_cases/get_profile/get_p
 import { ImportYomichanDictionaryUseCase } from "../../application/use_cases/dictionary/import_yomichan_dictionary/import_yomichan_dictionary.use_case";
 import { ExtractTermsFromTextUseCase } from "../../application/use_cases/dictionary/extract_terms_from_text/extract_terms_from_text.use_case";
 import { SearchDictionaryTermUseCase } from "../../application/use_cases/dictionary/search_dictionary_term/search_dictionary_term.use_case";
+import { ImportFuriganaDictionaryUseCase } from "../../application/use_cases/dictionary/import_furigana_dictionary/import_furigana_dictionary.use_case";
 
 
 container_registry.bind( Registry.RecognizeImageUseCase )
@@ -118,6 +119,15 @@ container_registry.bind( Registry.SearchDictionaryTermUseCase )
         })
     });
 
+
+container_registry.bind( Registry.ImportFuriganaDictionaryUseCase )
+    .toDynamicValue( (context) => {
+        return new ImportFuriganaDictionaryUseCase({            
+            headwordsRepo: context.container.get(
+                Registry.DictionaryHeadwordTypeOrmRepository
+            ),
+        })
+    });
     
 
 
@@ -153,6 +163,10 @@ export function get_GetProfileUseCase(): GetProfileUseCase {
 
 export function get_ImportYomichanDictionaryUseCase(): ImportYomichanDictionaryUseCase {    
     return container_registry.get< ImportYomichanDictionaryUseCase >( Registry.ImportYomichanDictionaryUseCase );
+}
+
+export function get_ImportFuriganaDictionaryUseCasee(): ImportFuriganaDictionaryUseCase {    
+    return container_registry.get< ImportFuriganaDictionaryUseCase >( Registry.ImportFuriganaDictionaryUseCase );
 }
 
 export function get_ExtractTermsFromTextUseCase(): ExtractTermsFromTextUseCase {    

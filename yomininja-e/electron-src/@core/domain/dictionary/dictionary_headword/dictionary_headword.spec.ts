@@ -1,8 +1,9 @@
+import { getRawFuriganaDictionaryItems } from "../../../application/use_cases/dictionary/import_furigana_dictionary/furigana_dictionary_test_data";
 import { RawDictionaryDefinition, getRawDictionaryDefinitions } from "../common/test/dictionary_definition_test_data";
 import { RawDictionaryTag, getRawDictionaryTags } from "../common/test/dictionary_tag_test_data";
 import { DictionaryDefinition } from "../dictionary_definition/dictionary_definition";
 import { DictionaryTag } from "../dictionary_tag/dictionary_tag";
-import { DictionaryHeadword, DictionaryHeadwordCreationInput, Furigana } from "./dictionary_headword";
+import { DictionaryHeadword, DictionaryHeadwordCreationInput } from "./dictionary_headword";
 
 
 
@@ -83,12 +84,12 @@ describe('DictionaryHeadword tests', () => {
             .toStrictEqual( dictionaryHeadword.id );
         expect( dictionaryHeadword.getPopularityScore() ).toStrictEqual( 3 );
 
-        const furigana: Furigana[] =  [
-            { 
-                ruby: dictionaryHeadword.term,
-                rt: dictionaryHeadword.reading
-            }
-        ];
+        const furigana = getRawFuriganaDictionaryItems()
+            .find( item => item.text == dictionaryHeadword.term && item.reading == dictionaryHeadword.reading )
+            ?.furigana;
+        expect( furigana ).toBeDefined();
+        if ( !furigana ) return;
+
         dictionaryHeadword.addFurigana( furigana );
         expect( dictionaryHeadword.furigana ).toBeDefined();
         expect( dictionaryHeadword.furigana ).toStrictEqual( furigana );

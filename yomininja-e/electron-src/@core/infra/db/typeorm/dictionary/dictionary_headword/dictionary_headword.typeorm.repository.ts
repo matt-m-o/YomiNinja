@@ -21,7 +21,7 @@ export default class DictionaryHeadwordTypeOrmRepository implements DictionaryHe
 
     async update( headwords: DictionaryHeadword[] ): Promise< void > {
 
-        const batchSize = 1000;
+        const batchSize = 500;
 
         for ( let i = 0; i < headwords.length; i += batchSize ) {
 

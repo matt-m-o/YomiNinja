@@ -4,24 +4,28 @@ import { Language, LanguageJson } from "../@core/domain/language/language";
 import { DictionaryDefinition } from "../@core/domain/dictionary/dictionary_definition/dictionary_definition";
 import { DictionariesService } from "./dictionaries.service";
 import { DictionaryHeadword } from "../@core/domain/dictionary/dictionary_headword/dictionary_headword";
+import { JmdictImportService } from "./Jmdict/Jmdict_import.service";
 
-type DictionaryFormats = 'yomichan';
+type DictionaryFormats = 'yomichan' | 'jmdictFurigana';
 
 export class DictionariesController {
 
     private yomichanImportService: YomichanImportService;
     private dictionariesService: DictionariesService;
+    private jmdictImportService: JmdictImportService;
 
     private mainWindow: BrowserWindow;
     private overlayWindow: BrowserWindow;
 
     constructor( input: {
         yomichanImportService: YomichanImportService,
+        jmdictImportService: JmdictImportService,
         dictionariesService: DictionariesService,
     }) {
 
         this.yomichanImportService = input.yomichanImportService;
         this.dictionariesService = input.dictionariesService;
+        this.jmdictImportService = input.jmdictImportService;
     }
 
     init( input: { 
@@ -38,8 +42,16 @@ export class DictionariesController {
         //     format: 'yomichan',
         //     sourceLanguage: Language.create({ name: 'japanese', two_letter_code: 'ja' }).toJson(),
         //     targetLanguage: Language.create({ name: 'english', two_letter_code: 'en' }).toJson(),
-        //     zipFilePath: './data/jmdict_english.zip',
-        //        
+        //     filePath: './data/jmdict_english.zip',
+        // });
+
+        // const language = Language.create({ name: 'japanese', two_letter_code: 'ja' }).toJson();
+        // this.importDictionary({
+        //     format: 'jmdictFurigana',
+        //     filePath: './data/JmdictFurigana.txt',
+        //     sourceLanguage: language,
+        //     targetLanguage: language,
+        // });
     }
 
     private registersIpcHandlers() {
@@ -56,12 +68,21 @@ export class DictionariesController {
         );
     }
 
+    async search( text: string ): Promise< DictionaryHeadword[] > {        
+
+        text = text.slice(0, 15);
+
+        const headwords = await this.dictionariesService.searchHeadwords(text);
+
+        return headwords;
+    }
+
     importDictionary( 
         input: {
             format: DictionaryFormats,            
             sourceLanguage: LanguageJson,
             targetLanguage: LanguageJson,
-            zipFilePath: string,
+            filePath: string,
         }
     ) {         
 
@@ -77,22 +98,18 @@ export class DictionariesController {
         if ( input.format === 'yomichan' ) {
 
             this.yomichanImportService.importYomichanDictionary({
-                zipFilePath: input.zipFilePath,
+                zipFilePath: input.filePath,
                 sourceLanguage,
                 targetLanguage
             });
 
         }
-    }
+        else if ( input.format === 'jmdictFurigana' ) {
 
-
-    async search( text: string ): Promise< DictionaryHeadword[] > {        
-
-        text = text.slice(0, 15);
-
-        const headwords = await this.dictionariesService.searchHeadwords(text);
-
-        return headwords;
+            this.jmdictImportService.importFuriganaDictionary({
+                txtFilePath: input.filePath
+            });
+        }
     }
 
 }
