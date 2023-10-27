@@ -20,8 +20,7 @@ export const DictionaryDefinitionTypeOrmSchema = new EntitySchema< DictionaryDef
         },
 
         dictionary_headword_id: {
-            type: String,
-            length: 40,
+            type: Number,            
         },
         
         dictionary_id: {

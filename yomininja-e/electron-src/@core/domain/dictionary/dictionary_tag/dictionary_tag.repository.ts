@@ -1,8 +1,8 @@
 import { DictionaryId } from "../dictionary";
-import { DictionaryTag } from "./dictionary_tag";
+import { DictionaryTag, DictionaryTagId } from "./dictionary_tag";
 
 export type DictionaryTagFindOneInput = {
-    id?: string;
+    id?: DictionaryTagId;
     name?: string;
 }
 
@@ -14,5 +14,5 @@ export interface DictionaryTagRepository {
 
     getAll( dictionaryId?: DictionaryId ): Promise< DictionaryTag[] >;
 
-    delete( id: string ): Promise< void >;
+    delete( id: DictionaryTagId ): Promise< void >;
 }

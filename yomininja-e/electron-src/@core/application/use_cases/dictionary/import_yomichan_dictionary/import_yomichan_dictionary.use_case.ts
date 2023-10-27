@@ -134,7 +134,7 @@ export class ImportYomichanDictionaryUseCase {
         const tagMap = new Map< string, DictionaryTag >();
         dictionaryTags.forEach( tag => tagMap.set( tag.name, tag ) );
 
-        const headwordMap = new Map< string, DictionaryHeadword >();
+        const headwordMap = new Map< DictionaryHeadwordId, DictionaryHeadword >();
         const newDefinitions: DictionaryDefinition[] = [];
         
         for ( const yomichanTerm of termBank ) {
@@ -204,7 +204,7 @@ export class ImportYomichanDictionaryUseCase {
 
     private async headwordExists(
         headwordId: DictionaryHeadwordId,
-        headwordMap: Map< string, DictionaryHeadword >,
+        headwordMap: Map< DictionaryHeadwordId, DictionaryHeadword >,
     ): Promise< boolean > {
 
         const existsInMap = Boolean( headwordMap.get(headwordId) );

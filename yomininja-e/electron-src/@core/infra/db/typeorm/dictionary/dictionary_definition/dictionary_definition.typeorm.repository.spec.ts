@@ -9,6 +9,7 @@ import DictionaryDefinitionTypeOrmRepository from './dictionary_definition.typeo
 import { DictionaryDefinitionRepository } from '../../../../../domain/dictionary/dictionary_definition/dictionary_definition.repository';
 import { RawDictionaryDefinition, getRawDictionaryDefinitions } from '../../../../../domain/dictionary/common/test/dictionary_definition_test_data';
 import { DictionaryHeadwordTypeOrmSchema } from '../dictionary_headword/dictionary_headword.schema';
+import { DictionaryHeadwordId } from '../../../../../domain/dictionary/dictionary_headword/dictionary_headword';
 
 
 describe( "Dictionary Definition TypeOrm Repository tests", () => {
@@ -23,7 +24,7 @@ describe( "Dictionary Definition TypeOrm Repository tests", () => {
 
     let rawDefinition: RawDictionaryDefinition | undefined;
 
-    const dictionary_headword_id = 'asdf';
+    const dictionary_headword_id: DictionaryHeadwordId = 1234;
     const dictionary_id = 'zxcv';
 
     beforeEach( async () => {

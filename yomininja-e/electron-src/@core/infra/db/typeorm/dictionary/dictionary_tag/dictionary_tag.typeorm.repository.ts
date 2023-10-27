@@ -1,6 +1,6 @@
 import { FindManyOptions, Repository } from "typeorm";
 import { DictionaryTagFindOneInput, DictionaryTagRepository } from "../../../../../domain/dictionary/dictionary_tag/dictionary_tag.repository";
-import { DictionaryTag } from "../../../../../domain/dictionary/dictionary_tag/dictionary_tag";
+import { DictionaryTag, DictionaryTagId } from "../../../../../domain/dictionary/dictionary_tag/dictionary_tag";
 import { DictionaryId } from "../../../../../domain/dictionary/dictionary";
 
 
@@ -27,7 +27,7 @@ export default class DictionaryTagTypeOrmRepository implements DictionaryTagRepo
         return this.ormRepo.find(options);
     }
 
-    async delete( id: string ): Promise< void> {
+    async delete( id: DictionaryTagId ): Promise< void> {
         await this.ormRepo.delete( { id } );
     }
 }

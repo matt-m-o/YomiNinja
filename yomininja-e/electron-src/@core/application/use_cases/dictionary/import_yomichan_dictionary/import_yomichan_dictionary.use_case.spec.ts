@@ -156,7 +156,7 @@ describe('ImportYomichanDictionaryUseCase tests', () => {
         
         expect( headwords?.[0]?.furigana ).toBeDefined();        
 
-        const headwordId = headwords?.[0].id || '';
+        const headwordId = headwords?.[0].id || 0;
 
         const definitions = await definitionsRepo.findMany({
             dictionary_headword_id: headwordId,

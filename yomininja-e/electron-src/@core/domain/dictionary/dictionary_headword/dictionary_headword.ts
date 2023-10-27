@@ -1,8 +1,9 @@
 import { DictionaryDefinition } from "../dictionary_definition/dictionary_definition";
 import { DictionaryTag } from "../dictionary_tag/dictionary_tag";
+import MurmurHash3 from "imurmurhash";
 
 
-export type DictionaryHeadwordId = string;
+export type DictionaryHeadwordId = number;
 
 
 
@@ -89,6 +90,11 @@ export class DictionaryHeadword {
     }
 
     static generateId( input: { term: string, reading: string } ): DictionaryHeadwordId {
-        return input.term + '/' + input.reading;
+        
+        return MurmurHash3( input.term+'/', 0x12345789 )
+            .hash( input.reading )
+            .result();
+            
+        // return input.term + '/' + input.reading;
     }
 }

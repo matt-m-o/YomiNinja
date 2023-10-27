@@ -6,7 +6,7 @@ import { DictionaryTagTypeOrmSchema } from '../dictionary_tag/dictionary_tag.sch
 import { DictionaryDefinition } from '../../../../../domain/dictionary/dictionary_definition/dictionary_definition';
 import { RawDictionaryDefinition, getRawDictionaryDefinitions } from '../../../../../domain/dictionary/common/test/dictionary_definition_test_data';
 import { DictionaryHeadwordTypeOrmSchema } from '../dictionary_headword/dictionary_headword.schema';
-import { DictionaryHeadword } from '../../../../../domain/dictionary/dictionary_headword/dictionary_headword';
+import { DictionaryHeadword, DictionaryHeadwordId } from '../../../../../domain/dictionary/dictionary_headword/dictionary_headword';
 import { DictionaryHeadwordRepository } from '../../../../../domain/dictionary/dictionary_headword/dictionary_headword.repository';
 import DictionaryHeadwordTypeOrmRepository from './dictionary_headword.typeorm.repository';
 import { getRawFuriganaDictionaryItems } from '../../../../../application/use_cases/dictionary/import_furigana_dictionary/furigana_dictionary_test_data';
@@ -26,7 +26,7 @@ describe( "Dictionary Headword TypeOrm Repository tests", () => {
 
     let headword: DictionaryHeadword;
     
-    let dictionary_headword_id: string;
+    let dictionary_headword_id: DictionaryHeadwordId;
     const dictionary_id = 'zxcv';
 
     beforeEach( async () => {

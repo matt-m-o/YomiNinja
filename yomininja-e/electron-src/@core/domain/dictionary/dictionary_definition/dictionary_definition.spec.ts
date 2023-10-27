@@ -43,7 +43,7 @@ describe("DictionaryDefinition tests", () => {
         if ( !asokoRawDefinition ) return;
 
         const input: DictionaryDefinitionCreationInput = {
-            dictionary_headword_id: 'zxcv',
+            dictionary_headword_id: 1234,
             definitions: asokoRawDefinition.definitions,
             popularity_score: asokoRawDefinition.popularity,
             tags: [ dictionaryTagPn, dictionaryTagUk ],

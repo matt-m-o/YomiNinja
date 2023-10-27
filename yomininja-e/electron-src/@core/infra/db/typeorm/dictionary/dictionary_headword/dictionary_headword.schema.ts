@@ -14,8 +14,7 @@ export const DictionaryHeadwordTypeOrmSchema = new EntitySchema< DictionaryHeadw
     columns: {
 
         id: {
-            type: String,
-            length: 40,
+            type: Number,
             primary: true,
         },
 

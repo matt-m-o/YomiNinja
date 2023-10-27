@@ -1,6 +1,6 @@
 import { FindOptionsWhere, Raw, Repository } from "typeorm";
 import { DictionaryHeadwordFindManyInput, DictionaryHeadwordFindOneInput, DictionaryHeadwordRepository } from "../../../../../domain/dictionary/dictionary_headword/dictionary_headword.repository";
-import { DictionaryHeadword } from "../../../../../domain/dictionary/dictionary_headword/dictionary_headword";
+import { DictionaryHeadword, DictionaryHeadwordId } from "../../../../../domain/dictionary/dictionary_headword/dictionary_headword";
 
 
 
@@ -94,7 +94,7 @@ export default class DictionaryHeadwordTypeOrmRepository implements DictionaryHe
         return headwords;
     }
 
-    async delete( id: string ): Promise< void> {
+    async delete( id: DictionaryHeadwordId ): Promise< void> {
         await this.ormRepo.delete( { id } );
     }
 

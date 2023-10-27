@@ -4,15 +4,15 @@ import { DictionaryHeadword } from "./dictionary_headword";
 
 
 export type DictionaryHeadwordFindOneInput = {
-    id: string;
+    id: DictionaryHeadwordId;
 } | {
     term: string;
     reading: string;
 }
 
 export type DictionaryHeadwordFindManyInput = {    
-    term?: DictionaryHeadwordId;
-    reading?: DictionaryId;
+    term?: string;
+    reading?: string;
 }
 
 export interface DictionaryHeadwordRepository {
@@ -29,5 +29,5 @@ export interface DictionaryHeadwordRepository {
 
     findManyLike( input: DictionaryHeadwordFindManyInput ): Promise< DictionaryHeadword[] >;
 
-    delete( id: string ): Promise< void >;
+    delete( id: DictionaryHeadwordId ): Promise< void >;
 }
