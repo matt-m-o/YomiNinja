@@ -93,6 +93,9 @@ container_registry.bind( Registry.ImportYomichanDictionaryUseCase )
             headwordsRepo: context.container.get(
                 Registry.DictionaryHeadwordTypeOrmRepository
             ),
+            japaneseHelper: context.container.get(
+                Registry.JapaneseHelper
+            ),
         });
     })
     .inSingletonScope();

@@ -20,6 +20,7 @@ import { Language } from "../../../../domain/language/language";
 import { YomichanTagBankItem, YomichanTermBankItem } from "./yomichan_dictionary_types";
 import { getRawDictionaryTags } from "../../../../domain/dictionary/common/test/dictionary_tag_test_data";
 import { getRawDictionaryDefinitions } from "../../../../domain/dictionary/common/test/dictionary_definition_test_data";
+import { JapaneseHelper } from "../../../../infra/japanese_helper.adapter/japanese_helper.adapter";
 
 
 
@@ -82,7 +83,8 @@ describe('ImportYomichanDictionaryUseCase tests', () => {
             dictionariesRepo,
             tagsRepo,
             definitionsRepo,
-            headwordsRepo
+            headwordsRepo,
+            japaneseHelper: new JapaneseHelper(),
         });
 
         tagBank = getRawDictionaryTags();
@@ -108,8 +110,9 @@ describe('ImportYomichanDictionaryUseCase tests', () => {
         expect( dictionary ).toBeDefined();
         expect( dictionary?.source_language )
             .toStrictEqual( input.sourceLanguage.two_letter_code );
+
         expect( dictionary?.target_language )
-            .toStrictEqual( input.targetLanguage.two_letter_code );
+            .toStrictEqual( input.targetLanguage.two_letter_code );        
     });
 
     it('should import dictionary tags', async () => {
@@ -150,7 +153,8 @@ describe('ImportYomichanDictionaryUseCase tests', () => {
         expect( headwords ).toBeDefined();
         expect( headwords )
             .toHaveLength( 4 );
-
+        
+        expect( headwords?.[0]?.furigana ).toBeDefined();        
 
         const headwordId = headwords?.[0].id || '';
 

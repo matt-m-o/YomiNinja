@@ -34,7 +34,7 @@ describe( 'YomichanImportService tests', () => {
         expect( tagBank ).toHaveLength( 259 );
     });
 
-    it('should read a dictionary term banks', async () => {
+    it('should read a dictionary term banks', () => {
 
         let termBanks: YomichanTermBankItem[][] = [];        
 

@@ -71,7 +71,7 @@ export class DictionaryHeadword {
         this.tags.push( tag );
     }
 
-    addFurigana( furigana: string ) {
+    setFurigana( furigana: string ) {
         this.furigana = furigana;
     }
 

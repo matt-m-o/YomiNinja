@@ -90,7 +90,7 @@ describe('DictionaryHeadword tests', () => {
         expect( furigana ).toBeDefined();
         if ( !furigana ) return;
 
-        dictionaryHeadword.addFurigana( furigana );
+        dictionaryHeadword.setFurigana( furigana );
         expect( dictionaryHeadword.furigana ).toBeDefined();
         expect( dictionaryHeadword.furigana ).toStrictEqual( furigana );
     });

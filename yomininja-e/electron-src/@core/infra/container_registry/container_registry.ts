@@ -17,6 +17,7 @@ export const Registry = {
     GithubAppVersionProviderAdapter: Symbol.for('GithubAppVersionProviderAdapter'),
     FakeAppVersionProviderAdapter: Symbol.for('FakeAppVersionProviderAdapter'),
     KuromojiTermExtractor: Symbol.for('KuromojiTermExtractor'),
+    JapaneseHelper: Symbol.for('JapaneseHelper'),
 
     // Use Cases
     RecognizeImageUseCase: Symbol.for('RecognizeImageUseCase'),

@@ -5,6 +5,7 @@ import { SharpImageProcessingAdapter } from "../sharp_image_process.adapter/shar
 import { GithubAppVersionProviderAdapter } from "../github_app_version_provider.adapter/github_app_version_provider.adapter";
 import { FakeAppVersionProviderAdapter } from "../test/fake_app_version_provider.adapter/fake_app_version_provider.adapter";
 import { KuromojiTermExtractor } from "../kuromoji_term_extractor.adapter/kuromoji_term_extractor.adapter";
+import { JapaneseHelper } from "../japanese_helper.adapter/japanese_helper.adapter";
 
 
 container_registry.bind( Registry.PpOcrAdapter ).toDynamicValue( (context) => {
@@ -27,6 +28,10 @@ container_registry.bind( Registry.KuromojiTermExtractor ).toDynamicValue( (conte
     return new KuromojiTermExtractor();
 }).inSingletonScope();
 
+container_registry.bind( Registry.JapaneseHelper ).toDynamicValue( (context) => {
+    return new JapaneseHelper();
+}).inSingletonScope();
+
 
 export function get_PpOcrAdapter(): PpOcrAdapter {
     return container_registry.get< PpOcrAdapter >( Registry.PpOcrAdapter )
@@ -46,6 +51,10 @@ export function get_FakeAppVersionProviderAdapter(): FakeAppVersionProviderAdapt
 
 export function get_KuromojiTermExtractor(): KuromojiTermExtractor {
     return container_registry.get< KuromojiTermExtractor >( Registry.KuromojiTermExtractor );
+}
+
+export function get_JapaneseHelper(): JapaneseHelper {
+    return container_registry.get< JapaneseHelper >( Registry.JapaneseHelper );
 }
 
 export function get_AppGithubUrl(): string {

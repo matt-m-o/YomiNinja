@@ -42,7 +42,7 @@ export class ImportFuriganaDictionaryUseCase {
                 });
             }
 
-            headword.addFurigana( item.furigana );
+            headword.setFurigana( item.furigana );
 
             headwords.push(headword);
         }        

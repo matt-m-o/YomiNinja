@@ -7,6 +7,7 @@ import { DictionaryHeadwordRepository } from "../../../../domain/dictionary/dict
 import { DictionaryTag } from "../../../../domain/dictionary/dictionary_tag/dictionary_tag";
 import { DictionaryTagRepository } from "../../../../domain/dictionary/dictionary_tag/dictionary_tag.repository";
 import { Language } from "../../../../domain/language/language";
+import { JapaneseHelperAdapter } from "../../../adapters/japanese_helper.adapter";
 import { YomichanTagBankItem, YomichanTermBankItem } from "./yomichan_dictionary_types";
 
 export interface ImportYomichanDictionary_Input {
@@ -34,18 +35,21 @@ export class ImportYomichanDictionaryUseCase {
     dictionariesRepo: DictionaryRepository;
     tagsRepo: DictionaryTagRepository;
     definitionsRepo: DictionaryDefinitionRepository;
-    headwordsRepo: DictionaryHeadwordRepository;    
+    headwordsRepo: DictionaryHeadwordRepository;
+    japaneseHelper: JapaneseHelperAdapter;
 
     constructor( input: {
         dictionariesRepo: DictionaryRepository,
         tagsRepo: DictionaryTagRepository,
         definitionsRepo: DictionaryDefinitionRepository,
         headwordsRepo: DictionaryHeadwordRepository,
+        japaneseHelper: JapaneseHelperAdapter,
     } ) {
         this.dictionariesRepo = input.dictionariesRepo;
         this.tagsRepo = input.tagsRepo;
         this.definitionsRepo = input.definitionsRepo;
         this.headwordsRepo = input.headwordsRepo;
+        this.japaneseHelper = input.japaneseHelper;
     }
 
     async execute( input: ImportYomichanDictionary_Input ): Promise<Dictionary> {
@@ -125,7 +129,7 @@ export class ImportYomichanDictionaryUseCase {
             dictionaryId,
             termBank,
             dictionaryTags,
-        } = input;        
+        } = input;
 
         const tagMap = new Map< string, DictionaryTag >();
         dictionaryTags.forEach( tag => tagMap.set( tag.name, tag ) );
@@ -147,12 +151,24 @@ export class ImportYomichanDictionaryUseCase {
 
             if ( !headwordExists ) {
                 
+                const newHeadword = DictionaryHeadword.create({
+                    term: yomichanTerm.term,
+                    reading: yomichanTerm.reading,                    
+                });
+
+                if ( yomichanTerm.reading ) {
+
+                    const { formatedFurigana } = this.japaneseHelper.generateFurigana({
+                        term: yomichanTerm.term,
+                        reading: yomichanTerm.reading,                    
+                    });
+
+                    newHeadword.setFurigana( formatedFurigana );
+                }
+                
                 headwordMap.set( 
                     dictionary_headword_id,
-                    DictionaryHeadword.create({
-                        term: yomichanTerm.term,
-                        reading: yomichanTerm.reading
-                    })
+                    newHeadword
                 );
             }
             
@@ -178,10 +194,12 @@ export class ImportYomichanDictionaryUseCase {
         
         
         await this.headwordsRepo.insert(
-            Array.from(  headwordMap.values() )
-        );
+                Array.from(  headwordMap.values() )
+            )
+            .catch( console.error );
 
-        await this.definitionsRepo.insert( newDefinitions );
+        await this.definitionsRepo.insert( newDefinitions )
+            .catch( console.error );
     }
 
     private async headwordExists(
