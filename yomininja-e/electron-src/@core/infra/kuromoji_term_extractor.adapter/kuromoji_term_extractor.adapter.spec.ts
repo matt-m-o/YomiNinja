@@ -5,7 +5,7 @@ describe('KuromojiTermExtractor adaptor tests', () => {
 
     const termExtractor = new KuromojiTermExtractor();
 
-    beforeEach( async () => {
+    beforeAll( async () => {
 
         if ( !termExtractor?.tokenizer )
             await termExtractor.init();
