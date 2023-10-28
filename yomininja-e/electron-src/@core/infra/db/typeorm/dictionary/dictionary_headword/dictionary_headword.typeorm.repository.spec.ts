@@ -27,7 +27,7 @@ describe( "Dictionary Headword TypeOrm Repository tests", () => {
     let headword: DictionaryHeadword;
     
     let dictionary_headword_id: DictionaryHeadwordId;
-    const dictionary_id = 'zxcv';
+    const dictionary_id = 1;
 
     beforeEach( async () => {
         

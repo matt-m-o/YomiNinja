@@ -5,7 +5,7 @@ export type DictionaryTagId = number;
 
 export type DictionaryTagConstructorProps = {
     id?: DictionaryTagId; // !change it to "number" later
-    dictionary_id: string;
+    dictionary_id: DictionaryId;
     name: string;
     category: string;
     content: string; // note
@@ -50,7 +50,7 @@ export class DictionaryTag {
     }
 
     // ! might change to a hashing function
-    static generateId( input: { dictionary_id: string, tag_name: string } ): DictionaryTagId {
+    static generateId( input: { dictionary_id: DictionaryId, tag_name: string } ): DictionaryTagId {
 
         return MurmurHash3( input.dictionary_id+'/', 0x12345789 )            
             .hash( input.tag_name )

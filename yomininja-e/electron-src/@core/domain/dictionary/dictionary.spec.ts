@@ -14,7 +14,7 @@ describe("Dictionary tests", () => {
 
         const dictionary = Dictionary.create( input );
             
-        expect( dictionary.id ).toBeDefined();
+        expect( dictionary.id ).not.toBeDefined();
         expect( dictionary.name ).toStrictEqual( input.name );
         expect( dictionary.order ).toStrictEqual( input.order );
         expect( dictionary.enabled ).toStrictEqual( input.enabled );

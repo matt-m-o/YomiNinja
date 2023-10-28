@@ -19,8 +19,7 @@ export const DictionaryTagTypeOrmSchema = new EntitySchema< DictionaryTag >({
         },
         
         dictionary_id: {
-            type: String,
-            length: 40,
+            type: Number,            
         },
 
         name: {

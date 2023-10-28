@@ -18,7 +18,9 @@ describe('DictionaryHeadword tests', () => {
     let dictionaryTagRk: DictionaryTag;
     let dictionaryTagUk: DictionaryTag;
     
-    let asokoDefinition: DictionaryDefinition;    
+    let asokoDefinition: DictionaryDefinition;
+
+    const dictionary_id = 1;
     
     beforeEach( () => {
         
@@ -37,17 +39,17 @@ describe('DictionaryHeadword tests', () => {
 
         dictionaryTagPn = DictionaryTag.create({
             ...rawPnTag,
-            dictionary_id: 'asdf'
+            dictionary_id
         });        
 
         dictionaryTagUk = DictionaryTag.create({
             ...rawUkTag,
-            dictionary_id: 'asdf'
+            dictionary_id
         });
 
         dictionaryTagRk = DictionaryTag.create({
             ...rawUkTag,
-            dictionary_id: 'asdf'
+            dictionary_id
         });
 
         asokoRawDefinition = rawDictionaryDefinitions.find( rawDefinition => rawDefinition.reading == 'あそこ' );
@@ -73,7 +75,7 @@ describe('DictionaryHeadword tests', () => {
             definitions: asokoRawDefinition.definitions,
             popularity_score: asokoRawDefinition.popularity,
             tags: [ dictionaryTagPn, dictionaryTagUk ],
-            dictionary_id: 'qwer'
+            dictionary_id: 2
         });        
 
         dictionaryHeadword.addDefinition( asokoDefinition );

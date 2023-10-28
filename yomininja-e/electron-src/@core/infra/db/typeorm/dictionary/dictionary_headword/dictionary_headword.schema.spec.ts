@@ -20,7 +20,7 @@ describe( 'DictionaryHeadword Entity Schema tests', () => {
     let rawDefinitions: RawDictionaryDefinition[];
     let rawAsokoDefinition: RawDictionaryDefinition | undefined;
 
-    const dictionary_id = 'qwer';
+    const dictionary_id = 1;
 
     const relations = [
         'tags',

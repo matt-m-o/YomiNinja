@@ -36,7 +36,7 @@ describe( 'DictionaryTag Entity Schema tests', () => {
 
         const dictionaryTag = DictionaryTag.create({
             ...rawPnTag,
-            dictionary_id: 'zxcv'
+            dictionary_id: 1
         });
         
         await dictionaryTagTypeOrmRepo.save(dictionaryTag);

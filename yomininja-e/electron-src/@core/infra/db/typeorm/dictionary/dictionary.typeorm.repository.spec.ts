@@ -11,7 +11,7 @@ describe( "Dictionary TypeOrm Repository tests", () => {
     
     let dataSource: DataSource;
     let ormRepo: Repository< Dictionary >;
-    let repo: DictionaryRepository;
+    let repo: DictionaryTypeOrmRepository;
     
     let rawPnTag: RawDictionaryTag;
 

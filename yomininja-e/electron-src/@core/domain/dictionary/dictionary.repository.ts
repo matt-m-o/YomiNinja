@@ -1,8 +1,8 @@
-import { Dictionary } from "./dictionary";
+import { Dictionary, DictionaryId } from "./dictionary";
 
 
 export type DictionaryFindOneInput = {
-    id?: string;
+    id?: DictionaryId;
     name?: string;
 }
 
@@ -21,5 +21,5 @@ export interface DictionaryRepository {
 
     getAll(): Promise< Dictionary[] >;
 
-    delete( id: string ): Promise< void >;
+    delete( id: DictionaryId ): Promise< void >;
 }

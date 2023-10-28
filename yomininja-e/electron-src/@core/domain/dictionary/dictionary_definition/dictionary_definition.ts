@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { DictionaryTag } from "../dictionary_tag/dictionary_tag";
 import { DictionaryHeadword, DictionaryHeadwordId } from '../dictionary_headword/dictionary_headword';
+import { DictionaryId } from '../dictionary';
 
 
 export type DictionaryDefinitionId = number;
@@ -11,7 +12,7 @@ export type DictionaryDefinitionConstructorProps = {
     definitions: string[];
     tags: DictionaryTag[];
     popularity_score: number;
-    dictionary_id: string;
+    dictionary_id: DictionaryId;
     headword?: DictionaryHeadword;
 }
 
@@ -28,7 +29,7 @@ export class DictionaryDefinition {
     definitions: string[];
     tags: DictionaryTag[];
     popularity_score: number;
-    dictionary_id: string;
+    dictionary_id: DictionaryId;
     headword?: DictionaryHeadword;
     
     protected constructor( props: DictionaryDefinitionConstructorProps ) {

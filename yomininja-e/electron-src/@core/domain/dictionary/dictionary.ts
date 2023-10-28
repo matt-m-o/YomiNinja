@@ -1,6 +1,7 @@
 import crypto from 'crypto';
+import MurmurHash3 from 'imurmurhash';
 
-export type DictionaryId = string;
+export type DictionaryId = number;
 
 export type DictionaryConstructorProps = {
     id?: DictionaryId;
@@ -29,7 +30,7 @@ export class Dictionary {
 
         if (!props) return;
 
-        this.id = props.id || Dictionary.createId();
+        // this.id = props.id || Dictionary.generateId({ dictionaryId: props.name });
         this.name = props.name;
         this.order = props.order;
         this.enabled = props.enabled;
@@ -43,7 +44,12 @@ export class Dictionary {
         });
     }
 
-    static createId(): DictionaryId {
-        return crypto.randomUUID();
+    
+    static generateId( input: { dictionaryId: string } ): DictionaryId {
+
+        return MurmurHash3( input.dictionaryId, 0x12345789 )            
+            .result();
+
+        // return crypto.randomUUID();
     }
 }

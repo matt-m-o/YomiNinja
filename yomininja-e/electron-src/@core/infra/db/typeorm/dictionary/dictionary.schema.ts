@@ -14,8 +14,8 @@ export const DictionaryTypeOrmSchema = new EntitySchema< Dictionary >({
     columns: {
 
         id: {
-            type: String,
-            length: 40,
+            type: Number,
+            generated: 'increment',
             primary: true,
         },
 

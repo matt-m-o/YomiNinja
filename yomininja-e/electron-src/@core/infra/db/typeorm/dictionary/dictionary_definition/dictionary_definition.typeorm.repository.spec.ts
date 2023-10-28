@@ -25,7 +25,7 @@ describe( "Dictionary Definition TypeOrm Repository tests", () => {
     let rawDefinition: RawDictionaryDefinition | undefined;
 
     const dictionary_headword_id: DictionaryHeadwordId = 1234;
-    const dictionary_id = 'zxcv';
+    const dictionary_id = 1;
 
     beforeEach( async () => {
         
@@ -57,7 +57,7 @@ describe( "Dictionary Definition TypeOrm Repository tests", () => {
 
         dictionaryTag = DictionaryTag.create({
             ...rawPnTag,
-            dictionary_id: 'asdf',
+            dictionary_id: 2,
         });
         await dataSource.getRepository( DictionaryTag ).insert( dictionaryTag );
 

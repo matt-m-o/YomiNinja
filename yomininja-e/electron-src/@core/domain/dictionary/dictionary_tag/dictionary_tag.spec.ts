@@ -19,7 +19,7 @@ describe("DictionaryTag tests", () => {
 
         const input: DictionaryTagCreationInput = {
             ...rawPnTag,
-            dictionary_id: 'asdf'
+            dictionary_id: 1
         };
 
         const dictionaryTag = DictionaryTag.create( input );

@@ -16,7 +16,7 @@ describe( 'DictionaryDefinition Entity Schema tests', () => {
 
     let dictionaryTag: DictionaryTag;
 
-    const dictionary_id = 'qwer';
+    const dictionary_id = 1;
 
     let rawDefinitions: RawDictionaryDefinition[];
 

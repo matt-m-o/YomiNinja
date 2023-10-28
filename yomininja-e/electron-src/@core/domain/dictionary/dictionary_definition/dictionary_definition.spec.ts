@@ -13,6 +13,8 @@ describe("DictionaryDefinition tests", () => {
     let dictionaryTagPn: DictionaryTag;    
     let dictionaryTagUk: DictionaryTag;
 
+    const dictionary_id = 1;
+
     beforeEach( () => {
 
         rawDictionaryTags = getRawDictionaryTags();
@@ -25,12 +27,12 @@ describe("DictionaryDefinition tests", () => {
 
         dictionaryTagPn = DictionaryTag.create({
             ...rawPnTag,
-            dictionary_id: 'asdf'
+            dictionary_id
         });        
 
         dictionaryTagUk = DictionaryTag.create({
             ...rawUkTag,
-            dictionary_id: 'asdf'
+            dictionary_id
         });
 
     });
@@ -47,7 +49,7 @@ describe("DictionaryDefinition tests", () => {
             definitions: asokoRawDefinition.definitions,
             popularity_score: asokoRawDefinition.popularity,
             tags: [ dictionaryTagPn, dictionaryTagUk ],
-            dictionary_id: 'qwer'
+            dictionary_id: 2
         };
 
         const dictionaryDefinition = DictionaryDefinition.create( input );

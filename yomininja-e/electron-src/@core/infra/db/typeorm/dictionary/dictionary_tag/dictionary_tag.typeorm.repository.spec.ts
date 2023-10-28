@@ -15,6 +15,8 @@ describe( "Dictionary Tag TypeOrm Repository tests", () => {
     let rawPnTag: RawDictionaryTag | undefined;
     let dictionaryTag: DictionaryTag;
 
+    const dictionaryId = 1;
+
     beforeEach( async () => {
         
         dataSource = new DataSource({
@@ -41,7 +43,7 @@ describe( "Dictionary Tag TypeOrm Repository tests", () => {
 
         dictionaryTag = DictionaryTag.create({
             ...rawPnTag,
-            dictionary_id: 'asdf',
+            dictionary_id: 2,
         })
     });
 
@@ -72,7 +74,7 @@ describe( "Dictionary Tag TypeOrm Repository tests", () => {
         expect( rawUkTag ).toBeDefined();
         if( !rawUkTag ) return;
         
-        const ukDictionaryTag = DictionaryTag.create({ ...rawUkTag, dictionary_id: 'zxcv' });
+        const ukDictionaryTag = DictionaryTag.create({ ...rawUkTag, dictionary_id: dictionaryId });
         await ormRepo.save([
             dictionaryTag,
             ukDictionaryTag
@@ -81,10 +83,10 @@ describe( "Dictionary Tag TypeOrm Repository tests", () => {
         const foundTags = await repo.getAll();
 
         expect( foundTags ).toHaveLength( 2 );
-        expect( foundTags[0] ).toStrictEqual( dictionaryTag );
-        expect( foundTags[1] ).toStrictEqual( ukDictionaryTag );
+        expect( foundTags[0] ).toStrictEqual( ukDictionaryTag );
+        expect( foundTags[1] ).toStrictEqual( dictionaryTag );
 
-        const foundTagsWithDictId = await repo.getAll( 'zxcv' );
+        const foundTagsWithDictId = await repo.getAll( dictionaryId );
         expect( foundTagsWithDictId ).toHaveLength( 1 );
     });
 
