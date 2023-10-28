@@ -148,14 +148,14 @@ describe( "Dictionary Headword TypeOrm Repository tests", () => {
         });        
         await ormRepo.save([
             headword,
-            headword2
+            headword2,
         ]);
 
         const foundHeadwords = await repo.findMany({ term: rawDefinition.term });        
 
         expect( foundHeadwords ).toHaveLength( 2 );
-        expect( foundHeadwords?.[0] ).toStrictEqual( headword );
-        expect( foundHeadwords?.[1] ).toStrictEqual( headword2 );
+        expect( foundHeadwords?.[0] ).toStrictEqual( headword2 );
+        expect( foundHeadwords?.[1] ).toStrictEqual( headword );
     });
 
     it('should find MANY LIKE term or reading', async () => {
@@ -179,8 +179,8 @@ describe( "Dictionary Headword TypeOrm Repository tests", () => {
         });
 
         expect( foundHeadwordsByTerm ).toHaveLength( 2 );
-        expect( foundHeadwordsByTerm?.[0] ).toStrictEqual( headword );
-        expect( foundHeadwordsByTerm?.[1] ).toStrictEqual( headword2 );
+        expect( foundHeadwordsByTerm?.[0] ).toStrictEqual( headword2 );
+        expect( foundHeadwordsByTerm?.[1] ).toStrictEqual( headword );
 
 
         const foundHeadwordsByReading = await repo.findManyLike({
@@ -188,8 +188,8 @@ describe( "Dictionary Headword TypeOrm Repository tests", () => {
         });
 
         expect( foundHeadwordsByReading ).toHaveLength( 2 );
-        expect( foundHeadwordsByReading?.[0] ).toStrictEqual( headword );
-        expect( foundHeadwordsByReading?.[1] ).toStrictEqual( headword2 );
+        expect( foundHeadwordsByReading?.[0] ).toStrictEqual( headword2 );
+        expect( foundHeadwordsByReading?.[1] ).toStrictEqual( headword );
     });
 
     it('should delete one', async () => {

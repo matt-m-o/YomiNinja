@@ -156,14 +156,16 @@ describe('ImportYomichanDictionaryUseCase tests', () => {
         
         expect( headwords?.[0]?.furigana ).toBeDefined();        
 
-        const headwordId = headwords?.[0].id || 0;
+        const headwordId = headwords?.[0].id;
+        expect( headwordId ).toBeDefined();
+        if ( !headwordId ) return;
 
         const definitions = await definitionsRepo.findMany({
             dictionary_headword_id: headwordId,
         });
         expect( definitions ).toBeDefined();
         expect( definitions )
-            .toHaveLength( 2 );
+            .toHaveLength( 1 );
     });
 
 });

@@ -25,8 +25,11 @@ describe("DictionaryTag tests", () => {
         const dictionaryTag = DictionaryTag.create( input );
 
         expect( dictionaryTag.id ).
-            toStrictEqual(
-                input.dictionary_id + '/' + input.name
+            toStrictEqual( 
+                DictionaryTag.generateId({
+                    dictionary_id: input.dictionary_id,
+                    tag_name: input.name
+                }) 
             );
         expect( dictionaryTag.dictionary_id ).toStrictEqual( input.dictionary_id );
         expect( dictionaryTag.name ).toStrictEqual( input.name );
