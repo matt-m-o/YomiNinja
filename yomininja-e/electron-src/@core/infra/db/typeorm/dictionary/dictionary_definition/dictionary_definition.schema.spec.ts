@@ -96,10 +96,10 @@ describe( 'DictionaryDefinition Entity Schema tests', () => {
             relations
         });
 
-        foundDefinition?.headword?.nullCheck();
+        foundDefinition?.headword?.nullCheck();        
 
         expect( foundDefinition ).toBeDefined();
-        expect( foundDefinition?.id ).toStrictEqual( dictionaryDefinition.id );
+        expect( foundDefinition?.id ).toStrictEqual( 1 );
         expect( foundDefinition ).toStrictEqual( dictionaryDefinition );
         expect( foundDefinition?.headword ).toBeDefined();
         expect( foundDefinition?.tags[0] ).toStrictEqual( dictionaryTag );

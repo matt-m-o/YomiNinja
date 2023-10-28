@@ -1,10 +1,10 @@
 import { DictionaryId } from "../dictionary";
 import { DictionaryHeadwordId } from "../dictionary_headword/dictionary_headword";
-import { DictionaryDefinition } from "./dictionary_definition";
+import { DictionaryDefinition, DictionaryDefinitionId } from "./dictionary_definition";
 
 
 export type DictionaryDefinitionFindOneInput = {
-    id: string;    
+    id: DictionaryDefinitionId;    
 }
 
 export type DictionaryDefinitionFindManyInput = {    
@@ -20,5 +20,5 @@ export interface DictionaryDefinitionRepository {
 
     findMany( input: DictionaryDefinitionFindManyInput ): Promise< DictionaryDefinition[] | null >;
 
-    delete( id: string ): Promise< void >;
+    delete( id: DictionaryDefinitionId ): Promise< void >;
 }

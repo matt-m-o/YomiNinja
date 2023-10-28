@@ -52,12 +52,12 @@ describe("DictionaryDefinition tests", () => {
 
         const dictionaryDefinition = DictionaryDefinition.create( input );
 
-        expect( dictionaryDefinition.id ).toBeDefined();
+        expect( dictionaryDefinition.id ).not.toBeDefined();
         expect( dictionaryDefinition.dictionary_headword_id ).toStrictEqual( input.dictionary_headword_id );
         expect( dictionaryDefinition.definitions ).toStrictEqual( input.definitions );
         expect( dictionaryDefinition.popularity_score ).toStrictEqual( input.popularity_score );
         expect( dictionaryDefinition.tags ).toStrictEqual( input.tags );
-        expect( dictionaryDefinition.dictionary_id ).toStrictEqual( input.dictionary_id );
+        expect( dictionaryDefinition.dictionary_id ).toStrictEqual( input.dictionary_id );        
     });
 
 });
