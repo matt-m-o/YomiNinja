@@ -63,6 +63,8 @@ export class YomichanImportService {
             importedTermBanks++;
             console.log({ importedTermBanks });
         }
+
+        YomichanImportService.cleanTemporaryFiles();
     }
 
     static async extractDictionary( zipFilePath: string ): Promise<string> {        
