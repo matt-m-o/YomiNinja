@@ -70,8 +70,6 @@ export class DictionariesController {
 
     async search( text: string ): Promise< DictionaryHeadword[] > {        
 
-        text = text.slice(0, 15);
-
         const headwords = await this.dictionariesService.searchHeadwords(text);
 
         return headwords;

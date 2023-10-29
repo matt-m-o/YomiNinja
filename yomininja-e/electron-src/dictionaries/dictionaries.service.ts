@@ -25,21 +25,45 @@ export class DictionariesService {
         this.searchDictionaryTermUseCase = input.searchDictionaryTermUseCase;
         this.extractTermsFromTextUseCase = input.extractTermsFromTextUseCase;
         this.japaneseHelper = input.japaneseHelper;
+        this.getProfileUseCase = input.getProfileUseCase;
     }
 
     async searchHeadwords( text: string ): Promise< DictionaryHeadword[] > {
 
-        // const profile = await this.getProfileUseCase.execute({
-        //     profileId: getActiveProfile().id
-        // });
+        let results: DictionaryHeadword[] = [];
 
-        // if ( !profile ) return [];
+        const profile = await this.getProfileUseCase.execute({
+            profileId: getActiveProfile().id
+        });
 
-        const langJapanese = Language.create({ name: 'Japanese', two_letter_code: 'ja' });
+        if (!profile) return results;
+
+        const { active_ocr_language } = profile
+
+        if ( !active_ocr_language ) 
+            return results;        
         
+
+        text = text.slice(0, 30);
+
+        if ( profile.active_ocr_language.two_letter_code === 'ja' ) {
+            
+            results = await this.searchJapaneseHeadwords({
+                text,
+                targetLanguage: active_ocr_language
+            });
+        }
+
+        return results;
+    }
+
+    private async searchJapaneseHeadwords( input: { text: string, targetLanguage: Language } ) {
+
+        const { text, targetLanguage } = input;
+
         const { standard, kanaNormalized } = await this.extractTermsFromTextUseCase.execute({
             text,
-            language: langJapanese, // profile.active_ocr_language,
+            language: targetLanguage,
         });
 
         const firstTermHasKanji = (
@@ -86,6 +110,4 @@ export class DictionariesService {
 
         return Array.from( headwordsMap.values() );
     }
-
-    
 }
