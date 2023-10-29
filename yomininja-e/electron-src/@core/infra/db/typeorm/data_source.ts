@@ -29,6 +29,7 @@ export const dictionaryDataSourceOptions: DataSourceOptions = {
     synchronize: true,
     database: join( './data/dict.db' ), // :memory: | join( './data/dict.db' )
     logging: false,
+    enableWAL: true,
     entities: [
         DictionaryTypeOrmSchema,
         DictionaryTagTypeOrmSchema,

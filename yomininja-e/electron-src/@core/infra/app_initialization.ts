@@ -34,7 +34,17 @@ export async function initializeApp() {
 
         // Initializing database
         await get_MainDataSource().initialize();
-        await get_DictionaryDataSource().initialize();
+        const datasource = await get_DictionaryDataSource().initialize();
+        
+        // Setting database cache size
+        const dbSize = 100 * 1024; // KB
+        const defaultPageSize = 4; // KB
+        const cacheSize = dbSize / defaultPageSize;
+
+        const queryRunner = datasource.createQueryRunner();        
+        await queryRunner.query(`PRAGMA cache_size = ${cacheSize};`);         
+        await queryRunner.release();
+
 
         // Getting repositories 
         const languageRepo = get_LanguageRepository();
