@@ -33,6 +33,13 @@ export const DictionaryHeadwordTypeOrmSchema = new EntitySchema< DictionaryHeadw
             nullable: true,
         },
 
+        term_length: {
+            type: Number,            
+        },
+
+        reading_length: {
+            type: Number,            
+        },
     },
 
     relations: {
@@ -51,5 +58,18 @@ export const DictionaryHeadwordTypeOrmSchema = new EntitySchema< DictionaryHeadw
             inverseSide: 'headword',
             cascade: false,
         },
-    },    
+    },
+
+    indices: [
+
+        {
+            name: generateIndexName(name, 'term_length'),
+            columns: ['term_length'],
+        },
+        {
+            name: generateIndexName(name, 'reading_length'),
+            columns: ['reading_length'],
+        },
+
+    ]
 });

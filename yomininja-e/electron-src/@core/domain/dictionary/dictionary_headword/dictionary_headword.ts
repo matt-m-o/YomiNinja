@@ -35,6 +35,9 @@ export class DictionaryHeadword {
     tags: DictionaryTag[];
     furigana?: string | null;
 
+    term_length: number;
+    reading_length: number;
+
     protected constructor( props: DictionaryHeadwordConstructorProps ) {
 
         if (!props) return;
@@ -49,6 +52,9 @@ export class DictionaryHeadword {
         this.definitions = props?.definitions || [];
         this.tags = props?.tags || [];
         this.furigana = props?.furigana || null;
+
+        this.term_length = this.term.length;
+        this.reading_length = this.reading.length;
     }
 
     static create( input: DictionaryHeadwordCreationInput ) {

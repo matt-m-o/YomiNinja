@@ -1,4 +1,4 @@
-import { FindOptionsOrder, FindOptionsWhere, Raw, Repository } from "typeorm";
+import { Between, FindOptionsOrder, FindOptionsWhere, MoreThanOrEqual, Raw, Repository } from "typeorm";
 import { DictionaryHeadwordFindManyInput, DictionaryHeadwordFindOneInput, DictionaryHeadwordRepository } from "../../../../../domain/dictionary/dictionary_headword/dictionary_headword.repository";
 import { DictionaryHeadword, DictionaryHeadwordId } from "../../../../../domain/dictionary/dictionary_headword/dictionary_headword";
 
@@ -75,28 +75,27 @@ export default class DictionaryHeadwordTypeOrmRepository implements DictionaryHe
 
         if ( !term && !reading ) return [];
 
-        const getRawSqlOperator = ( value: string ) => {
-            const length = value.length;
+        const getRawSqlOperator = ( value: string ) => {            
             return Raw( alias =>
-                `LENGTH(${alias}) >= 1 AND 
-                LENGTH(${alias}) <= ${length} AND
-                :searchValue LIKE ${alias} || '%'`,
+                `:searchValue LIKE ${alias} || '%'`,
                 { searchValue: value }
             );
         }
 
         if (term) {
             where.push({
-                term: getRawSqlOperator( term )
+                term: getRawSqlOperator( term ),
+                term_length: Between( 1, term.length )
             });
-            order.term = 'DESC';
+            // order.term_length = 'DESC';
         }
 
         if (reading) {
             where.push({
-                reading: getRawSqlOperator( reading )
+                reading: getRawSqlOperator( reading ),
+                reading_length: Between( 1, reading.length )
             });
-            order.reading = 'DESC';
+            // order.reading_length = 'DESC';
         }
 
         const headwords = await this.ormRepo.find({ 
