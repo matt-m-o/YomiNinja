@@ -3,8 +3,9 @@ import { DictionaryHeadword } from "../../../../domain/dictionary/dictionary_hea
 import { DictionaryHeadwordRepository } from "../../../../domain/dictionary/dictionary_headword/dictionary_headword.repository";
 
 
-export interface SearchDictionaryTerm_Input {
-    term: string;
+export type SearchDictionaryTerm_Input = {
+    term?: string;
+    reading?: string;
 }
 
 export class SearchDictionaryTermUseCase {
@@ -22,10 +23,11 @@ export class SearchDictionaryTermUseCase {
 
     async execute( input: SearchDictionaryTerm_Input ): Promise< DictionaryHeadword[] > {
 
-        const { term } = input;
-
+        const { term, reading } = input;        
+        
         const headwords = await this.headwordsRepo.findManyLike({
             term,
+            reading
         });
 
         return headwords || [];

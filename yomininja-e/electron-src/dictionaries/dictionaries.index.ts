@@ -1,3 +1,4 @@
+import { get_JapaneseHelper } from "../@core/infra/container_registry/adapters_registry";
 import { get_ChangeActiveOcrLanguageUseCase, get_CheckForAppUpdatesUseCase, get_ExtractTermsFromTextUseCase, get_GetProfileUseCase, get_ImportFuriganaDictionaryUseCasee, get_ImportYomichanDictionaryUseCase, get_SearchDictionaryTermUseCase } from "../@core/infra/container_registry/use_cases_registry";
 import { JmdictImportService } from "./Jmdict/Jmdict_import.service";
 import { DictionariesController } from "./dictionaries.controller";
@@ -18,6 +19,7 @@ const dictionariesService = new DictionariesService({
     extractTermsFromTextUseCase: get_ExtractTermsFromTextUseCase(),
     searchDictionaryTermUseCase: get_SearchDictionaryTermUseCase(),
     getProfileUseCase: get_GetProfileUseCase(),
+    japaneseHelper: get_JapaneseHelper()
 });
 
 export const dictionariesController = new DictionariesController({

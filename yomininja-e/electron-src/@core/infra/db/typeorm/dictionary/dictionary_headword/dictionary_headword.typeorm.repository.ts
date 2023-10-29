@@ -1,4 +1,4 @@
-import { FindOptionsWhere, Raw, Repository } from "typeorm";
+import { FindOptionsOrder, FindOptionsWhere, Raw, Repository } from "typeorm";
 import { DictionaryHeadwordFindManyInput, DictionaryHeadwordFindOneInput, DictionaryHeadwordRepository } from "../../../../../domain/dictionary/dictionary_headword/dictionary_headword.repository";
 import { DictionaryHeadword, DictionaryHeadwordId } from "../../../../../domain/dictionary/dictionary_headword/dictionary_headword";
 
@@ -38,7 +38,7 @@ export default class DictionaryHeadwordTypeOrmRepository implements DictionaryHe
     }
     
     async findOne( params: DictionaryHeadwordFindOneInput ): Promise< DictionaryHeadword | null > {
-
+        
         const headword = await this.ormRepo.findOne({
             where: {
                 ...params,
@@ -51,7 +51,7 @@ export default class DictionaryHeadwordTypeOrmRepository implements DictionaryHe
         return headword;
     }
 
-    async findMany( params: DictionaryHeadwordFindManyInput ): Promise< DictionaryHeadword[] | null > {
+    async findMany( params: DictionaryHeadwordFindManyInput ): Promise< DictionaryHeadword[] | null > {        
 
         const headword = await this.ormRepo.find({
             where: {
@@ -70,24 +70,39 @@ export default class DictionaryHeadwordTypeOrmRepository implements DictionaryHe
 
         const { term, reading } = input;        
 
-        const where: FindOptionsWhere< DictionaryHeadword > = {};
+        const where: FindOptionsWhere< DictionaryHeadword >[] = [];
+        const order: FindOptionsOrder< DictionaryHeadword > = {};
 
         if ( !term && !reading ) return [];
 
-        if (term) {
-            where.term = Raw(
-                alias => `:searchValue LIKE ${alias} || '%'`, { searchValue: term }
+        const getRawSqlOperator = ( value: string ) => {
+            const length = value.length;
+            return Raw( alias =>
+                `LENGTH(${alias}) >= 1 AND 
+                LENGTH(${alias}) <= ${length} AND
+                :searchValue LIKE ${alias} || '%'`,
+                { searchValue: value }
             );
+        }
+
+        if (term) {
+            where.push({
+                term: getRawSqlOperator( term )
+            });
+            order.term = 'DESC';
         }
 
         if (reading) {
-            where.reading = Raw(
-                alias => `:searchValue LIKE ${alias} || '%'`, { searchValue: reading }
-            );
+            where.push({
+                reading: getRawSqlOperator( reading )
+            });
+            order.reading = 'DESC';
         }
 
-        const headwords = await this.ormRepo.find({
+        const headwords = await this.ormRepo.find({ 
             where,
+            order,
+            take: 40,
             relations: [ 'tags', 'definitions' ]
         });
 

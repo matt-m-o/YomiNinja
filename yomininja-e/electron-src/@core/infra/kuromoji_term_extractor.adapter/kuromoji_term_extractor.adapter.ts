@@ -1,7 +1,7 @@
 import { ViterbiNode } from "kuromoji";
-import { GetTermsInput, TermExtractorAdapter } from "../../application/adapters/term_extractor.adapter";
+import { ExtractedTerms, GetTermsInput, TermExtractorAdapter } from "../../application/adapters/term_extractor.adapter";
 import * as kuromoji from 'kuromoji';
-
+import * as wanakana from 'wanakana';
 
 // Basic term extractor for development purposes
 export class KuromojiTermExtractor implements TermExtractorAdapter {
@@ -30,7 +30,7 @@ export class KuromojiTermExtractor implements TermExtractorAdapter {
         });
     }
 
-    getTerms( input: GetTermsInput ): string[] {
+    getTerms( input: GetTermsInput ): ExtractedTerms {
 
         const { text } = input;
 
@@ -38,19 +38,39 @@ export class KuromojiTermExtractor implements TermExtractorAdapter {
             while ( !this.tokenizer ) {}
         }
 
+        const filter = ( term: string ) => {
+            return !term.includes('。')
+        };        
+
         const tokens = this.tokenizer.tokenize( text );
         
-        const terms: string[] = tokens.map( token => token.basic_form )
-            .filter( term => {
-                return !term.includes('。')
-            });
+        const standard: string[] = tokens.map( this.handleTokenForm )
+            .filter( filter );
+            
+        const hasKatakana = tokens.some( token => 
+            wanakana.isKatakana( token.surface_form )
+        );
+                
+        let kanaNormalized: string[] | undefined;
+        if ( hasKatakana ) {
+            kanaNormalized = this.tokenizer.tokenize( wanakana.toHiragana( text ) )
+                .map( this.handleTokenForm )
+                .filter( filter );
+        }
 
-        return terms;
+        return {
+            standard,
+            kanaNormalized
+        };
     }
 
-    async getTermsAsync( input: GetTermsInput ): Promise< string[] > {
+    async getTermsAsync( input: GetTermsInput ): Promise< ExtractedTerms > {
         return this.getTerms( input );
-    }    
+    }
+
+    private handleTokenForm( token: kuromoji.IpadicFeatures ): string {
+        return token.basic_form != '*' ? token.basic_form : token.surface_form;
+    }
     
 }
 

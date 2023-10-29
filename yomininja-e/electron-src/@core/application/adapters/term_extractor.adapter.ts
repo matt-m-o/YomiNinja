@@ -5,7 +5,13 @@ export type GetTermsInput = {
     language?: Language;
 };
 
+export type ExtractedTerms = {
+    standard: string[];
+    kanaNormalized?: string[];
+    readingNormalized?: string[];
+};
+
 export interface TermExtractorAdapter {
-    getTerms: ( input: GetTermsInput ) => string[];
-    getTermsAsync: ( input: GetTermsInput ) => Promise< string[] >;
+    getTerms: ( input: GetTermsInput ) => ExtractedTerms;
+    getTermsAsync: ( input: GetTermsInput ) => Promise< ExtractedTerms >;
 }

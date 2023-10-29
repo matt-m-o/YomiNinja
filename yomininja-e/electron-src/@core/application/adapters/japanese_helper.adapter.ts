@@ -19,4 +19,7 @@ export interface JapaneseHelperAdapter {
 
     generateFurigana( input: GenerateFurigana_Input ): GenerateFurigana_Output;
     isKanji( char: string ): boolean;
+    hasKanji( text: string ): boolean;
+    hasKatakana( text: string ): boolean;
+    toHiragana( sentence: string ): string;
 }

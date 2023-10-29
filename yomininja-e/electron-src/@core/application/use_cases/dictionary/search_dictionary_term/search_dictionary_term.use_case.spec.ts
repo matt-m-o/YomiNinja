@@ -87,7 +87,7 @@ describe('SearchDictionaryTermUseCase tests', () => {
     });
 
 
-    it('should search a dictionary term', async () => {
+    it('should search a dictionary headword term', async () => {
 
         const input: SearchDictionaryTerm_Input = {
             term: '彼処'
@@ -96,7 +96,18 @@ describe('SearchDictionaryTermUseCase tests', () => {
         const output = await useCase.execute( input );
 
         expect( output ).toHaveLength( 2 );
-    });    
+    });
+
+    it('should search a dictionary headword reading', async () => {
+
+        const input: SearchDictionaryTerm_Input = {
+            reading: 'あそこ'
+        };
+
+        const output = await useCase.execute( input );
+
+        expect( output ).toHaveLength( 1 );
+    });
 
     it.todo('should return definitions by dictionary id');
 });

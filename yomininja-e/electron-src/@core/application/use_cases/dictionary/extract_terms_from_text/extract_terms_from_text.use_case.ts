@@ -1,5 +1,5 @@
 import { Language } from "../../../../domain/language/language";
-import { TermExtractorAdapter } from "../../../adapters/term_extractor.adapter";
+import { ExtractedTerms, TermExtractorAdapter } from "../../../adapters/term_extractor.adapter";
 
 
 export interface ExtractTermsFromText_Input {
@@ -17,16 +17,16 @@ export class ExtractTermsFromTextUseCase {
         this.termExtractor = input.termExtractor;
     }
 
-    async execute( input: ExtractTermsFromText_Input ): Promise< string[] > {
+    async execute( input: ExtractTermsFromText_Input ): Promise< ExtractedTerms > {
 
         const { text, language } = input;
 
-        const terms = await this.termExtractor.getTerms({
+        const extractedTerms = await this.termExtractor.getTerms({
             text,
             language
         });
 
-        return terms;
+        return extractedTerms;
     }
 }
 
