@@ -40,21 +40,26 @@ export class DictionariesService {
         const { standard, kanaNormalized } = await this.extractTermsFromTextUseCase.execute({
             text,
             language: langJapanese, // profile.active_ocr_language,
-        });        
+        });
+
+        const firstTermHasKanji = (
+            this.japaneseHelper.hasKanji( standard[0] ) ||
+            this.japaneseHelper.hasKanji( kanaNormalized?.[0] || '' )
+        );
 
         const standardSearchString = standard.join('');
         const kanaNormalizedSearchString = kanaNormalized?.join('');
 
-        const headwordsMap = new Map< DictionaryHeadwordId, DictionaryHeadword >();        
+        const headwordsMap = new Map< DictionaryHeadwordId, DictionaryHeadword >();
         
         const originalTextResults = await this.searchDictionaryTermUseCase.execute({
             term: text,
-            reading: text
+            reading: firstTermHasKanji ? undefined : text
         });
 
         const standardResults = await this.searchDictionaryTermUseCase.execute({
             term: standardSearchString,
-            reading: standardSearchString
+            reading: firstTermHasKanji ? undefined : standardSearchString
         });
         
         let kanaNormalizedSearchResult: DictionaryHeadword[] = [];
@@ -63,7 +68,7 @@ export class DictionariesService {
             
             kanaNormalizedSearchResult = await this.searchDictionaryTermUseCase.execute({
                 term: kanaNormalizedSearchString,
-                reading: kanaNormalizedSearchString
+                reading: firstTermHasKanji ? undefined : kanaNormalizedSearchString
             });
         }
 
