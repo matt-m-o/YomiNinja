@@ -1,12 +1,18 @@
 import { Between, FindOptionsOrder, FindOptionsWhere, MoreThanOrEqual, Raw, Repository } from "typeorm";
 import { DictionaryHeadwordFindManyInput, DictionaryHeadwordFindOneInput, DictionaryHeadwordRepository } from "../../../../../domain/dictionary/dictionary_headword/dictionary_headword.repository";
 import { DictionaryHeadword, DictionaryHeadwordId } from "../../../../../domain/dictionary/dictionary_headword/dictionary_headword";
-
+import NodeCache from 'node-cache';
 
 
 export default class DictionaryHeadwordTypeOrmRepository implements DictionaryHeadwordRepository {
 
-    constructor ( private ormRepo: Repository< DictionaryHeadword > ) {}
+    cache: NodeCache;
+
+    constructor ( private ormRepo: Repository< DictionaryHeadword > ) {
+        const stdTTL = 60 * 60 * 6; // 6 hours
+        const checkperiod =  60 * 60 // 1 hour
+        this.cache = new NodeCache({ stdTTL, checkperiod, maxKeys: 1000 });
+    }
 
     async insert( headwords: DictionaryHeadword[] ): Promise< void > {
 
@@ -17,6 +23,8 @@ export default class DictionaryHeadwordTypeOrmRepository implements DictionaryHe
             const batch = headwords.slice( i, i + batchSize );
             await this.ormRepo.save( batch );
         }
+
+        this.clearCache();
     }
 
     async update( headwords: DictionaryHeadword[] ): Promise< void > {
@@ -28,6 +36,8 @@ export default class DictionaryHeadwordTypeOrmRepository implements DictionaryHe
             const batch = headwords.slice( i, i + batchSize );
             await this.ormRepo.save( batch );
         }
+
+        this.clearCache();
     }
 
     async exist( params: DictionaryHeadwordFindOneInput ): Promise< boolean > {        
@@ -68,7 +78,16 @@ export default class DictionaryHeadwordTypeOrmRepository implements DictionaryHe
 
     async findManyLike( input: DictionaryHeadwordFindManyInput ): Promise< DictionaryHeadword[] > {
 
-        const { term, reading } = input;        
+        let { term, reading } = input;
+        term = term?.slice( 0, 100 );
+        reading = reading?.slice( 0, 100 );
+        
+        const cacheKey = `findManyLike/${term}+${reading}`;
+
+        const cachedResult = this.getFromCache( cacheKey );
+
+        if ( cachedResult )
+            return cachedResult;
 
         const where: FindOptionsWhere< DictionaryHeadword >[] = [];
         const order: FindOptionsOrder< DictionaryHeadword > = {};
@@ -105,11 +124,14 @@ export default class DictionaryHeadwordTypeOrmRepository implements DictionaryHe
             relations: [ 'tags', 'definitions' ]
         });
 
+        this.cache.set( cacheKey, headwords );
+
         return headwords;
     }
 
     async delete( id: DictionaryHeadwordId ): Promise< void> {
         await this.ormRepo.delete( { id } );
+        this.clearCache();
     }
 
     private runNullCheck( input?: DictionaryHeadword | DictionaryHeadword[] | null ) {
@@ -120,5 +142,21 @@ export default class DictionaryHeadwordTypeOrmRepository implements DictionaryHe
             input.forEach( item => item.nullCheck() );
         else 
             input.nullCheck();
+    }
+
+    clearCache() {
+        if ( this.cache.keys().length > 0 )
+            this.cache.flushAll();
+    }
+
+    addToCache( key: string, content: DictionaryHeadword[] ) {
+        this.cache.set( key, content );
+    }
+
+    getFromCache( key: string ): DictionaryHeadword[] | undefined {
+
+        if ( !this.cache.has(key) ) return;
+        
+        return this.cache.get( key );
     }
 }
