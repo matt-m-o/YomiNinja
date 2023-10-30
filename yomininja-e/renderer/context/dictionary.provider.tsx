@@ -5,10 +5,12 @@ import DictionaryPopup from "../components/Dictionary/DictionaryPopup";
 import { DictionaryFormats, ImportDictionaryDto } from '../../electron-src/dictionaries/dictionaries.controller'
 import { LanguageJson } from "../../electron-src/@core/domain/language/language";
 import { DictionaryImportProgress } from "../../electron-src/dictionaries/common/dictionary_import_progress";
+import { Dictionary } from "../../electron-src/@core/domain/dictionary/dictionary";
 
 
 
 export type DictionaryContextType = {
+    installedDictionaries: Dictionary[];
     headwords: DictionaryHeadword[];
     isScannerEnabled: boolean;
     search: ( text: string ) => void;
@@ -27,6 +29,7 @@ export const DictionaryContext = createContext( {} as DictionaryContextType );
 
 export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
         
+    const [ installedDictionaries, setInstalledDictionaries ] = useState< Dictionary[] >();
     const [ headwords, setHeadwords ] = useState< DictionaryHeadword[] >( [] );
     const [ enableScanner, setEnableScanner ] = useState< boolean >( false );
     const [ popupPosition, setPopupPosition ] = useState< PopupPosition >({ x: 0, y: 0  });
@@ -85,10 +88,22 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
     function importProgressReportHandler( event, progressReport: DictionaryImportProgress ) {
         console.log( progressReport );
         setImportProgress( progressReport );
-    } 
+        if ( progressReport.status === 'completed' )
+            getDictionaries();
+    }
+
+    async function getDictionaries() {
+
+        const dictionaries = await global.ipcRenderer.invoke( 'dictionaries:get_all_installed' );
+
+        setInstalledDictionaries( dictionaries );
+    }
 
     
     useEffect( () => {
+
+        getDictionaries();
+
         document.addEventListener( 'mousemove', textScannerListener );
 
         global.ipcRenderer.on( 'dictionaries:import_progress', importProgressReportHandler );
@@ -141,6 +156,7 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
     return (
         <DictionaryContext.Provider
             value={{
+                installedDictionaries,
                 headwords,
                 isScannerEnabled: enableScanner,
                 search,
