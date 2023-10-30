@@ -2,6 +2,7 @@ import { FuriganaDictionaryItem } from "../../@core/application/use_cases/dictio
 import { ImportFuriganaDictionaryUseCase } from "../../@core/application/use_cases/dictionary/import_furigana_dictionary/import_furigana_dictionary.use_case";
 
 import fs from 'fs';
+import { DictionaryImportProgressCallBack } from "../common/dictionary_import_progress";
 
 export class JmdictImportService {
     
@@ -17,29 +18,49 @@ export class JmdictImportService {
 
     async importFuriganaDictionary(
         input: { 
-            txtFilePath: string,            
+            txtFilePath: string,
+            progressCallBack: DictionaryImportProgressCallBack,
         }
     ) {
-        const { txtFilePath } = input;
+        const { txtFilePath, progressCallBack } = input;
 
-        const lines = fs.readFileSync( txtFilePath, 'utf8' ).split('\n');
+        try {
+
+            const lines = fs.readFileSync( txtFilePath, 'utf8' ).split('\n');
     
-        const items = JmdictImportService.parseFuriganaDictionaryLines( lines );
+            const items = JmdictImportService.parseFuriganaDictionaryLines( lines );
 
-        const batchSize = 10_000;        
+            const batchSize = 5_000;        
 
-        for ( let i = 0; i < items.length; i += batchSize ) {
+            for ( let i = 0; i < items.length; i += batchSize ) {
 
-            console.log('Furigana dictionary import batch: '+ i/batchSize + '/'+ items.length/batchSize);
+                console.log('Furigana dictionary import batch: '+ i/batchSize + '/'+ items.length/batchSize);
 
-            const batch = items.slice( i, i + batchSize );
-            await this.importFuriganaDictionaryUseCase.execute({
-                items: batch
+                progressCallBack({
+                    progress: (i / items.length) * 100,
+                    status: 'importing',
+                });
+
+                const batch = items.slice( i, i + batchSize );
+                await this.importFuriganaDictionaryUseCase.execute({
+                    items: batch
+                });
+            }
+
+            progressCallBack({
+                progress: 100,
+                status: 'completed',
+            });
+
+        } catch ( error ) {
+            input.progressCallBack({
+                progress: 0,
+                status: 'failed',
+                error: 'jmdict-furigana-dictionary-import-error'
             });
         }
-        
 
-        console.log('Furigana dictionary importation completed!')
+        console.log('Furigana dictionary import is complete')
     }
 
     static parseFuriganaDictionaryLines( lines: string[] ): FuriganaDictionaryItem[] {

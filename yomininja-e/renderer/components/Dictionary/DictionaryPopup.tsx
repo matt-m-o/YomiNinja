@@ -34,11 +34,7 @@ export interface DictionaryPopupProps {
 
 export default function DictionaryPopup( props: DictionaryPopupProps ) {
 
-    const { headwords, targetElement, style } = props;
-    
-    useEffect( () => {
-        console.log(headwords);
-    }, []);
+    const { headwords, targetElement, style } = props;    
 
     const content = headwords.sort( ( a, b ) => b.term.length - a.term.length )
         .map( ( headword, idxH ) => {
@@ -46,7 +42,7 @@ export default function DictionaryPopup( props: DictionaryPopupProps ) {
             const { term, reading, furigana } = headword;
 
             const showDivider = idxH < headword.definitions.length -1;
-            const definitionNumberVisibility = headword.definitions.length > 1 ? 'visible' : 'hidden';
+            const definitionNumberVisibility = headword.definitions.length > 1 ? 'visible' : 'hidden';            
 
             return (
                 <div key={idxH}>

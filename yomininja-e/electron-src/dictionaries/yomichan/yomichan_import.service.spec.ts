@@ -40,8 +40,8 @@ describe( 'YomichanImportService tests', () => {
 
         const generator = YomichanImportService.getDictionaryTermBanks( extractedDictPath );
 
-        for ( const termBankData of generator ) {
-            termBanks.push(termBankData);
+        for ( const { termBank } of generator ) {
+            termBanks.push(termBank);
         }
 
         expect( termBanks ).toHaveLength( 34 );

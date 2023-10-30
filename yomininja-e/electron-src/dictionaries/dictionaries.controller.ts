@@ -1,12 +1,20 @@
-import { BrowserWindow, IpcMainInvokeEvent, ipcMain, shell } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, dialog, ipcMain, shell } from "electron";
 import { YomichanImportService } from "./yomichan/yomichan_import.service";
 import { Language, LanguageJson } from "../@core/domain/language/language";
 import { DictionaryDefinition } from "../@core/domain/dictionary/dictionary_definition/dictionary_definition";
 import { DictionariesService } from "./dictionaries.service";
 import { DictionaryHeadword } from "../@core/domain/dictionary/dictionary_headword/dictionary_headword";
 import { JmdictImportService } from "./Jmdict/Jmdict_import.service";
+import path from "path";
+import { DictionaryImportProgress } from "./common/dictionary_import_progress";
 
-type DictionaryFormats = 'yomichan' | 'jmdictFurigana';
+export type DictionaryFormats = 'yomichan' | 'jmdictFurigana';
+
+export type ImportDictionaryDto = {
+    format: DictionaryFormats,
+    sourceLanguage: LanguageJson, // two-letter code
+    targetLanguage: LanguageJson, // two-letter code    
+}
 
 export class DictionariesController {
 
@@ -37,21 +45,6 @@ export class DictionariesController {
         this.overlayWindow = input.overlayWindow;
 
         this.registersIpcHandlers();
-
-        // this.importDictionary({
-        //     format: 'yomichan',
-        //     sourceLanguage: Language.create({ name: 'japanese', two_letter_code: 'ja' }).toJson(),
-        //     targetLanguage: Language.create({ name: 'english', two_letter_code: 'en' }).toJson(),
-        //     filePath: './data/jmdict_english.zip',
-        // });
-
-        // const language = Language.create({ name: 'japanese', two_letter_code: 'ja' }).toJson();
-        // this.importDictionary({
-        //     format: 'jmdictFurigana',
-        //     filePath: './data/JmdictFurigana.txt',
-        //     sourceLanguage: language,
-        //     targetLanguage: language,
-        // });
     }
 
     private registersIpcHandlers() {
@@ -66,6 +59,49 @@ export class DictionariesController {
                 return result;
             }
         );
+
+        ipcMain.handle( 'dictionaries:import', 
+            async ( event: IpcMainInvokeEvent, input: ImportDictionaryDto ): Promise< string | undefined > => {
+
+                const { format, sourceLanguage, targetLanguage } = input;
+
+                const filters: Electron.FileFilter[] = [];
+
+                if ( format === 'yomichan' ) {
+                    filters.push({
+                        name: 'Zipped Yomichan Dictionary',
+                        extensions: [ 'zip' ]
+                    });
+                }
+                else if ( format === 'jmdictFurigana' ) {
+                    filters.push({
+                        name: 'JmdictFurigana file',
+                        extensions: [ 'txt' ]
+                    });
+                }
+
+                const { filePaths } = await dialog.showOpenDialog(
+                    this.mainWindow,
+                    {                        
+                        properties: ['openFile'],
+                        filters,
+                    }
+                );
+                
+                const fileName = path.basename( filePaths[0] );
+
+                if ( fileName ) {
+                    this.importDictionary({
+                        filePath: filePaths[0],
+                        format,
+                        sourceLanguage,
+                        targetLanguage
+                    })
+                }
+                
+                return fileName || '' ;
+            }
+        );
     }
 
     async search( text: string ): Promise< DictionaryHeadword[] > {        
@@ -77,12 +113,12 @@ export class DictionariesController {
 
     importDictionary( 
         input: {
-            format: DictionaryFormats,            
+            format: DictionaryFormats,
             sourceLanguage: LanguageJson,
             targetLanguage: LanguageJson,
             filePath: string,
         }
-    ) {         
+    ) {
 
         const sourceLanguage = Language.create({
             ...input.sourceLanguage,            
@@ -98,16 +134,23 @@ export class DictionariesController {
             this.yomichanImportService.importYomichanDictionary({
                 zipFilePath: input.filePath,
                 sourceLanguage,
-                targetLanguage
+                targetLanguage,
+                progressCallBack: this.importProgressCallBack
             });
 
         }
         else if ( input.format === 'jmdictFurigana' ) {
 
             this.jmdictImportService.importFuriganaDictionary({
-                txtFilePath: input.filePath
+                txtFilePath: input.filePath,
+                progressCallBack: this.importProgressCallBack
             });
         }
+    }
+
+    private importProgressCallBack = ( input: DictionaryImportProgress ) => {
+
+        this.mainWindow.webContents.send( 'dictionaries:import_progress', input );
     }
 
 }

@@ -84,7 +84,7 @@ export class OverlayController {
         this.overlayWindow.loadURL(url);
         // this.overlayWindow.maximize();        
         
-        const showDevTools = isDev && false;
+        const showDevTools = isDev && true;
         if (showDevTools)
             this.overlayWindow.webContents.openDevTools();        
 
@@ -93,7 +93,7 @@ export class OverlayController {
 
         // Prevents black image when using youtube on some browsers (e.g. Brave)
         this.overlayWindow.setIgnoreMouseEvents( !showDevTools, { // !showDevTools
-            forward: !showDevTools,
+            forward: !showDevTools, // !!showDevTools
         });
     }
 

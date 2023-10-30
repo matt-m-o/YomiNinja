@@ -6,6 +6,8 @@ import path, { join } from "path";
 // import isDev from 'electron-is-dev';
 import StreamZip from 'node-stream-zip';
 import { Language } from "../../@core/domain/language/language";
+import { DictionaryImportProgress, DictionaryImportProgressCallBack } from "../common/dictionary_import_progress";
+
 
 export class YomichanImportService {
     
@@ -24,54 +26,76 @@ export class YomichanImportService {
             zipFilePath: string,
             sourceLanguage: Language,
             targetLanguage: Language,
+            progressCallBack: DictionaryImportProgressCallBack,
         }
     ) {
         const {
             zipFilePath,
             sourceLanguage,
             targetLanguage,
+            progressCallBack
         } = input;
 
-        const extractedDictPath = await YomichanImportService.extractDictionary( zipFilePath );
+        try {
 
-        const index = await YomichanImportService.getDictionaryIndex( extractedDictPath );        
+            const extractedDictPath = await YomichanImportService.extractDictionary( zipFilePath );
 
-        const tagBank = await YomichanImportService.getDictionaryTagBank( extractedDictPath );
-        
-        // Creating dictionary and importing Tags
-        await this.importYomichanDictionaryUseCase.execute({
-            dictionaryName: index.title,
-            sourceLanguage,
-            targetLanguage,
-            tagBank: tagBank
-        });
+            const index = await YomichanImportService.getDictionaryIndex( extractedDictPath );        
 
-        const termBankGenerator = YomichanImportService.getDictionaryTermBanks( extractedDictPath );
-        
-        let importedTermBanks = 0;
-
-        // Importing terms (Headwords and Definitions)
-        for ( const termBank of termBankGenerator ) {
-
+            const tagBank = await YomichanImportService.getDictionaryTagBank( extractedDictPath );
+            
+            // Creating dictionary and importing Tags
             await this.importYomichanDictionaryUseCase.execute({
                 dictionaryName: index.title,
                 sourceLanguage,
                 targetLanguage,
-                termBank
+                tagBank: tagBank
             });
 
-            importedTermBanks++;
-            console.log({ importedTermBanks });
+            const termBankGenerator = YomichanImportService.getDictionaryTermBanks( extractedDictPath );        
+
+            // Importing terms (Headwords and Definitions)
+            for ( const { termBank, progress } of termBankGenerator ) {
+
+                await this.importYomichanDictionaryUseCase.execute({
+                    dictionaryName: index.title,
+                    sourceLanguage,
+                    targetLanguage,
+                    termBank
+                });
+
+                console.log(`term bank import progress: ${progress}%`);
+
+                progressCallBack({
+                    progress,
+                    status: 'importing',
+                });
+            }
+
+            YomichanImportService.cleanTemporaryFiles();
+            
+            progressCallBack({
+                progress: 100,
+                status: 'completed',
+            });
+
+        } catch ( error ) {
+            console.error( error );
+
+            progressCallBack({
+                progress: 0,
+                status: 'failed',
+                error: 'yomichan-dictionary-import-error'                
+            });
         }
 
-        YomichanImportService.cleanTemporaryFiles();
+        
     }
 
     static async extractDictionary( zipFilePath: string ): Promise<string> {        
 
-        const splittedZipFilePath = zipFilePath.split( '/' );
-        const fileName = splittedZipFilePath[ splittedZipFilePath.length -1 ]
-            .split('.zip')[0];
+        
+        const fileName = path.basename( zipFilePath ).split('.zip')[0];
             
         const extractedDictPath = './data/temp_dictionaries/'+fileName;
 
@@ -144,18 +168,30 @@ export class YomichanImportService {
             });        
     }
 
-    static * getDictionaryTermBanks( dictionaryPath: string ): Generator<YomichanTermBankItem[]> {
+    static * getDictionaryTermBanks( dictionaryPath: string ): Generator<
+        { termBank: YomichanTermBankItem[], progress: number }
+    > {
 
         const files = fs.readdirSync(dictionaryPath);
+
+        let fileCount = 0;
+        const total: number = files.filter(
+            fileName => fileName.includes( 'term_bank' )
+        ).length;
+
       
-        for (const filename of files) {
+        for (const fileName of files) {
 
-          if ( filename.includes('term_bank_') ) {
+          if ( fileName.includes('term_bank') ) {
 
-            const filePath = path.join(dictionaryPath, filename);
+            const filePath = path.join(dictionaryPath, fileName);
             const fileContent = fs.readFileSync(filePath, 'utf8');
 
-            yield (JSON.parse(fileContent) as any[])
+            fileCount++;
+
+            const progress = ( fileCount / total ) * 100;
+
+            const termBank = (JSON.parse(fileContent) as any[])
                 ?.map( item => {
                     const [
                         term,
@@ -178,8 +214,14 @@ export class YomichanImportService {
                         sequence,
                         term_tags
                     }
-                });            
+                });
+
+                yield {
+                    termBank,
+                    progress
+                }
             }
+            
         }
 
       }

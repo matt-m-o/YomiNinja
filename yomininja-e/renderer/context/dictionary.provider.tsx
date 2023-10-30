@@ -2,12 +2,19 @@ import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { debounce } from "@mui/material";
 import { DictionaryHeadword } from '../../electron-src/@core/domain/dictionary/dictionary_headword/dictionary_headword';
 import DictionaryPopup from "../components/Dictionary/DictionaryPopup";
+import { DictionaryFormats, ImportDictionaryDto } from '../../electron-src/dictionaries/dictionaries.controller'
+import { LanguageJson } from "../../electron-src/@core/domain/language/language";
+import { DictionaryImportProgress } from "../../electron-src/dictionaries/common/dictionary_import_progress";
+
+
 
 export type DictionaryContextType = {
     headwords: DictionaryHeadword[];
     isScannerEnabled: boolean;
     search: ( text: string ) => void;
     toggleScanner: ( enable: boolean ) => void;
+    importDictionary: ( input: ImportDictionaryDto ) => Promise<string>;
+    importProgress: DictionaryImportProgress;
 };
 
 export type PopupPosition = {
@@ -21,8 +28,9 @@ export const DictionaryContext = createContext( {} as DictionaryContextType );
 export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
         
     const [ headwords, setHeadwords ] = useState< DictionaryHeadword[] >( [] );
-    const [ isScannerEnabled, setIsScannerEnabled ] = useState< boolean >( true );
+    const [ enableScanner, setEnableScanner ] = useState< boolean >( false );
     const [ popupPosition, setPopupPosition ] = useState< PopupPosition >({ x: 0, y: 0  });
+    const [ importProgress, setImportProgress ] = useState< DictionaryImportProgress >();
 
     const search = debounce( async ( text: string ) => {
 
@@ -34,12 +42,11 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
 
         setHeadwords( result );
 
-    }, 250 );
+    }, 100 );
     
     function toggleScanner( enable: boolean ) {
-        setIsScannerEnabled( enable );
+        setEnableScanner( enable );
     }
-    
 
     const textScannerListener = debounce( ( event: MouseEvent ) => {
 
@@ -56,7 +63,7 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
             if ( endContainer instanceof Text == false ) 
                 return
 
-            const substring = endContainer.data.substr(startOffset, 20);                    
+            const substring = endContainer.data.substr(startOffset, 100);
     
             search( substring );
 
@@ -75,16 +82,28 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
         setPopupPosition( position );
     }
 
+    function importProgressReportHandler( event, progressReport: DictionaryImportProgress ) {
+        console.log( progressReport );
+        setImportProgress( progressReport );
+    } 
 
+    
     useEffect( () => {
         document.addEventListener( 'mousemove', textScannerListener );
+
+        global.ipcRenderer.on( 'dictionaries:import_progress', importProgressReportHandler );
+        
+        return () => {
+            document.removeEventListener( 'mousemove', textScannerListener );
+            global.ipcRenderer.removeAllListeners( 'dictionaries:import_progress' );            
+        }
     }, [] )
 
     useEffect( () => {
 
-        console.log({ isScannerEnabled })
+        console.log({ isScannerEnabled: enableScanner })
 
-        if ( isScannerEnabled ) 
+        if ( enableScanner ) 
             document.addEventListener( 'mousemove', textScannerListener );
         
         else
@@ -94,7 +113,18 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
             document.removeEventListener('mousemove', textScannerListener);
         };
 
-    }, [ isScannerEnabled ] )
+    }, [ enableScanner ] );
+
+
+    async function importDictionary( input: ImportDictionaryDto ) {        
+
+        const dto: ImportDictionaryDto = { ...input };
+        const path: string = await global.ipcRenderer.invoke( 'dictionaries:import', dto );
+
+        console.log({ path });
+
+        return path;
+    } 
 
     const popup = (
         <DictionaryPopup    
@@ -112,12 +142,16 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
         <DictionaryContext.Provider
             value={{
                 headwords,
-                isScannerEnabled,
+                isScannerEnabled: enableScanner,
                 search,
-                toggleScanner
+                toggleScanner,
+                importDictionary,
+                importProgress
             }}
         >
-            {popup}
+            { enableScanner &&
+                popup
+            }
             {children}
         </DictionaryContext.Provider>
     );
