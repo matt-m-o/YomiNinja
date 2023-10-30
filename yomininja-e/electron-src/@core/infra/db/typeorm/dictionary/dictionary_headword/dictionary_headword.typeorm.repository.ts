@@ -134,6 +134,10 @@ export default class DictionaryHeadwordTypeOrmRepository implements DictionaryHe
         this.clearCache();
     }
 
+    async deleteAll(): Promise< void > {
+        await this.ormRepo.clear();
+    }
+
     private runNullCheck( input?: DictionaryHeadword | DictionaryHeadword[] | null ) {
 
         if ( !input ) return;

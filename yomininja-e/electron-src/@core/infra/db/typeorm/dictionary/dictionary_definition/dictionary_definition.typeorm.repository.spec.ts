@@ -127,4 +127,15 @@ describe( "Dictionary Definition TypeOrm Repository tests", () => {
         
         expect( foundDefinition ).toBeFalsy();        
     });
+
+    it('should delete by dictionary id', async () => {
+        
+        await ormRepo.save([ definition ]);        
+
+        await repo.deleteByDictionaryId( definition.dictionary_id );
+
+        const foundDefinition = await repo.findOne({ id: definition.id });
+        
+        expect( foundDefinition ).toBeFalsy();        
+    });
 })

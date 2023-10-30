@@ -30,4 +30,10 @@ export default class DictionaryTagTypeOrmRepository implements DictionaryTagRepo
     async delete( id: DictionaryTagId ): Promise< void> {
         await this.ormRepo.delete( { id } );
     }
+
+    async deleteByDictionaryId( id: DictionaryId ): Promise< void > {
+        await this.ormRepo.delete({
+            dictionary_id: id
+        });
+    }
 }

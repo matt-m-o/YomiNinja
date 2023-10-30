@@ -1,6 +1,7 @@
 import { Repository } from "typeorm";
 import { DictionaryDefinitionFindManyInput, DictionaryDefinitionFindOneInput, DictionaryDefinitionRepository } from "../../../../../domain/dictionary/dictionary_definition/dictionary_definition.repository";
 import { DictionaryDefinition, DictionaryDefinitionId } from "../../../../../domain/dictionary/dictionary_definition/dictionary_definition";
+import { DictionaryId } from "../../../../../domain/dictionary/dictionary";
 
 
 
@@ -29,5 +30,11 @@ export default class DictionaryDefinitionTypeOrmRepository implements Dictionary
 
     async delete( id: DictionaryDefinitionId ): Promise< void> {
         await this.ormRepo.delete( { id } );
+    }
+
+    async deleteByDictionaryId( id: DictionaryId ): Promise< void > {
+        await this.ormRepo.delete({
+            dictionary_id: id
+        });
     }
 }

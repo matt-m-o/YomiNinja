@@ -15,4 +15,6 @@ export interface DictionaryTagRepository {
     getAll( dictionaryId?: DictionaryId ): Promise< DictionaryTag[] >;
 
     delete( id: DictionaryTagId ): Promise< void >;
+
+    deleteByDictionaryId( id: DictionaryId ): Promise< void >;
 }

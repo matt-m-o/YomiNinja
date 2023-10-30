@@ -100,4 +100,15 @@ describe( "Dictionary Tag TypeOrm Repository tests", () => {
         
         expect( foundTag ).toBeFalsy();        
     });
+
+    it('should delete by dictionary id', async () => {
+        
+        await ormRepo.save([ dictionaryTag ]);
+
+        await repo.deleteByDictionaryId( dictionaryTag.dictionary_id );
+
+        const foundTag = await repo.findOne({ id: dictionaryTag.id });
+        
+        expect( foundTag ).toBeFalsy();        
+    });
 })

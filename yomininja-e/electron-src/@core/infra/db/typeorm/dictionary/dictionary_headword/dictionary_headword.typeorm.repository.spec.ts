@@ -202,4 +202,15 @@ describe( "Dictionary Headword TypeOrm Repository tests", () => {
         
         expect( foundHeadword ).toBeFalsy();        
     });
+
+    it('should delete all', async () => {
+        
+        await ormRepo.save([ headword ]);        
+
+        await repo.deleteAll();
+
+        const foundHeadword = await repo.findOne({ id: headword.id });
+        
+        expect( foundHeadword ).toBeFalsy();
+    });
 })

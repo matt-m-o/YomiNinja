@@ -21,4 +21,6 @@ export interface DictionaryDefinitionRepository {
     findMany( input: DictionaryDefinitionFindManyInput ): Promise< DictionaryDefinition[] | null >;
 
     delete( id: DictionaryDefinitionId ): Promise< void >;
+
+    deleteByDictionaryId( id: DictionaryId ): Promise< void >;
 }
