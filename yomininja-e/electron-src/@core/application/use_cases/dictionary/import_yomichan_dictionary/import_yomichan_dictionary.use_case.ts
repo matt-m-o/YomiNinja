@@ -12,6 +12,7 @@ import { YomichanTagBankItem, YomichanTermBankItem } from "./yomichan_dictionary
 
 export interface ImportYomichanDictionary_Input {
     dictionaryName: string;
+    dictionaryVersion?: string;
     sourceLanguage: Language;
     targetLanguage: Language;
     tagBank?: YomichanTagBankItem[];
@@ -56,6 +57,7 @@ export class ImportYomichanDictionaryUseCase {
 
         const {
             dictionaryName,
+            dictionaryVersion,
             sourceLanguage,
             targetLanguage,
             tagBank,
@@ -70,6 +72,7 @@ export class ImportYomichanDictionaryUseCase {
 
             dictionary = Dictionary.create({
                 name: dictionaryName,
+                version: dictionaryVersion,
                 enabled: true,
                 order: 0,
                 source_language: sourceLanguage.two_letter_code,

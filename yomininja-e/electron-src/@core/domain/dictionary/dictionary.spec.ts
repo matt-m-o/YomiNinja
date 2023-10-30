@@ -6,6 +6,7 @@ describe("Dictionary tests", () => {
 
         const input: DictionaryCreationInput = {
             name: 'JMdict (English)',
+            version: 'jmdict4',
             order: 0,
             enabled: true,
             source_language: 'ja',
@@ -16,6 +17,7 @@ describe("Dictionary tests", () => {
             
         expect( dictionary.id ).not.toBeDefined();
         expect( dictionary.name ).toStrictEqual( input.name );
+        expect( dictionary.version ).toStrictEqual( input.version );
         expect( dictionary.order ).toStrictEqual( input.order );
         expect( dictionary.enabled ).toStrictEqual( input.enabled );
         expect( dictionary.source_language ).toStrictEqual( input.source_language );

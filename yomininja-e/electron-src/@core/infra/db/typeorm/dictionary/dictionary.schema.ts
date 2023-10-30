@@ -24,6 +24,12 @@ export const DictionaryTypeOrmSchema = new EntitySchema< Dictionary >({
             length: 100,
         },
 
+        version: {
+            type: String,
+            length: 50,
+            nullable: true,
+        },
+
         source_language: {
             type: String,
             length: 10,

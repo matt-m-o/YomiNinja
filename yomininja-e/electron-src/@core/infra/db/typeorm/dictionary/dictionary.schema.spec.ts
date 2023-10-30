@@ -28,6 +28,7 @@ describe( 'Dictionary Entity Schema tests', () => {
 
         const input: DictionaryCreationInput = {
             name: 'JMdict (English)',
+            version: 'jmdict4',
             source_language: 'ja',
             target_language: 'en',
             enabled: true,

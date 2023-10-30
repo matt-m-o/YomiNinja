@@ -25,6 +25,9 @@ describe( 'YomichanImportService tests', () => {
         const index = await YomichanImportService.getDictionaryIndex( extractedDictPath );
 
         expect( index.title ).toStrictEqual( 'JMdict (English)' );
+        expect( index.format ).toStrictEqual( 3 );
+        expect( index.revision ).toStrictEqual( 'jmdict4' );
+        expect( index.sequenced ).toStrictEqual( true );
     });
 
     it('should read the dictionary tag bank', async () => {        

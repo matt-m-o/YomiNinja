@@ -6,6 +6,7 @@ export type DictionaryId = number;
 export type DictionaryConstructorProps = {
     id?: DictionaryId;
     name: string;
+    version?: string;
     order: number;
     enabled: boolean;
     source_language: string;
@@ -21,6 +22,7 @@ export class Dictionary {
 
     id: DictionaryId;
     name: string;
+    version?: string;
     order: number;
     enabled: boolean;
     source_language: string; // two-letter ISO 639-1
@@ -32,6 +34,7 @@ export class Dictionary {
 
         // this.id = props.id || Dictionary.generateId({ dictionaryId: props.name });
         this.name = props.name;
+        this.version = props.version; 
         this.order = props.order;
         this.enabled = props.enabled;
         this.source_language = props.source_language;
@@ -40,7 +43,7 @@ export class Dictionary {
 
     static create( input: DictionaryCreationInput ) {
         return new Dictionary({
-            ...input
+            ...input,
         });
     }
 

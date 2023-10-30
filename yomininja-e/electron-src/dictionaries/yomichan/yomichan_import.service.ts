@@ -47,6 +47,7 @@ export class YomichanImportService {
             // Creating dictionary and importing Tags
             await this.importYomichanDictionaryUseCase.execute({
                 dictionaryName: index.title,
+                dictionaryVersion: index.revision,
                 sourceLanguage,
                 targetLanguage,
                 tagBank: tagBank

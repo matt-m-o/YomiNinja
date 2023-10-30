@@ -2,7 +2,7 @@
 export type YomichanDictionaryIndex = {
     title: string;
     format: number;
-    revision: number;
+    revision: string;
     sequenced: boolean;
 }
 
