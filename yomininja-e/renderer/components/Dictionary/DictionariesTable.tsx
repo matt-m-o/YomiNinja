@@ -16,11 +16,11 @@ export default function DictionariesTable( props: DictionaryTableProps ) {
     const { languages } = useContext( LanguagesContext );
 
     function getLanguageName( twoLetterCode: string ): string {
-        return languages.find( item => item.two_letter_code === twoLetterCode ).name || '';
+        return languages?.find( item => item.two_letter_code === twoLetterCode ).name || '';
     }
 
     return (
-        <TableContainer component={Paper} sx={{ mt: 2, mb: 2 }}>
+        <TableContainer component={Paper} sx={{ mt: 4, mb: 4 }}>
             <Table sx={{ minWidth: 650 }}>
                 <TableHead>
                     <TableRow>

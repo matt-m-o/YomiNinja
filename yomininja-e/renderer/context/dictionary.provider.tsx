@@ -16,6 +16,7 @@ export type DictionaryContextType = {
     search: ( text: string ) => void;
     toggleScanner: ( enable: boolean ) => void;
     importDictionary: ( input: ImportDictionaryDto ) => Promise<string>;
+    deleteAllDictionaries: ( ) => Promise<void>;
     importProgress: DictionaryImportProgress;
 };
 
@@ -99,6 +100,11 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
         setInstalledDictionaries( dictionaries );
     }
 
+    async function deleteAllDictionaries() {
+        await global.ipcRenderer.invoke( 'dictionaries:delete_all' );
+        getDictionaries();
+    }
+
     
     useEffect( () => {
 
@@ -162,7 +168,8 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
                 search,
                 toggleScanner,
                 importDictionary,
-                importProgress
+                importProgress,
+                deleteAllDictionaries,
             }}
         >
             { enableScanner &&

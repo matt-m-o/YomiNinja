@@ -13,6 +13,7 @@ import { ExtractTermsFromTextUseCase } from "../../application/use_cases/diction
 import { SearchDictionaryTermUseCase } from "../../application/use_cases/dictionary/search_dictionary_term/search_dictionary_term.use_case";
 import { ImportFuriganaDictionaryUseCase } from "../../application/use_cases/dictionary/import_furigana_dictionary/import_furigana_dictionary.use_case";
 import { GetDictionariesUseCase } from "../../application/use_cases/dictionary/get_dictionaries/get_dictionaries.use_case";
+import { DeleteAllDictionariesUseCase } from "../../application/use_cases/dictionary/delete_all_dictionaries/delete_all_dictionaries.use_case";
 
 
 container_registry.bind( Registry.RecognizeImageUseCase )
@@ -142,6 +143,26 @@ container_registry.bind( Registry.GetDictionariesUseCase )
             ),
         })
     });
+
+
+container_registry.bind( Registry.DeleteAllDictionariesUseCase )
+    .toDynamicValue( (context) => {
+        return new DeleteAllDictionariesUseCase({            
+            dictionariesRepo: context.container.get(
+                Registry.DictionaryTypeOrmRepository
+            ),
+            definitionsRepo: context.container.get(
+                Registry.DictionaryDefinitionTypeOrmRepository
+            ),
+            headwordsRepo: context.container.get(
+                Registry.DictionaryHeadwordTypeOrmRepository
+            ),
+            tagsRepo: context.container.get(
+                Registry.DictionaryTagTypeOrmRepository
+            ),
+        })
+    });
+    
     
 
 
@@ -193,4 +214,8 @@ export function get_SearchDictionaryTermUseCase(): SearchDictionaryTermUseCase {
 
 export function get_GetDictionariesUseCase(): GetDictionariesUseCase {    
     return container_registry.get< GetDictionariesUseCase >( Registry.GetDictionariesUseCase );
+}
+
+export function get_DeleteAllDictionariesUseCase(): DeleteAllDictionariesUseCase {    
+    return container_registry.get< DeleteAllDictionariesUseCase >( Registry.DeleteAllDictionariesUseCase );
 }

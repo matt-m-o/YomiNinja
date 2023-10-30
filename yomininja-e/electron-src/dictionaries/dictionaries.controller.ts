@@ -109,6 +109,12 @@ export class DictionariesController {
                 return await this.dictionariesService.getInstalledDictionaries();
             }
         );
+
+        ipcMain.handle( 'dictionaries:delete_all', 
+            async ( event: IpcMainInvokeEvent ): Promise< void > => {
+                await this.dictionariesService.deleteAllDictionaries();
+            }
+        );
     }
 
     async search( text: string ): Promise< DictionaryHeadword[] > {        

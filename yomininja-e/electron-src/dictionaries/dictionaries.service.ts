@@ -1,4 +1,5 @@
 import { JapaneseHelperAdapter } from "../@core/application/adapters/japanese_helper.adapter";
+import { DeleteAllDictionariesUseCase } from "../@core/application/use_cases/dictionary/delete_all_dictionaries/delete_all_dictionaries.use_case";
 import { ExtractTermsFromTextUseCase } from "../@core/application/use_cases/dictionary/extract_terms_from_text/extract_terms_from_text.use_case";
 import { GetDictionariesUseCase } from "../@core/application/use_cases/dictionary/get_dictionaries/get_dictionaries.use_case";
 import { SearchDictionaryTermUseCase, SearchDictionaryTerm_Input } from "../@core/application/use_cases/dictionary/search_dictionary_term/search_dictionary_term.use_case";
@@ -15,6 +16,7 @@ export class DictionariesService {
     private extractTermsFromTextUseCase: ExtractTermsFromTextUseCase;
     private getProfileUseCase: GetProfileUseCase;
     private getDictionariesUseCase: GetDictionariesUseCase;
+    private deleteAllDictionariesUseCase: DeleteAllDictionariesUseCase;
     private japaneseHelper: JapaneseHelperAdapter;
 
     constructor(
@@ -23,12 +25,14 @@ export class DictionariesService {
             extractTermsFromTextUseCase: ExtractTermsFromTextUseCase;
             getProfileUseCase: GetProfileUseCase;
             getDictionariesUseCase: GetDictionariesUseCase;
+            deleteAllDictionariesUseCase: DeleteAllDictionariesUseCase;
             japaneseHelper: JapaneseHelperAdapter;
         }
     ){        
         this.searchDictionaryTermUseCase = input.searchDictionaryTermUseCase;
         this.extractTermsFromTextUseCase = input.extractTermsFromTextUseCase;
         this.getDictionariesUseCase = input.getDictionariesUseCase;
+        this.deleteAllDictionariesUseCase = input.deleteAllDictionariesUseCase;
         this.japaneseHelper = input.japaneseHelper;
         this.getProfileUseCase = input.getProfileUseCase;
     }
@@ -119,5 +123,9 @@ export class DictionariesService {
 
     async getInstalledDictionaries(): Promise< Dictionary[] > {
         return await this.getDictionariesUseCase.execute();
+    }
+
+    async deleteAllDictionaries(): Promise< void > {
+        await this.deleteAllDictionariesUseCase.execute();
     }
 }
