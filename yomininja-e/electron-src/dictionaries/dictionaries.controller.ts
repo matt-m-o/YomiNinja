@@ -7,6 +7,7 @@ import { DictionaryHeadword } from "../@core/domain/dictionary/dictionary_headwo
 import { JmdictImportService } from "./Jmdict/Jmdict_import.service";
 import path from "path";
 import { DictionaryImportProgress } from "./common/dictionary_import_progress";
+import { Dictionary } from "../@core/domain/dictionary/dictionary";
 
 export type DictionaryFormats = 'yomichan' | 'jmdictFurigana';
 
@@ -100,6 +101,12 @@ export class DictionariesController {
                 }
                 
                 return fileName || '' ;
+            }
+        );
+
+        ipcMain.handle( 'dictionaries:get_all_installed', 
+            async ( event: IpcMainInvokeEvent ): Promise< Dictionary[] > => {
+                return await this.dictionariesService.getInstalledDictionaries();
             }
         );
     }

@@ -31,6 +31,7 @@ export const Registry = {
     ExtractTermsFromTextUseCase: Symbol.for('ExtractTermsFromTextUseCase'),
     SearchDictionaryTermUseCase: Symbol.for('SearchDictionaryTermUseCase'),
     ImportFuriganaDictionaryUseCase: Symbol.for('ImportFuriganaDictionaryUseCase'),
+    GetDictionariesUseCase: Symbol.for('GetDictionariesUseCase'),
 
     // Repositories
     SettingsPresetInMemoryRepository: Symbol.for('SettingsPresetInMemoryRepository'),

@@ -1,7 +1,9 @@
 import { JapaneseHelperAdapter } from "../@core/application/adapters/japanese_helper.adapter";
 import { ExtractTermsFromTextUseCase } from "../@core/application/use_cases/dictionary/extract_terms_from_text/extract_terms_from_text.use_case";
+import { GetDictionariesUseCase } from "../@core/application/use_cases/dictionary/get_dictionaries/get_dictionaries.use_case";
 import { SearchDictionaryTermUseCase, SearchDictionaryTerm_Input } from "../@core/application/use_cases/dictionary/search_dictionary_term/search_dictionary_term.use_case";
 import { GetProfileUseCase } from "../@core/application/use_cases/get_profile/get_profile.use_case";
+import { Dictionary } from "../@core/domain/dictionary/dictionary";
 import { DictionaryHeadword, DictionaryHeadwordId } from "../@core/domain/dictionary/dictionary_headword/dictionary_headword";
 import { Language } from "../@core/domain/language/language";
 import { getActiveProfile } from "../@core/infra/app_initialization";
@@ -12,6 +14,7 @@ export class DictionariesService {
     private searchDictionaryTermUseCase: SearchDictionaryTermUseCase;
     private extractTermsFromTextUseCase: ExtractTermsFromTextUseCase;
     private getProfileUseCase: GetProfileUseCase;
+    private getDictionariesUseCase: GetDictionariesUseCase;
     private japaneseHelper: JapaneseHelperAdapter;
 
     constructor(
@@ -19,11 +22,13 @@ export class DictionariesService {
             searchDictionaryTermUseCase: SearchDictionaryTermUseCase;
             extractTermsFromTextUseCase: ExtractTermsFromTextUseCase;
             getProfileUseCase: GetProfileUseCase;
+            getDictionariesUseCase: GetDictionariesUseCase;
             japaneseHelper: JapaneseHelperAdapter;
         }
     ){        
         this.searchDictionaryTermUseCase = input.searchDictionaryTermUseCase;
         this.extractTermsFromTextUseCase = input.extractTermsFromTextUseCase;
+        this.getDictionariesUseCase = input.getDictionariesUseCase;
         this.japaneseHelper = input.japaneseHelper;
         this.getProfileUseCase = input.getProfileUseCase;
     }
@@ -109,5 +114,10 @@ export class DictionariesService {
             );
 
         return Array.from( headwordsMap.values() );
+    }
+
+
+    async getInstalledDictionaries(): Promise< Dictionary[] > {
+        return await this.getDictionariesUseCase.execute();
     }
 }

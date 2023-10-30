@@ -12,6 +12,7 @@ import { ImportYomichanDictionaryUseCase } from "../../application/use_cases/dic
 import { ExtractTermsFromTextUseCase } from "../../application/use_cases/dictionary/extract_terms_from_text/extract_terms_from_text.use_case";
 import { SearchDictionaryTermUseCase } from "../../application/use_cases/dictionary/search_dictionary_term/search_dictionary_term.use_case";
 import { ImportFuriganaDictionaryUseCase } from "../../application/use_cases/dictionary/import_furigana_dictionary/import_furigana_dictionary.use_case";
+import { GetDictionariesUseCase } from "../../application/use_cases/dictionary/get_dictionaries/get_dictionaries.use_case";
 
 
 container_registry.bind( Registry.RecognizeImageUseCase )
@@ -133,6 +134,16 @@ container_registry.bind( Registry.ImportFuriganaDictionaryUseCase )
     });
     
 
+container_registry.bind( Registry.GetDictionariesUseCase )
+    .toDynamicValue( (context) => {
+        return new GetDictionariesUseCase({            
+            dictionariesRepo: context.container.get(
+                Registry.DictionaryTypeOrmRepository
+            ),
+        })
+    });
+    
+
 
 export function get_RecognizeImageUseCase(): RecognizeImageUseCase {
     return container_registry.get< RecognizeImageUseCase >( Registry.RecognizeImageUseCase )
@@ -178,4 +189,8 @@ export function get_ExtractTermsFromTextUseCase(): ExtractTermsFromTextUseCase {
 
 export function get_SearchDictionaryTermUseCase(): SearchDictionaryTermUseCase {    
     return container_registry.get< SearchDictionaryTermUseCase >( Registry.SearchDictionaryTermUseCase );
+}
+
+export function get_GetDictionariesUseCase(): GetDictionariesUseCase {    
+    return container_registry.get< GetDictionariesUseCase >( Registry.GetDictionariesUseCase );
 }
