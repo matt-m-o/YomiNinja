@@ -29,7 +29,7 @@ export class SettingsPresetInMemoryRepository implements SettingsPresetRepositor
 
         if ( input.name ) {
             
-            for ( const [ id, obj ] of this.items ) {
+            for ( const [ id, obj ] of this.items.entries() ) {
     
                 if ( obj.name === input.name )
                     return obj;

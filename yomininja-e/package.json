@@ -87,7 +87,7 @@
   },
   "gypfile": true,
   "build": {
-    "asar": true,
+    "asar": false,
     "files": [
       "main",
       "renderer/out",
@@ -103,6 +103,11 @@
       {
         "from": "third-party-licenses.txt",
         "to": "./"
+      },
+      {
+        "from": "extensions",
+        "to": "extensions",
+        "filter": "**/*"
       }
     ],
     "directories": {

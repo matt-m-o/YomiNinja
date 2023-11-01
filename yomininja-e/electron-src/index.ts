@@ -14,7 +14,7 @@ import { overlayController } from './overlay/overlay.index';
 import { mainController } from './main/main.index';
 import { dictionariesController } from './dictionaries/dictionaries.index';
 
-import { BrowserExtensions } from './extensions';
+import { BrowserExtensions } from './extensions/extensions';
 
 let browserExtensions: BrowserExtensions;
 
@@ -27,12 +27,11 @@ app.on('ready', async () => {
   await browserExtensions.init();
 
   const mainWindow = await mainController.init();
-  browserExtensions.addBrowserWindow( mainWindow );
-
+  
   
   initializeApp()
     .then( async () => {
-
+      
       const overlayWindow = await overlayController.init( mainWindow );
       browserExtensions.addBrowserWindow( overlayWindow );
       
@@ -42,7 +41,11 @@ app.on('ready', async () => {
       appInfoController.init( mainWindow );
       profileController.init( mainWindow );
       dictionariesController.init({ mainWindow, overlayWindow });
+      
+      setTimeout( () => {
+        browserExtensions.addBrowserWindow( mainWindow );
 
+      }, 5000);
     });
 });
 

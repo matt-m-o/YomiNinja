@@ -8,7 +8,8 @@ import { Dictionary } from "../@core/domain/dictionary/dictionary";
 import { DictionaryHeadword, DictionaryHeadwordId } from "../@core/domain/dictionary/dictionary_headword/dictionary_headword";
 import { Language } from "../@core/domain/language/language";
 import { getActiveProfile } from "../@core/infra/app_initialization";
-
+import { browserExtensions } from "../extensions/extensions";
+import { BrowserExtension } from "../extensions/browser_extension";
 
 export class DictionariesService {
 
@@ -127,5 +128,13 @@ export class DictionariesService {
 
     async deleteAllDictionaries(): Promise< void > {
         await this.deleteAllDictionariesUseCase.execute();
+    }
+
+    async getDictionaryExtensions(): Promise<BrowserExtension[]> {
+        return await browserExtensions.getInstalledExtensions();
+    }
+
+    async openExtensionOptionsPage( extension: BrowserExtension ): Promise< void > {
+        browserExtensions.openExtensionOptionsPage( extension.id );
     }
 }

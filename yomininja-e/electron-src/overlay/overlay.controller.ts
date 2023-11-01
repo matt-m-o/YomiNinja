@@ -84,7 +84,7 @@ export class OverlayController {
         this.overlayWindow.loadURL(url);
         // this.overlayWindow.maximize();        
         
-        const showDevTools = isDev && true;
+        const showDevTools = isDev && false;
         if (showDevTools)
             this.overlayWindow.webContents.openDevTools();        
 

@@ -2,6 +2,15 @@ import { ViterbiNode } from "kuromoji";
 import { ExtractedTerms, GetTermsInput, TermExtractorAdapter } from "../../application/adapters/term_extractor.adapter";
 import * as kuromoji from 'kuromoji';
 import * as wanakana from 'wanakana';
+import { join } from "path";
+import { ROOT_DIR } from "../../../util/directories";
+import isDev from "electron-is-dev";
+
+const dicPath = isDev ?
+    join( ROOT_DIR, '../node_modules/kuromoji/dict') :
+    join( ROOT_DIR, '/node_modules/kuromoji/dict');
+
+console.log({dicPath})
 
 // Basic term extractor for development purposes
 export class KuromojiTermExtractor implements TermExtractorAdapter {
@@ -17,10 +26,12 @@ export class KuromojiTermExtractor implements TermExtractorAdapter {
         if ( !this.tokenizer )
             this.tokenizer = await this.getTokenizer();
     }
-
+    
     private getTokenizer(): Promise< kuromoji.Tokenizer< kuromoji.IpadicFeatures > > {
         return new Promise<kuromoji.Tokenizer<kuromoji.IpadicFeatures>>( (resolve, reject) => {
-            kuromoji.builder({ dicPath: 'node_modules/kuromoji/dict' }).build((err, tokenizer) => {
+            kuromoji.builder({
+                dicPath: join( ROOT_DIR, '/node_modules/kuromoji/dict')
+            }).build((err, tokenizer) => {
                 if (err) {
                     reject(err);
                 } else {

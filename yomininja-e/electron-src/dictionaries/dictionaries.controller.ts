@@ -8,6 +8,7 @@ import { JmdictImportService } from "./Jmdict/Jmdict_import.service";
 import path from "path";
 import { DictionaryImportProgress } from "./common/dictionary_import_progress";
 import { Dictionary } from "../@core/domain/dictionary/dictionary";
+import { BrowserExtension } from "../extensions/browser_extension";
 
 export type DictionaryFormats = 'yomichan' | 'jmdictFurigana';
 
@@ -45,7 +46,7 @@ export class DictionariesController {
         this.mainWindow = input.mainWindow;
         this.overlayWindow = input.overlayWindow;
 
-        this.registersIpcHandlers();
+        this.registersIpcHandlers();        
     }
 
     private registersIpcHandlers() {
@@ -115,6 +116,20 @@ export class DictionariesController {
                 await this.dictionariesService.deleteAllDictionaries();
             }
         );
+
+        ipcMain.handle( 'dictionaries:get_all_extensions', 
+            async ( event: IpcMainInvokeEvent ): Promise< BrowserExtension[] > => {
+                return await this.dictionariesService.getDictionaryExtensions();
+            }
+        );
+
+        ipcMain.handle( 'dictionaries:open_extension_options', 
+            async ( event: IpcMainInvokeEvent, extension: BrowserExtension ): Promise< void > => {
+                return await this.dictionariesService.openExtensionOptionsPage( extension );
+            }
+        );
+
+        
     }
 
     async search( text: string ): Promise< DictionaryHeadword[] > {        
@@ -166,5 +181,8 @@ export class DictionariesController {
         this.mainWindow.webContents.send( 'dictionaries:import_progress', input );
     }
 
+    getDictionaryExtensions() {
+
+    }
 }
 

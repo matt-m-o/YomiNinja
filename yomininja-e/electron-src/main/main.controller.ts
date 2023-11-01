@@ -27,6 +27,7 @@ export class MainController {
             height: 700,
             autoHideMenuBar: true,
             webPreferences: {
+                sandbox: true,
                 nodeIntegration: false,
                 contextIsolation: false,
                 preload: join(__dirname, '../preload.js'),
@@ -62,7 +63,7 @@ export class MainController {
             slashes: true,
         });
 
-        await this.mainWindow.loadURL(url);
+        await this.mainWindow.loadURL( "https://jisho.hlorenzi.com/" );
 
         this.mainWindow.show();
     }

@@ -53,11 +53,15 @@ export class YomichanImportService {
                 tagBank: tagBank
             });
 
-            const termBankGenerator = YomichanImportService.getDictionaryTermBanks( extractedDictPath );        
+            const termBankGenerator = YomichanImportService.getDictionaryTermBanks( extractedDictPath );
 
+            let iterator = termBankGenerator.next();
+            
             // Importing terms (Headwords and Definitions)
-            for ( const { termBank, progress } of termBankGenerator ) {
+            while ( !iterator.done ) {
 
+                const { termBank, progress } = iterator.value;
+                
                 await this.importYomichanDictionaryUseCase.execute({
                     dictionaryName: index.title,
                     sourceLanguage,
@@ -71,7 +75,28 @@ export class YomichanImportService {
                     progress,
                     status: 'importing',
                 });
-            }
+            
+                // Move to the next item in the generator
+                iterator = termBankGenerator.next();
+            }            
+
+            // // Importing terms (Headwords and Definitions)
+            // for ( const { termBank, progress } of termBankGenerator ) {
+
+            //     await this.importYomichanDictionaryUseCase.execute({
+            //         dictionaryName: index.title,
+            //         sourceLanguage,
+            //         targetLanguage,
+            //         termBank
+            //     });
+
+            //     console.log(`term bank import progress: ${progress}%`);
+
+            //     progressCallBack({
+            //         progress,
+            //         status: 'importing',
+            //     });
+            // }
 
             YomichanImportService.cleanTemporaryFiles();
             

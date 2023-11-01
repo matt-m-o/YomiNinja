@@ -6,17 +6,20 @@ import { DictionaryFormats, ImportDictionaryDto } from '../../electron-src/dicti
 import { LanguageJson } from "../../electron-src/@core/domain/language/language";
 import { DictionaryImportProgress } from "../../electron-src/dictionaries/common/dictionary_import_progress";
 import { Dictionary } from "../../electron-src/@core/domain/dictionary/dictionary";
+import { BrowserExtension } from "../../electron-src/extensions/browser_extension";
 
 
 
 export type DictionaryContextType = {
     installedDictionaries: Dictionary[];
+    installedExtensions: BrowserExtension[];
     headwords: DictionaryHeadword[];
     isScannerEnabled: boolean;
     search: ( text: string ) => void;
     toggleScanner: ( enable: boolean ) => void;
     importDictionary: ( input: ImportDictionaryDto ) => Promise<string>;
     deleteAllDictionaries: ( ) => Promise<void>;
+    openExtensionOptions: ( input: BrowserExtension ) => Promise<void>
     importProgress: DictionaryImportProgress;
 };
 
@@ -31,12 +34,14 @@ export const DictionaryContext = createContext( {} as DictionaryContextType );
 export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
         
     const [ installedDictionaries, setInstalledDictionaries ] = useState< Dictionary[] >();
+    const [ installedExtensions, setInstalledExtensions ] = useState< BrowserExtension[] >();
     const [ headwords, setHeadwords ] = useState< DictionaryHeadword[] >( [] );
     const [ enableScanner, setEnableScanner ] = useState< boolean >( false );
     const [ popupPosition, setPopupPosition ] = useState< PopupPosition >({ x: 0, y: 0  });
     const [ importProgress, setImportProgress ] = useState< DictionaryImportProgress >();
     const [ currentRange, setCurrentRange ] = useState< Range >();
     const [ rangeEndOffset, setRangeEndOffset ] = useState< number >();
+
 
     // let currentRange: Range;
     // let rangeEndOffset: number;
@@ -103,6 +108,7 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
 
             console.log({ startOffset: range.startOffset })
 
+            // @ts-expect-error
             const searchString = startContainer.data.substr( range.startOffset, 5 );
             setCurrentRange( range );
             setRangeEndOffset( range.startOffset + 5 );
@@ -201,8 +207,12 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
     async function getDictionaries() {
 
         const dictionaries = await global.ipcRenderer.invoke( 'dictionaries:get_all_installed' );
+        const extensions = await global.ipcRenderer.invoke( 'dictionaries:get_all_extensions' );
+
+        console.log({ extensions })
 
         setInstalledDictionaries( dictionaries );
+        setInstalledExtensions( extensions );
     }
 
     async function deleteAllDictionaries() {
@@ -210,6 +220,9 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
         getDictionaries();
     }
 
+    async function openExtensionOptions( browserExtension: BrowserExtension ): Promise< void > {
+        await global.ipcRenderer.invoke( 'dictionaries:open_extension_options', browserExtension );
+    }
     
     useEffect( () => {
 
@@ -260,14 +273,14 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
                 top: popupPosition.y+'%'
             }}
             // targetElement={}
-        >
-        </DictionaryPopup>
+        />
     )
     
     return (
         <DictionaryContext.Provider
             value={{
                 installedDictionaries,
+                installedExtensions,
                 headwords,
                 isScannerEnabled: enableScanner,
                 search,
@@ -275,6 +288,7 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
                 importDictionary,
                 importProgress,
                 deleteAllDictionaries,
+                openExtensionOptions
             }}
         >
             { enableScanner &&
