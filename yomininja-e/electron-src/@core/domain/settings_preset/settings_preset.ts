@@ -201,9 +201,17 @@ export class SettingsPreset {
 
             behavior: {
                 ...this.overlay.behavior,
-                ...overlayUpdate.behavior
+                ...overlayUpdate.behavior,
             }
         };
+
+        const { always_on_top, click_through } = this.overlay.behavior
+
+        if ( !click_through )
+            this.overlay.behavior.always_on_top = false;
+
+        if ( always_on_top )
+            this.overlay.behavior.click_through = true;        
     }
 
     updateOcrEngineSettings( update: Partial< OcrEngineSettings > ) {
@@ -222,13 +230,11 @@ export class SettingsPreset {
         };
     }
 
-    updateDictionarySettings( update: Partial< DictionarySettings > ) {
-
-        let { enabled } = update;        
+    updateDictionarySettings( update: Partial< DictionarySettings > ) {             
 
         this.props.dictionary = {
             ...this.props.dictionary,
-            ...update,            
+            ...update,
         };
     }
 

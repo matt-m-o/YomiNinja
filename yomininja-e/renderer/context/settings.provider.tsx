@@ -57,7 +57,13 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
             ...activeSettingsPreset.overlay.behavior,
             ...newBehavior,
         };
-        console.log(newBehavior)
+
+        if ( activeSettingsPreset.overlay.behavior.always_on_top )
+            activeSettingsPreset.overlay.behavior.click_through = true;
+
+        if ( !activeSettingsPreset.overlay.behavior.click_through )
+            activeSettingsPreset.overlay.behavior.always_on_top = false;
+
         updateActivePreset( activeSettingsPreset );
     }
 
