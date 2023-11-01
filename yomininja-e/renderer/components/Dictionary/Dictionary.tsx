@@ -1,4 +1,4 @@
-import { Box, Button, Card, CardContent, Container, FormControlLabel, Grid, Switch, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, Container, Divider, FormControlLabel, Grid, Switch, Typography, styled } from "@mui/material";
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import DictionaryImportModal from "./DictionaryImportModal";
 import { useContext, useState } from "react";
@@ -8,6 +8,11 @@ import DeleteForeverRoundedIcon from '@mui/icons-material/DeleteForeverRounded';
 import Image  from 'next/image';
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import { SettingsContext } from "../../context/settings.provider";
+
+const SectionDivider = styled( Divider )({
+    marginTop: '30px',
+    marginBottom: '30px',
+});
 
 export default function Dictionary() {
 
@@ -59,7 +64,7 @@ export default function Dictionary() {
             <CardContent>            
                 <Container maxWidth='md'>                    
 
-                    <Box sx={{ flexGrow: 1, margin: 1, mb: 10 }}>
+                    <Box sx={{ flexGrow: 1, margin: 1, mb: 2 }}>
 
                         <Typography gutterBottom variant="h6" component="div" margin={2} ml={0}>
                             Dictionary Extensions
@@ -77,13 +82,13 @@ export default function Dictionary() {
                         <Box display='flex' 
                             justifyContent='center'
                             alignItems='center'
-                            mb={10}
+                            mb={1}
                         >
                             <Box display='flex'       
                                 alignItems='center'
                                 sx={{ flexGrow: 1, margin: 1 }}
                             >
-                                { InstalledExtensions }
+                                { InstalledExtensions }                                
                             </Box>
                             
                             <Box display='flex' 
@@ -103,8 +108,13 @@ export default function Dictionary() {
                         </Box>
 
                         
+                        <Typography fontSize='1rem' lineHeight={2} mt='56px'>
+                            Note: Extension customizations take effect on the next launch.
+                        </Typography>
 
                     </Box>
+
+                    <SectionDivider/>
 
                     <Box sx={{ flexGrow: 1, margin: 1 }}>
 

@@ -107,7 +107,24 @@ export default function HomeContent() {
                             />
                         </Grid>
 
-                    </Grid>
+                    </Grid>                    
+
+                    <Typography fontSize='1rem' lineHeight={2} ml={1} mb={0} mt={'56px'}>
+                        ✨New features:
+                    </Typography>
+                    <ul
+                        style={{
+                            fontSize: '1rem',
+                            color: 'lightgray',
+                            lineHeight: 2,
+                            marginTop: 0,
+                            marginLeft: 20
+                        }}
+                    >
+                        <li> Built-in popup dictionaries. </li>
+                        <li> WebSocket for text extractors. </li>
+                        <li> Copy text on click. </li>
+                    </ul>
 
                 </CardContent>
             </Card>
