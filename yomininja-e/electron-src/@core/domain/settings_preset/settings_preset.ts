@@ -1,11 +1,16 @@
 import { randomUUID } from "crypto";
 
+export type DictionarySettings = {
+    enabled: boolean;    
+};
+
 export type OcrEngineSettings = {
     ocr_adapter_name?: string;
     image_scaling_factor: number; // from 0.1 to 1.0. Two decimal places shouldn't be allow.
     max_image_width: number;
     cpu_threads: number;
     invert_colors: boolean;
+    inference_runtime: string
 };
 
 export type OverlayOcrItemBoxVisuals = {
@@ -52,6 +57,7 @@ export interface SettingsPresetProps {
     name: string;    
     overlay: OverlaySettings;
     ocr_engine: OcrEngineSettings;
+    dictionary: DictionarySettings;
     created_at: Date;
     updated_at: Date;
 };
@@ -104,6 +110,10 @@ export class SettingsPreset {
             max_image_width: 1600,
             cpu_threads: 8,
             invert_colors: false,
+            inference_runtime: 'Open_VINO'
+        },
+        dictionary: {
+            enabled: false,
         },
 
         created_at: new Date(),

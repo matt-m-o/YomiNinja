@@ -1,4 +1,4 @@
-import { Alert, Backdrop, Box, CircularProgress, Container, Divider, FormControlLabel, FormGroup, Popover, Slider, Snackbar, Stack, Switch, SxProps, TextField, Theme, Typography, debounce, styled } from "@mui/material";
+import { Alert, Backdrop, Box, CircularProgress, Container, Divider, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Popover, Select, Slider, Snackbar, Stack, Switch, SxProps, TextField, Theme, Typography, debounce, styled } from "@mui/material";
 import { SettingsContext } from "../../context/settings.provider";
 import { useContext, useEffect, useState } from "react";
 import { OcrEngineSettings, OverlayBehavior } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
@@ -18,6 +18,7 @@ export default function AppSettingsOcrEngine() {
     const [ invertColors, setInvertColors ] = useState( ocrEngineSettings?.invert_colors || false );
     const [ maxImageWidth, setMaxImageWidth ] = useState( ocrEngineSettings?.max_image_width || 1920 );
     const [ cpuThreads, setCpuThreads ] = useState( ocrEngineSettings?.cpu_threads || 2 );
+    const [ inferenceRuntime, setInferenceRuntime ] = useState( ocrEngineSettings?.inference_runtime || '' );
 
     useEffect( () => {
 
@@ -26,6 +27,7 @@ export default function AppSettingsOcrEngine() {
         setImageScalingFactor( ocrEngineSettings?.image_scaling_factor );
         setMaxImageWidth( ocrEngineSettings?.max_image_width );
         setCpuThreads( ocrEngineSettings?.cpu_threads );
+        setInferenceRuntime( ocrEngineSettings.inference_runtime );
 
     }, [ ocrEngineSettings ] )
 
@@ -202,7 +204,7 @@ export default function AppSettingsOcrEngine() {
                         valueLabelDisplay="auto"
                         value={ cpuThreads }
                         style={{ marginRight: 8 }}                
-                        onChange={ ( event, newValue ) => {                            
+                        onChange={ ( event, newValue ) => {
                             if (typeof newValue === 'number') {
                                 setCpuThreads( newValue );
                             }
@@ -213,6 +215,26 @@ export default function AppSettingsOcrEngine() {
                     />                    
 
                 </Stack>
+
+                <FormControl fullWidth sx={{ width: 300, mt: 2 }}>
+                    <InputLabel>Inference Runtime</InputLabel>
+                    <Select                
+                        value={ inferenceRuntime || '' }
+                        label="Inference Runtime"                        
+                        onChange={ ( event ) => {
+                            const { value } = event.target
+                            if (typeof value === 'string') {
+                                setInferenceRuntime( value );
+                                console.log(value)
+                                updateActivePresetOcrEngine({ inference_runtime: value });
+                            }
+                        }}                        
+                    >
+                        <MenuItem value='Open_VINO'>OpenVino CPU (fastest)</MenuItem>
+                        <MenuItem value='ONNX_CPU'>ONNX CPU</MenuItem>
+                    </Select>
+                    
+                </FormControl>
             
             </Container>
             
