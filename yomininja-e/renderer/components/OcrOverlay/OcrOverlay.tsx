@@ -25,7 +25,7 @@ export default function OcrOverlay() {
 
 
     useEffect( () => {
-      toggleScanner(false);
+      toggleScanner(true);
     }, [] )
 
     return (

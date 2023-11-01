@@ -7,6 +7,7 @@ import { DictionaryContext } from "../../context/dictionary.provider";
 import DeleteForeverRoundedIcon from '@mui/icons-material/DeleteForeverRounded';
 import Image  from 'next/image';
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
+import { SettingsContext } from "../../context/settings.provider";
 
 export default function Dictionary() {
 
@@ -17,6 +18,9 @@ export default function Dictionary() {
         deleteAllDictionaries,
         openExtensionOptions
     } = useContext( DictionaryContext );
+
+    const { activeSettingsPreset, updateActivePresetDictionary } = useContext( SettingsContext );
+    
     
     
     const InstalledExtensions = (
@@ -68,9 +72,6 @@ export default function Dictionary() {
                         <Typography gutterBottom component="div" margin={2} ml={0} mt={0}>
                             Use the right click to toggle the extension.
                         </Typography>
-
-                        
-
                         
 
                         <Box display='flex' 
