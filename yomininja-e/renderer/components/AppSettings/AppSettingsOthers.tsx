@@ -34,6 +34,18 @@ export default function AppSettingsOthers() {
                             /> 
                         }
                     />
+                    <FormControlLabel label='Click-through'
+                        control={
+                            <Switch
+                                checked={ Boolean( overlayBehavior?.click_through ) }
+                                onChange={ ( event ) => {
+                                    updateActivePresetBehavior({
+                                        click_through: event.target.checked
+                                    });
+                                }}
+                            /> 
+                        }
+                    />
                     <FormControlLabel label='Auto-copy text on hover'
                         control={
                             <Switch

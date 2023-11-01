@@ -35,7 +35,9 @@ export type OverlayVisualCustomizations = {
 
 export type OverlayBehavior = {
     copy_text_on_hover: boolean;
+    copy_text_on_click: boolean;
     always_on_top: boolean;
+    click_through: boolean;
     show_yomichan_window_on_copy: boolean;
 };
 
@@ -101,7 +103,9 @@ export class SettingsPreset {
             },
             behavior: {
                 copy_text_on_hover: true,
-                always_on_top: true,
+                copy_text_on_click: false,
+                always_on_top: false,
+                click_through: true,
                 show_yomichan_window_on_copy: true,
             }
         },

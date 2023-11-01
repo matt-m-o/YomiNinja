@@ -15,6 +15,8 @@ export class OverlayController {
     private windowManager: WindowManager;
 
     private overlayAlwaysOnTop: boolean = true;
+    private clickThrough: boolean = true;
+    private copyTextOnClick: boolean = false;
     private showYomichanWindowOnCopy: boolean = true;
 
     private globalShortcutAccelerators: string[] = [];
@@ -85,15 +87,17 @@ export class OverlayController {
         // this.overlayWindow.maximize();        
         
         const showDevTools = isDev && false;
-        if (showDevTools)
-            this.overlayWindow.webContents.openDevTools();        
+        if (showDevTools) {
+            this.overlayWindow.webContents.openDevTools();
+            this.clickThrough = false;
+        }
 
         
         this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop && !showDevTools, "normal" ); // normal, pop-up-menu och screen-saver
 
-        // Prevents black image when using youtube on some browsers (e.g. Brave)
-        this.overlayWindow.setIgnoreMouseEvents( !showDevTools, { // !showDevTools
-            forward: !showDevTools, // !!showDevTools
+        // "True" Prevents black image when using youtube on some browsers (e.g. Brave)
+        this.overlayWindow.setIgnoreMouseEvents( this.clickThrough, { // !showDevTools
+            forward: this.clickThrough, // !!showDevTools
         });
     }
 
@@ -184,9 +188,13 @@ export class OverlayController {
         if ( !settingsPresetJson ) return;
 
         this.overlayAlwaysOnTop = Boolean( settingsPresetJson.overlay.behavior.always_on_top );
+        this.clickThrough = Boolean( settingsPresetJson.overlay.behavior.click_through );
         this.showYomichanWindowOnCopy = Boolean( settingsPresetJson.overlay.behavior.show_yomichan_window_on_copy );
         
         this.overlayWindow?.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );
+        this.overlayWindow.setIgnoreMouseEvents( this.clickThrough, {
+            forward: this.clickThrough,
+        });
 
         this.registerGlobalShortcuts( settingsPresetJson );
 
