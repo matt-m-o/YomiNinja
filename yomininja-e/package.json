@@ -87,7 +87,7 @@
   },
   "gypfile": true,
   "build": {
-    "asar": false,
+    "asar": true,
     "files": [
       "main",
       "renderer/out",

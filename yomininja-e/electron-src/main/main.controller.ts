@@ -63,7 +63,7 @@ export class MainController {
             slashes: true,
         });
 
-        await this.mainWindow.loadURL( "https://jisho.hlorenzi.com/" );
+        await this.mainWindow.loadURL(url);
 
         this.mainWindow.show();
     }
