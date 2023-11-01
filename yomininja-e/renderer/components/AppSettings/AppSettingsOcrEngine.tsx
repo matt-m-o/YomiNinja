@@ -216,8 +216,8 @@ export default function AppSettingsOcrEngine() {
 
                 </Stack>
 
-                <FormControl fullWidth sx={{ width: 300, mt: 2 }}>
-                    <InputLabel>Inference Runtime</InputLabel>
+                <FormControl fullWidth sx={{ display:'flex', flexDirection: 'row', width: 300, mt: 4 }}>
+                    
                     <Select                
                         value={ inferenceRuntime || '' }
                         label="Inference Runtime"                        
@@ -233,7 +233,7 @@ export default function AppSettingsOcrEngine() {
                         <MenuItem value='Open_VINO'>OpenVino CPU (fastest)</MenuItem>
                         <MenuItem value='ONNX_CPU'>ONNX CPU</MenuItem>
                     </Select>
-                    
+                    <InputLabel>Inference Runtime</InputLabel>{requiresRestartIcon}
                 </FormControl>
             
             </Container>
