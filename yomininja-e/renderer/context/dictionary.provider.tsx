@@ -138,7 +138,7 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
 
     const _selectText = () => {
 
-        console.log({ rangeEndOffset, currentRange })
+        // console.log({ rangeEndOffset, currentRange })
 
         if ( rangeEndOffset != null && currentRange ) {
             selectText( rangeEndOffset, currentRange );
@@ -166,7 +166,7 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
 
         // console.log({ found })
 
-        console.log({ start, end })
+        // console.log({ start, end })
 
         range.setStart( textNode, start );
         range.setEnd( textNode, end );        
@@ -209,7 +209,7 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
         const dictionaries = await global.ipcRenderer.invoke( 'dictionaries:get_all_installed' );
         const extensions = await global.ipcRenderer.invoke( 'dictionaries:get_all_extensions' );
 
-        console.log({ extensions })
+        // console.log({ extensions })
 
         setInstalledDictionaries( dictionaries );
         setInstalledExtensions( extensions );
