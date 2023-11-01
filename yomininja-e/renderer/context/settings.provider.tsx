@@ -35,7 +35,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
             ...activeSettingsPreset?.ocr_engine,
             ...newOcrEngine,
         };
-
+        
         updateActivePreset( activeSettingsPreset );
     }
 
@@ -45,7 +45,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
             ...activeSettingsPreset.overlay.behavior,
             ...newBehavior,
         };
-
+        console.log(newBehavior)
         updateActivePreset( activeSettingsPreset );
     }
 

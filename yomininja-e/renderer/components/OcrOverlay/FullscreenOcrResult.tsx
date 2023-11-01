@@ -77,7 +77,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
             overlayBehavior?.copy_text_on_hover &&
             hoveredText
         ) {
-            global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', hoveredText );            
+            global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', hoveredText );
         }
 
     }, [ hoveredText ] );
@@ -121,11 +121,21 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                 }}                          
                 onMouseEnter={ () => setHoveredText( ocrItem.text ) }
                 onMouseLeave={ () => setHoveredText( '' ) }
+                onClick={ () => handleBoxClick( ocrItem.text ) }
                 // onMouseMove={ ( event ) => onMouseMoveHandler(event) }
             >
                 { ocrItem.text }
             </Box>
         )
+    }
+
+    function handleBoxClick( text: string ) {
+        
+        if ( !overlayBehavior.copy_text_on_click || !text )
+            return;
+
+        console.log( { text } );
+        global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', text );
     }
 
     return (

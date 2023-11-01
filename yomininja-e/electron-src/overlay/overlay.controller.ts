@@ -38,6 +38,7 @@ export class OverlayController {
 
             this.overlayAlwaysOnTop = Boolean( settingsJson.overlay.behavior.always_on_top );
             this.showYomichanWindowOnCopy = Boolean( settingsJson.overlay.behavior.show_yomichan_window_on_copy );
+            this.clickThrough = Boolean( settingsJson.overlay.behavior.click_through );
         }
 
         this.createOverlayWindow();
@@ -73,7 +74,7 @@ export class OverlayController {
 
         this.mainWindow?.on( 'closed', () => {
             this.overlayWindow.destroy();
-        });
+        });        
 
         const url = isDev
         ? 'http://localhost:8000/ocr-overlay'
@@ -97,8 +98,10 @@ export class OverlayController {
 
         // "True" Prevents black image when using youtube on some browsers (e.g. Brave)
         this.overlayWindow.setIgnoreMouseEvents( this.clickThrough, { // !showDevTools
-            forward: this.clickThrough, // !!showDevTools
+            forward: true, // !!showDevTools
         });
+
+        console.log({ clickThrough: this.clickThrough })
     }
 
     private registersIpcHandlers() {

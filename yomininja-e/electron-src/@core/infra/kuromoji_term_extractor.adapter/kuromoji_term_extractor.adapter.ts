@@ -7,7 +7,7 @@ import { ROOT_DIR } from "../../../util/directories";
 import isDev from "electron-is-dev";
 
 const dicPath = isDev ?
-    join( ROOT_DIR, '../node_modules/kuromoji/dict') :
+    '/node_modules/kuromoji/dict' :
     join( ROOT_DIR, '/node_modules/kuromoji/dict');
 
 console.log({dicPath})
