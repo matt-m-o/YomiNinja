@@ -1,6 +1,6 @@
 import { CSSProperties, useEffect } from "react";
 import { DictionaryHeadword } from "../../../electron-src/@core/domain/dictionary/dictionary_headword/dictionary_headword"
-import { Box, Divider, Typography, styled } from "@mui/material";
+import { Box, Divider, Typography, debounce, styled } from "@mui/material";
 import Headword from "./PopupHeadword";
 
 
@@ -28,13 +28,18 @@ const DefinitionsUl = styled( 'ul' )({
 export interface DictionaryPopupProps {
     headwords: DictionaryHeadword[];
     targetElement?: JSX.Element;
-    style?: CSSProperties;
+    style?: CSSProperties;        
 }
 
 
 export default function DictionaryPopup( props: DictionaryPopupProps ) {
 
-    const { headwords, targetElement, style } = props;    
+    const {
+        headwords,
+        targetElement,
+        style,
+    } = props;    
+
 
     const content = headwords.sort( ( a, b ) => b.term.length - a.term.length )
         .map( ( headword, idxH ) => {
@@ -45,7 +50,7 @@ export default function DictionaryPopup( props: DictionaryPopupProps ) {
             const definitionNumberVisibility = headword.definitions.length > 1 ? 'visible' : 'hidden';            
 
             return (
-                <div key={idxH}>
+                <div key={idxH}>                    
 
                     <Header style={{ width: 'max-content' }}>
                         <Headword word={ term } furi={ furigana } />
@@ -93,6 +98,7 @@ export default function DictionaryPopup( props: DictionaryPopupProps ) {
             )
         }
     );
+
 
     return (
         <Main id='dictionary-popup' style={style} >

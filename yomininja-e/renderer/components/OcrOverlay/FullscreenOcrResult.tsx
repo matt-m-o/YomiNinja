@@ -121,6 +121,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                 }}                          
                 onMouseEnter={ () => setHoveredText( ocrItem.text ) }
                 onMouseLeave={ () => setHoveredText( '' ) }
+                // onMouseMove={ ( event ) => onMouseMoveHandler(event) }
             >
                 { ocrItem.text }
             </Box>

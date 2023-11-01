@@ -35,6 +35,11 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
     const [ enableScanner, setEnableScanner ] = useState< boolean >( false );
     const [ popupPosition, setPopupPosition ] = useState< PopupPosition >({ x: 0, y: 0  });
     const [ importProgress, setImportProgress ] = useState< DictionaryImportProgress >();
+    const [ currentRange, setCurrentRange ] = useState< Range >();
+    const [ rangeEndOffset, setRangeEndOffset ] = useState< number >();
+
+    // let currentRange: Range;
+    // let rangeEndOffset: number;
 
     const search = debounce( async ( text: string ) => {
 
@@ -42,14 +47,43 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
         const result: DictionaryHeadword[] = await global.ipcRenderer.invoke( 'dictionaries:search', text );
         console.timeEnd("dict-search");
 
-        console.log({ result });
+        // console.log({ result });
 
         setHeadwords( result );
+
+        const firstResult = result[0];
+    
+        if ( !firstResult )
+            return;
+
+            
+        // setCurrentTextSelection( firstResult.term );
+        // let found = selectText( firstResult.term, range );
+
+        // console.log({ found, firstResult })        
 
     }, 100 );
     
     function toggleScanner( enable: boolean ) {
         setEnableScanner( enable );
+    }
+
+    function getTextNodes( node ) {
+        
+        let textNodes = [];
+        
+        if ( node.nodeType == Node.TEXT_NODE ) {
+            textNodes.push(node);
+        } else {
+
+            const children = node.childNodes;
+
+            for (var i = 0; i < children.length; i++) {
+                textNodes = textNodes.concat( getTextNodes(children[i]) );
+            }
+        }
+        
+        return textNodes;
     }
 
     const textScannerListener = debounce( ( event: MouseEvent ) => {
@@ -58,32 +92,103 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
     
         if ( !targetElement.className.includes('extracted-text') ) return;
     
-        const range = document.caretRangeFromPoint( event.clientX, event.clientY );        
-                
+        const range = document.caretRangeFromPoint( event.clientX, event.clientY );
+        
         if ( range ) {
 
-            const { endContainer, startOffset } = range;            
+            const { startContainer } = range;
 
-            if ( endContainer instanceof Text == false ) 
-                return
+            if ( startContainer instanceof Text == false )
+                return;
 
-            const substring = endContainer.data.substr(startOffset, 100);
-    
-            search( substring );
+            console.log({ startOffset: range.startOffset })
 
+            const searchString = startContainer.data.substr( range.startOffset, 5 );
+            setCurrentRange( range );
+            setRangeEndOffset( range.startOffset + 5 );
+
+            // currentRange = range;
+            // rangeEndOffset = range.startOffset + 5;
+            
+            search( searchString );
+            
             popupPositionHandler({
                 x: event.clientX,
                 y: event.clientY,
             });
+            
+            // const found = selectText( range.startOffset+ 5, range );
+            selectText( range.startOffset+ 5, range );
+
+
+            setTimeout( () => {
+                _selectText();
+            }, 2000 )
+
         }
     }, 250 );
+
+
+
+    const _selectText = () => {
+
+        console.log({ rangeEndOffset, currentRange })
+
+        if ( rangeEndOffset != null && currentRange ) {
+            selectText( rangeEndOffset, currentRange );
+        }
+    }
+
+    function selectText( end: number, range: Range ): boolean {        
+
+        const { startContainer } = range;
+
+        if ( startContainer instanceof Text == false )
+            return false;
+                        
+        // let start = startContainer.textContent.indexOf( text );
+        const start = range.startOffset;
+
+        const textNodes = getTextNodes( startContainer );        
+
+        const textNode = textNodes[0];
+        // const end = start + text.length;
+
+        const found = start >= 0 && end <= textNode.length;
+
+        if ( !found ) return false;
+
+        // console.log({ found })
+
+        console.log({ start, end })
+
+        range.setStart( textNode, start );
+        range.setEnd( textNode, end );        
+
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange( range );
+
+        return true;
+    }
+
+    
+
+    
 
     
     function popupPositionHandler( position: PopupPosition ) {
 
         position.y -= 250;
+            
+        const adjustedX = (position.x / window.innerWidth) * 100;
+        const adjustedY = (position.y / window.innerHeight) * 100;
 
-        setPopupPosition( position );
+        setPopupPosition({
+            x: adjustedX,
+            y: adjustedY
+        });
+        
     }
 
     function importProgressReportHandler( event, progressReport: DictionaryImportProgress ) {
@@ -151,8 +256,8 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
         <DictionaryPopup    
             headwords={headwords}
             style={{
-                left: popupPosition.x,
-                top: popupPosition.y
+                left: popupPosition.x+'%',
+                top: popupPosition.y+'%'
             }}
             // targetElement={}
         >
