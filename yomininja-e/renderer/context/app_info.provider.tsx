@@ -11,7 +11,12 @@ export type AppInfoContextType = {
 };
 
 export const GithubReleasesLink = ( props?: { sx?: SxProps<Theme> } ) => (
-    <Link sx={{...props?.sx}} href='#'        
+    <Link href='#'
+        sx={{
+            ...props?.sx,
+            position: 'relative',
+            zIndex: 10
+        }}
         onClick={ () => global.ipcRenderer.invoke('app_info:open_releases_page') }
     >
         GitHub

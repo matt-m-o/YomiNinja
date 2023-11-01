@@ -15,7 +15,9 @@ const OverlayFrame = styled('div')({
 
 export default function OcrOverlay() {
 
-    const { activeSettingsPreset } = useContext( SettingsContext );
+    const {
+      activeSettingsPreset,
+    } = useContext( SettingsContext );
     const { toggleScanner } = useContext( DictionaryContext );
 
     const ocrItemBoxVisuals: OverlayOcrItemBoxVisuals = activeSettingsPreset?.overlay?.visuals.ocr_item_box;
@@ -25,8 +27,13 @@ export default function OcrOverlay() {
 
 
     useEffect( () => {
-      toggleScanner(false);
-    }, [] )
+
+      if ( !activeSettingsPreset ) return;
+
+      const { enabled } = activeSettingsPreset.dictionary;
+      toggleScanner( enabled );
+
+    }, [activeSettingsPreset] )    
 
     return (
         <OverlayFrame

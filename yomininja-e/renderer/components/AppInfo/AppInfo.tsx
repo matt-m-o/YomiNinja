@@ -58,7 +58,7 @@ export default function AppInfo() {
     const IconWithLink = ( props: { onClick: () => void, children: ReactNode } ) => (
         <LinkWithoutDecoration href='#' onClick={ props.onClick }>
             <Box display='flex' flexDirection='column' alignItems='center'>
-                { props.children }                
+                { props.children }
             </Box>
         </LinkWithoutDecoration>
     );

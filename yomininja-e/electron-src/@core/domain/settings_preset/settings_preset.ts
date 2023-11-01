@@ -222,6 +222,16 @@ export class SettingsPreset {
         };
     }
 
+    updateDictionarySettings( update: Partial< DictionarySettings > ) {
+
+        let { enabled } = update;        
+
+        this.props.dictionary = {
+            ...this.props.dictionary,
+            ...update,            
+        };
+    }
+
     private ocrEngineImageScalingFactorValidation( imageScalingFactor?: number ) {
         if ( imageScalingFactor != undefined ) {
 

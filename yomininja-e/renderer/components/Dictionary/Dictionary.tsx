@@ -1,4 +1,4 @@
-import { Box, Button, Card, CardContent, Container, Grid, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, Container, FormControlLabel, Grid, Switch, Typography } from "@mui/material";
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import DictionaryImportModal from "./DictionaryImportModal";
 import { useContext, useState } from "react";
@@ -20,7 +20,7 @@ export default function Dictionary() {
     } = useContext( DictionaryContext );
 
     const { activeSettingsPreset, updateActivePresetDictionary } = useContext( SettingsContext );
-    
+    const { dictionary } = activeSettingsPreset;
     
     
     const InstalledExtensions = (
@@ -79,15 +79,27 @@ export default function Dictionary() {
                             alignItems='center'
                             mb={10}
                         >
-                            <Box display='flex'                                 
+                            <Box display='flex'       
                                 alignItems='center'
                                 sx={{ flexGrow: 1, margin: 1 }}
                             >
                                 { InstalledExtensions }
                             </Box>
-                            <Typography gutterBottom component="div" m={0} fontSize={'1.75rem'} pr={0}>
-                                読み ・ 忍者
-                            </Typography>
+                            
+                            <Box display='flex' 
+                                alignItems='center'
+                                flexDirection='column'                                
+                            >
+                                <Typography gutterBottom component="div" m={0} fontSize={'1.1rem'} pr={0}>
+                                    Test the extension
+                                </Typography>
+                                <Typography gutterBottom component="div" m={0} fontSize={'1.75rem'} pr={0}>
+                                    読み ・ 忍者
+                                </Typography>
+                            </Box>
+                            
+                            
+                            
                         </Box>
 
                         
@@ -103,12 +115,25 @@ export default function Dictionary() {
                         <Typography gutterBottom component="div" margin={2} ml={0} mb={1}>
                             This is an experimental popup dictionary made for YomiNinja.
                         </Typography>
-                        <Typography gutterBottom component="div" margin={2} ml={0} mb={1}>
+                        <Typography gutterBottom component="div" margin={2} ml={0} mb={3}>
                             This feature is currently in an experimental stage of development. 
                             While we're excited to offer you a sneak peek, please be aware that it may have bugs, limited functionality, or unexpected behavior. 
                             Is strongly recommend using it only for testing and providing feedback, rather than for critical tasks. 
                             Your feedback will help us improve this feature, so thank you for your support and understanding!
                         </Typography>
+
+                        <FormControlLabel label='Enable Yomi Ninja dictionary'
+                            control={
+                                <Switch
+                                    checked={ Boolean( dictionary?.enabled ) }
+                                    onChange={ ( event ) => {
+                                        updateActivePresetDictionary({
+                                            enabled: event.target.checked
+                                        });
+                                    }}
+                                /> 
+                            }
+                        />
 
                         <DictionariesTable dictionaries={installedDictionaries} />
 
