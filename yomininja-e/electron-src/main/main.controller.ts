@@ -25,7 +25,7 @@ export class MainController {
     private createMainWindow(): BrowserWindow {
         this.mainWindow = new BrowserWindow({
             show: false,
-            width: 1100,
+            width: 1200,
             height: 700,
             autoHideMenuBar: true,
             webPreferences: {

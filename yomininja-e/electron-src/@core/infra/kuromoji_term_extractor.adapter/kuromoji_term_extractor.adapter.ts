@@ -7,7 +7,7 @@ import { ROOT_DIR } from "../../../util/directories";
 import isDev from "electron-is-dev";
 
 const dicPath = isDev ?
-    '/node_modules/kuromoji/dict' :
+    'node_modules/kuromoji/dict' :
     join( ROOT_DIR, '/node_modules/kuromoji/dict');
 
 console.log({dicPath})
@@ -30,7 +30,7 @@ export class KuromojiTermExtractor implements TermExtractorAdapter {
     private getTokenizer(): Promise< kuromoji.Tokenizer< kuromoji.IpadicFeatures > > {
         return new Promise<kuromoji.Tokenizer<kuromoji.IpadicFeatures>>( (resolve, reject) => {
             kuromoji.builder({
-                dicPath: join( ROOT_DIR, '/node_modules/kuromoji/dict')
+                dicPath
             }).build((err, tokenizer) => {
                 if (err) {
                     reject(err);

@@ -7,7 +7,7 @@ import { Stick, Sirin_Stencil } from 'next/font/google'
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import patreonIcon from "../../public/logos/PATREON_SYMBOL_1_WHITE_RGB.svg";
 import githubIcon from "../../public/logos/github-mark-white.svg";
-
+import supporters from './supporters.json';
 
 const AppNameFont = Stick({ // Stick | Sirin_Stencil
     weight: '400',
@@ -52,7 +52,7 @@ export default function AppInfo() {
     );
 
     useEffect( () => {
-        runUpdateCheck();
+        runUpdateCheck();        
     }, []);
 
     const IconWithLink = ( props: { onClick: () => void, children: ReactNode } ) => (
@@ -70,7 +70,7 @@ export default function AppInfo() {
                 m='auto'
                 pl={5}
                 pr={5}
-                pt={1}
+                pt={0}
                 maxWidth='1000px'
             >
 
@@ -93,13 +93,10 @@ export default function AppInfo() {
 
                         <AboutText> 
                             YomiNinja is an application for extracting text from any type of visual content.
-
                             making it easy to copy text from images, videos, and games without switching applications or devices.
                         </AboutText>
 
-                        <AboutText> Perfect for language learners and anyone who values an efficient workflow. </AboutText>
-                        
-                        <AboutText> Built-in pop-up dictionary for look-ups with a simple hover and many other features are coming soon. </AboutText>                        
+                        <AboutText> The built-in popup dictionary makes it perfect for language learners. </AboutText>                                            
                         
                     </Box>
 
@@ -152,9 +149,20 @@ export default function AppInfo() {
                             </Typography>                                                        
                         </IconWithLink>
                     </Grid>
-                    
 
-                </Grid>                
+                </Grid>
+
+                <Typography variant="h4" mb={2} mt={7}>
+                    Supporters
+                </Typography>
+
+                { supporters.map( ( supporter, idx ) => (
+                    <Typography key={idx} variant="h5" mb={1} 
+                        sx={{ textTransform: 'capitalize' }}
+                    >
+                        { supporter }
+                    </Typography>
+                )) }                
                 
             </Box>
                         
