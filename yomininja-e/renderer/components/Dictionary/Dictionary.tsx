@@ -109,8 +109,19 @@ export default function Dictionary() {
 
                         
                         <Typography fontSize='1rem' lineHeight={2} mt='56px'>
-                            Note: Extension customizations take effect on the next launch.
-                        </Typography>
+                            Notes:
+                        </Typography>                        
+                        <ul
+                            style={{
+                                fontSize: '1rem',                                
+                                lineHeight: 2,
+                                marginTop: 0,
+                                marginLeft: 5
+                            }}
+                        >
+                            <li> Extension customizations take effect on the next launch. </li>
+                            <li> Disable the Click-through to interact with the popup. </li>                            
+                        </ul>
 
                     </Box>
 
