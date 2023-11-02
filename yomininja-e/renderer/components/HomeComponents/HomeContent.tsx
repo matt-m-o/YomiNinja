@@ -127,8 +127,9 @@ export default function HomeContent() {
                         }}
                     >
                         <li> Built-in popup dictionaries. </li>
-                        <li> WebSocket for text extractors. The port is 6677.</li>
-                        <li> Copy text on click. (only with Click-through disabled for now)</li>
+                        <li> WebSocket for texthookers. Port: 6677.</li>
+                        <li> Copy text on click. (only with Click-through disabled for now). </li>
+                        <li> Option to alter the OCR inference runtime. This might be helpful for those experiencing issues with OCR functionality. </li>
                     </ul>
 
                 </CardContent>
