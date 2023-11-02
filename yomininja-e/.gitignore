@@ -48,3 +48,6 @@ data/
 
 # third-party-licenses
 third-party-licenses.txt
+
+# Browser extensions
+extensions/
