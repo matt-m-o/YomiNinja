@@ -65,7 +65,7 @@ export const Drawer = styled(
           ),
           width: theme.spacing(7),
           [theme.breakpoints.up('sm')]: {
-              width: theme.spacing(8),
+              width: '3.7em',
           },
       }),
     },

@@ -44,4 +44,15 @@ export class SharpImageProcessingAdapter implements ImageProcessingAdapter {
         }
     }
     
+
+    async invertColors( imageBuffer: Buffer ): Promise<Buffer> {
+
+        console.time('sharp.negate');
+        const result = await sharp( imageBuffer )
+            .negate()
+            .toBuffer();
+        console.timeEnd('sharp.negate');
+
+        return result;
+    }
 }

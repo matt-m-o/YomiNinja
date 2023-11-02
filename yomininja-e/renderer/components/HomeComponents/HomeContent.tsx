@@ -109,6 +109,23 @@ export default function HomeContent() {
 
                     </Grid>
 
+                    <Typography fontSize='1rem' lineHeight={2} ml={1} mb={0} mt={'56px'}>
+                        ✨New features:
+                    </Typography>
+                    <ul
+                        style={{
+                            fontSize: '1rem',
+                            color: 'lightgray',
+                            lineHeight: 2,
+                            marginTop: 0,
+                            marginLeft: 20
+                        }}
+                    >
+                        <li> Option to invert the captured image colors. Good for text on a dark background.</li>
+                        <li> WebSocket for texthookers. Port: 6677.</li>
+                        <li> Option to change the Inference runtime. This might be helpful if you are experiencing issues with the OCR. </li>
+                    </ul>
+
                 </CardContent>
             </Card>
             
