@@ -122,7 +122,8 @@ export default function HomeContent() {
                         }}
                     >
                         <li> Option to invert the captured image colors. Good for text on a dark background.</li>
-                        <li> WebSocket for text extractors. Port: 6677.</li>
+                        <li> WebSocket for texthookers. Port: 6677.</li>
+                        <li> Option to change the Inference runtime. This might be helpful if you are experiencing issues with the OCR. </li>
                     </ul>
 
                 </CardContent>
