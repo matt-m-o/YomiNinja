@@ -26,7 +26,8 @@ export class UpdateSettingsPresetUseCase {
         // Settings that directly impacts the ocr adapter
         if ( 
             settingsPreset.ocr_engine.cpu_threads != input.ocr_engine.cpu_threads ||
-            settingsPreset.ocr_engine.max_image_width != input.ocr_engine.max_image_width
+            settingsPreset.ocr_engine.max_image_width != input.ocr_engine.max_image_width ||
+            settingsPreset.ocr_engine.inference_runtime != input.ocr_engine.inference_runtime
         )
             output.restartOcrAdapter = true;
 

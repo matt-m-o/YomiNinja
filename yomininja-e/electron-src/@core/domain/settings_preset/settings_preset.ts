@@ -6,6 +6,7 @@ export type OcrEngineSettings = {
     max_image_width: number;
     cpu_threads: number;
     invert_colors: boolean;
+    inference_runtime: string;
 };
 
 export type OverlayOcrItemBoxVisuals = {
@@ -104,6 +105,7 @@ export class SettingsPreset {
             max_image_width: 1600,
             cpu_threads: 8,
             invert_colors: false,
+            inference_runtime: 'Open_VINO',
         },
 
         created_at: new Date(),

@@ -193,7 +193,8 @@ export class PpOcrAdapter implements OcrAdapter {
 
         const requestInput: UpdateSettingsPresetRequest = {
             max_image_width: input.max_image_width,
-            cpu_threads: input.cpu_threads
+            cpu_threads: input.cpu_threads,
+            inference_runtime: input.inference_runtime
         };    
         
         const clientResponse = await new Promise< UpdateSettingsPresetResponse__Output | undefined >(

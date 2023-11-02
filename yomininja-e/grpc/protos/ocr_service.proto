@@ -58,6 +58,7 @@ message GetSupportedLanguagesResponse {
 message UpdateSettingsPresetRequest {
   int32 max_image_width = 1; // ppocr "max_side_length"
   int32 cpu_threads = 2;
+  string inference_runtime = 3;
 }
 
 message UpdateSettingsPresetResponse {
