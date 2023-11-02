@@ -48,6 +48,8 @@ export class OverlayController {
 
         this.windowManager = new WindowManager();
 
+        this.overlayService.initWebSocket();
+
         return this.overlayWindow;
     }
 
@@ -104,6 +106,7 @@ export class OverlayController {
             if ( !message || message.length === 0 ) return;
             
             clipboard.writeText(message);
+            this.overlayService.sendOcrTextTroughWS( message );
             
             const windows = this.windowManager.getAllWindows();
           
