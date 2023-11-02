@@ -138,8 +138,8 @@ export default function Dictionary() {
                         </Typography>
                         <Typography gutterBottom component="div" margin={2} ml={0} mb={3}>
                             This feature is currently in an experimental stage of development. 
-                            While we're excited to offer you a sneak peek, please be aware that it may have bugs, limited functionality, or unexpected behavior. 
-                            Is strongly recommend using it only for testing and providing feedback, rather than for critical tasks. 
+                            Please be aware that it may have bugs, limited functionality, or unexpected behavior. 
+                            Is strongly recommend using it only for testing and providing feedback. <br/> 
                             Your feedback will help us improve this feature, so thank you for your support and understanding!
                         </Typography>
 
