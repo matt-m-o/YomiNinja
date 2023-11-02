@@ -55,7 +55,7 @@ export default function Dictionary() {
 
 
     return (
-        <Card variant="elevation" sx={{ borderRadius: 4 }}>
+        <Card variant="elevation" sx={{ borderRadius: 4, userSelect: 'none' }}>
             <DictionaryImportModal
                 open={openDictImportModal}
                 handleClose={ () => setOpenDictImportModal(false) }

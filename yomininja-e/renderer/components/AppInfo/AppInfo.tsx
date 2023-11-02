@@ -72,6 +72,7 @@ export default function AppInfo() {
                 pr={5}
                 pt={0}
                 maxWidth='1000px'
+                sx={{ userSelect: 'none' }}
             >
 
                 <Box display='flex' flexDirection='column' justifyContent='center' mb={6}>

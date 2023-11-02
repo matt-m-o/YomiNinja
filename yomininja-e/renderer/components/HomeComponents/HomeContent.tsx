@@ -59,7 +59,12 @@ export default function HomeContent() {
 
     return (
         
-        <Box display='flex' justifyContent='center' flexDirection='column' m={'auto'}>
+        <Box display='flex'
+            justifyContent='center'
+            flexDirection='column'
+            m={'auto'}
+            sx={{ userSelect: 'none' }}
+        >
 
             <Card variant="elevation" sx={{ borderRadius: 4, mb: 3, pl: 1, pr: 1 }}>
                 <CardContent>
