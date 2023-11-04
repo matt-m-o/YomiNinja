@@ -20,6 +20,7 @@ YomiNinja is perfect for:
 ### Installation
 
 You need Windows 10 or 11 and [VCRedist](https://www.techpowerup.com/download/visual-c-redistributable-runtime-package-all-in-one/) installed. <br>
+Linux support is on the way.
 
 [Download](https://github.com/matt-m-o/YomiNinja/releases) and install the latest release.
 
@@ -35,7 +36,7 @@ Currently, the Yomichan extension is required for dictionary look-ups:
 
 - Text extraction from the entire screen or specific window.
 - Automatic text copying.
-
+- WebSocket for Texthookers.
 
 ### Planned Features
 
