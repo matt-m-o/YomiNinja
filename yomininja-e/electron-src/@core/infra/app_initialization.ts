@@ -6,6 +6,9 @@ import { get_DictionaryDataSource, get_MainDataSource } from "./container_regist
 import { get_LanguageRepository, get_ProfileRepository, get_SettingsPresetRepository } from "./container_registry/repositories_registry";
 import os from 'os';
 import LanguageTypeOrmRepository from './db/typeorm/language/language.typeorm.repository';
+import { applyCpuHotfix } from './ppocr.adapter/hotfix/hardware_compatibility_hotfix';
+import { get_UpdateSettingsPresetUseCase } from './container_registry/use_cases_registry';
+import { get_PpOcrAdapter } from './container_registry/adapters_registry';
 
 
 export let activeProfile: Profile;
@@ -60,6 +63,19 @@ export async function initializeApp() {
             defaultSettingsPreset = SettingsPreset.create();
             defaultSettingsPreset.updateOcrEngineSettings({ cpu_threads: os.cpus().length });
             await settingsPresetRepo.insert( defaultSettingsPreset );
+
+            // Applying OCR engine hotfix
+            const { ocrEngineSettings } = applyCpuHotfix({
+                ...defaultSettingsPreset.ocr_engine,
+                cpu_threads: os.cpus().length
+            });
+
+            await get_UpdateSettingsPresetUseCase().execute({
+                ...defaultSettingsPreset.toJson(),
+                ocr_engine: ocrEngineSettings
+            });
+
+            get_PpOcrAdapter().restart( () => {} );
         }
 
         
