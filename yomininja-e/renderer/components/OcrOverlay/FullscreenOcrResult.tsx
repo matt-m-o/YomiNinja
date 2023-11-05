@@ -109,11 +109,12 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         });
 
         const { width } = box.dimensions;
-        const minWidth = width > 100 ? 100 : width;
+        const { left } = box.position;
+        const minWidth = width + left > 100 ? 100 - left : width;
 
         return (
             <Box className="extracted-text"
-                style={{                    
+                style={{
                     left: box.position.left + '%',
                     top: box.position.top * 0.994 + '%',
                     transform: `rotate( ${box.angle_degrees}deg )`,
@@ -121,7 +122,6 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                     minHeight: box.dimensions.height + '%',
                     maxHeight: box.dimensions.height *1.10 + '%',            
                     fontSize: fontSize + '%',
-                    maxWidth: '100%'
                 }}                          
                 onMouseEnter={ () => setHoveredText( ocrItem.text ) }
                 onMouseLeave={ () => setHoveredText( '' ) }
