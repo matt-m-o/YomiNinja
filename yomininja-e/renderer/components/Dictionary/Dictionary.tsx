@@ -61,7 +61,7 @@ export default function Dictionary() {
                 handleClose={ () => setOpenDictImportModal(false) }
             />
 
-            <CardContent>            
+            <CardContent>
                 <Container maxWidth='md'>                    
 
                     <Box sx={{ flexGrow: 1, margin: 1, mb: 2 }}>

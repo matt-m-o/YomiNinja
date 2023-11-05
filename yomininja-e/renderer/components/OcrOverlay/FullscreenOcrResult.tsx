@@ -17,7 +17,7 @@ const BaseOcrResultBox = styled('div')({
     letterSpacing: '0.1rem',
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center',    
 });
 
 export type FullscreenOcrResultProps = {
@@ -108,16 +108,20 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
             textOrientation: isVertical ? 'upright' :'inherit',
         });
 
+        const { width } = box.dimensions;
+        const minWidth = width > 100 ? 100 : width;
+
         return (
             <Box className="extracted-text"
                 style={{                    
                     left: box.position.left + '%',
                     top: box.position.top * 0.994 + '%',
                     transform: `rotate( ${box.angle_degrees}deg )`,
-                    minWidth: box.dimensions.width + '%',
+                    minWidth: minWidth + '%',
                     minHeight: box.dimensions.height + '%',
                     maxHeight: box.dimensions.height *1.10 + '%',            
                     fontSize: fontSize + '%',
+                    maxWidth: '100%'
                 }}                          
                 onMouseEnter={ () => setHoveredText( ocrItem.text ) }
                 onMouseLeave={ () => setHoveredText( '' ) }
