@@ -7,10 +7,16 @@ export interface CreateSettingsPreset_Input extends Partial< Omit< SettingsPrese
 
 export class CreateSettingsPresetUseCase {
 
-    constructor(
-        public settingsPresetRepo: SettingsPresetRepository,
-        public ocrAdapter: OcrAdapter,
-    ) {}
+    public settingsPresetRepo: SettingsPresetRepository;
+    public ocrAdapter: OcrAdapter;
+
+    constructor( input: {
+        settingsPresetRepo: SettingsPresetRepository,
+        ocrAdapter: OcrAdapter
+    }) {
+        this.settingsPresetRepo = input.settingsPresetRepo;
+        this.ocrAdapter = input.ocrAdapter;
+    }
 
     async execute( input?: CreateSettingsPreset_Input ): Promise< void > {
 
@@ -40,5 +46,12 @@ export class CreateSettingsPresetUseCase {
             settingsPreset.updateDictionarySettings( input?.dictionary );
 
         await this.settingsPresetRepo.insert( settingsPreset );
+
+        if ( settingsPreset.name === SettingsPreset.default_name ) {
+            const restart = await this.ocrAdapter.updateSettings( settingsPreset.ocr_engine );
+
+            if ( restart )
+                this.ocrAdapter.restart( () => {} );
+        }
     }
 }

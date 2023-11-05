@@ -30,10 +30,10 @@ describe("CreateSettingsPresetUseCase tests", () => {
         settingsPresetRepo = new SettingsPresetTypeOrmRepository(
             dataSource.getRepository( SettingsPreset )
         );
-        useCase = new CreateSettingsPresetUseCase(
+        useCase = new CreateSettingsPresetUseCase({
             settingsPresetRepo,
-            new FakeOcrTestAdapter()
-        );        
+            ocrAdapter: new FakeOcrTestAdapter()
+        });
         
     });
 
