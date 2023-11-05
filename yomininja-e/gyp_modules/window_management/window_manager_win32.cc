@@ -1,6 +1,6 @@
 #include <napi.h>
 #include <windows.h> // ! Platform specific
-#include <dwmapi.h>
+#include <dwmapi.h> // ! Platform specific
 
 #pragma comment(lib, "Dwmapi.lib") // Link with Dwmapi.lib
 
