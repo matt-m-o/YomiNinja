@@ -106,6 +106,10 @@ export class OverlayController {
         console.log({ clickThrough: this.clickThrough })
     }
 
+    refreshPage(): void {
+        this.overlayWindow.reload();
+    }
+
     private registersIpcHandlers() {
 
         ipcMain.handle( 'user_command:copy_to_clipboard', ( event: IpcMainInvokeEvent, message: string ) => {

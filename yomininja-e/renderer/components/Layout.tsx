@@ -99,6 +99,10 @@ export default function Layout( { contents }: LayoutProps) {
     </div>
   ));
 
+  function refreshAllWindows() {
+    global.ipcRenderer.invoke( 'refresh_all_windows' );
+  }
+
   return (
     <TabContext value={activeTab}>
       <Box sx={{ display: 'flex', height: '100vh' }}>
@@ -147,7 +151,7 @@ export default function Layout( { contents }: LayoutProps) {
             </IconButton> */}
 
             { /* @ts-expect-error */ }
-            <browser-action-list onClick={ () => location.reload() }></browser-action-list>
+            <browser-action-list onClick={ () => refreshAllWindows() }></browser-action-list>
   
           </Toolbar>
         </AppBar>

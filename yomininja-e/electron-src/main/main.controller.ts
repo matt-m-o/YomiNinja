@@ -77,6 +77,10 @@ export class MainController {
         this.mainWindow.show();
     }
 
+    refreshPage(): void {
+        this.mainWindow.reload();
+    }
+
     private createCaptureSourceSelectionWindow() {
 
         if ( this.captureSourceWindow ) {
