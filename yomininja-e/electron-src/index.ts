@@ -41,11 +41,8 @@ app.on('ready', async () => {
       appInfoController.init( mainWindow );
       profileController.init( mainWindow );
       dictionariesController.init({ mainWindow, overlayWindow });
-      
-      setTimeout( () => {
-        browserExtensions.addBrowserWindow( mainWindow );
 
-      }, 5000);
+      browserExtensions.addBrowserWindow( mainWindow );
     });
 });
 

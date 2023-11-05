@@ -145,6 +145,9 @@ export default function Layout( { contents }: LayoutProps) {
                 <NotificationsIcon />
               </Badge>
             </IconButton> */}
+
+            { /* @ts-expect-error */ }
+            <browser-action-list onClick={ () => location.reload() }></browser-action-list>
   
           </Toolbar>
         </AppBar>

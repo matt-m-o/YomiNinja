@@ -18,7 +18,7 @@
     "clean": "rimraf dist main renderer/out renderer/.next && node-gyp clean",
     "dev": "npm run build-electron && electron .",
     "build-renderer": "next build renderer",
-    "build-electron": "tsc -p electron-src",
+    "build-electron": "tsc -p electron-src && webpack --mode production",
     "build": "npm run build-renderer && npm run build-electron",
     "pack-app": "npm run build && electron-builder --dir",
     "dist": "npm run generate-licenses && npm run build && electron-builder",
@@ -85,7 +85,9 @@
     "react-dom": "^18.2.0",
     "react-furi": "^2.0.2",
     "rimraf": "^3.0.0",
-    "typescript": "^4.0.5"
+    "typescript": "^4.0.5",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
   },
   "gypfile": true,
   "build": {

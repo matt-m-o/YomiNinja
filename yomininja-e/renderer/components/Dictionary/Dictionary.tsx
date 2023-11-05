@@ -74,11 +74,6 @@ export default function Dictionary() {
                             Popup dictionaries made for web browsers.
                         </Typography>
 
-                        <Typography gutterBottom component="div" margin={2} ml={0} mt={0}>
-                            Use the right click to toggle the extension.
-                        </Typography>
-                        
-
                         <Box display='flex' 
                             justifyContent='center'
                             alignItems='center'
@@ -88,7 +83,7 @@ export default function Dictionary() {
                                 alignItems='center'
                                 sx={{ flexGrow: 1, margin: 1 }}
                             >
-                                { InstalledExtensions }                                
+                                { InstalledExtensions }
                             </Box>
                             
                             <Box display='flex' 
