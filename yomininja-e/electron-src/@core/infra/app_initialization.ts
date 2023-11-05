@@ -7,7 +7,7 @@ import { get_LanguageRepository, get_ProfileRepository, get_SettingsPresetReposi
 import os from 'os';
 import LanguageTypeOrmRepository from './db/typeorm/language/language.typeorm.repository';
 import { applyCpuHotfix } from './ppocr.adapter/hotfix/hardware_compatibility_hotfix';
-import { get_UpdateSettingsPresetUseCase } from './container_registry/use_cases_registry';
+import { get_CreateSettingsPresetUseCase, get_GetActiveSettingsPresetUseCase, get_UpdateSettingsPresetUseCase } from './container_registry/use_cases_registry';
 import { get_PpOcrAdapter } from './container_registry/adapters_registry';
 
 
@@ -60,22 +60,9 @@ export async function initializeApp() {
         if ( !defaultSettingsPreset ) {
 
             // Creating default settings preset
-            defaultSettingsPreset = SettingsPreset.create();
-            defaultSettingsPreset.updateOcrEngineSettings({ cpu_threads: os.cpus().length });
-            await settingsPresetRepo.insert( defaultSettingsPreset );
+            await get_CreateSettingsPresetUseCase().execute();            
 
-            // Applying OCR engine hotfix
-            const { ocrEngineSettings } = applyCpuHotfix({
-                ...defaultSettingsPreset.ocr_engine,
-                cpu_threads: os.cpus().length
-            });
-
-            await get_UpdateSettingsPresetUseCase().execute({
-                ...defaultSettingsPreset.toJson(),
-                ocr_engine: ocrEngineSettings
-            });
-
-            get_PpOcrAdapter().restart( () => {} );
+            defaultSettingsPreset = await settingsPresetRepo.findOne({ name: SettingsPreset.default_name }) as SettingsPreset ;
         }
 
         
@@ -94,7 +81,7 @@ export async function initializeApp() {
             // Creating default profile
             defaultProfile = Profile.create({
                 active_ocr_language: defaultLanguage,
-                active_settings_preset: defaultSettingsPreset,                    
+                active_settings_preset: defaultSettingsPreset,
             });
             await profileRepo.insert(defaultProfile);
         }

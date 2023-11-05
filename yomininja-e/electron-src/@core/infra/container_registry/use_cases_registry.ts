@@ -14,6 +14,7 @@ import { SearchDictionaryTermUseCase } from "../../application/use_cases/diction
 import { ImportFuriganaDictionaryUseCase } from "../../application/use_cases/dictionary/import_furigana_dictionary/import_furigana_dictionary.use_case";
 import { GetDictionariesUseCase } from "../../application/use_cases/dictionary/get_dictionaries/get_dictionaries.use_case";
 import { DeleteAllDictionariesUseCase } from "../../application/use_cases/dictionary/delete_all_dictionaries/delete_all_dictionaries.use_case";
+import { CreateSettingsPresetUseCase } from "../../application/use_cases/create_settings_preset/create_settings_preset.use_case";
 
 
 container_registry.bind( Registry.RecognizeImageUseCase )
@@ -162,8 +163,18 @@ container_registry.bind( Registry.DeleteAllDictionariesUseCase )
             ),
         })
     });
-    
-    
+
+container_registry.bind( Registry.CreateSettingsPresetUseCase )
+    .toDynamicValue( (context) => {
+        return new CreateSettingsPresetUseCase({            
+            settingsPresetRepo: context.container.get(
+                Registry.SettingsPresetTypeOrmRepository
+            ),
+            ocrAdapter: context.container.get(
+                Registry.PpOcrAdapter
+            ),
+        })
+    });
 
 
 export function get_RecognizeImageUseCase(): RecognizeImageUseCase {
@@ -218,4 +229,8 @@ export function get_GetDictionariesUseCase(): GetDictionariesUseCase {
 
 export function get_DeleteAllDictionariesUseCase(): DeleteAllDictionariesUseCase {    
     return container_registry.get< DeleteAllDictionariesUseCase >( Registry.DeleteAllDictionariesUseCase );
+}
+
+export function get_CreateSettingsPresetUseCase(): CreateSettingsPresetUseCase {    
+    return container_registry.get< CreateSettingsPresetUseCase >( Registry.CreateSettingsPresetUseCase );
 }
