@@ -6,6 +6,13 @@ export type OcrRecognitionInput = {
     languageCode: string; // Two letters
 };
 
+export interface OcrEngineSettingsOptions {
+    inference_runtime: {
+        value: string,
+        displayName: string;
+    }[]
+}
+
 export interface OcrAdapter {     
     name: string;
     status: OcrAdapterStatus;
@@ -13,6 +20,8 @@ export interface OcrAdapter {
     recognize: ( input: OcrRecognitionInput ) => Promise< OcrResult | null >;
     getSupportedLanguages: () => Promise< string[] >; // Get this by calling the grpc stub or reading it's config files
     updateSettings: ( input: OcrEngineSettings ) => Promise< boolean >;
+    getDefaultSettings: () => OcrEngineSettings;
+    getSettingsOptions: () => OcrEngineSettingsOptions;
     restart: ( callback: () => void ) => void;
 }
 
