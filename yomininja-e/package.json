@@ -117,6 +117,10 @@
     "directories": {
       "buildResources": "electron_resources",
       "output": "dist"
+    },
+    "forceCodeSigning": true,
+    "win": {
+      "publisherName": "Matheus M."
     }
   },
   "jest": {
