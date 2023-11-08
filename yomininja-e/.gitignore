@@ -51,3 +51,6 @@ third-party-licenses.txt
 
 # Browser extensions
 extensions/
+
+# zip
+/*.zip

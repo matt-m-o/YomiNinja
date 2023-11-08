@@ -159,7 +159,7 @@ export default function AppInfo() {
 
                 { supporters.map( ( supporter, idx ) => (
                     <Typography key={idx} variant="h5" mb={1} 
-                        sx={{ textTransform: 'capitalize' }}
+                        // sx={{ textTransform: 'capitalize' }}
                     >
                         { supporter }
                     </Typography>
