@@ -1,4 +1,6 @@
 import bindings from 'bindings';
+import os from 'os';
+import { WindowManagerCppDummy } from './window_manager_dummy';
 
 type Size = {
     width: number;
@@ -22,7 +24,7 @@ export type TaskbarProperties = {
     auto_hide: boolean;
 };
 
-interface WindowManagerCppInterface {
+export interface WindowManagerCppInterface {
     setForegroundWindow( windowHandle: number ): void; // Set window to front
     getWindowProperties( windowHandle: number ): WindowProperties;
     getAllWindows(): any;
@@ -35,7 +37,12 @@ export class WindowManager {
 
     constructor() {
         // TODO: Check platform and import the compatible biding
-        this.windowManager = bindings('window_manager_win32') as WindowManagerCppInterface;
+
+        if ( os.platform() === 'win32' )
+            this.windowManager = bindings('window_manager_win32') as WindowManagerCppInterface;
+
+        if ( os.platform() === 'linux' )
+            this.windowManager = new WindowManagerCppDummy();
     }
 
     setForegroundWindow( windowHandle: number ): void {
