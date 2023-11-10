@@ -6,6 +6,7 @@ import { format } from "url";
 import { PAGES_DIR } from "../util/directories";
 import { WindowManager } from "../../gyp_modules/window_management/window_manager";
 import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
+import { uIOhook } from "uiohook-napi";
 
 export class OverlayController {
 
@@ -166,6 +167,37 @@ export class OverlayController {
         });
         this.globalShortcutAccelerators.push( overlayHotkeys.show_and_clear );
 
+
+        uIOhook.on( 'mousemove', async ( e ) => {
+
+            if ( !this.clickThrough ) return;
+
+            const mouseEvent: Electron.MouseInputEvent = {
+                type: 'mouseMove',
+                x: e.x,
+                y: e.y,
+                globalX: e.x,
+                globalY: e.y
+            };
+            this.overlayWindow.webContents.sendInputEvent(mouseEvent);
+        });
+
+        uIOhook.on( 'wheel', async ( e ) => {
+
+            if ( !this.clickThrough ) return;
+
+            const deltaY = -1 * e.rotation * 100;
+            
+            const mouseEvent: Electron.MouseWheelInputEvent = {
+                type: 'mouseWheel',
+                deltaY,
+                x: e.x,
+                y: e.y,
+                globalX: e.x,
+                globalY: e.y,                
+            };
+            this.overlayWindow.webContents.sendInputEvent(mouseEvent);
+        });
     }
 
     private unregisterGlobalShortcuts() {
