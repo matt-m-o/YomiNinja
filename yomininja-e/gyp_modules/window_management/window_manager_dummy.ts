@@ -4,7 +4,6 @@ export class WindowManagerCppDummy implements WindowManagerCppInterface {
 
     constructor(){}
     setForegroundWindow(windowHandle: number): void {
-        throw new Error('Method not implemented.');
     }
     getWindowProperties(windowHandle: number): WindowProperties {
         throw new Error('Method not implemented.');

@@ -135,11 +135,9 @@ export class PpOcrAdapter implements OcrAdapter {
         const executableName = os.platform() == 'win32' ?
             'ppocr_infer_service_grpc.exe' :
             'start.sh';
-
-        // let cwd = join( __dirname, "../../../../../../bin/ppocr" );
+            
         const executable = join( cwd + `/${executableName}` );
-
-        // Replace 'your_program.exe' with the actual .exe file path you want to run
+        
         this.ppocrServiceProcess = spawn( executable, [/* command line arguments */], { cwd } );
 
         // Handle stdout and stderr data
