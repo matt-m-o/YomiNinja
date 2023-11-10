@@ -210,8 +210,6 @@ export class OcrRecognitionController {
             globalShortcut.unregister( accelerator );
         });
 
-        uIOhook.removeAllListeners();
-
         this.globalShortcutAccelerators = [];
     }
 

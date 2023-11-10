@@ -4,6 +4,7 @@ import { settingsController } from "./settings/settings.index";
 import { ocrRecognitionController } from "./ocr_recognition/ocr_recognition.index";
 import { overlayController } from "./overlay/overlay.index";
 import { mainController } from "./main/main.index";
+import { uIOhook } from 'uiohook-napi'
 
 // Handlers used by multiple controllers
 
@@ -13,6 +14,8 @@ ipcMain.handle( 'settings_preset:update', async ( event: IpcMainInvokeEvent, mes
         return;    
 
     const { restartOcrAdapter } = await settingsController.updateSettingsPreset( message );
+
+    uIOhook.removeAllListeners();
     
     overlayController.refreshActiveSettingsPreset( message );
     ocrRecognitionController.refreshActiveSettingsPreset( message );
