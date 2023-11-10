@@ -123,7 +123,10 @@
       "publisherName": "Matheus M."
     },
     "linux": {
-      "icon": "electron_resources/icon_512x512.png"
+      "icon": "electron_resources/icon_512x512.png",
+      "asarUnpack": [
+        "**/node_modules/sharp/**"
+      ]
     }
   },
   "jest": {
