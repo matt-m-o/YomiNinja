@@ -1,5 +1,5 @@
 import { OcrItem, OcrResult } from "../../domain/ocr_result/ocr_result";
-import { OcrAdapter, OcrAdapterStatus, OcrRecognitionInput } from "../../application/adapters/ocr.adapter";
+import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput } from "../../application/adapters/ocr.adapter";
 import * as grpc from '@grpc/grpc-js';
 import { OCRServiceClient } from "../../../../grpc/rpc/ocr_service/OCRService";
 import { RecognizeDefaultResponse__Output } from "../../../../grpc/rpc/ocr_service/RecognizeDefaultResponse";
@@ -14,7 +14,8 @@ import { BIN_DIR } from "../../../util/directories";
 import { OcrEngineSettings } from "../../domain/settings_preset/settings_preset";
 import { UpdateSettingsPresetResponse__Output } from "../../../../grpc/rpc/ocr_service/UpdateSettingsPresetResponse";
 import { UpdateSettingsPresetRequest } from "../../../../grpc/rpc/ocr_service/UpdateSettingsPresetRequest";
-
+import { applyCpuHotfix } from "./hotfix/hardware_compatibility_hotfix";
+import os from 'os';
 
 export class PpOcrAdapter implements OcrAdapter {
     
@@ -207,6 +208,36 @@ export class PpOcrAdapter implements OcrAdapter {
         );        
         
         return Boolean( clientResponse?.success );
+    }
+
+    getDefaultSettings(): OcrEngineSettings {
+
+        const defaultSettings: OcrEngineSettings = {
+            image_scaling_factor: 1,
+            max_image_width: 1600,
+            cpu_threads: os.cpus().length,
+            invert_colors: false,
+            inference_runtime: 'Open_VINO'
+        }
+        
+        const result = applyCpuHotfix( defaultSettings );
+
+        return result.ocrEngineSettings;
+    }
+
+    getSettingsOptions(): OcrEngineSettingsOptions {
+        return {
+            inference_runtime: [
+                {
+                    value: 'Open_VINO',
+                    displayName: 'OpenVINO CPU (fastest)'
+                },
+                {
+                    value: 'ONNX_CPU',
+                    displayName: 'ONNX CPU'
+                }
+            ]
+        }
     }
 
     async restart( callback: () => void ): Promise< void > {

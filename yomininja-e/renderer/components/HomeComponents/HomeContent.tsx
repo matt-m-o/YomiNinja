@@ -59,7 +59,12 @@ export default function HomeContent() {
 
     return (
         
-        <Box display='flex' justifyContent='center' flexDirection='column' m={'auto'}>
+        <Box display='flex'
+            justifyContent='center'
+            flexDirection='column'
+            m={'auto'}
+            sx={{ userSelect: 'none' }}
+        >
 
             <Card variant="elevation" sx={{ borderRadius: 4, mb: 3, pl: 1, pr: 1 }}>
                 <CardContent>
@@ -107,7 +112,25 @@ export default function HomeContent() {
                             />
                         </Grid>
 
-                    </Grid>
+                    </Grid>                    
+
+                    <Typography fontSize='1rem' lineHeight={2} ml={1} mb={0} mt={'56px'}>
+                        ✨New features:
+                    </Typography>
+                    <ul
+                        style={{
+                            fontSize: '1rem',
+                            color: 'lightgray',
+                            lineHeight: 2,
+                            marginTop: 0,
+                            marginLeft: 20
+                        }}
+                    >
+                        <li> Built-in popup dictionaries. </li>
+                        <li> WebSocket for texthookers. Port: 6677.</li>
+                        <li> Copy text on click. (only with Click-through disabled for now). </li>
+                        <li> Option to alter the OCR inference runtime. This might be helpful for those experiencing issues with OCR functionality. </li>
+                    </ul>
 
                     <Typography fontSize='1rem' lineHeight={2} ml={1} mb={0} mt={'56px'}>
                         ✨New features:

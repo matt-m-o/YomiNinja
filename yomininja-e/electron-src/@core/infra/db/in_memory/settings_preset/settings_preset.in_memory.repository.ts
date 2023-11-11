@@ -27,9 +27,9 @@ export class SettingsPresetInMemoryRepository implements SettingsPresetRepositor
         if ( input?.id )
             return this.items.get( input?.id ) || null;
 
-        if ( input.name ) {
-            
-            for ( const [ id, obj ] of this.items ) {
+        if ( input.name ) {            
+
+            for ( const [ id, obj ] of Array.from( this.items.entries() ) ) {
     
                 if ( obj.name === input.name )
                     return obj;

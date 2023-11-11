@@ -12,27 +12,37 @@ import { appInfoController } from './app_info/app_info.index';
 import { profileController } from './profile/profile.index';
 import { overlayController } from './overlay/overlay.index';
 import { mainController } from './main/main.index';
+import { dictionariesController } from './dictionaries/dictionaries.index';
 
+import { BrowserExtensions } from './extensions/extensions';
 
+let browserExtensions: BrowserExtensions;
 
-
-// Prepare the renderer once the app is ready
 app.on('ready', async () => {
+  
+  // Prepare the renderer once the app is ready
   await prepareNext('./renderer');
 
-  const mainWindow = await mainController.init();  
+  browserExtensions = new BrowserExtensions();
+  await browserExtensions.init();
+
+  const mainWindow = await mainController.init();
+  
   
   initializeApp()
     .then( async () => {
-
+      
       const overlayWindow = await overlayController.init( mainWindow );
+      browserExtensions.addBrowserWindow( overlayWindow );
       
       ocrRecognitionController.init({ mainWindow, overlayWindow });
       mainController.loadMainPage();
       settingsController.init( mainWindow );
       appInfoController.init( mainWindow );
       profileController.init( mainWindow );
-      
+      dictionariesController.init({ mainWindow, overlayWindow });
+
+      browserExtensions.addBrowserWindow( mainWindow );
     });
 });
 

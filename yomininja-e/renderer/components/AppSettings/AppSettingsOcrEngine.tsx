@@ -204,7 +204,7 @@ export default function AppSettingsOcrEngine() {
                         valueLabelDisplay="auto"
                         value={ cpuThreads }
                         style={{ marginRight: 8 }}                
-                        onChange={ ( event, newValue ) => {                            
+                        onChange={ ( event, newValue ) => {
                             if (typeof newValue === 'number') {
                                 setCpuThreads( newValue );
                             }
@@ -216,12 +216,11 @@ export default function AppSettingsOcrEngine() {
 
                 </Stack>
 
-                <FormControl fullWidth sx={{ display:'flex', flexDirection: 'row', mt: 4 }}>
+                <FormControl fullWidth sx={{ display:'flex', flexDirection: 'row', width: 300, mt: 4 }}>
                     
                     <Select                
                         value={ inferenceRuntime || '' }
-                        label="Inference Runtime"        
-                        sx={{ width: 260 }}                
+                        label="Inference Runtime"                        
                         onChange={ ( event ) => {
                             const { value } = event.target
                             if (typeof value === 'string') {

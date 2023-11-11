@@ -3,6 +3,7 @@ import { OverlayOcrItemBoxVisuals, OverlayFrameVisuals, OverlayHotkeys, OverlayB
 import { SettingsContext } from "../../context/settings.provider";
 import { styled } from "@mui/material";
 import FullscreenOcrResult from "./FullscreenOcrResult";
+import { DictionaryContext } from "../../context/dictionary.provider";
 
 
 const OverlayFrame = styled('div')({
@@ -14,12 +15,25 @@ const OverlayFrame = styled('div')({
 
 export default function OcrOverlay() {
 
-    const { activeSettingsPreset } = useContext( SettingsContext );
+    const {
+      activeSettingsPreset,
+    } = useContext( SettingsContext );
+    const { toggleScanner } = useContext( DictionaryContext );
 
     const ocrItemBoxVisuals: OverlayOcrItemBoxVisuals = activeSettingsPreset?.overlay?.visuals.ocr_item_box;
     const overlayFrameVisuals: OverlayFrameVisuals = activeSettingsPreset?.overlay?.visuals.frame;
     const overlayHotkeys: OverlayHotkeys = activeSettingsPreset?.overlay?.hotkeys;
     const overlayBehavior: OverlayBehavior = activeSettingsPreset?.overlay?.behavior;
+
+
+    useEffect( () => {
+
+      if ( !activeSettingsPreset ) return;
+
+      const { enabled } = activeSettingsPreset.dictionary;
+      toggleScanner( enabled );
+
+    }, [activeSettingsPreset] )    
 
     return (
         <OverlayFrame

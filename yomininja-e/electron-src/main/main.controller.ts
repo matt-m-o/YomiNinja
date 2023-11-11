@@ -5,11 +5,13 @@ import { format } from 'url';
 import { BrowserWindow, IpcMainInvokeEvent, ipcMain } from "electron";
 import isDev from 'electron-is-dev';
 import { PAGES_DIR } from '../util/directories';
+import { WindowManager } from '../../gyp_modules/window_management/window_manager';
 
 export class MainController {
 
     private mainWindow: BrowserWindow;
     private captureSourceWindow: BrowserWindow | null;
+    private windowManager: WindowManager = new WindowManager();
 
     constructor() {}
 
@@ -27,6 +29,7 @@ export class MainController {
             height: 700,
             autoHideMenuBar: true,
             webPreferences: {
+                sandbox: true,
                 nodeIntegration: false,
                 contextIsolation: false,
                 preload: join(__dirname, '../preload.js'),
@@ -36,6 +39,13 @@ export class MainController {
         this.mainWindow.on( 'close', () => {
             if ( this.captureSourceWindow )
                 this.captureSourceWindow.close();
+        });
+
+        this.mainWindow.on( 'show', () => {        
+            this.windowManager
+                .setForegroundWindow( 
+                    Number( this.mainWindow.getMediaSourceId().split(':')[1] )
+                );
         });
 
         return this.mainWindow;
@@ -65,6 +75,10 @@ export class MainController {
         await this.mainWindow.loadURL(url);
 
         this.mainWindow.show();
+    }
+
+    refreshPage(): void {
+        this.mainWindow.reload();
     }
 
     private createCaptureSourceSelectionWindow() {

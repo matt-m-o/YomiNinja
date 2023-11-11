@@ -4,7 +4,7 @@ import { Box, Grid, Typography, styled } from "@mui/material";
 import Image  from 'next/image';
 import Link from "next/link";
 import { Stick, Sirin_Stencil } from 'next/font/google'
-
+import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import patreonIcon from "../../public/logos/PATREON_SYMBOL_1_WHITE_RGB.svg";
 import githubIcon from "../../public/logos/github-mark-white.svg";
 import supporters from './supporters.json';
@@ -72,6 +72,7 @@ export default function AppInfo() {
                 pr={5}
                 pt={0}
                 maxWidth='1000px'
+                sx={{ userSelect: 'none' }}
             >
 
                 <Box display='flex' flexDirection='column' justifyContent='center' mb={6}>
@@ -158,7 +159,7 @@ export default function AppInfo() {
 
                 { supporters.map( ( supporter, idx ) => (
                     <Typography key={idx} variant="h5" mb={1} 
-                        sx={{ textTransform: 'capitalize' }}
+                        // sx={{ textTransform: 'capitalize' }}
                     >
                         { supporter }
                     </Typography>

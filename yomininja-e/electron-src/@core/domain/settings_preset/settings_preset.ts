@@ -1,4 +1,9 @@
 import { randomUUID } from "crypto";
+import { getDefaultSettingsPresetProps } from "./default_settings_preset_props";
+
+export type DictionarySettings = {
+    enabled: boolean;    
+};
 
 export type OcrEngineSettings = {
     ocr_adapter_name?: string;
@@ -6,7 +11,7 @@ export type OcrEngineSettings = {
     max_image_width: number;
     cpu_threads: number;
     invert_colors: boolean;
-    inference_runtime: string;
+    inference_runtime: string
 };
 
 export type OverlayOcrItemBoxVisuals = {
@@ -31,7 +36,9 @@ export type OverlayVisualCustomizations = {
 
 export type OverlayBehavior = {
     copy_text_on_hover: boolean;
+    copy_text_on_click: boolean;
     always_on_top: boolean;
+    click_through: boolean;
     show_yomichan_window_on_copy: boolean;
 };
 
@@ -53,6 +60,7 @@ export interface SettingsPresetProps {
     name: string;    
     overlay: OverlaySettings;
     ocr_engine: OcrEngineSettings;
+    dictionary: DictionarySettings;
     created_at: Date;
     updated_at: Date;
 };
@@ -70,47 +78,8 @@ export class SettingsPreset {
 
     public id: string; // ID
     private props: SettingsPresetProps = {
-        name: SettingsPreset.default_name,        
-        overlay: {
-            visuals: {
-                frame: {
-                    border_color: "#e21212", // Red
-                    border_width: 1
-                },
-                ocr_item_box: {
-                    background_color: '#000000', // Black
-                    border_color: "#e21212", // Red
-                    border_radius: 10,
-                    border_width: 1,
-                    text: {
-                        color: "#ffffff", // White
-                    }
-                }
-            },
-            hotkeys: {
-                ocr: 'Alt+S',
-                copy_text: 'undefined+C',
-                show: 'Alt+C',
-                show_and_clear: 'Alt+V',
-                ocr_on_screen_shot: true,                
-            },
-            behavior: {
-                copy_text_on_hover: true,
-                always_on_top: true,
-                show_yomichan_window_on_copy: true,
-            }
-        },
-        ocr_engine: {
-            image_scaling_factor: 1,
-            max_image_width: 1600,
-            cpu_threads: 8,
-            invert_colors: false,
-            inference_runtime: 'Open_VINO',
-        },
-
-        created_at: new Date(),
-        updated_at: new Date()
-    }    
+        ...getDefaultSettingsPresetProps()
+    };
     
     
     private constructor( input?: SettingsPreset_CreationInput, id?: string ) {
@@ -189,9 +158,17 @@ export class SettingsPreset {
 
             behavior: {
                 ...this.overlay.behavior,
-                ...overlayUpdate.behavior
+                ...overlayUpdate.behavior,
             }
         };
+
+        const { always_on_top, click_through } = this.overlay.behavior
+
+        if ( !click_through )
+            this.overlay.behavior.always_on_top = false;
+
+        if ( always_on_top )
+            this.overlay.behavior.click_through = true;        
     }
 
     updateOcrEngineSettings( update: Partial< OcrEngineSettings > ) {
@@ -207,6 +184,14 @@ export class SettingsPreset {
             ...update,
             image_scaling_factor,
             max_image_width
+        };
+    }
+
+    updateDictionarySettings( update: Partial< DictionarySettings > ) {             
+
+        this.props.dictionary = {
+            ...this.props.dictionary,
+            ...update,
         };
     }
 

@@ -11,18 +11,30 @@ import { LanguagesProvider } from '../context/languages.provider';
 import { Profile } from '../../electron-src/@core/domain/profile/profile';
 import { ProfileProvider } from '../context/profile.provider';
 import { CaptureSourceProvider } from '../context/capture_source.provider';
+import AutoStoriesRoundedIcon from '@mui/icons-material/AutoStoriesRounded';
+import Dictionary from '../components/Dictionary/Dictionary';
+import { DictionaryProvider } from '../context/dictionary.provider';
+
 
 export default function IndexPage() {
-
-  const settingsTabContents = (
-    <AppSettingsMenu/>    
-  );
 
   const homeTabContents = (    
     <LanguagesProvider>
       <HomeContent/>
     </LanguagesProvider>
   )
+  
+  const settingsTabContents = (
+    <AppSettingsMenu/>    
+  );
+
+  const dictionariesTabContents = (
+    <LanguagesProvider>    
+      <DictionaryProvider>
+        <Dictionary/>
+      </DictionaryProvider>
+    </LanguagesProvider>
+  );
 
   const layoutProps: LayoutProps = {
     contents: [
@@ -35,11 +47,18 @@ export default function IndexPage() {
       },
       {
         tabLabel: {
+          text: 'Dictionaries',
+          icon: <AutoStoriesRoundedIcon/>,
+        },
+        tabContent: dictionariesTabContents
+      },
+      {
+        tabLabel: {
           text: 'Settings',
           icon: <Settings/>,
         },
         tabContent: settingsTabContents
-      },
+      },      
       {
         tabLabel: {
           text: 'About',
@@ -54,10 +73,10 @@ export default function IndexPage() {
     <CaptureSourceProvider>
       <ProfileProvider>
         <AppInfoProvider>
-          <SettingsProvider>          
+          <SettingsProvider>
 
-          <Layout {...layoutProps}/>
-          
+            <Layout {...layoutProps}/>
+
           </SettingsProvider>
         </AppInfoProvider>
       </ProfileProvider>

@@ -34,6 +34,7 @@ export class UpdateSettingsPresetUseCase {
         settingsPreset.name = input.name;
         settingsPreset.updateOverlaySettings( input.overlay );
         settingsPreset.updateOcrEngineSettings( input.ocr_engine );
+        settingsPreset.updateDictionarySettings( input.dictionary )
 
         
         await this.settingsPresetRepo.update( settingsPreset );

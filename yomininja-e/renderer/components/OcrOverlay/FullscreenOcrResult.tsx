@@ -3,6 +3,7 @@ import { OcrResultContext } from "../../context/ocr_result.provider";
 import { styled } from "@mui/material";
 import { OcrItemScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { OverlayBehavior, OverlayHotkeys, OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import { DictionaryContext } from "../../context/dictionary.provider";
 
 
 const BaseOcrResultBox = styled('div')({
@@ -16,7 +17,7 @@ const BaseOcrResultBox = styled('div')({
     letterSpacing: '0.1rem',
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center',    
 });
 
 export type FullscreenOcrResultProps = {
@@ -31,7 +32,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
     const { ocrItemBoxVisuals, overlayHotkeys, overlayBehavior } = props;
 
     const { ocrResult } = useContext( OcrResultContext );
-    const [ hoveredText, setHoveredText ] = useState< string >('');
+    const [ hoveredText, setHoveredText ] = useState< string >('');    
     
     useEffect(() => {
 
@@ -75,8 +76,9 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         if ( 
             overlayBehavior?.copy_text_on_hover &&
             hoveredText
-        )
+        ) {
             global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', hoveredText );
+        }
 
     }, [ hoveredText ] );
 
@@ -106,23 +108,38 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
             textOrientation: isVertical ? 'upright' :'inherit',
         });
 
+        const { width } = box.dimensions;
+        const { left } = box.position;
+        const minWidth = width + left > 100 ? 100 - left : width;
+
         return (
-            <Box
-                style={{                    
+            <Box className="extracted-text"
+                style={{
                     left: box.position.left + '%',
                     top: box.position.top * 0.994 + '%',
                     transform: `rotate( ${box.angle_degrees}deg )`,
-                    minWidth: box.dimensions.width + '%',
+                    minWidth: minWidth + '%',
                     minHeight: box.dimensions.height + '%',
                     maxHeight: box.dimensions.height *1.10 + '%',            
                     fontSize: fontSize + '%',
                 }}                          
                 onMouseEnter={ () => setHoveredText( ocrItem.text ) }
                 onMouseLeave={ () => setHoveredText( '' ) }
+                onClick={ () => handleBoxClick( ocrItem.text ) }
+                // onMouseMove={ ( event ) => onMouseMoveHandler(event) }
             >
                 { ocrItem.text }
             </Box>
         )
+    }
+
+    function handleBoxClick( text: string ) {
+        
+        if ( !overlayBehavior.copy_text_on_click || !text )
+            return;
+
+        console.log( { text } );
+        global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', text );
     }
 
     return (

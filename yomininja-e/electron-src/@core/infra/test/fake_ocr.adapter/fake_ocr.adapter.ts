@@ -1,5 +1,5 @@
 import { OcrItem, OcrResult, OcrResultContextResolution, OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
-import { OcrAdapter, OcrAdapterStatus, OcrRecognitionInput } from "../../../application/adapters/ocr.adapter";
+import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput } from "../../../application/adapters/ocr.adapter";
 import { OcrEngineSettings } from "../../../domain/settings_preset/settings_preset";
 
 const ocrTestAdapterResultProps: OcrResult_CreationInput = {
@@ -61,6 +61,27 @@ export class FakeOcrTestAdapter implements OcrAdapter {
 
     async updateSettings( input: OcrEngineSettings ): Promise< boolean > {
         return true;
+    }
+
+    getDefaultSettings(): OcrEngineSettings {
+        return {
+            image_scaling_factor: 1,
+            max_image_width: 1600,
+            cpu_threads: 8,
+            invert_colors: false,
+            inference_runtime: 'ONNX_CPU'
+        }
+    }
+
+    getSettingsOptions(): OcrEngineSettingsOptions {
+        return {
+            inference_runtime: [
+                {
+                    value: 'ONNX_CPU',
+                    displayName: 'ONNX CPU'
+                }
+            ]
+        }
     }
 
     restart( callback: () => void ): void {

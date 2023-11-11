@@ -1,5 +1,5 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
-import { OcrEngineSettings, OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
+import { DictionarySettings, OcrEngineSettings, OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
 import { debounce } from "@mui/material";
 
 export type SettingsContextType = {
@@ -7,9 +7,10 @@ export type SettingsContextType = {
     allSettingsPresets: SettingsPresetJson[];
     updateActivePreset: ( input: Partial<SettingsPresetJson> ) => void;
     updateActivePresetHotkeys: ( newHotkeys: Partial<OverlayHotkeys> ) => void;
-    updateActivePresetVisuals: ( newVisuals: Partial< OverlayVisualCustomizations > ) => void;
-    updateActivePresetBehavior: ( newVisuals: Partial< OverlayBehavior > ) => void; 
-    updateActivePresetOcrEngine: ( newVisuals: Partial< OcrEngineSettings > ) => void; 
+    updateActivePresetVisuals: ( input: Partial< OverlayVisualCustomizations > ) => void;
+    updateActivePresetBehavior: ( input: Partial< OverlayBehavior > ) => void; 
+    updateActivePresetOcrEngine: ( input: Partial< OcrEngineSettings > ) => void; 
+    updateActivePresetDictionary: ( input: Partial< DictionarySettings > ) => void; 
 };
 
 
@@ -29,13 +30,24 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
 
     }, 1500 );
 
+
+    function updateActivePresetDictionary( input: Partial< DictionarySettings > ) {
+
+        activeSettingsPreset.dictionary = {
+            ...activeSettingsPreset?.dictionary,
+            ...input,
+        };
+        
+        updateActivePreset( activeSettingsPreset );
+    }
+
     function updateActivePresetOcrEngine( newOcrEngine: Partial< OcrEngineSettings > ) {
 
         activeSettingsPreset.ocr_engine = {
             ...activeSettingsPreset?.ocr_engine,
             ...newOcrEngine,
         };
-
+        
         updateActivePreset( activeSettingsPreset );
     }
 
@@ -45,6 +57,12 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
             ...activeSettingsPreset.overlay.behavior,
             ...newBehavior,
         };
+
+        if ( activeSettingsPreset.overlay.behavior.always_on_top )
+            activeSettingsPreset.overlay.behavior.click_through = true;
+
+        if ( !activeSettingsPreset.overlay.behavior.click_through )
+            activeSettingsPreset.overlay.behavior.always_on_top = false;
 
         updateActivePreset( activeSettingsPreset );
     }
@@ -114,7 +132,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
             });
 
         return () => {
-            global.ipcRenderer.removeAllListeners( 'settings_preset:active_data' );            
+            global.ipcRenderer.removeAllListeners( 'settings_preset:active_data' );
         }
     }, [ global.ipcRenderer ] );
     
@@ -128,7 +146,8 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
                 updateActivePresetHotkeys,
                 updateActivePresetVisuals,
                 updateActivePresetBehavior,
-                updateActivePresetOcrEngine
+                updateActivePresetOcrEngine,
+                updateActivePresetDictionary
             }}
         >
             {children}

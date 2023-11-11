@@ -15,6 +15,8 @@ export class OverlayController {
     private windowManager: WindowManager;
 
     private overlayAlwaysOnTop: boolean = true;
+    private clickThrough: boolean = true;
+    private copyTextOnClick: boolean = false;
     private showYomichanWindowOnCopy: boolean = true;
 
     private globalShortcutAccelerators: string[] = [];
@@ -36,6 +38,7 @@ export class OverlayController {
 
             this.overlayAlwaysOnTop = Boolean( settingsJson.overlay.behavior.always_on_top );
             this.showYomichanWindowOnCopy = Boolean( settingsJson.overlay.behavior.show_yomichan_window_on_copy );
+            this.clickThrough = Boolean( settingsJson.overlay.behavior.click_through );
         }
 
         this.createOverlayWindow();
@@ -73,7 +76,7 @@ export class OverlayController {
 
         this.mainWindow?.on( 'closed', () => {
             this.overlayWindow.destroy();
-        });
+        });        
 
         const url = isDev
         ? 'http://localhost:8000/ocr-overlay'
@@ -87,16 +90,24 @@ export class OverlayController {
         // this.overlayWindow.maximize();        
         
         const showDevTools = isDev && false;
-        if (showDevTools)
-            this.overlayWindow.webContents.openDevTools();        
+        if (showDevTools) {
+            this.overlayWindow.webContents.openDevTools();
+            this.clickThrough = false;
+        }
 
         
         this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop && !showDevTools, "normal" ); // normal, pop-up-menu och screen-saver
 
-        // Prevents black image when using youtube on some browsers (e.g. Brave)
-        this.overlayWindow.setIgnoreMouseEvents( !showDevTools, { // !showDevTools
-            forward: !showDevTools,
+        // "True" Prevents black image when using youtube on some browsers (e.g. Brave)
+        this.overlayWindow.setIgnoreMouseEvents( this.clickThrough, { // !showDevTools
+            forward: true, // !!showDevTools
         });
+
+        console.log({ clickThrough: this.clickThrough })
+    }
+
+    refreshPage(): void {
+        this.overlayWindow.reload();
     }
 
     private registersIpcHandlers() {
@@ -105,7 +116,7 @@ export class OverlayController {
 
             if ( !message || message.length === 0 ) return;
             
-            clipboard.writeText(message);
+            clipboard.writeText( message );
             this.overlayService.sendOcrTextTroughWS( message );
             
             const windows = this.windowManager.getAllWindows();
@@ -187,9 +198,13 @@ export class OverlayController {
         if ( !settingsPresetJson ) return;
 
         this.overlayAlwaysOnTop = Boolean( settingsPresetJson.overlay.behavior.always_on_top );
+        this.clickThrough = Boolean( settingsPresetJson.overlay.behavior.click_through );
         this.showYomichanWindowOnCopy = Boolean( settingsPresetJson.overlay.behavior.show_yomichan_window_on_copy );
         
         this.overlayWindow?.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );
+        this.overlayWindow.setIgnoreMouseEvents( this.clickThrough, {
+            forward: this.clickThrough,
+        });
 
         this.registerGlobalShortcuts( settingsPresetJson );
 
