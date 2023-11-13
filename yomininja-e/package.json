@@ -55,7 +55,8 @@
     "typeorm": "^0.3.17",
     "uiohook-napi": "^1.5.2",
     "wanakana": "^5.2.0",
-    "ws": "^8.14.2"
+    "ws": "^8.14.2",
+    "x11": "^2.3.0"
   },
   "devDependencies": {
     "@emotion/react": "^11.11.1",

@@ -1,6 +1,7 @@
 import bindings from 'bindings';
 import os from 'os';
 import { WindowManagerCppDummy } from './window_manager_dummy';
+import { WindowManagerLinuxX11 } from './window_manager_linux_x11';
 
 type Size = {
     width: number;
@@ -42,7 +43,7 @@ export class WindowManager {
             this.windowManager = bindings('window_manager_win32') as WindowManagerCppInterface;
 
         if ( os.platform() === 'linux' )
-            this.windowManager = new WindowManagerCppDummy();
+            this.windowManager = new WindowManagerLinuxX11();
     }
 
     setForegroundWindow( windowHandle: number ): void {
