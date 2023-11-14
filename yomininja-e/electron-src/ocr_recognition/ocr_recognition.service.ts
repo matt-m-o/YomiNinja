@@ -4,7 +4,7 @@ import { GetSupportedLanguagesUseCase } from "../@core/application/use_cases/get
 import { RecognizeImageUseCase } from "../@core/application/use_cases/recognize_image/recognize_image.use_case";
 import { OcrResultScalable } from "../@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { GetActiveSettingsPresetUseCase } from "../@core/application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
-import { getActiveProfile } from "../@core/infra/app_initialization";
+import { getActiveProfile, windowManager } from "../@core/infra/app_initialization";
 import { OcrAdapter } from "../@core/application/adapters/ocr.adapter";
 import { ChangeActiveOcrLanguageUseCase } from "../@core/application/use_cases/change_active_ocr_language/change_active_ocr_language.use_case";
 import { Language } from "../@core/domain/language/language";
@@ -24,9 +24,7 @@ export class OcrRecognitionService {
     private recognizeImageUseCase: RecognizeImageUseCase;
     private getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
     private getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;    
-    private ocrAdapter: OcrAdapter;
-
-    private windowManager = new WindowManager();
+    private ocrAdapter: OcrAdapter;    
 
     constructor(
         input: {
@@ -181,7 +179,7 @@ export class OcrRecognitionService {
 
         if ( !windowCaptureSource ) return;
                 
-        const windowProps = this.windowManager.getWindow( Number( windowCaptureSource?.id.split(':')[1] ) );        
+        const windowProps = windowManager.getWindow( Number( windowCaptureSource?.id.split(':')[1] ) );        
 
         const externalWindow: ExternalWindow = {
             id: Number(windowCaptureSource.id.split(':')[1]),
@@ -220,7 +218,7 @@ export class OcrRecognitionService {
 
     getTaskbar(): TaskbarProperties {
 
-        return this.windowManager.getTaskbar();
+        return windowManager.getTaskbar();
     }
 
     async cropWindowFromImage( window: ExternalWindow, image: Buffer ): Promise<Buffer> {

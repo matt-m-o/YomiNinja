@@ -6,12 +6,12 @@ import { BrowserWindow, IpcMainInvokeEvent, ipcMain } from "electron";
 import isDev from 'electron-is-dev';
 import { PAGES_DIR } from '../util/directories';
 import { WindowManager } from '../../gyp_modules/window_management/window_manager';
+import { windowManager } from '../@core/infra/app_initialization';
 
 export class MainController {
 
     private mainWindow: BrowserWindow;
-    private captureSourceWindow: BrowserWindow | null;
-    private windowManager: WindowManager = new WindowManager();
+    private captureSourceWindow: BrowserWindow | null;    
 
     constructor() {}
 
@@ -42,7 +42,7 @@ export class MainController {
         });
 
         this.mainWindow.on( 'show', () => {        
-            this.windowManager
+            windowManager
                 .setForegroundWindow( 
                     Number( this.mainWindow.getMediaSourceId().split(':')[1] )
                 );

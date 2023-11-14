@@ -7,13 +7,13 @@ import { PAGES_DIR } from "../util/directories";
 import { WindowManager } from "../../gyp_modules/window_management/window_manager";
 import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 import { uIOhook } from "uiohook-napi";
+import { windowManager } from "../@core/infra/app_initialization";
 
 export class OverlayController {
 
     private overlayService: OverlayService;
     private mainWindow: BrowserWindow;
-    private overlayWindow: BrowserWindow;
-    private windowManager: WindowManager;
+    private overlayWindow: BrowserWindow;    
 
     private overlayAlwaysOnTop: boolean = true;
     private clickThrough: boolean = true;
@@ -48,9 +48,7 @@ export class OverlayController {
 
         this.overlayWindow.on( 'show', ( ) => {
             this.showOverlayWindow();
-        });
-
-        this.windowManager = new WindowManager();
+        });        
 
         this.overlayService.initWebSocket();
 
@@ -120,7 +118,7 @@ export class OverlayController {
             clipboard.writeText( message );
             this.overlayService.sendOcrTextTroughWS( message );
             
-            const windows = this.windowManager.getAllWindows();
+            const windows = windowManager.getAllWindows();
           
             const yomichanWindow = windows.find( window => window.title.includes( '- Yomichan Search' ) );
           
@@ -130,7 +128,7 @@ export class OverlayController {
             ) 
                 return;
           
-            this.windowManager.setForegroundWindow( yomichanWindow.handle );
+            windowManager.setForegroundWindow( yomichanWindow.handle );
           
             console.log({ text_to_copy: message });
           
@@ -213,7 +211,7 @@ export class OverlayController {
         
         const overlayWindowHandle = Number(this.overlayWindow.getMediaSourceId().split(':')[1]);
 
-        this.windowManager.setForegroundWindow( overlayWindowHandle );
+        windowManager.setForegroundWindow( overlayWindowHandle );
         this.overlayWindow.setAlwaysOnTop( false, "normal" );
         this.overlayWindow.setAlwaysOnTop( true, "normal" ); // normal, pop-up-menu och screen-saver
         

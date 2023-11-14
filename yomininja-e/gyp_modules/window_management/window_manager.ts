@@ -26,6 +26,7 @@ export type TaskbarProperties = {
 };
 
 export interface WindowManagerCppInterface {
+    init?: () => Promise< void >;
     setForegroundWindow( windowHandle: number ): void; // Set window to front
     getWindowProperties( windowHandle: number ): WindowProperties;
     getAllWindows(): any;
@@ -42,8 +43,13 @@ export class WindowManager {
         if ( os.platform() === 'win32' )
             this.windowManager = bindings('window_manager_win32') as WindowManagerCppInterface;
 
-        if ( os.platform() === 'linux' )
+        else if ( os.platform() === 'linux' )
             this.windowManager = new WindowManagerLinuxX11();
+    }
+
+    async init(): Promise< void > {
+        if ( this.windowManager.init )
+            await this.windowManager.init();
     }
 
     setForegroundWindow( windowHandle: number ): void {
