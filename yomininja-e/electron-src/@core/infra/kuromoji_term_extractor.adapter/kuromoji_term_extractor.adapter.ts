@@ -3,7 +3,7 @@ import { ExtractedTerms, GetTermsInput, TermExtractorAdapter } from "../../appli
 import * as kuromoji from 'kuromoji';
 import * as wanakana from 'wanakana';
 import { join } from "path";
-import { ROOT_DIR } from "../../../util/directories";
+import { ROOT_DIR } from "../../../util/directories.util";
 import isDev from "electron-is-dev";
 
 const dicPath = isDev ?

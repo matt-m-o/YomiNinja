@@ -3,11 +3,12 @@ import { OverlayService } from "./overlay.service";
 import { join } from "path";
 import isDev from 'electron-is-dev';
 import { format } from "url";
-import { PAGES_DIR } from "../util/directories";
+import { PAGES_DIR } from "../util/directories.util";
 import { WindowManager } from "../../gyp_modules/window_management/window_manager";
 import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 import { uIOhook } from "uiohook-napi";
 import { windowManager } from "../@core/infra/app_initialization";
+import { getBrowserWindowHandle } from "../util/browserWindow.util";
 
 export class OverlayController {
 
@@ -111,14 +112,14 @@ export class OverlayController {
 
     private registersIpcHandlers() {
 
-        ipcMain.handle( 'user_command:copy_to_clipboard', ( event: IpcMainInvokeEvent, message: string ) => {
+        ipcMain.handle( 'user_command:copy_to_clipboard', async ( event: IpcMainInvokeEvent, message: string ) => {
 
             if ( !message || message.length === 0 ) return;
             
             clipboard.writeText( message );
             this.overlayService.sendOcrTextTroughWS( message );
             
-            const windows = windowManager.getAllWindows();
+            const windows = await windowManager.getAllWindows();
           
             const yomichanWindow = windows.find( window => window.title.includes( '- Yomichan Search' ) );
           
@@ -209,7 +210,9 @@ export class OverlayController {
 
     private showOverlayWindow() {
         
-        const overlayWindowHandle = Number(this.overlayWindow.getMediaSourceId().split(':')[1]);
+        const overlayWindowHandle = getBrowserWindowHandle( this.overlayWindow );
+
+        console.log({ overlayWindowHandle });
 
         windowManager.setForegroundWindow( overlayWindowHandle );
         this.overlayWindow.setAlwaysOnTop( false, "normal" );

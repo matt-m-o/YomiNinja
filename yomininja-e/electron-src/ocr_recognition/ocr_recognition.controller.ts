@@ -2,7 +2,7 @@ import { BrowserWindow, globalShortcut, screen, desktopCapturer, clipboard, ipcM
 import isDev from 'electron-is-dev';
 import { join } from "path";
 import { format } from 'url';
-import { PAGES_DIR } from "../util/directories";
+import { PAGES_DIR } from "../util/directories.util";
 import { uIOhook, UiohookKey } from 'uiohook-napi'
 import { activeProfile, getActiveProfile } from "../@core/infra/app_initialization";
 import { OcrRecognitionService, entireScreenAutoCaptureSource } from "./ocr_recognition.service";

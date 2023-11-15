@@ -10,7 +10,7 @@ import { join } from "path";
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { dialog } from 'electron';
 import isDev from 'electron-is-dev';
-import { BIN_DIR } from "../../../util/directories";
+import { BIN_DIR } from "../../../util/directories.util";
 import { OcrEngineSettings } from "../../domain/settings_preset/settings_preset";
 import { UpdateSettingsPresetResponse__Output } from "../../../../grpc/rpc/ocr_service/UpdateSettingsPresetResponse";
 import { UpdateSettingsPresetRequest } from "../../../../grpc/rpc/ocr_service/UpdateSettingsPresetRequest";

@@ -3,7 +3,7 @@ import { initializeApp } from './@core/infra/app_initialization';
 import { BrowserWindow, app, ipcMain, IpcMainEvent, IpcMainInvokeEvent, clipboard, globalShortcut } from 'electron';
 import isDev from 'electron-is-dev';
 import prepareNext from 'electron-next';
-import { PAGES_DIR } from './util/directories';
+import { PAGES_DIR } from './util/directories.util';
 import { ocrRecognitionController } from './ocr_recognition/ocr_recognition.index';
 import { settingsController } from './settings/settings.index';
 import './shared_handlers';

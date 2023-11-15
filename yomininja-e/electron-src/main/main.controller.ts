@@ -4,9 +4,10 @@ import { format } from 'url';
 
 import { BrowserWindow, IpcMainInvokeEvent, ipcMain } from "electron";
 import isDev from 'electron-is-dev';
-import { PAGES_DIR } from '../util/directories';
+import { PAGES_DIR } from '../util/directories.util';
 import { WindowManager } from '../../gyp_modules/window_management/window_manager';
 import { windowManager } from '../@core/infra/app_initialization';
+import { getBrowserWindowHandle } from '../util/browserWindow.util';
 
 export class MainController {
 
@@ -44,7 +45,7 @@ export class MainController {
         this.mainWindow.on( 'show', () => {        
             windowManager
                 .setForegroundWindow( 
-                    Number( this.mainWindow.getMediaSourceId().split(':')[1] )
+                    getBrowserWindowHandle( this.mainWindow )
                 );
         });
 
