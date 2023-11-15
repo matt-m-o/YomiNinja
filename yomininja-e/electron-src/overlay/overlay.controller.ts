@@ -9,6 +9,7 @@ import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_pre
 import { uIOhook } from "uiohook-napi";
 import { windowManager } from "../@core/infra/app_initialization";
 import { getBrowserWindowHandle } from "../util/browserWindow.util";
+import os from 'os';
 
 export class OverlayController {
 
@@ -118,20 +119,20 @@ export class OverlayController {
             
             clipboard.writeText( message );
             this.overlayService.sendOcrTextTroughWS( message );
+            console.log({ text_to_copy: message });
             
-            const windows = await windowManager.getAllWindows();
-          
+            if ( !this.showYomichanWindowOnCopy )
+                return;
+
+            const windows = await windowManager.getAllWindows();          
             const yomichanWindow = windows.find( window => window.title.includes( '- Yomichan Search' ) );
           
             if ( 
-                !yomichanWindow ||
-                !this.showYomichanWindowOnCopy
+                !yomichanWindow            
             ) 
                 return;
           
             windowManager.setForegroundWindow( yomichanWindow.handle );
-          
-            console.log({ text_to_copy: message });
           
         });
     }

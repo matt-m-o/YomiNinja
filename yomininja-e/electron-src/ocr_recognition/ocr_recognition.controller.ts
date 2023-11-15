@@ -10,7 +10,7 @@ import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_pre
 import { CaptureSource, ExternalWindow } from "./common/types";
 import { TaskbarProperties } from "../../gyp_modules/window_management/window_manager";
 import sharp from "sharp";
-
+import os from 'os';
 
 export class OcrRecognitionController {
     
@@ -261,16 +261,26 @@ export class OcrRecognitionController {
 
         else if ( this.captureSourceWindow ) {
 
-            const targetWindowBounds = {
+            let targetWindowBounds = {
                 width: this.captureSourceWindow.size.width,
                 height: this.captureSourceWindow.size.height,
                 x: this.captureSourceWindow.position.x,
                 y: this.captureSourceWindow.position.y,
             };
 
-            // Handling potential issues with DIP
-            let dipRect = screen.screenToDipRect( this.overlayWindow, targetWindowBounds );
-            this.overlayWindow.setBounds( dipRect );
+            if ( os.platform() === 'linux' )
+                this.overlayWindow.setFullScreen( false );
+
+            if ( os.platform() === 'win32' ) {
+                // Handling potential issues with DIP
+                targetWindowBounds = screen.screenToDipRect( this.overlayWindow, targetWindowBounds );
+            }
+
+            this.overlayWindow.setBounds( targetWindowBounds );
+
+            console.log({
+                targetWindowBounds
+            });
 
             // Might be necessary to calculate and set twice
             // dipRect = screen.screenToDipRect( this.overlayWindow, targetWindowBounds )
