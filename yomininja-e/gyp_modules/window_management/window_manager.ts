@@ -28,7 +28,7 @@ export type TaskbarProperties = {
 export interface WindowManagerCppInterface {
     init?: () => Promise< void >;
     setForegroundWindow( windowHandle: number ): void; // Set window to front
-    getWindowProperties( windowHandle: number ): WindowProperties;
+    getWindowProperties( windowHandle: number ): WindowProperties | Promise< WindowProperties >;
     getAllWindows(): any;
     getTaskBarProps(): TaskbarProperties;
 };
@@ -57,17 +57,17 @@ export class WindowManager {
         this.windowManager.setForegroundWindow( windowHandle );
     }
     
-    getWindow( windowHandle: number  ): WindowProperties {        
+    async getWindow( windowHandle: number  ): Promise< WindowProperties > {
 
-        const result = this.windowManager.getWindowProperties( windowHandle );
+        const result = await this.windowManager.getWindowProperties( windowHandle );
         this.fixTitle([result]);
 
         return result;
     }
 
-    getAllWindows(): WindowProperties[] {
+    async getAllWindows(): Promise< WindowProperties[] >{
 
-        const result = this.windowManager.getAllWindows();
+        const result = await this.windowManager.getAllWindows();
         this.fixTitle(result);
 
         return result;

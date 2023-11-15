@@ -179,7 +179,7 @@ export class OcrRecognitionService {
 
         if ( !windowCaptureSource ) return;
                 
-        const windowProps = windowManager.getWindow( Number( windowCaptureSource?.id.split(':')[1] ) );        
+        const windowProps = await windowManager.getWindow( Number( windowCaptureSource?.id.split(':')[1] ) );        
 
         const externalWindow: ExternalWindow = {
             id: Number(windowCaptureSource.id.split(':')[1]),
