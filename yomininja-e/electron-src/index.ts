@@ -15,6 +15,7 @@ import { mainController } from './main/main.index';
 import { dictionariesController } from './dictionaries/dictionaries.index';
 
 import { BrowserExtensions } from './extensions/extensions';
+import { createDebuggingWindow } from './util/debugging/debugging.util';
 
 let browserExtensions: BrowserExtensions;
 
@@ -27,6 +28,9 @@ app.on('ready', async () => {
   await browserExtensions.init();
 
   const mainWindow = await mainController.init();
+
+  if ( isDev )
+    createDebuggingWindow();
   
   
   initializeApp()

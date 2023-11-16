@@ -120,10 +120,11 @@ export class OcrRecognitionController {
                 profileId: getActiveProfile().id,
                 display: this.captureSourceDisplay,
                 window: this.captureSourceWindow,
-            });            
+            });
+            console.log({ ocrResultScalable });
 
             // console.timeEnd('controller.recognize');
-            // console.log('');            
+            // console.log('');
 
             this.overlayWindow.webContents.send( 'ocr:result', ocrResultScalable );
 

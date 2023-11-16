@@ -11,6 +11,7 @@ import { Language } from "../@core/domain/language/language";
 import { screen } from 'electron';
 import { CaptureSource, ExternalWindow } from "./common/types";
 import sharp from 'sharp';
+import { displayImage } from "../util/debugging/debugging.util";
 
 
 export const entireScreenAutoCaptureSource: CaptureSource = {
@@ -46,6 +47,7 @@ export class OcrRecognitionService {
         display?: Electron.Display,
         window?: ExternalWindow,
     }): Promise< OcrResultScalable | null > {
+        console.log('ocrRecognitionService.recognize');
 
         let { imageBuffer, profileId, display, window } = input;
 
@@ -58,8 +60,11 @@ export class OcrRecognitionService {
             imageBuffer = await this.cropWindowFromImage( window, imageBuffer );
         }
 
+        displayImage( imageBuffer as Buffer );
+
         if ( !imageBuffer )
             return null;
+
 
         return await this.recognizeImageUseCase.execute({
             imageBuffer,
