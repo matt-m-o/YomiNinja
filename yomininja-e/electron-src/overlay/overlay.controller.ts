@@ -214,12 +214,13 @@ export class OverlayController {
         const overlayWindowHandle = getBrowserWindowHandle( this.overlayWindow );
 
         console.log({ overlayWindowHandle });
-
+        
         windowManager.setForegroundWindow( overlayWindowHandle );
+
         this.overlayWindow.setAlwaysOnTop( false, "normal" );
         this.overlayWindow.setAlwaysOnTop( true, "normal" ); // normal, pop-up-menu och screen-saver
         
-        this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );
+        this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );        
     }
 
     async refreshActiveSettingsPreset( settingsPresetJson?: SettingsPresetJson ) {

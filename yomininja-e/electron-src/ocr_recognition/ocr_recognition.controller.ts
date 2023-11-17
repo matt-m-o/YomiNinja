@@ -112,6 +112,7 @@ export class OcrRecognitionController {
 
         try {
             // console.log(activeProfile);
+            // console.log('OcrRecognitionController.recognize')
 
             await this.handleCaptureSourceSelection();
 

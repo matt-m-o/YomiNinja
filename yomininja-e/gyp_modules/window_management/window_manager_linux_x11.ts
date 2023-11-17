@@ -26,9 +26,22 @@ export class WindowManagerLinuxX11 implements WindowManagerCppInterface {
         this.client = display.client;
     }
 
-    setForegroundWindow( windowHandle: number ): void {
+    async setForegroundWindow( windowHandle: number ): Promise< void >{
 
         console.log(`setForegroundWindow: ${windowHandle}`);
+        
+        let windowExists = await this.windowExists( windowHandle );
+
+        if ( !windowExists ) {
+            windowHandle++;
+            windowExists = await this.windowExists( windowHandle );
+        }
+
+        if ( !windowExists ) return;
+        
+        const title = await this.getWindowTitle( windowHandle );        
+
+        if ( !title ) return;
 
         this.client.SetInputFocus( windowHandle );
         this.client.RaiseWindow( windowHandle );
@@ -36,7 +49,7 @@ export class WindowManagerLinuxX11 implements WindowManagerCppInterface {
 
     async getWindowProperties( windowHandle: number ): Promise< WindowProperties > {
 
-        console.log(`setForegroundWindow: ${windowHandle}`);
+        console.log(`getWindowProperties: ${windowHandle}`);
 
         const title = await this.getWindowTitle( windowHandle );
 
@@ -111,7 +124,7 @@ export class WindowManagerLinuxX11 implements WindowManagerCppInterface {
                         if ( error )
                             reject( error );
 
-                        resolve( nameProp.data.toString() );
+                        resolve( nameProp?.data.toString() || '' );
                     });
                 });
             });
@@ -122,7 +135,12 @@ export class WindowManagerLinuxX11 implements WindowManagerCppInterface {
 
         return new Promise( ( resolve, reject ) => {
 
-            const { root } = this.display.screen[ screenIdx ];
+            const screen = this.display.screen?.[ screenIdx ];
+
+            if ( !screen )
+                return [];
+
+            const { root } = screen;
 
             this.client.QueryTree( root, ( error: any, tree: any ) => { 
 
@@ -132,6 +150,13 @@ export class WindowManagerLinuxX11 implements WindowManagerCppInterface {
                 resolve( tree.children );
             });
         });
+    }
+
+    private async windowExists( windowHandle: number ): Promise< boolean > {
+
+        const ids = await this.getAllWindowIds( windowHandle );
+
+        return ids.some( id => id === windowHandle );
     }
 
 }

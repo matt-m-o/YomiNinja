@@ -27,7 +27,7 @@ export type TaskbarProperties = {
 
 export interface WindowManagerCppInterface {
     init?: () => Promise< void >;
-    setForegroundWindow( windowHandle: number ): void; // Set window to front
+    setForegroundWindow( windowHandle: number ): void | Promise< void >; // Set window to front
     getWindowProperties( windowHandle: number ): WindowProperties | Promise< WindowProperties >;
     getAllWindows(): any;
     getTaskBarProps(): TaskbarProperties;
