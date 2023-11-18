@@ -124,7 +124,7 @@ export class OverlayController {
             if ( !this.showYomichanWindowOnCopy )
                 return;
 
-            const windows = await windowManager.getAllWindows();          
+            const windows = await windowManager.getAllWindows();
             const yomichanWindow = windows.find( window => window.title.includes( '- Yomichan Search' ) );
           
             if ( 
@@ -172,12 +172,14 @@ export class OverlayController {
 
             if ( !this.clickThrough ) return;
 
+            const { x, y } = this.getMousePosition({ ...e });
+
             const mouseEvent: Electron.MouseInputEvent = {
                 type: 'mouseMove',
-                x: e.x,
-                y: e.y,
-                globalX: e.x,
-                globalY: e.y
+                x,
+                y,
+                // globalX: e.x,
+                // globalY: e.y,
             };
             this.overlayWindow.webContents.sendInputEvent(mouseEvent);
         });
@@ -186,18 +188,35 @@ export class OverlayController {
 
             if ( !this.clickThrough ) return;
 
+            const { x, y } = this.getMousePosition({ ...e });
+
             const deltaY = -1 * e.rotation * 100;
             
             const mouseEvent: Electron.MouseWheelInputEvent = {
                 type: 'mouseWheel',
                 deltaY,
-                x: e.x,
-                y: e.y,
-                globalX: e.x,
-                globalY: e.y,                
+                x: x,
+                y: y,
+                // globalX: e.x,
+                // globalY: e.y,
             };
             this.overlayWindow.webContents.sendInputEvent(mouseEvent);
         });
+    }
+
+    private getMousePosition( absolutePosition: { x: number, y: number } ) {
+
+        const [ xOffset, yOffset ] = this.overlayWindow.getPosition();
+        let x = absolutePosition.x - xOffset;
+        let y = absolutePosition.y - yOffset;
+
+        x = x >= 0 ? x : 0;
+        y = y >= 0 ? y : 0;
+
+        return {
+            x,
+            y
+        }
     }
 
     private unregisterGlobalShortcuts() {
