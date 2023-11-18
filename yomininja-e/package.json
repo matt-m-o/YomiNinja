@@ -122,13 +122,26 @@
     },
     "forceCodeSigning": true,
     "win": {
-      "publisherName": "Matheus M."
+      "extraResources": [
+        {
+          "from": "../bin/win32",
+          "to": "bin",
+          "filter": "**/*"
+        }
+      ]
     },
     "linux": {
       "icon": "electron_resources/icon_512x512.png",
       "asarUnpack": [
         "**/node_modules/sharp/**",
         "**/node_modules/x11/**"
+      ],
+      "extraResources": [
+        {
+          "from": "../bin/linux",
+          "to": "bin",
+          "filter": "**/*"
+        }
       ]
     }
   },

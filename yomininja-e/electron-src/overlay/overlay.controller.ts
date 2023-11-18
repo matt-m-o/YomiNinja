@@ -119,7 +119,7 @@ export class OverlayController {
             
             clipboard.writeText( message );
             this.overlayService.sendOcrTextTroughWS( message );
-            console.log({ text_to_copy: message });
+            // console.log({ text_to_copy: message });
             
             if ( !this.showYomichanWindowOnCopy )
                 return;

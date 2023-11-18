@@ -128,13 +128,15 @@ export class PpOcrAdapter implements OcrAdapter {
 
     startProcess() {
 
-        const cwd = isDev
-        ? join( BIN_DIR, '/ppocr' )
-        : join( process.resourcesPath, '/bin/ppocr/' );
+        const platform = os.platform();
 
-        const executableName = os.platform() == 'win32' ?
-            'ppocr_infer_service_grpc.exe' :
-            'start.sh';
+        const cwd = isDev
+            ? join( BIN_DIR, `/${platform}/ppocr` )
+            : join( process.resourcesPath, '/bin/ppocr/' );
+
+        const executableName = platform === 'win32'
+            ? 'ppocr_infer_service_grpc.exe'
+            : 'start.sh';
             
         const executable = join( cwd + `/${executableName}` );
         
