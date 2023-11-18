@@ -1,4 +1,4 @@
-import { BrowserWindow, IpcMainInvokeEvent, clipboard, globalShortcut, ipcMain } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, MouseInputEvent, clipboard, globalShortcut, ipcMain } from "electron";
 import { OverlayService } from "./overlay.service";
 import { join } from "path";
 import isDev from 'electron-is-dev';
@@ -172,7 +172,7 @@ export class OverlayController {
 
             if ( !this.clickThrough ) return;
 
-            const { x, y } = this.getMousePosition({ ...e });
+            const { x, y } = this.getMousePosition(e);
 
             const mouseEvent: Electron.MouseInputEvent = {
                 type: 'mouseMove',
@@ -188,7 +188,7 @@ export class OverlayController {
 
             if ( !this.clickThrough ) return;
 
-            const { x, y } = this.getMousePosition({ ...e });
+            const { x, y } = this.getMousePosition(e);
 
             const deltaY = -1 * e.rotation * 100;
             
@@ -202,6 +202,31 @@ export class OverlayController {
             };
             this.overlayWindow.webContents.sendInputEvent(mouseEvent);
         });
+
+        uIOhook.on( 'click', async ( e ) => {
+
+            if ( !this.clickThrough ) return;
+
+            const { x, y } = this.getMousePosition(e);
+
+            const button = [ 'left', 'right', 'middle' ][ Number( e.button ) - 1 ] as MouseInputEvent['button'];
+
+            this.overlayWindow.webContents.sendInputEvent({
+                type: 'mouseDown',
+                x,
+                y,
+                button,
+                clickCount: 1
+            });
+            this.overlayWindow.webContents.sendInputEvent({
+                type: 'mouseUp',
+                x,
+                y,
+                button,
+                clickCount: 1
+            });
+        });
+
     }
 
     private getMousePosition( absolutePosition: { x: number, y: number } ) {
