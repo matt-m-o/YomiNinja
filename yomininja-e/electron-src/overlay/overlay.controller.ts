@@ -167,7 +167,7 @@ export class OverlayController {
         globalShortcut.register( overlayHotkeys.show, () => {
 
             this.showOverlayWindow();
-            this.overlayWindow.webContents.send( 'user_command:copy_to_clipboard' );
+            // this.overlayWindow.webContents.send( 'user_command:copy_to_clipboard' );
         });
         this.globalShortcutAccelerators.push( overlayHotkeys.show );
 
