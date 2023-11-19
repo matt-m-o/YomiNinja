@@ -53,7 +53,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
         // console.log({ copyTextHotkey })
 
-        const handleKeyPress = ( e: KeyboardEvent ) => {            
+        const handleKeyPress = ( e: KeyboardEvent ) => {
 
             // console.log(e.key);
             if ( e.key === copyTextHotkey && hoveredText ) {
@@ -81,6 +81,18 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         }
 
     }, [ hoveredText ] );
+
+    const handleBoxMouseEnter = ( item: OcrItemScalable ) => {
+        if ( !overlayBehavior.copy_text_on_hover )
+            return;
+        setHoveredText( item.text )
+    }
+
+    const handleBoxMouseLeave = () => {
+        if ( !overlayBehavior.copy_text_on_hover )
+            return;
+        setHoveredText( '' );
+    }
 
     function OcrResultBox( props: { ocrItem: OcrItemScalable } ): JSX.Element {
 
@@ -123,8 +135,8 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                     maxHeight: box.dimensions.height *1.10 + '%',            
                     fontSize: fontSize + '%',
                 }}                          
-                onMouseEnter={ () => setHoveredText( ocrItem.text ) }
-                onMouseLeave={ () => setHoveredText( '' ) }
+                onMouseEnter={ () => handleBoxMouseEnter( ocrItem ) }
+                onMouseLeave={ () => handleBoxMouseLeave() }
                 onClick={ () => handleBoxClick( ocrItem.text ) }
                 // onMouseMove={ ( event ) => onMouseMoveHandler(event) }
             >
