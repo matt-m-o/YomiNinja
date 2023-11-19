@@ -95,7 +95,6 @@ export class OverlayController {
             this.overlayWindow.webContents.openDevTools();
             this.clickThrough = false;
         }
-
         
         this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop && !showDevTools, "normal" ); // normal, pop-up-menu och screen-saver
 
@@ -104,7 +103,7 @@ export class OverlayController {
             forward: true, // !!showDevTools
         });
 
-        console.log({ clickThrough: this.clickThrough })
+        // console.log({ clickThrough: this.clickThrough })
     }
 
     refreshPage(): void {
@@ -115,8 +114,8 @@ export class OverlayController {
 
         ipcMain.handle( 'user_command:copy_to_clipboard', async ( event: IpcMainInvokeEvent, message: string ) => {
 
-            if ( !message || message.length === 0 ) return;
-            
+            if ( !message || message.length === 0 ) return;            
+
             clipboard.writeText( message );
             this.overlayService.sendOcrTextTroughWS( message );
             // console.log({ text_to_copy: message });
@@ -134,6 +133,19 @@ export class OverlayController {
           
             windowManager.setForegroundWindow( yomichanWindow.handle );
           
+        });
+
+        ipcMain.handle( 'overlay:set_ignore_mouse_events', ( event: IpcMainInvokeEvent, value: boolean ) => {
+
+            // console.log(`overlay:set_ignore_mouse_events: ${value}`);
+
+            if ( this.clickThrough ) {                
+
+                this.overlayWindow.setIgnoreMouseEvents(
+                    value,
+                    { forward: true }
+                );
+            }
         });
     }
 
@@ -168,64 +180,64 @@ export class OverlayController {
         this.globalShortcutAccelerators.push( overlayHotkeys.show_and_clear );
 
 
-        uIOhook.on( 'mousemove', async ( e ) => {
+        // uIOhook.on( 'mousemove', async ( e ) => {
 
-            if ( !this.clickThrough ) return;
+        //     if ( !this.clickThrough ) return;
 
-            const { x, y } = this.getMousePosition(e);
+        //     const { x, y } = this.getMousePosition(e);
 
-            const mouseEvent: Electron.MouseInputEvent = {
-                type: 'mouseMove',
-                x,
-                y,
-                // globalX: e.x,
-                // globalY: e.y,
-            };
-            this.overlayWindow.webContents.sendInputEvent(mouseEvent);
-        });
+        //     const mouseEvent: Electron.MouseInputEvent = {
+        //         type: 'mouseMove',
+        //         x,
+        //         y,
+        //         // globalX: e.x,
+        //         // globalY: e.y,
+        //     };
+        //     this.overlayWindow.webContents.sendInputEvent(mouseEvent);
+        // });
 
-        uIOhook.on( 'wheel', async ( e ) => {
+        // uIOhook.on( 'wheel', async ( e ) => {
 
-            if ( !this.clickThrough ) return;
+        //     if ( !this.clickThrough ) return;
 
-            const { x, y } = this.getMousePosition(e);
+        //     const { x, y } = this.getMousePosition(e);
 
-            const deltaY = -1 * e.rotation * 100;
+        //     const deltaY = -1 * e.rotation * 100;
             
-            const mouseEvent: Electron.MouseWheelInputEvent = {
-                type: 'mouseWheel',
-                deltaY,
-                x: x,
-                y: y,
-                // globalX: e.x,
-                // globalY: e.y,
-            };
-            this.overlayWindow.webContents.sendInputEvent(mouseEvent);
-        });
+        //     const mouseEvent: Electron.MouseWheelInputEvent = {
+        //         type: 'mouseWheel',
+        //         deltaY,
+        //         x: x,
+        //         y: y,
+        //         // globalX: e.x,
+        //         // globalY: e.y,
+        //     };
+        //     this.overlayWindow.webContents.sendInputEvent(mouseEvent);
+        // });
 
-        uIOhook.on( 'click', async ( e ) => {
+        // uIOhook.on( 'click', async ( e ) => {
 
-            if ( !this.clickThrough ) return;
+        //     if ( !this.clickThrough ) return;
 
-            const { x, y } = this.getMousePosition(e);
+        //     const { x, y } = this.getMousePosition(e);
 
-            const button = [ 'left', 'right', 'middle' ][ Number( e.button ) - 1 ] as MouseInputEvent['button'];
+        //     const button = [ 'left', 'right', 'middle' ][ Number( e.button ) - 1 ] as MouseInputEvent['button'];
 
-            this.overlayWindow.webContents.sendInputEvent({
-                type: 'mouseDown',
-                x,
-                y,
-                button,
-                clickCount: 1
-            });
-            this.overlayWindow.webContents.sendInputEvent({
-                type: 'mouseUp',
-                x,
-                y,
-                button,
-                clickCount: 1
-            });
-        });
+        //     this.overlayWindow.webContents.sendInputEvent({
+        //         type: 'mouseDown',
+        //         x,
+        //         y,
+        //         button,
+        //         clickCount: 1
+        //     });
+        //     this.overlayWindow.webContents.sendInputEvent({
+        //         type: 'mouseUp',
+        //         x,
+        //         y,
+        //         button,
+        //         clickCount: 1
+        //     });
+        // });
 
     }
 
