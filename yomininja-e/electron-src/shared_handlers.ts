@@ -18,7 +18,7 @@ ipcMain.handle( 'settings_preset:update', async ( event: IpcMainInvokeEvent, mes
     uIOhook.removeAllListeners();
     
     overlayController.applySettingsPreset( message );
-    ocrRecognitionController.refreshActiveSettingsPreset( message );
+    ocrRecognitionController.applySettingsPreset( message );
 
     return {
         restartOcrAdapter

@@ -34,6 +34,7 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                 click_through_mode: 'auto',
                 show_yomichan_window_on_copy: true,
                 always_forward_mouse_clicks: false,
+                show_window_without_focus: false,
             }
         },
         ocr_engine: {

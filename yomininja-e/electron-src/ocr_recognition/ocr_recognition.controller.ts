@@ -31,6 +31,8 @@ export class OcrRecognitionController {
 
     private globalShortcutAccelerators: string[] = [];
 
+    private showOverlayWindowWithoutFocus: boolean = false;
+
     constructor( input: {        
         ocrRecognitionService: OcrRecognitionService;        
     }) {
@@ -49,7 +51,9 @@ export class OcrRecognitionController {
 
         const settings = await this.ocrRecognitionService.getActiveSettingsPreset();
 
-        if (!settings) return;        
+        if (!settings) return;
+
+        this.showOverlayWindowWithoutFocus = Boolean( settings.overlay.behavior.show_window_without_focus );
         
         this.registerGlobalShortcuts( settings.toJson() );
         this.registersIpcHandlers();        
@@ -216,10 +220,14 @@ export class OcrRecognitionController {
     }
 
     private showOverlayWindow() {
-        this.overlayWindow.show();
+
+        if ( this.showOverlayWindowWithoutFocus )
+            this.overlayWindow.showInactive();
+        else
+            this.overlayWindow.show();
     }
 
-    async refreshActiveSettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
+    async applySettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
 
         if ( !settingsPresetJson ) {
             settingsPresetJson = ( await this.ocrRecognitionService.getActiveSettingsPreset() )
@@ -227,9 +235,11 @@ export class OcrRecognitionController {
         }
 
         if ( !settingsPresetJson )
-            return;        
+            return;
 
-        this.registerGlobalShortcuts( settingsPresetJson );        
+        this.showOverlayWindowWithoutFocus = Boolean( settingsPresetJson.overlay.behavior.show_window_without_focus );
+
+        this.registerGlobalShortcuts( settingsPresetJson );
     }
 
     restartEngine() {

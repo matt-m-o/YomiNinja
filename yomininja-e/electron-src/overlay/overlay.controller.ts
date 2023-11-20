@@ -22,6 +22,7 @@ export class OverlayController {
     private copyTextOnClick: boolean = false;
     private showYomichanWindowOnCopy: boolean = true;
     private alwaysForwardMouseClicks: boolean = false;
+    private showWindowWithoutFocus: boolean = false;
 
     private globalShortcutAccelerators: string[] = [];
 
@@ -44,6 +45,7 @@ export class OverlayController {
             this.showYomichanWindowOnCopy = Boolean( settingsJson.overlay.behavior.show_yomichan_window_on_copy );
             this.clickThroughMode = settingsJson.overlay.behavior.click_through_mode;
             this.alwaysForwardMouseClicks = Boolean( settingsJson.overlay.behavior.always_forward_mouse_clicks );
+            this.showWindowWithoutFocus = Boolean( settingsJson.overlay.behavior.show_window_without_focus );
         }
 
         this.createOverlayWindow();
@@ -277,20 +279,23 @@ export class OverlayController {
 
     private showOverlayWindow() {
         // console.log("OverlayController.showOverlayWindow");
-
-        const keepFocusOnCurrentWindow = false;
         
         const overlayWindowHandle = getBrowserWindowHandle( this.overlayWindow );
         
         console.log({ overlayWindowHandle });
         
-        if ( !keepFocusOnCurrentWindow )
+        if ( !this.showWindowWithoutFocus ) {
+
+            this.overlayWindow.setVisibleOnAllWorkspaces(
+                true, { visibleOnFullScreen:true }
+            );
             windowManager.setForegroundWindow( overlayWindowHandle );
+        }
 
         this.overlayWindow.setAlwaysOnTop( false, "normal" );
-        this.overlayWindow.setAlwaysOnTop( true, "normal" ); // normal, pop-up-menu och screen-saver
+        this.overlayWindow.setAlwaysOnTop( true, "screen-saver" ); // normal, pop-up-menu, och, screen-saver
         
-        this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );
+        this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop, "screen-saver" );
     }
 
     async applySettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
@@ -306,7 +311,8 @@ export class OverlayController {
         this.clickThroughMode = settingsPresetJson.overlay.behavior.click_through_mode;
         this.showYomichanWindowOnCopy = Boolean( settingsPresetJson.overlay.behavior.show_yomichan_window_on_copy );
         this.alwaysForwardMouseClicks = Boolean( settingsPresetJson.overlay.behavior.always_forward_mouse_clicks );
-        
+        this.showWindowWithoutFocus = Boolean( settingsPresetJson.overlay.behavior.show_window_without_focus );
+
         this.overlayWindow?.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );
         this.overlayWindow.setIgnoreMouseEvents( this.clickThroughMode !== 'disabled', {
             forward: true,

@@ -112,6 +112,18 @@ export default function AppSettingsOthers() {
                             /> 
                         }
                     />
+                    <FormControlLabel label='Show overlay without focus'
+                        control={
+                            <Switch
+                                checked={ Boolean( overlayBehavior.show_window_without_focus ) }
+                                onChange={ ( event ) => {
+                                    updateActivePresetBehavior({
+                                        show_window_without_focus: event.target.checked
+                                    });
+                                }}
+                            /> 
+                        }
+                    />
                     <FormControlLabel label='Show Yomichan window on text copy'
                         control={
                             <Switch

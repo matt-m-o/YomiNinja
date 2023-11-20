@@ -42,6 +42,7 @@ export type OverlayBehavior = {
     click_through_mode: ClickThroughMode;
     show_yomichan_window_on_copy: boolean;
     always_forward_mouse_clicks: boolean;
+    show_window_without_focus: boolean;
 };
 
 export type OverlayHotkeys = {
