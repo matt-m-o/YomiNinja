@@ -21,6 +21,7 @@ export class OverlayController {
     private clickThrough: boolean = true;
     private copyTextOnClick: boolean = false;
     private showYomichanWindowOnCopy: boolean = true;
+    private alwaysForwardMouseClicks: boolean = false;
 
     private globalShortcutAccelerators: string[] = [];
 
@@ -42,6 +43,7 @@ export class OverlayController {
             this.overlayAlwaysOnTop = Boolean( settingsJson.overlay.behavior.always_on_top );
             this.showYomichanWindowOnCopy = Boolean( settingsJson.overlay.behavior.show_yomichan_window_on_copy );
             this.clickThrough = Boolean( settingsJson.overlay.behavior.click_through );
+            this.alwaysForwardMouseClicks = Boolean( settingsJson.overlay.behavior.always_forward_mouse_clicks );
         }
 
         this.createOverlayWindow();
@@ -141,10 +143,10 @@ export class OverlayController {
 
             if ( this.clickThrough ) {                
 
-                this.overlayWindow.setIgnoreMouseEvents(
-                    value,
-                    { forward: true }
-                );
+                // this.overlayWindow.setIgnoreMouseEvents(
+                //     value,
+                //     { forward: true }
+                // );
             }
         });
     }
@@ -180,64 +182,70 @@ export class OverlayController {
         this.globalShortcutAccelerators.push( overlayHotkeys.show_and_clear );
 
 
-        // uIOhook.on( 'mousemove', async ( e ) => {
+        uIOhook.on( 'mousemove', async ( e ) => {
 
-        //     if ( !this.clickThrough ) return;
+            if ( 
+                !this.clickThrough ||
+                process.platform === 'win32'
+            ) return;
 
-        //     const { x, y } = this.getMousePosition(e);
+            const { x, y } = this.getMousePosition(e);
 
-        //     const mouseEvent: Electron.MouseInputEvent = {
-        //         type: 'mouseMove',
-        //         x,
-        //         y,
-        //         // globalX: e.x,
-        //         // globalY: e.y,
-        //     };
-        //     this.overlayWindow.webContents.sendInputEvent(mouseEvent);
-        // });
+            const mouseEvent: Electron.MouseInputEvent = {
+                type: 'mouseMove',
+                x,
+                y,
+                // globalX: e.x,
+                // globalY: e.y,
+            };
+            this.overlayWindow.webContents.sendInputEvent(mouseEvent);
+        });
 
-        // uIOhook.on( 'wheel', async ( e ) => {
+        uIOhook.on( 'wheel', async ( e ) => {
 
-        //     if ( !this.clickThrough ) return;
+            if ( !this.clickThrough ) return;
 
-        //     const { x, y } = this.getMousePosition(e);
+            const { x, y } = this.getMousePosition(e);
 
-        //     const deltaY = -1 * e.rotation * 100;
+            const deltaY = -1 * e.rotation * 100;
             
-        //     const mouseEvent: Electron.MouseWheelInputEvent = {
-        //         type: 'mouseWheel',
-        //         deltaY,
-        //         x: x,
-        //         y: y,
-        //         // globalX: e.x,
-        //         // globalY: e.y,
-        //     };
-        //     this.overlayWindow.webContents.sendInputEvent(mouseEvent);
-        // });
+            const mouseEvent: Electron.MouseWheelInputEvent = {
+                type: 'mouseWheel',
+                deltaY,
+                x: x,
+                y: y,
+                // globalX: e.x,
+                // globalY: e.y,
+            };
+            this.overlayWindow.webContents.sendInputEvent(mouseEvent);
+        });
 
-        // uIOhook.on( 'click', async ( e ) => {
+        uIOhook.on( 'click', async ( e ) => {
 
-        //     if ( !this.clickThrough ) return;
+            if (
+                !this.clickThrough ||
+                !this.alwaysForwardMouseClicks
+            ) return;
 
-        //     const { x, y } = this.getMousePosition(e);
+            const { x, y } = this.getMousePosition(e);
 
-        //     const button = [ 'left', 'right', 'middle' ][ Number( e.button ) - 1 ] as MouseInputEvent['button'];
+            const button = [ 'left', 'right', 'middle' ][ Number( e.button ) - 1 ] as MouseInputEvent['button'];
 
-        //     this.overlayWindow.webContents.sendInputEvent({
-        //         type: 'mouseDown',
-        //         x,
-        //         y,
-        //         button,
-        //         clickCount: 1
-        //     });
-        //     this.overlayWindow.webContents.sendInputEvent({
-        //         type: 'mouseUp',
-        //         x,
-        //         y,
-        //         button,
-        //         clickCount: 1
-        //     });
-        // });
+            this.overlayWindow.webContents.sendInputEvent({
+                type: 'mouseDown',
+                x,
+                y,
+                button,
+                clickCount: 1
+            });
+            this.overlayWindow.webContents.sendInputEvent({
+                type: 'mouseUp',
+                x,
+                y,
+                button,
+                clickCount: 1
+            });
+        });
 
     }
 
@@ -266,20 +274,24 @@ export class OverlayController {
     }
 
     private showOverlayWindow() {
+        // console.log("OverlayController.showOverlayWindow");
+
+        const keepFocusOnCurrentWindow = true;
         
         const overlayWindowHandle = getBrowserWindowHandle( this.overlayWindow );
-
+        
         console.log({ overlayWindowHandle });
         
-        windowManager.setForegroundWindow( overlayWindowHandle );
+        if ( !keepFocusOnCurrentWindow )
+            windowManager.setForegroundWindow( overlayWindowHandle );
 
         this.overlayWindow.setAlwaysOnTop( false, "normal" );
         this.overlayWindow.setAlwaysOnTop( true, "normal" ); // normal, pop-up-menu och screen-saver
         
-        this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );        
+        this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );
     }
 
-    async refreshActiveSettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
+    async applySettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
 
         if ( !settingsPresetJson ) {
             settingsPresetJson = ( await this.overlayService.getActiveSettingsPreset() )
@@ -291,6 +303,7 @@ export class OverlayController {
         this.overlayAlwaysOnTop = Boolean( settingsPresetJson.overlay.behavior.always_on_top );
         this.clickThrough = Boolean( settingsPresetJson.overlay.behavior.click_through );
         this.showYomichanWindowOnCopy = Boolean( settingsPresetJson.overlay.behavior.show_yomichan_window_on_copy );
+        this.alwaysForwardMouseClicks = Boolean( settingsPresetJson.overlay.behavior.always_forward_mouse_clicks );
         
         this.overlayWindow?.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );
         this.overlayWindow.setIgnoreMouseEvents( this.clickThrough, {

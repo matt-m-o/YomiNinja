@@ -28,11 +28,12 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                 ocr_on_screen_shot: true,                
             },
             behavior: {
-                copy_text_on_hover: true,
-                copy_text_on_click: false,
+                copy_text_on_hover: false,
+                copy_text_on_click: true,
                 always_on_top: false,
                 click_through: true,
                 show_yomichan_window_on_copy: true,
+                always_forward_mouse_clicks: false,
             }
         },
         ocr_engine: {

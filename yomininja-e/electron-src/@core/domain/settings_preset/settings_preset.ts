@@ -11,7 +11,7 @@ export type OcrEngineSettings = {
     max_image_width: number;
     cpu_threads: number;
     invert_colors: boolean;
-    inference_runtime: string
+    inference_runtime: string;
 };
 
 export type OverlayOcrItemBoxVisuals = {
@@ -40,6 +40,7 @@ export type OverlayBehavior = {
     always_on_top: boolean;
     click_through: boolean;
     show_yomichan_window_on_copy: boolean;
+    always_forward_mouse_clicks: boolean;
 };
 
 export type OverlayHotkeys = {

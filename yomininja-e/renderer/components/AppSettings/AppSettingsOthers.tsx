@@ -46,6 +46,18 @@ export default function AppSettingsOthers() {
                             /> 
                         }
                     />
+                    <FormControlLabel label='React to mouse clicks even when not focused'
+                        control={
+                            <Switch
+                                checked={ Boolean( overlayBehavior?.always_forward_mouse_clicks ) }
+                                onChange={ ( event ) => {
+                                    updateActivePresetBehavior({
+                                        always_forward_mouse_clicks: event.target.checked
+                                    });
+                                }}
+                            /> 
+                        }
+                    />
                     <FormControlLabel label='Copy text on click'
                         control={
                             <Switch
