@@ -18,8 +18,9 @@
     "clean": "rimraf dist main renderer/out renderer/.next && node-gyp clean",
     "dev": "npm run build-electron && electron .",
     "build-renderer": "next build renderer",
-    "build-electron": "tsc -p electron-src && webpack --mode production",
+    "build-electron": "tsc -p electron-src && webpack --mode production && npm run copy-assets",
     "build": "npm run build-renderer && npm run build-electron",
+    "copy-assets": "node ./copy_assets.js",
     "install-app-deps": "npx electron-rebuild install-app-deps",
     "pack-app": "npm run build && electron-builder --dir",
     "dist": "npm run generate-licenses && npm run build && electron-builder",
@@ -120,8 +121,9 @@
       "buildResources": "electron_resources",
       "output": "dist"
     },
-    "forceCodeSigning": true,
+    "forceCodeSigning": true,    
     "win": {
+      "publisherName": "Matt M.",
       "extraResources": [
         {
           "from": "../bin/win32",
@@ -130,7 +132,7 @@
         }
       ]
     },
-    "linux": {
+    "linux": {      
       "icon": "electron_resources/icon_512x512.png",
       "asarUnpack": [
         "**/node_modules/sharp/**",
