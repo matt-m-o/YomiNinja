@@ -5,7 +5,7 @@ import isDev from 'electron-is-dev';
 import { format } from "url";
 import { PAGES_DIR } from "../util/directories.util";
 import { WindowManager } from "../../gyp_modules/window_management/window_manager";
-import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
+import { ClickThroughMode, SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 import { uIOhook } from "uiohook-napi";
 import { windowManager } from "../@core/infra/app_initialization";
 import { getBrowserWindowHandle } from "../util/browserWindow.util";
@@ -18,7 +18,7 @@ export class OverlayController {
     private overlayWindow: BrowserWindow;    
 
     private overlayAlwaysOnTop: boolean = true;
-    private clickThrough: boolean = true;
+    private clickThroughMode: ClickThroughMode = 'auto';
     private copyTextOnClick: boolean = false;
     private showYomichanWindowOnCopy: boolean = true;
     private alwaysForwardMouseClicks: boolean = false;
@@ -42,7 +42,7 @@ export class OverlayController {
 
             this.overlayAlwaysOnTop = Boolean( settingsJson.overlay.behavior.always_on_top );
             this.showYomichanWindowOnCopy = Boolean( settingsJson.overlay.behavior.show_yomichan_window_on_copy );
-            this.clickThrough = Boolean( settingsJson.overlay.behavior.click_through );
+            this.clickThroughMode = settingsJson.overlay.behavior.click_through_mode;
             this.alwaysForwardMouseClicks = Boolean( settingsJson.overlay.behavior.always_forward_mouse_clicks );
         }
 
@@ -95,13 +95,13 @@ export class OverlayController {
         const showDevTools = isDev && false;
         if (showDevTools) {
             this.overlayWindow.webContents.openDevTools();
-            this.clickThrough = false;
+            this.clickThroughMode = 'disabled';
         }
         
         this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop && !showDevTools, "normal" ); // normal, pop-up-menu och screen-saver
 
         // "True" Prevents black image when using youtube on some browsers (e.g. Brave)
-        this.overlayWindow.setIgnoreMouseEvents( this.clickThrough, { // !showDevTools
+        this.overlayWindow.setIgnoreMouseEvents( this.clickThroughMode !== 'disabled', { // !showDevTools
             forward: true, // !!showDevTools
         });
 
@@ -141,12 +141,14 @@ export class OverlayController {
 
             // console.log(`overlay:set_ignore_mouse_events: ${value}`);
 
-            if ( this.clickThrough ) {                
+            // console.log('clickThroughMode: '+ this.clickThroughMode);
 
-                // this.overlayWindow.setIgnoreMouseEvents(
-                //     value,
-                //     { forward: true }
-                // );
+            if ( this.clickThroughMode === 'auto' ) {
+
+                this.overlayWindow.setIgnoreMouseEvents(
+                    value,
+                    { forward: true }
+                );
             }
         });
     }
@@ -185,7 +187,7 @@ export class OverlayController {
         uIOhook.on( 'mousemove', async ( e ) => {
 
             if ( 
-                !this.clickThrough ||
+                this.clickThroughMode === 'disabled' ||
                 process.platform === 'win32'
             ) return;
 
@@ -203,7 +205,7 @@ export class OverlayController {
 
         uIOhook.on( 'wheel', async ( e ) => {
 
-            if ( !this.clickThrough ) return;
+            if ( this.clickThroughMode !== 'enabled' ) return;
 
             const { x, y } = this.getMousePosition(e);
 
@@ -223,7 +225,7 @@ export class OverlayController {
         uIOhook.on( 'click', async ( e ) => {
 
             if (
-                !this.clickThrough ||
+                this.clickThroughMode === 'disabled' ||
                 !this.alwaysForwardMouseClicks
             ) return;
 
@@ -276,7 +278,7 @@ export class OverlayController {
     private showOverlayWindow() {
         // console.log("OverlayController.showOverlayWindow");
 
-        const keepFocusOnCurrentWindow = true;
+        const keepFocusOnCurrentWindow = false;
         
         const overlayWindowHandle = getBrowserWindowHandle( this.overlayWindow );
         
@@ -301,13 +303,13 @@ export class OverlayController {
         if ( !settingsPresetJson ) return;
 
         this.overlayAlwaysOnTop = Boolean( settingsPresetJson.overlay.behavior.always_on_top );
-        this.clickThrough = Boolean( settingsPresetJson.overlay.behavior.click_through );
+        this.clickThroughMode = settingsPresetJson.overlay.behavior.click_through_mode;
         this.showYomichanWindowOnCopy = Boolean( settingsPresetJson.overlay.behavior.show_yomichan_window_on_copy );
         this.alwaysForwardMouseClicks = Boolean( settingsPresetJson.overlay.behavior.always_forward_mouse_clicks );
         
         this.overlayWindow?.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );
-        this.overlayWindow.setIgnoreMouseEvents( this.clickThrough, {
-            forward: this.clickThrough,
+        this.overlayWindow.setIgnoreMouseEvents( this.clickThroughMode !== 'disabled', {
+            forward: true,
         });
 
         this.registerGlobalShortcuts( settingsPresetJson );

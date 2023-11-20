@@ -1,7 +1,7 @@
-import { Box, Container, Divider, FormControlLabel, FormGroup, Switch, SxProps, TextField, Theme, Typography, styled } from "@mui/material";
+import { Box, Container, Divider, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Select, Switch, SxProps, TextField, Theme, Typography, styled } from "@mui/material";
 import { SettingsContext } from "../../context/settings.provider";
 import { useContext, useEffect, useState } from "react";
-import { OverlayBehavior } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import { ClickThroughMode, OverlayBehavior } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
 
 
 // Settings section component
@@ -9,7 +9,17 @@ export default function AppSettingsOthers() {
 
     const { activeSettingsPreset, updateActivePresetBehavior } = useContext( SettingsContext );    
 
-    const overlayBehavior: OverlayBehavior = activeSettingsPreset?.overlay?.behavior;    
+    const overlayBehavior: OverlayBehavior = activeSettingsPreset?.overlay?.behavior;
+    const [ clickThroughMode, setClickThroughMode ] = useState<ClickThroughMode>('auto');
+
+    useEffect( () => {
+
+        if ( !overlayBehavior.click_through_mode )
+            return;
+
+        setClickThroughMode( overlayBehavior.click_through_mode );
+
+    }, [ overlayBehavior ] )
     
 
     return (
@@ -22,31 +32,37 @@ export default function AppSettingsOthers() {
             <Container sx={{ mt: 2, mb: 2 }}>
 
                 <FormGroup>
-                    <FormControlLabel label='Always on top'
+
+                    <FormControlLabel label='Click-through mode' labelPlacement="top"
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            ml: 0,
+                            mb: 2
+                        }}
                         control={
-                            <Switch
-                                checked={ Boolean( overlayBehavior?.always_on_top ) }
+                            <Select
+                                value={ clickThroughMode || 'auto' } 
                                 onChange={ ( event ) => {
-                                    updateActivePresetBehavior({
-                                        always_on_top: event.target.checked
-                                    });
+                                    const { value } = event.target
+                                    if (typeof value === 'string') {
+                                        setClickThroughMode( value as ClickThroughMode );
+                                        updateActivePresetBehavior({
+                                            click_through_mode: value as ClickThroughMode
+                                        })
+                                    }
                                 }}
-                            /> 
+                                sx={{ width: '145px' }}
+                            >
+                                <MenuItem value='auto'>Auto</MenuItem>
+                                <MenuItem value='enabled'>Enabled</MenuItem>
+                                <MenuItem value='disabled'>Disabled</MenuItem>
+                            </Select>
                         }
                     />
-                    <FormControlLabel label='Click-through'
-                        control={
-                            <Switch
-                                checked={ Boolean( overlayBehavior?.click_through ) }
-                                onChange={ ( event ) => {
-                                    updateActivePresetBehavior({
-                                        click_through: event.target.checked
-                                    });
-                                }}
-                            /> 
-                        }
-                    />
-                    <FormControlLabel label='React to mouse clicks even when not focused'
+
+                    
+                    <FormControlLabel label='React to clicks with click-through enabled'
                         control={
                             <Switch
                                 checked={ Boolean( overlayBehavior?.always_forward_mouse_clicks ) }
@@ -58,6 +74,20 @@ export default function AppSettingsOthers() {
                             /> 
                         }
                     />
+
+                    <FormControlLabel label='Always on top' title="Not available when click-through is disabled"
+                        control={
+                            <Switch
+                                checked={ Boolean( overlayBehavior?.always_on_top ) }
+                                onChange={ ( event ) => {
+                                    updateActivePresetBehavior({
+                                        always_on_top: event.target.checked
+                                    });
+                                }}
+                            /> 
+                        }
+                    />
+
                     <FormControlLabel label='Copy text on click'
                         control={
                             <Switch

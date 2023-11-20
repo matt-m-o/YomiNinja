@@ -31,7 +31,7 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                 copy_text_on_hover: false,
                 copy_text_on_click: true,
                 always_on_top: false,
-                click_through: true,
+                click_through_mode: 'auto',
                 show_yomichan_window_on_copy: true,
                 always_forward_mouse_clicks: false,
             }
