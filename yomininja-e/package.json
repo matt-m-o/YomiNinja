@@ -18,7 +18,7 @@
     "clean": "rimraf dist main renderer/out renderer/.next && node-gyp clean",
     "dev": "npm run build-electron && electron .",
     "build-renderer": "next build renderer",
-    "build-electron": "tsc -p electron-src && webpack --mode production && npm run copy-assets",
+    "build-electron": "npm run types-workaround && tsc -p electron-src && webpack --mode production && npm run copy-assets",
     "build": "npm run build-renderer && npm run build-electron",
     "copy-assets": "node ./copy_assets.js",
     "install-app-deps": "npx electron-rebuild install-app-deps",
@@ -30,7 +30,8 @@
     "test:cov": "jest --coverage",
     "grpc-types": "proto-loader-gen-types --longs=String --enums=String --defaults --keep-case --oneofs --grpcLib=@grpc/grpc-js --outDir=./grpc/rpc ./grpc/protos/ocr_service.proto",
     "gyp-build": "node-gyp clean && node-gyp configure && node-gyp build",
-    "generate-licenses": "npx generate-license-file --input package.json --output third-party-licenses.txt --overwrite"
+    "generate-licenses": "npx generate-license-file --input package.json --output third-party-licenses.txt --overwrite",
+    "types-workaround": "node ./types/types_workaround.js"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.9.3",
