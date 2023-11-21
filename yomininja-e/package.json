@@ -103,11 +103,6 @@
     ],
     "extraResources": [
       {
-        "from": "../bin",
-        "to": "bin",
-        "filter": "**/*"
-      },
-      {
         "from": "third-party-licenses.txt",
         "to": "./"
       },
