@@ -60,7 +60,7 @@ export class OcrRecognitionService {
             imageBuffer = await this.cropWindowFromImage( window, imageBuffer );
         }
 
-        displayImage( imageBuffer as Buffer );
+        // displayImage( imageBuffer as Buffer );
 
         if ( !imageBuffer )
             return null;
