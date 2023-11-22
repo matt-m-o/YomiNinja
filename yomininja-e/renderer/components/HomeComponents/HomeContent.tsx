@@ -126,10 +126,10 @@ export default function HomeContent() {
                             marginLeft: 20
                         }}
                     >
-                        <li> Built-in popup dictionaries. </li>
-                        <li> WebSocket for texthookers. Port: 6677.</li>
-                        <li> Copy text on click. (only with Click-through disabled for now). </li>
-                        <li> Option to alter the OCR inference runtime. This might be helpful for those experiencing issues with OCR functionality. </li>
+                        <li> Extensions toolbar buttons. </li>
+                        <li> Click-through auto mode. </li>
+                        <li> Option to enable overlay clicks even with click-through enabled. </li>
+                        <li> Option to show the overlay without stealing focus from the current application. </li>
                     </ul>
 
                 </CardContent>
@@ -156,6 +156,7 @@ export default function HomeContent() {
                     >
                         <li>Achieve the lowest latency by using the "PrintScreen" key.</li>
                         <li>Customize hotkeys, text auto-copy, and more in the settings menu.</li>
+                        <li>The copied text is also transmitted via WebSockets on port 6677.</li>
                     </ul>
 
                 </CardContent>

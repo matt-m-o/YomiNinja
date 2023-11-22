@@ -112,7 +112,7 @@ export default function AppSettingsOthers() {
                             /> 
                         }
                     />
-                    <FormControlLabel label='Show overlay without focus'
+                    <FormControlLabel label='Show overlay without stealing focus'
                         control={
                             <Switch
                                 checked={ Boolean( overlayBehavior.show_window_without_focus ) }

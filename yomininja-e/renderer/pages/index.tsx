@@ -1,5 +1,5 @@
 import Layout, { LayoutProps } from '../components/Layout';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Home, Settings } from '@mui/icons-material';
 import AppSettingsMenu from '../components/AppSettings/AppSettings';
 import { SettingsProvider } from '../context/settings.provider';
@@ -68,6 +68,12 @@ export default function IndexPage() {
       }
     ]
   };
+
+  useEffect( () => {
+    document.addEventListener( 'contextmenu', event => {
+        event.preventDefault();
+    });        
+  }, [] );
 
   return (
     <CaptureSourceProvider>
