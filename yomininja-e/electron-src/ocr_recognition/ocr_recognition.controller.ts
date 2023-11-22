@@ -126,7 +126,7 @@ export class OcrRecognitionController {
                 display: this.captureSourceDisplay,
                 window: this.captureSourceWindow,
             });
-            console.log({ ocrResultScalable });
+            // console.log({ ocrResultScalable });
 
             // console.timeEnd('controller.recognize');
             // console.log('');

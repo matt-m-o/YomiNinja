@@ -47,9 +47,14 @@ export class WindowManagerLinuxX11 implements WindowManagerCppInterface {
         this.client.RaiseWindow( windowHandle );
     }
 
-    async getWindowProperties( windowHandle: number ): Promise< WindowProperties > {
+    async getWindowProperties( windowHandle: number ): Promise< WindowProperties | undefined > {
 
         console.log(`getWindowProperties: ${windowHandle}`);
+
+        const exists = await this.windowExists( windowHandle );
+        console.log(`${windowHandle} exists: ${exists}`);
+
+        if ( !exists ) return;
 
         const title = await this.getWindowTitle( windowHandle );
 
@@ -78,14 +83,17 @@ export class WindowManagerLinuxX11 implements WindowManagerCppInterface {
         });
     }
 
-    async getAllWindows() {
+    async getAllWindows(): Promise< WindowProperties[] > {
 
         const ids = await this.getAllWindowIds();
-        const windows = [];
+        const windows: WindowProperties[] = [];
 
         for ( const id of ids ) {
+
             const window = await this.getWindowProperties( id );
-            windows.push( window );
+
+            if ( window )
+                windows.push( window );
         }
 
         return windows;
@@ -106,7 +114,10 @@ export class WindowManagerLinuxX11 implements WindowManagerCppInterface {
     }
 
 
-    private async getWindowTitle( windowId: number ): Promise< string > {        
+    private async getWindowTitle( windowId: number ): Promise< string > {
+
+        const exists = await this.windowExists( windowId );
+        if ( !exists ) return '';
 
         return new Promise( ( resolve, reject ) => {
             this.client.InternAtom( false, '_NET_WM_NAME', ( wmNameError: any, wmNameAtom: any ) => {
@@ -154,7 +165,7 @@ export class WindowManagerLinuxX11 implements WindowManagerCppInterface {
 
     private async windowExists( windowHandle: number ): Promise< boolean > {
 
-        const ids = await this.getAllWindowIds( windowHandle );
+        const ids = await this.getAllWindowIds();
 
         return ids.some( id => id === windowHandle );
     }

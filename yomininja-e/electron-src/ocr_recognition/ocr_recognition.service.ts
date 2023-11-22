@@ -65,6 +65,10 @@ export class OcrRecognitionService {
         if ( !imageBuffer )
             return null;
 
+        // const isValidImage = await this.isValidImage( imageBuffer );
+        // console.log({ isValidImage });
+
+        // if ( !isValidImage ) return null;
 
         return await this.recognizeImageUseCase.execute({
             imageBuffer,
@@ -184,7 +188,8 @@ export class OcrRecognitionService {
 
         if ( !windowCaptureSource ) return;
                 
-        const windowProps = await windowManager.getWindow( Number( windowCaptureSource?.id.split(':')[1] ) );        
+        const windowProps = await windowManager.getWindow( Number( windowCaptureSource?.id.split(':')[1] ) );
+        if ( !windowProps ) return;
 
         const externalWindow: ExternalWindow = {
             id: Number(windowCaptureSource.id.split(':')[1]),
@@ -245,5 +250,17 @@ export class OcrRecognitionService {
                 height: window.size.height,
             })
             .toBuffer();    
+    }
+
+    async isValidImage( data: Buffer | string ): Promise< boolean > {
+        try {
+
+            const metadata = await sharp(data).metadata();
+            console.log({ metadata });
+
+            return true;
+        } catch (error) {
+            return false;
+        }
     }
 }

@@ -1,6 +1,5 @@
 import bindings from 'bindings';
 import os from 'os';
-import { WindowManagerCppDummy } from './window_manager_dummy';
 import { WindowManagerLinuxX11 } from './window_manager_linux_x11';
 
 type Size = {
@@ -28,8 +27,8 @@ export type TaskbarProperties = {
 export interface WindowManagerCppInterface {
     init?: () => Promise< void >;
     setForegroundWindow( windowHandle: number ): void | Promise< void >; // Set window to front
-    getWindowProperties( windowHandle: number ): WindowProperties | Promise< WindowProperties >;
-    getAllWindows(): any;
+    getWindowProperties( windowHandle: number ): WindowProperties | Promise< WindowProperties | undefined >;
+    getAllWindows(): Promise< WindowProperties[] >;
     getTaskBarProps(): TaskbarProperties;
 };
 
@@ -57,9 +56,12 @@ export class WindowManager {
         this.windowManager.setForegroundWindow( windowHandle );
     }
     
-    async getWindow( windowHandle: number  ): Promise< WindowProperties > {
+    async getWindow( windowHandle: number  ): Promise< WindowProperties | undefined > {
 
         const result = await this.windowManager.getWindowProperties( windowHandle );
+
+        if ( !result ) return;
+
         this.fixTitle([result]);
 
         return result;
