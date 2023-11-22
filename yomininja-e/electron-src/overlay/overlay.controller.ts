@@ -114,24 +114,30 @@ export class OverlayController {
 
         ipcMain.handle( 'user_command:copy_to_clipboard', ( event: IpcMainInvokeEvent, message: string ) => {
 
-            if ( !message || message.length === 0 ) return;
+            try {
+
+                if ( !message || message.length === 0 ) return;
+
+                console.log({ text_to_copy: message });
+                
+                clipboard.writeText( message );
+                this.overlayService.sendOcrTextTroughWS( message );
+                
+                if ( !this.showYomichanWindowOnCopy )
+                    return;
+
+                const windows = this.windowManager.getAllWindows();
             
-            clipboard.writeText( message );
-            this.overlayService.sendOcrTextTroughWS( message );
+                const yomichanWindow = windows.find( window => window.title.includes( '- Yomichan Search' ) );
             
-            const windows = this.windowManager.getAllWindows();
-          
-            const yomichanWindow = windows.find( window => window.title.includes( '- Yomichan Search' ) );
-          
-            if ( 
-                !yomichanWindow ||
-                !this.showYomichanWindowOnCopy
-            ) 
-                return;
-          
-            this.windowManager.setForegroundWindow( yomichanWindow.handle );
-          
-            console.log({ text_to_copy: message });
+                if ( !yomichanWindow ) 
+                    return;
+            
+                this.windowManager.setForegroundWindow( yomichanWindow.handle );
+
+            } catch (error) {
+                console.error(error);
+            }
           
         });
     }
