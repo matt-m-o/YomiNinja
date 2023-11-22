@@ -100,7 +100,7 @@
     ],
     "extraResources": [
       {
-        "from": "../bin",
+        "from": "../bin/win32",
         "to": "bin",
         "filter": "**/*"
       },

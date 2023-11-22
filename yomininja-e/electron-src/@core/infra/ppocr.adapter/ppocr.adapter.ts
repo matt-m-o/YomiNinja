@@ -129,7 +129,7 @@ export class PpOcrAdapter implements OcrAdapter {
     startProcess() {
 
         const cwd = isDev
-        ? join( BIN_DIR, '/ppocr' )
+        ? join( BIN_DIR, `/${process.platform}/ppocr` )
         : join( process.resourcesPath, '/bin/ppocr/' );
 
         // let cwd = join( __dirname, "../../../../../../bin/ppocr" );
