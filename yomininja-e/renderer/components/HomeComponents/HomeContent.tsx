@@ -59,7 +59,12 @@ export default function HomeContent() {
 
     return (
         
-        <Box display='flex' justifyContent='center' flexDirection='column' m={'auto'}>
+        <Box display='flex'
+            justifyContent='center'
+            flexDirection='column'
+            m={'auto'}
+            sx={{ userSelect: 'none' }}
+        >
 
             <Card variant="elevation" sx={{ borderRadius: 4, mb: 3, pl: 1, pr: 1 }}>
                 <CardContent>
@@ -107,7 +112,7 @@ export default function HomeContent() {
                             />
                         </Grid>
 
-                    </Grid>
+                    </Grid>                    
 
                     <Typography fontSize='1rem' lineHeight={2} ml={1} mb={0} mt={'56px'}>
                         ✨New features:
@@ -121,9 +126,9 @@ export default function HomeContent() {
                             marginLeft: 20
                         }}
                     >
-                        <li> Option to invert the captured image colors. Good for text on a dark background.</li>
-                        <li> WebSocket for texthookers. Port: 6677.</li>
-                        <li> Option to alter the OCR inference runtime. This might be helpful for those experiencing issues with OCR functionality. </li>
+                        <li> Built-in popup dictionaries. </li>
+                        <li> Copy text on click. (only with Click-through disabled for now). </li>
+                        <li> Extensions toolbar buttons. </li>
                     </ul>
 
                 </CardContent>
@@ -150,6 +155,7 @@ export default function HomeContent() {
                     >
                         <li>Achieve the lowest latency by using the "PrintScreen" key.</li>
                         <li>Customize hotkeys, text auto-copy, and more in the settings menu.</li>
+                        <li>The copied text is also transmitted via WebSockets on port 6677.</li>
                     </ul>
 
                 </CardContent>

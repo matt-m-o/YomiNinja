@@ -2,10 +2,14 @@ import './container_registry/container_registry';
 import { Language, Language_CreationInput } from '../domain/language/language';
 import { Profile } from '../domain/profile/profile';
 import { SettingsPreset } from "../domain/settings_preset/settings_preset";
-import { get_MainDataSource } from "./container_registry/db_registry";
+import { get_DictionaryDataSource, get_MainDataSource } from "./container_registry/db_registry";
 import { get_LanguageRepository, get_ProfileRepository, get_SettingsPresetRepository } from "./container_registry/repositories_registry";
 import os from 'os';
 import LanguageTypeOrmRepository from './db/typeorm/language/language.typeorm.repository';
+import { applyCpuHotfix } from './ppocr.adapter/hotfix/hardware_compatibility_hotfix';
+import { get_CreateSettingsPresetUseCase, get_GetActiveSettingsPresetUseCase, get_UpdateSettingsPresetUseCase } from './container_registry/use_cases_registry';
+import { get_PpOcrAdapter } from './container_registry/adapters_registry';
+
 
 export let activeProfile: Profile;
 
@@ -32,8 +36,18 @@ export async function initializeApp() {
     try {
 
         // Initializing database
-        const mainDataSource = await get_MainDataSource();
-        await mainDataSource.initialize();
+        await get_MainDataSource().initialize();
+        const datasource = await get_DictionaryDataSource().initialize();
+        
+        // Setting database cache size
+        const dbSize = 100 * 1024; // KB
+        const defaultPageSize = 4; // KB
+        const cacheSize = dbSize / defaultPageSize;
+
+        const queryRunner = datasource.createQueryRunner();        
+        await queryRunner.query(`PRAGMA cache_size = ${cacheSize};`);         
+        await queryRunner.release();
+
 
         // Getting repositories 
         const languageRepo = get_LanguageRepository();
@@ -46,9 +60,9 @@ export async function initializeApp() {
         if ( !defaultSettingsPreset ) {
 
             // Creating default settings preset
-            defaultSettingsPreset = SettingsPreset.create();
-            defaultSettingsPreset.updateOcrEngineSettings({ cpu_threads: os.cpus().length });
-            await settingsPresetRepo.insert( defaultSettingsPreset );
+            await get_CreateSettingsPresetUseCase().execute();            
+
+            defaultSettingsPreset = await settingsPresetRepo.findOne({ name: SettingsPreset.default_name }) as SettingsPreset ;
         }
 
         
@@ -67,7 +81,7 @@ export async function initializeApp() {
             // Creating default profile
             defaultProfile = Profile.create({
                 active_ocr_language: defaultLanguage,
-                active_settings_preset: defaultSettingsPreset,                    
+                active_settings_preset: defaultSettingsPreset,
             });
             await profileRepo.insert(defaultProfile);
         }

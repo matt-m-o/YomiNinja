@@ -6,6 +6,7 @@ import FullscreenOcrResult from '../components/OcrOverlay/FullscreenOcrResult';
 import { SettingsContext, SettingsProvider } from '../context/settings.provider';
 import { OverlayFrameVisuals, OverlayOcrItemBoxVisuals } from '../../electron-src/@core/domain/settings_preset/settings_preset';
 import OcrOverlay from '../components/OcrOverlay/OcrOverlay';
+import { DictionaryProvider } from '../context/dictionary.provider';
 
 
 
@@ -25,11 +26,13 @@ export default function OcrOverlayPage() {
       <title>OCR Overlay - YomiNinja</title>
 
       <SettingsProvider>
-        <OcrResultProvider>
+        <DictionaryProvider>
+          <OcrResultProvider>
 
-          <OcrOverlay/>          
+            <OcrOverlay/>          
 
-        </OcrResultProvider>
+          </OcrResultProvider>
+        </DictionaryProvider>
       </SettingsProvider>
     </>
     

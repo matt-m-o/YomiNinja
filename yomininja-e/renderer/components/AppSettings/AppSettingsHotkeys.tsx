@@ -52,7 +52,7 @@ export default function AppSettingsHotkeys() {
 
             <Typography gutterBottom variant="h6" component="div" margin={2} ml={0}>
                 Overlay Hotkeys
-            </Typography>            
+            </Typography>
 
             <HotkeyFields
                 title='OCR'
