@@ -1,14 +1,20 @@
 # YomiNinja
 
-YomiNinja is an application for extracting text from any type of visual content.
+YomiNinja is an application for extracting text from any type of visual content and is designed with language learners in mind.
 
+
+## Demonstration with [10ten](https://github.com/birchill/10ten-ja-reader)
+
+https://github.com/matt-m-o/YomiNinja/assets/25914763/2bb02444-fc41-44e7-bc9e-c66d0d40d7b3
+
+## Demonstration with [Yomichan](https://github.com/FooSoft/yomichan)
 
 https://github.com/matt-m-o/YomiNinja/assets/25914763/1868db47-5b50-44c1-a5b3-694d46c69e28
 
 
-The extracted text overlays the original content, allowing for quick look-ups with pop-up dictionaries like Yomichan. <br>
+The extracted text overlays the original content, allowing for quick look-ups with pop-up dictionaries like [10ten](https://github.com/birchill/10ten-ja-reader) and [Yomichan](https://github.com/FooSoft/yomichan). <br>
 It minimizes distractions and simplifies the process of looking up unfamiliar words. <br>
-This feature is especially beneficial for language learners who study through videos or games.  
+This is especially beneficial for language learners who study through videos or games.  
 
 
 YomiNinja is perfect for:
@@ -17,30 +23,37 @@ YomiNinja is perfect for:
 - Anyone who values a distraction-free, efficient way to look up unfamiliar words.
 - Users looking for seamless text extraction and workflow improvement.
 
+### Dictionary Extensions
+YomiNinja supports web browser dictionary extensions, enabling convenient word lookup without external applications. <br>
+While not all extensions are currently installable, 10Ten (aka Rikaichamp) has been successfully tested and will be included as a pre-installed option for simplified installation. <br>
+Please note that, at present, Yomichan is not installable and requires web browsers to function.
+
 ### Installation
 
 You need Windows 10 or 11 and [VCRedist](https://www.techpowerup.com/download/visual-c-redistributable-runtime-package-all-in-one/) installed. <br>
 Linux support is on the way.
 
-[Download](https://github.com/matt-m-o/YomiNinja/releases) and install the latest release.
+[Download](https://github.com/matt-m-o/YomiNinja/releases) and install the latest release. <br>
 
-Currently, the Yomichan extension is required for dictionary look-ups:
-1. Install [Yomichan](https://foosoft.net/projects/yomichan/).
+#### (optional) Install Yomichan:
+1. Install [Yomichan](https://foosoft.net/projects/yomichan/) on your browser of preference.
 2. Go to the Yomichan settings.
 3. Find and enable the clipboard monitoring option.
 
    - Chromium: `Enable background clipboard text monitoring`
    - Firefox: `Enable native popups when copying Japanese text`
+4. Go to the YomiNinja settings and enable ```Show Yomichan window on text copy```
+
 
 ### Current features
 
 - Text extraction from the entire screen or specific window.
-- Automatic text copying.
+- Built-in pop-up dictionaries.
 - WebSocket for Texthookers.
+
 
 ### Planned Features
 
-- Built-in pop-up dictionary.
 - Text extraction from snip.
 - Text extraction from custom templates (define extraction patterns for specific use cases).
 - Automatic refresh text extraction.
