@@ -41,7 +41,7 @@ export default function AppSettingsOthers() {
                             mb: 2
                         }}
                         control={
-                            <Select
+                            <Select size="small"
                                 value={ clickThroughMode || 'auto' } 
                                 onChange={ ( event ) => {
                                     const { value } = event.target
