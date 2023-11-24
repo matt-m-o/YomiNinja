@@ -1,13 +1,11 @@
 import { useContext, useEffect } from "react"
 import { LanguagesContext } from "../../context/languages.provider";
-import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Box, Button, Card, CardActions, CardContent, Container, FormControlLabel, FormGroup, Grid, TextField, TextFieldProps, Typography } from "@mui/material";
+import { Autocomplete, Box, Button, Card, CardContent, Container, FormControlLabel, Grid, TextField, TextFieldProps, Typography } from "@mui/material";
 import { ProfileContext } from "../../context/profile.provider";
-import CaptureSourceMenu from "./CaptureSourceMenu";
 import { CaptureSourceContext, CaptureSourceProvider } from "../../context/capture_source.provider";
 import HotkeyHints from "./HotkeyHints";
 import { ScreenshotMonitorRounded } from "@mui/icons-material";
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 
 
