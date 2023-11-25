@@ -146,20 +146,24 @@ export class WindowManagerLinuxX11 implements WindowManagerCppInterface {
 
         return new Promise( ( resolve, reject ) => {
 
-            const screen = this.display.screen?.[ screenIdx ];
+            let ids = [];
 
-            if ( !screen )
-                return [];
+            // const screen: any = this.display.screen?.[ screenIdx ];
 
-            const { root } = screen;
+            for( const screen in this.display.screen ) {
 
-            this.client.QueryTree( root, ( error: any, tree: any ) => { 
+                const { root } = screen as any;
 
-                if ( error )
-                    reject( error );
+                this.client.QueryTree( root, ( error: any, tree: any ) => { 
 
-                resolve( tree.children );
-            });
+                    if ( error )
+                        reject( error );
+
+                    ids = [ ...ids, tree.children ]
+                });
+
+            }
+            
         });
     }
 
