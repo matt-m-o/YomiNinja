@@ -146,9 +146,7 @@ export class WindowManagerLinuxX11 implements WindowManagerCppInterface {
 
         return new Promise( ( resolve, reject ) => {
 
-            let ids = [];
-
-            // const screen: any = this.display.screen?.[ screenIdx ];
+            let ids = [];            
 
             for( const screen in this.display.screen ) {
 
@@ -159,11 +157,15 @@ export class WindowManagerLinuxX11 implements WindowManagerCppInterface {
                     if ( error )
                         reject( error );
 
-                    ids = [ ...ids, tree.children ]
-                });
+                    if ( !tree?.children )
+                        return;
 
+                    ids = [ ...ids, tree.children ];
+                });
+                
             }
-            
+
+            resolve( ids );
         });
     }
 
