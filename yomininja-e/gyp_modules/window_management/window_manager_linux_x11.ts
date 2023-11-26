@@ -142,15 +142,15 @@ export class WindowManagerLinuxX11 implements WindowManagerCppInterface {
         });
     }
 
-    private async getAllWindowIds( screenIdx = 0 ): Promise< number[] > {
+    private async getAllWindowIds( ): Promise< number[] > {
 
-        return new Promise( ( resolve, reject ) => {
+        let allWindowIds: Set< any > = new Set();
 
-            let ids = [];            
+        for( const screen of this.display.screen ) {
 
-            for( const screen in this.display.screen ) {
+            const { root } = screen;
 
-                const { root } = screen as any;
+            const screenWindowIds: number[] = await( new Promise( ( resolve, reject ) => {
 
                 this.client.QueryTree( root, ( error: any, tree: any ) => { 
 
@@ -160,13 +160,17 @@ export class WindowManagerLinuxX11 implements WindowManagerCppInterface {
                     if ( !tree?.children )
                         return;
 
-                    ids = [ ...ids, tree.children ];
+                    resolve( tree.children );
                 });
-                
-            }
 
-            resolve( ids );
-        });
+            }));
+            
+            screenWindowIds.forEach( id => allWindowIds.add( id ) );
+        }
+
+        // console.log({ allWindowIds })
+        
+        return Array.from( allWindowIds );
     }
 
     private async windowExists( windowHandle: number ): Promise< boolean > {
