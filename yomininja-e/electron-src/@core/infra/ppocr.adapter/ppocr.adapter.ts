@@ -16,6 +16,7 @@ import { UpdateSettingsPresetResponse__Output } from "../../../../grpc/rpc/ocr_s
 import { UpdateSettingsPresetRequest } from "../../../../grpc/rpc/ocr_service/UpdateSettingsPresetRequest";
 import { applyCpuHotfix } from "./hotfix/hardware_compatibility_hotfix";
 import os from 'os';
+import { addExecutionPermissionToPPOCR } from "./ppocr_executable_permission";
 
 export class PpOcrAdapter implements OcrAdapter {
     
@@ -140,6 +141,8 @@ export class PpOcrAdapter implements OcrAdapter {
             ? 'ppocr_infer_service_grpc.exe'
             : 'start.sh';
             
+        addExecutionPermissionToPPOCR( cwd );
+
         const executable = join( cwd + `/${executableName}` );
         
         this.ppocrServiceProcess = spawn( executable, [/* command line arguments */], { cwd } );
