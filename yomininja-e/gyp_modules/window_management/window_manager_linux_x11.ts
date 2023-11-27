@@ -1,8 +1,8 @@
 import * as x11 from 'x11';
-import { TaskbarProperties, WindowManagerCppInterface, WindowProperties } from './window_manager';
+import { TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from './window_manager';
 
 
-export class WindowManagerLinuxX11 implements WindowManagerCppInterface {
+export class WindowManagerLinuxX11 implements WindowManagerNativeInterface {
 
     display: any;
     client: any;
