@@ -17,6 +17,8 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
 
     async searchWindowByTitle( title: string ): Promise<WindowProperties[]> {
 
+        console.log(`searchWindowByTitle: ${title}`);
+
         const ids = await this.searchWindowByName( title );
         const windows: WindowProperties[] = [];
 
@@ -36,6 +38,7 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
     async setForegroundWindow( windowHandle: number ): Promise< void >{
 
         console.log(`setForegroundWindow: ${windowHandle}`);
+        
         this.activateWindow( windowHandle );
     }
 
