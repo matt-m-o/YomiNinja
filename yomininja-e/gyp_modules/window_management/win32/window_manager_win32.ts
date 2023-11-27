@@ -10,14 +10,14 @@ export class WindowManagerWin32 implements WindowManagerNativeInterface {
     binding: WindowManagerNativeInterface;
     
     constructor() {
-        bindings('window_manager_win32') as WindowManagerNativeInterface
+        this.binding = bindings('window_manager_win32');
     }
 
     setForegroundWindow( windowHandle: number ): void | Promise<void> {
         this.binding.setForegroundWindow( windowHandle );
     }
 
-    getWindowProperties( windowHandle: number ): WindowProperties | Promise< WindowProperties | undefined > {
+    getWindowProperties( windowHandle: number ): WindowProperties {
         
         const result = this.binding.getWindowProperties( windowHandle ) as WindowProperties;
 
@@ -26,13 +26,20 @@ export class WindowManagerWin32 implements WindowManagerNativeInterface {
         return result;
     }
 
-    getAllWindows(): WindowProperties[] | Promise< WindowProperties[] > {
+    getAllWindows(): WindowProperties[] {
 
         const results = this.binding.getAllWindows() as WindowProperties[];
 
         this.fixTitle( results );
 
         return results;
+    }
+
+    async searchWindowByTitle( title: string ): Promise< WindowProperties[] > {
+
+        const windows = this.getAllWindows();
+
+        return windows.filter( window => window.title.includes( title ) );
     }
 
     getTaskBarProps(): TaskbarProperties {

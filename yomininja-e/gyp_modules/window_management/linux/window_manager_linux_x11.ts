@@ -98,6 +98,13 @@ export class WindowManagerLinuxX11 implements WindowManagerNativeInterface {
 
         return windows;
     }
+
+    async searchWindowByTitle( title: string ): Promise<WindowProperties[]> {
+        
+        const windows = await this.getAllWindows();
+
+        return windows.filter( window => window.title.includes( title ) );
+    }
     
     getTaskBarProps(): TaskbarProperties {
         return {
@@ -172,6 +179,7 @@ export class WindowManagerLinuxX11 implements WindowManagerNativeInterface {
         
         return Array.from( allWindowIds );
     }
+
 
     private async windowExists( windowHandle: number ): Promise< boolean > {
 

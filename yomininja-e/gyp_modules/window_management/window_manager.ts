@@ -1,6 +1,7 @@
 import os from 'os';
 import { WindowManagerLinuxX11 } from './linux/window_manager_linux_x11';
 import { WindowManagerWin32 } from './win32/window_manager_win32';
+import { WindowManagerLinuxXDoTool } from './linux/window_manager_linux_xdotool';
 
 type Size = {
     width: number;
@@ -29,6 +30,7 @@ export interface WindowManagerNativeInterface {
     setForegroundWindow( windowHandle: number ): void | Promise< void >; // Set window to front
     getWindowProperties( windowHandle: number ): WindowProperties | Promise< WindowProperties | undefined >;
     getAllWindows(): WindowProperties[] | Promise< WindowProperties[] >;
+    searchWindowByTitle( title: string ): WindowProperties[] | Promise< WindowProperties[] >;
     getTaskBarProps(): TaskbarProperties;
 };
 
@@ -43,7 +45,8 @@ export class WindowManager {
             this.windowManager = new WindowManagerWin32();
 
         else if ( os.platform() === 'linux' )
-            this.windowManager = new WindowManagerLinuxX11();
+            this.windowManager = new WindowManagerLinuxXDoTool();
+            // this.windowManager = new WindowManagerLinuxX11();
     }
 
     async init(): Promise< void > {
@@ -70,6 +73,10 @@ export class WindowManager {
         const result = await this.windowManager.getAllWindows();
 
         return result;
+    }
+
+    async searchWindow( title: string ): Promise< WindowProperties[] > {
+        return this.windowManager.searchWindowByTitle( title );
     }
 
     getTaskbar(): TaskbarProperties {

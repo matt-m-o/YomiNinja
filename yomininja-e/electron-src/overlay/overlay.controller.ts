@@ -129,14 +129,13 @@ export class OverlayController {
                 if ( !this.showYomichanWindowOnCopy )
                     return;
 
-                const windows = await windowManager.getAllWindows();
-                const yomichanWindow = windows.find( window => window.title.includes( '- Yomichan Search' ) );
+                const windows = await windowManager.searchWindow( 'Yomichan Search' );
             
-                if ( 
-                    !yomichanWindow            
-                ) 
+                if ( windows.length === 0 ) 
                     return;
             
+                const yomichanWindow = windows[0];
+                
                 windowManager.setForegroundWindow( yomichanWindow.handle );
 
             } catch (error) {
@@ -296,9 +295,9 @@ export class OverlayController {
             this.overlayWindow.setVisibleOnAllWorkspaces(
                 true, { visibleOnFullScreen:true }
             );
-            if ( process.platform !== 'linux' ) {
-                windowManager.setForegroundWindow( overlayWindowHandle );
-            }
+            // if ( process.platform !== 'linux' ) {
+            windowManager.setForegroundWindow( overlayWindowHandle );
+            // }
         }
 
         this.overlayWindow.setAlwaysOnTop( false, "normal" );
