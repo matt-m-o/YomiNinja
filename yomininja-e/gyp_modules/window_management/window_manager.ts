@@ -1,6 +1,6 @@
 import os from 'os';
-import { WindowManagerLinuxX11 } from './window_manager_linux_x11';
-import { WindowManagerWin32 } from './window_manager_win32';
+import { WindowManagerLinuxX11 } from './linux/window_manager_linux_x11';
+import { WindowManagerWin32 } from './win32/window_manager_win32';
 
 type Size = {
     width: number;

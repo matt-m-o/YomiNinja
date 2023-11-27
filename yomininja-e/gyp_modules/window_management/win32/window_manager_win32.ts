@@ -1,5 +1,5 @@
 import bindings from 'bindings';
-import { TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from './window_manager';
+import { TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
 
 export function getWindowManagerWin32(): WindowManagerNativeInterface {
     return bindings('window_manager_win32') as WindowManagerNativeInterface;
