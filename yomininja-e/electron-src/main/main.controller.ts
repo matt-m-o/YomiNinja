@@ -42,11 +42,13 @@ export class MainController {
                 this.captureSourceWindow.close();
         });
 
-        this.mainWindow.on( 'show', () => {        
-            windowManager
-                .setForegroundWindow( 
-                    getBrowserWindowHandle( this.mainWindow )
-                );
+        this.mainWindow.on( 'show', () => {   
+            if ( process.platform !== 'linux' ) {
+                windowManager
+                    .setForegroundWindow( 
+                        getBrowserWindowHandle( this.mainWindow )
+                    );
+            }
         });
 
         return this.mainWindow;

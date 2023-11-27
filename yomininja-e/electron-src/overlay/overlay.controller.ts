@@ -296,7 +296,9 @@ export class OverlayController {
             this.overlayWindow.setVisibleOnAllWorkspaces(
                 true, { visibleOnFullScreen:true }
             );
-            windowManager.setForegroundWindow( overlayWindowHandle );
+            if ( process.platform !== 'linux' ) {
+                windowManager.setForegroundWindow( overlayWindowHandle );
+            }
         }
 
         this.overlayWindow.setAlwaysOnTop( false, "normal" );

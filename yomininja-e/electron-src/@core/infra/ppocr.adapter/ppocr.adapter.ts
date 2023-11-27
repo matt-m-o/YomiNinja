@@ -74,6 +74,7 @@ export class PpOcrAdapter implements OcrAdapter {
         const clientResponse = await new Promise< RecognizeDefaultResponse__Output | undefined >(
             (resolve, reject) => this.ocrServiceClient?.RecognizeBytes( requestInput, ( error, response ) => {
                 if (error) {
+                    this.restart( () => {} );
                     return reject(error)
                 }
                 resolve(response);
@@ -112,6 +113,7 @@ export class PpOcrAdapter implements OcrAdapter {
         const clientResponse = await new Promise< GetSupportedLanguagesResponse__Output | undefined >(
             (resolve, reject) => this.ocrServiceClient?.GetSupportedLanguages( {}, ( error, response ) => {
                 if (error) {
+                    this.restart( () => {} );
                     return reject(error)
                 }
                 resolve(response);
@@ -149,8 +151,13 @@ export class PpOcrAdapter implements OcrAdapter {
 
                 const jsonData = JSON.parse( data.toString().split('[INFO-JSON]:')[1] );
 
-                if ( 'server_address' in jsonData )
-                    this.initialize( jsonData.server_address );
+                const timeout = process.platform !== 'linux' ? 0 : 1000;
+
+                if ( 'server_address' in jsonData ) {
+                    setTimeout( () => {
+                        this.initialize( jsonData.server_address );
+                    }, timeout );
+                }
             }
             
             console.log(`stdout: ${data}`);        
