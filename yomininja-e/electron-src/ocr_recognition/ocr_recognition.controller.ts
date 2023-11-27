@@ -91,9 +91,11 @@ export class OcrRecognitionController {
         ipcMain.handle( 'ocr_recognition:set_capture_source',
             async ( event: IpcMainInvokeEvent, message: CaptureSource ): Promise< void > => {
 
-                this.userSelectedDisplayId = message?.displayId && message?.displayId > 0 ? 
+                const { type, displayId } = message;
+
+                this.userSelectedDisplayId = type === 'screen' && displayId != -1  ? 
                     message.displayId :
-                    undefined;                
+                    undefined;
 
                 if ( !message?.displayId )
                     this.userSelectedWindowId = Number( message.id.split(':')[1] );
@@ -305,13 +307,13 @@ export class OcrRecognitionController {
 
     handleDisplaySource() {
 
-        if ( this.userSelectedDisplayId ) {
+        if ( this.userSelectedDisplayId !== undefined ) {
             this.captureSourceDisplay = this.ocrRecognitionService.getDisplay( this.userSelectedDisplayId );
             return;
         }
 
         if ( 
-            !this.userSelectedDisplayId &&
+            this.userSelectedDisplayId === undefined &&
             !this.userSelectedWindowId
         ) 
             this.captureSourceDisplay = this.ocrRecognitionService.getCurrentDisplay();

@@ -17,7 +17,8 @@ import { displayImage } from "../util/debugging/debugging.util";
 export const entireScreenAutoCaptureSource: CaptureSource = {
     id: '',
     name: 'Entire screen',
-    displayId: -1
+    displayId: -1,
+    type: 'screen',
 };
 
 export class OcrRecognitionService {
@@ -214,7 +215,8 @@ export class OcrRecognitionService {
         const results: CaptureSource[] = sources.map( source => ({
             id: source.id,
             displayId: Number(source.display_id),
-            name: source.name
+            name: source.name,
+            type: source.id.includes('window') ? 'window' : 'screen',
         }));
 
         const displaysSources = sources.filter( source => source.display_id );

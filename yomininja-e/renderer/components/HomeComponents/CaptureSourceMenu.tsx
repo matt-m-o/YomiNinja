@@ -151,14 +151,14 @@ export default function CaptureSourceMenu() {
                     <TabPanel value="1" >
                         <Grid container spacing={{ xs: 2, md: 8 }} columns={{ xs: 1, sm: 4, md: 12 }}>
                             <CaptureSourceList
-                                items={ captureSources?.filter( item => item?.displayId ) }
+                                items={ captureSources?.filter( item => item.type === 'screen' ) }
                             />
                         </Grid>
                     </TabPanel>
                     <TabPanel value="2">
                         <Grid container spacing={{ xs: 2, md: 8 }} columns={{ xs: 1, sm: 4, md: 12 }} >
                             <CaptureSourceList
-                                items={ captureSources?.filter( item => !item?.displayId ) }
+                                items={ captureSources?.filter( item => item.type === 'window' ) }
                             />
                         </Grid>
                     </TabPanel>
