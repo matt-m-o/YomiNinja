@@ -55,8 +55,8 @@ Linux support is on the way.
 ### Planned Features
 
 - Text extraction from snip.
-- Text extraction from custom templates (define extraction patterns for specific use cases).
-- Automatic refresh text extraction.
+- OCR Templates (predefined text areas, optimizing OCR efficiency).
+- Auto OCR.
 - Anki integration.
 - History.
 - Text translation.
