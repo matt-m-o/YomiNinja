@@ -10,7 +10,7 @@
       'defines': ['NAPI_DISABLE_CPP_EXCEPTIONS'],
       "conditions": [
         ["OS == 'win'", {
-          "sources": [ "./gyp_modules/window_management/window_manager_win32.cc" ],
+          "sources": [ "./gyp_modules/window_management/win32/window_manager_win32.cc" ],
           "libraries": [ "-lDwmapi" ],
         }]
       ]
