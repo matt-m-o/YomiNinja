@@ -9,11 +9,12 @@ import { EXTENSIONS_DIR } from "../util/directories.util";
 import isDev from "electron-is-dev";
 import { BrowserExtensionManager } from "./browser_extension_manager/browser_extension_manager";
 
+
 export class BrowserExtensionsService {
 
     session: Electron.Session;
     extensionsApi: ElectronChromeExtensions;
-    installedExtensions: Electron.Extension[] = [];
+    installedExtensions: Map< string, Electron.Extension > = new Map();
     windows: Map< number, BrowserWindow > = new Map();
     browserExtensionManager: BrowserExtensionManager;
 
@@ -52,10 +53,7 @@ export class BrowserExtensionsService {
         
         // console.log({ EXTENSIONS_DIR });
 
-        this.installedExtensions = await this.loadExtensions(
-            this.session,
-            EXTENSIONS_DIR
-        );
+        await this.loadExtensions();
 
         // Enable context menu
         app.on('web-contents-created', ( event, webContents ) => {
@@ -86,19 +84,20 @@ export class BrowserExtensionsService {
                 menu.popup();                
                 // this.getInstalledExtensions()
             });
-        });        
+        });
 
         console.log(
-            this.installedExtensions[0]
-        );        
+            Array.from(this.installedExtensions)[0]
+        );
     }
 
     addBrowserWindow = async ( window: BrowserWindow ) => {
 
-        this.windows.set( window.id, window );
+        if ( !this.windows.has( window.id ) )
+            this.windows.set( window.id, window );
 
         this.extensionsApi.addTab( window.webContents, window );
-        this.extensionsApi.selectTab( window.webContents );        
+        this.extensionsApi.selectTab( window.webContents );
     }
 
     getInstalledExtensions = async (): Promise< BrowserExtension[] > => {
@@ -109,7 +108,7 @@ export class BrowserExtensionsService {
         // console.log( this.installedExtensions );
         // console.log( installedExtensions );
 
-        for ( const item of this.installedExtensions ) {
+        for ( const item of Array.from( this.installedExtensions.values() ) ) {
 
             const optionsUrl = item.url + item.manifest.options_ui?.page;
 
@@ -128,9 +127,9 @@ export class BrowserExtensionsService {
         return extensions;
     }
 
-    private loadExtensions = async ( session: Electron.Session, extensionsPath: string ) => {
+    private loadExtensions = async () => {
 
-        const subDirectories = await fs.readdir( extensionsPath, {
+        const subDirectories = await fs.readdir( EXTENSIONS_DIR, {
             withFileTypes: true,
         });
       
@@ -139,7 +138,7 @@ export class BrowserExtensionsService {
                 .filter( (dirEnt) => dirEnt.isDirectory() )
                 .map( async (dirEnt) => {
         
-                    const extPath = path.join(extensionsPath, dirEnt.name);
+                    const extPath = path.join( EXTENSIONS_DIR, dirEnt.name );
             
                     if ( await this.manifestExists(extPath) ) {
                         return extPath;
@@ -162,25 +161,22 @@ export class BrowserExtensionsService {
                 })
         );
       
-        const extensions = [];
-      
         for ( const extPath of extensionDirectories.filter(Boolean) ) {
             console.log(`Loading extension from ${extPath}`);
             
             if ( !extPath ) continue;
         
             try {
-                const extension = await session.loadExtension(
+                const extension = await this.session.loadExtension(
                     extPath,
                     { allowFileAccess: !isDev } // Required in production
                 );
-                extensions.push(extension);
+
+                this.installedExtensions.set( extension.id, extension );
             } catch ( error ) {
                 console.error( error );
             }
         }
-      
-        return extensions;
     }
 
     private manifestExists = async ( dirPath: string ): Promise< boolean > => {
@@ -214,7 +210,7 @@ export class BrowserExtensionsService {
 
     private getExtensionIcon = async ( extensionId: string ): Promise< string | undefined > => {
 
-        const extension = this.installedExtensions.find( item => item.id === extensionId );
+        const extension = this.installedExtensions.get( extensionId );
 
         if ( !extension ) return;
 
@@ -257,20 +253,17 @@ export class BrowserExtensionsService {
         extensionWindow.loadURL( extension.optionsUrl );
     }
 
-    handleActionListClick = async () => {
-
-        console.log('handleActionListClick');
-        console.log( this.windows );
-        this.windows.forEach( window => {
-            window.reload();
-        });
-    }
-
     installExtension = async ( input: { zipFilePath: string } ) => {
 
         const { zipFilePath } = input;
 
         await this.browserExtensionManager.install( zipFilePath );
+
+        await this.loadExtensions();
+
+        this.windows.forEach( window => {
+            window.reload();
+        });
     }
 
     uninstallExtension = async ( extensionPath: string ) => {
