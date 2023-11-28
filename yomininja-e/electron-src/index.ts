@@ -14,17 +14,17 @@ import { overlayController } from './overlay/overlay.index';
 import { mainController } from './main/main.index';
 import { dictionariesController } from './dictionaries/dictionaries.index';
 
-import { BrowserExtensions } from './extensions/extensions';
+import { BrowserExtensionsService } from './extensions/browser_extensions.service';
 import { createDebuggingWindow } from './util/debugging/debugging.util';
 
-let browserExtensions: BrowserExtensions;
+let browserExtensions: BrowserExtensionsService;
 
 app.on('ready', async () => {
   
   // Prepare the renderer once the app is ready
   await prepareNext('./renderer');
 
-  browserExtensions = new BrowserExtensions();
+  browserExtensions = new BrowserExtensionsService();
   await browserExtensions.init();
 
   const mainWindow = await mainController.init();
