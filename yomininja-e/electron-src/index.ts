@@ -16,16 +16,16 @@ import { dictionariesController } from './dictionaries/dictionaries.index';
 
 import { BrowserExtensionsService } from './extensions/browser_extensions.service';
 import { createDebuggingWindow } from './util/debugging/debugging.util';
+import { browserExtensionsController } from './extensions/extensions.index';
 
-let browserExtensions: BrowserExtensionsService;
+
 
 app.on('ready', async () => {
   
   // Prepare the renderer once the app is ready
   await prepareNext('./renderer');
 
-  browserExtensions = new BrowserExtensionsService();
-  await browserExtensions.init();
+  await browserExtensionsController.init();
 
   const mainWindow = await mainController.init();
 
@@ -37,7 +37,7 @@ app.on('ready', async () => {
     .then( async () => {
       
       const overlayWindow = await overlayController.init( mainWindow );
-      browserExtensions.addBrowserWindow( overlayWindow );
+      browserExtensionsController.addBrowserWindow( overlayWindow );
       
       ocrRecognitionController.init({ mainWindow, overlayWindow });
       mainController.loadMainPage();
@@ -46,7 +46,7 @@ app.on('ready', async () => {
       profileController.init( mainWindow );
       dictionariesController.init({ mainWindow, overlayWindow });
 
-      browserExtensions.addBrowserWindow( mainWindow );
+      browserExtensionsController.addBrowserWindow( mainWindow );
     });
 });
 

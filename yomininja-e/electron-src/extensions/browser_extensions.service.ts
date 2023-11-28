@@ -266,5 +266,3 @@ export class BrowserExtensionsService {
 
     }
 }
-
-export const browserExtensions = new BrowserExtensionsService();

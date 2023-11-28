@@ -116,20 +116,6 @@ export class DictionariesController {
                 await this.dictionariesService.deleteAllDictionaries();
             }
         );
-
-        ipcMain.handle( 'dictionaries:get_all_extensions', 
-            async ( event: IpcMainInvokeEvent ): Promise< BrowserExtension[] > => {
-                return await this.dictionariesService.getDictionaryExtensions();
-            }
-        );
-
-        ipcMain.handle( 'dictionaries:open_extension_options', 
-            async ( event: IpcMainInvokeEvent, extension: BrowserExtension ): Promise< void > => {
-                return await this.dictionariesService.openExtensionOptionsPage( extension );
-            }
-        );
-
-        
     }
 
     async search( text: string ): Promise< DictionaryHeadword[] > {        
@@ -181,8 +167,5 @@ export class DictionariesController {
         this.mainWindow.webContents.send( 'dictionaries:import_progress', input );
     }
 
-    getDictionaryExtensions() {
-
-    }
 }
 
