@@ -37,7 +37,8 @@ export class MainController {
             },
         });
 
-        this.mainWindow.removeMenu();
+        if ( !isDev )
+            this.mainWindow.removeMenu();
 
         this.mainWindow.on( 'close', () => {
             if ( this.captureSourceWindow )
