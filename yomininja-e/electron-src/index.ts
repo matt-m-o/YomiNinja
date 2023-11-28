@@ -25,9 +25,9 @@ app.on('ready', async () => {
   // Prepare the renderer once the app is ready
   await prepareNext('./renderer');
 
-  await browserExtensionsController.init();
-
   const mainWindow = await mainController.init();
+  
+  await browserExtensionsController.init({ mainWindow });
 
   if ( isDev )
     createDebuggingWindow();

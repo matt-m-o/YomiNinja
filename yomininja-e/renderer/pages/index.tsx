@@ -70,9 +70,9 @@ export default function IndexPage() {
   };
 
   useEffect( () => {
-    document.addEventListener( 'contextmenu', event => {
-        event.preventDefault();
-    });        
+    // document.addEventListener( 'contextmenu', event => {
+    //     event.preventDefault();
+    // });
   }, [] );
 
   return (

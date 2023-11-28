@@ -7,17 +7,21 @@ import { BrowserExtension } from "./browser_extension";
 import sharp from 'sharp';
 import { EXTENSIONS_DIR } from "../util/directories.util";
 import isDev from "electron-is-dev";
+import { BrowserExtensionManager } from "./browser_extension_manager/browser_extension_manager";
 
 export class BrowserExtensionsService {
 
     session: Electron.Session;
     extensionsApi: ElectronChromeExtensions;
     installedExtensions: Electron.Extension[] = [];
-    windows: Map< number, BrowserWindow > = new Map(); 
+    windows: Map< number, BrowserWindow > = new Map();
+    browserExtensionManager: BrowserExtensionManager;
 
     onExtensionButtonClick: () => void = () => {};
 
-    constructor() {}
+    constructor( input: { browserExtensionManager: BrowserExtensionManager }) {
+        this.browserExtensionManager = input.browserExtensionManager;
+    }
 
     init = async () => {
 
@@ -80,13 +84,13 @@ export class BrowserExtensionsService {
                 });
             
                 menu.popup();                
-                this.getInstalledExtensions()
+                // this.getInstalledExtensions()
             });
         });        
 
-        // console.log(
-        //     this.installedExtensions[0].manifest.commands
-        // );        
+        console.log(
+            this.installedExtensions[0]
+        );        
     }
 
     addBrowserWindow = async ( window: BrowserWindow ) => {
@@ -262,7 +266,14 @@ export class BrowserExtensionsService {
         });
     }
 
-    installExtension = async (  ) => {
+    installExtension = async ( input: { zipFilePath: string } ) => {
 
+        const { zipFilePath } = input;
+
+        await this.browserExtensionManager.install( zipFilePath );
+    }
+
+    uninstallExtension = async ( extensionPath: string ) => {
+        this.browserExtensionManager.uninstall( extensionPath );
     }
 }
