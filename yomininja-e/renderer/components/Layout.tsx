@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from 'react'
+import { ReactNode, useContext, useEffect, useState } from 'react'
 import CssBaseline from '@mui/material/CssBaseline';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import { AppBar, Drawer } from '../components/AppBar';
@@ -15,6 +15,7 @@ import TabContext from '@mui/lab/TabContext';
 import TabPanel from'@mui/lab/TabPanel';
 import TabList from '@mui/lab/TabList';
 import { defaultTheme } from './Theme';
+import { ExtensionsContext } from '../context/extensions.provider';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -99,9 +100,7 @@ export default function Layout( { contents }: LayoutProps) {
     </div>
   ));
 
-  function refreshAllWindows() {
-    global.ipcRenderer.invoke( 'refresh_all_windows' );
-  }
+  const { browserActionList } = useContext( ExtensionsContext )
 
   return (
     <TabContext value={activeTab}>
@@ -150,8 +149,7 @@ export default function Layout( { contents }: LayoutProps) {
               </Badge>
             </IconButton> */}
 
-            { /* @ts-expect-error */ }
-            <browser-action-list onClick={ () => refreshAllWindows() }></browser-action-list>
+            {browserActionList}
   
           </Toolbar>
         </AppBar>

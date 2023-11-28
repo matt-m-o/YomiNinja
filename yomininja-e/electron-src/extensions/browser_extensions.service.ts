@@ -269,4 +269,10 @@ export class BrowserExtensionsService {
     uninstallExtension = async ( extensionPath: string ) => {
         this.browserExtensionManager.uninstall( extensionPath );
     }
+
+    handleActionButtonClick = async () => {
+        this.windows.forEach( window => {
+            window.reload();
+        });
+    }
 }

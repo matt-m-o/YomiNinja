@@ -14,6 +14,7 @@ import { CaptureSourceProvider } from '../context/capture_source.provider';
 import AutoStoriesRoundedIcon from '@mui/icons-material/AutoStoriesRounded';
 import Dictionary from '../components/Dictionary/Dictionary';
 import { DictionaryProvider } from '../context/dictionary.provider';
+import { ExtensionsProvider } from '../context/extensions.provider';
 
 
 export default function IndexPage() {
@@ -80,9 +81,11 @@ export default function IndexPage() {
       <ProfileProvider>
         <AppInfoProvider>
           <SettingsProvider>
+            <ExtensionsProvider>
 
-            <Layout {...layoutProps}/>
+              <Layout {...layoutProps}/>
 
+            </ExtensionsProvider>
           </SettingsProvider>
         </AppInfoProvider>
       </ProfileProvider>

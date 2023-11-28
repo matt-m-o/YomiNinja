@@ -62,6 +62,12 @@ export class BrowserExtensionsController {
                 return await this.browserExtensionsService.openExtensionOptionsPage( extension.id );
             }
         );
+
+        ipcMain.handle( 'extensions:handle_action_button_click', 
+            async ( event: IpcMainInvokeEvent ): Promise< void > => {
+                return await this.browserExtensionsService.handleActionButtonClick();
+            }
+        );
     }
 
     addBrowserWindow( window: BrowserWindow ) {
