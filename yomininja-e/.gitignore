@@ -50,7 +50,7 @@ data/
 third-party-licenses.txt
 
 # Browser extensions
-extensions/
+extensions/*
 
 # zip
 /*.zip
