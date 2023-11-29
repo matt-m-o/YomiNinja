@@ -47,7 +47,9 @@ export class BrowserExtensionsController {
                 
                 // console.log( filePath );
 
-                await this.installExtension( filePath );                
+                await this.browserExtensionsService.installExtension({
+                    zipFilePath: filePath
+                });
             }
         );
         
@@ -68,13 +70,16 @@ export class BrowserExtensionsController {
                 return await this.browserExtensionsService.handleActionButtonClick();
             }
         );
+
+        ipcMain.handle( 'extensions:uninstall_extension', 
+            async ( event: IpcMainInvokeEvent, extension: BrowserExtension ): Promise< void > => {
+                return await this.browserExtensionsService.uninstallExtension( extension );
+            }
+        );
     }
 
     addBrowserWindow( window: BrowserWindow ) {
         this.browserExtensionsService.addBrowserWindow( window );
     }
 
-    async installExtension( zipFilePath: string ): Promise< void > {
-        await this.browserExtensionsService.installExtension({ zipFilePath });
-    }
 }

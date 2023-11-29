@@ -73,6 +73,8 @@ export class OverlayController {
                 contextIsolation: false,
                 preload: join(__dirname, '../preload.js'),                
             },
+            titleBarStyle: 'hidden',
+            titleBarOverlay: false
         });
 
         this.overlayWindow.on( 'close', ( e ) => {

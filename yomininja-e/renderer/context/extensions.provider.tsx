@@ -7,6 +7,7 @@ export type ExtensionsContextType = {
     browserActionList: JSX.Element;
     installedExtensions: BrowserExtension[];
     installExtension: () => Promise<void>;
+    uninstallExtension: ( extension: BrowserExtension ) => void;
     openExtensionOptions: ( input: BrowserExtension ) => Promise<void>
 };
 
@@ -28,6 +29,10 @@ export const ExtensionsProvider = ( { children }: PropsWithChildren ) => {
 
     async function installExtension() {
         await global.ipcRenderer.invoke( 'extensions:install_extension' );
+    }
+
+    async function uninstallExtension( extension: BrowserExtension ) {
+        await global.ipcRenderer.invoke( 'extensions:uninstall_extension', extension );
     }
 
     async function openExtensionOptions( browserExtension: BrowserExtension ): Promise< void > {
@@ -55,6 +60,7 @@ export const ExtensionsProvider = ( { children }: PropsWithChildren ) => {
             value={{
                 installedExtensions,
                 installExtension,
+                uninstallExtension,
                 openExtensionOptions,
                 browserActionList,
             }}

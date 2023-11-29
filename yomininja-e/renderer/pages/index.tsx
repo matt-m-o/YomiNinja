@@ -15,6 +15,8 @@ import AutoStoriesRoundedIcon from '@mui/icons-material/AutoStoriesRounded';
 import Dictionary from '../components/Dictionary/Dictionary';
 import { DictionaryProvider } from '../context/dictionary.provider';
 import { ExtensionsProvider } from '../context/extensions.provider';
+import ExtensionRoundedIcon from '@mui/icons-material/ExtensionRounded';
+import Extensions from '../components/Extensions/Extensions';
 
 
 export default function IndexPage() {
@@ -37,6 +39,10 @@ export default function IndexPage() {
     </LanguagesProvider>
   );
 
+  const extensionsTabContents = (
+    <Extensions/>
+  );
+
   const layoutProps: LayoutProps = {
     contents: [
       {
@@ -45,6 +51,13 @@ export default function IndexPage() {
           icon: <Home/>,
         },
         tabContent: homeTabContents
+      },
+      {
+        tabLabel: {
+          text: 'Extensions',
+          icon: <ExtensionRoundedIcon/>,
+        },
+        tabContent: extensionsTabContents
       },
       {
         tabLabel: {

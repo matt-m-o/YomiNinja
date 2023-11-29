@@ -110,13 +110,20 @@ export class BrowserExtensionsService {
 
         for ( const item of Array.from( this.installedExtensions.values() ) ) {
 
-            const optionsUrl = item.url + item.manifest.options_ui?.page;
+            const optionsUiPage = item.manifest?.options_ui?.page;
+
+            let optionsUrl: string | undefined;
+
+            if ( optionsUiPage )
+                optionsUrl = item.url + item.manifest?.options_ui?.page;
 
             // console.log( item.manifest )
 
             const extension: BrowserExtension = {
                 id: item.id,
                 name: item.name,
+                description: item.manifest.description,
+                version: item.manifest.version,
                 optionsUrl,
                 icon: await this.getExtensionIcon( item.id ) || ''
             };
@@ -128,6 +135,11 @@ export class BrowserExtensionsService {
     }
 
     private loadExtensions = async () => {
+
+        this.installedExtensions.forEach( extension => {
+            this.session.removeExtension( extension.id );
+        });
+        this.installedExtensions.clear();
 
         const subDirectories = await fs.readdir( EXTENSIONS_DIR, {
             withFileTypes: true,
@@ -237,7 +249,8 @@ export class BrowserExtensionsService {
 
         const extension = extensions.find( item => item.id === extensionId );
 
-        if ( !extension ) return;
+        if ( !extension || !extension?.optionsUrl )
+            return;
 
         const extensionWindow = new BrowserWindow({
             autoHideMenuBar: true,
@@ -266,8 +279,19 @@ export class BrowserExtensionsService {
         });
     }
 
-    uninstallExtension = async ( extensionPath: string ) => {
-        this.browserExtensionManager.uninstall( extensionPath );
+    uninstallExtension = async ( extension: BrowserExtension ) => {
+
+        const installedExtension = this.installedExtensions.get( extension.id );
+
+        if ( !installedExtension ) return;
+
+        this.browserExtensionManager.uninstall( installedExtension.path );
+
+        await this.loadExtensions();
+
+        this.windows.forEach( window => {
+            window.reload();
+        });
     }
 
     handleActionButtonClick = async () => {
