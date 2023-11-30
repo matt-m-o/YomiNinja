@@ -142,14 +142,14 @@ export default function Extensions() {
                         mb={10}
                         sx={{ userSelect: 'text' }}
                     >
-                        <Typography gutterBottom component="div" m={0} fontSize={'1.75rem'} pr={0}>
-                            日本語
+                        <Typography gutterBottom m={0} fontSize={'1.75rem'} pr={0} lang='ja'>
+                            🇯🇵 日本語
                         </Typography>
-                        <Typography gutterBottom component="div" m={0} fontSize={'1.75rem'} pr={0}>
-                            한국어
+                        <Typography gutterBottom m={0} fontSize={'1.75rem'} pr={0} lang='ko'>
+                            🇰🇷 한국어
                         </Typography>
-                        <Typography gutterBottom component="div" m={0} fontSize={'1.75rem'} pr={0}>
-                            中文 
+                        <Typography gutterBottom m={0} fontSize={'1.75rem'} pr={0} lang='zh'>
+                            🇨🇳 中文
                         </Typography>
                     </Box>
 
