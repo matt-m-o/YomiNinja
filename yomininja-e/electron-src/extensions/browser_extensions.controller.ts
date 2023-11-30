@@ -15,7 +15,7 @@ export class BrowserExtensionsController {
         this.browserExtensionsService = input.browserExtensionsService;
     }
 
-    async init( input: { mainWindow: BrowserWindow }) {
+    async init( input: { mainWindow: BrowserWindow } ) {
 
         this.registersIpcHandlers();
         await this.browserExtensionsService.init();

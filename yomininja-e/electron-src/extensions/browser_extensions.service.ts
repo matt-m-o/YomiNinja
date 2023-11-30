@@ -20,8 +20,40 @@ export class BrowserExtensionsService {
 
     onExtensionButtonClick: () => void = () => {};
 
-    constructor( input: { browserExtensionManager: BrowserExtensionManager }) {
+    constructor( input: { browserExtensionManager: BrowserExtensionManager } ) {
+
         this.browserExtensionManager = input.browserExtensionManager;
+
+        // Enable context menu
+        app.on('web-contents-created', ( event, webContents ) => {
+            webContents.on('context-menu', (e, params) => {
+
+                const extensionMenuItems = this.extensionsApi.getContextMenuItems(webContents, params);
+
+                // Refreshing every window on extension click
+                extensionMenuItems.forEach( item => {
+                    const { click } = item;
+                    item.click = () => {
+                        click();
+                        this.windows.forEach( window => {
+                            window.reload();
+                        });
+                    }
+                });
+
+                const menu = buildChromeContextMenu({
+                    params,
+                    webContents,
+                    extensionMenuItems,
+                    openLink: (url, disposition) => {
+                        webContents.loadURL(url);
+                    }
+                });
+
+                menu.popup();
+            });
+        });
+
     }
 
     init = async () => {
@@ -55,40 +87,9 @@ export class BrowserExtensionsService {
 
         await this.loadExtensions();
 
-        // Enable context menu
-        app.on('web-contents-created', ( event, webContents ) => {
-            webContents.on('context-menu', (e, params) => {
-
-                const extensionMenuItems = this.extensionsApi.getContextMenuItems(webContents, params);
-
-                // Refreshing every window on extension click
-                extensionMenuItems.forEach( item => {
-                    const { click } = item;
-                    item.click = () => {
-                        click();
-                        this.windows.forEach( window => {
-                            window.reload();
-                        });
-                    }
-                });
-
-                const menu = buildChromeContextMenu({
-                    params,
-                    webContents,
-                    extensionMenuItems,
-                    openLink: (url, disposition) => {
-                        webContents.loadURL(url);
-                    }
-                });
-            
-                menu.popup();                
-                // this.getInstalledExtensions()
-            });
-        });
-
-        console.log(
-            Array.from(this.installedExtensions)[0]
-        );
+        // console.log(
+        //     Array.from(this.installedExtensions)[0]
+        // );
     }
 
     addBrowserWindow = async ( window: BrowserWindow ) => {

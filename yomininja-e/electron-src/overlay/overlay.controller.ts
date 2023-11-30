@@ -71,7 +71,7 @@ export class OverlayController {
             webPreferences: {
                 nodeIntegration: false, // false
                 contextIsolation: false,
-                preload: join(__dirname, '../preload.js'),                
+                preload: join(__dirname, '../preload.js'),
             },
             titleBarStyle: 'hidden',
             titleBarOverlay: false

@@ -13,8 +13,6 @@ import { profileController } from './profile/profile.index';
 import { overlayController } from './overlay/overlay.index';
 import { mainController } from './main/main.index';
 import { dictionariesController } from './dictionaries/dictionaries.index';
-
-import { BrowserExtensionsService } from './extensions/browser_extensions.service';
 import { createDebuggingWindow } from './util/debugging/debugging.util';
 import { browserExtensionsController } from './extensions/extensions.index';
 
