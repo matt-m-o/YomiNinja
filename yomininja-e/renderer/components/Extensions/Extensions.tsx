@@ -47,20 +47,26 @@ export default function Extensions() {
     };
 
     const chromeStatsLink = (
-        <a href="https://chrome-stats.com/"
+        <a href="#"
             style={linkStyle}
+            onClick={ () => openLink('https://chrome-stats.com/top')  }
         >
             chrome-stats.com
         </a>
     );
 
     const crxExtractorLink = (
-        <a href="https://chromewebstore.google.com/detail/crx-extractordownloader/ajkhmmldknmfjnmeedkbkkojgobmljda"
+        <a href="#"
             style={linkStyle}
+            onClick={ () => openLink('https://chromewebstore.google.com/detail/crx-extractordownloader/ajkhmmldknmfjnmeedkbkkojgobmljda')  }
         >
             CRX Extractor/Downloader
         </a>
     );
+
+    function openLink( link: string ) {
+        global.ipcRenderer.invoke( 'open_link', link );
+    }
 
     return (
         <Card variant="elevation" sx={{ borderRadius: 4, userSelect: 'none' }}>
@@ -122,8 +128,7 @@ export default function Extensions() {
                             }}
                         >
                             <li> Be aware that not all extensions are compatible! </li>
-                            <li> You can get zipped extensions from websites like {chromeStatsLink} </li>
-                            <li> You can also get zipped extensions using {crxExtractorLink} </li>
+                            <li> Download zipped extensions using {crxExtractorLink} or from {chromeStatsLink}</li>
                         </ul>
 
                     </Box>

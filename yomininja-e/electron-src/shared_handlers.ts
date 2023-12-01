@@ -1,4 +1,4 @@
-import { IpcMainInvokeEvent, clipboard, ipcMain } from "electron";
+import { IpcMainInvokeEvent, clipboard, ipcMain, shell } from "electron";
 import { SettingsPresetJson } from "./@core/domain/settings_preset/settings_preset";
 import { settingsController } from "./settings/settings.index";
 import { ocrRecognitionController } from "./ocr_recognition/ocr_recognition.index";
@@ -33,4 +33,8 @@ ipcMain.handle( 'ocr_recognition:restart_engine', async ( event: IpcMainInvokeEv
 ipcMain.handle( 'refresh_all_windows', async () => {
     overlayController.refreshPage();
     mainController.refreshPage();
+});
+
+ipcMain.handle( 'open_link', async ( event: IpcMainInvokeEvent, message: string ) => {
+    shell.openExternal(message);        
 });
