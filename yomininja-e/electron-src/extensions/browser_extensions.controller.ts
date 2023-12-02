@@ -1,7 +1,7 @@
 import { BrowserWindow, IpcMainInvokeEvent, dialog, ipcMain } from "electron";
 import { BrowserExtensionsService } from "./browser_extensions.service";
 import { BrowserExtension } from "./browser_extension";
-import path from "path";
+import { InAppNotification } from "../common/types/in_app_notification";
 
 
 
@@ -35,7 +35,7 @@ export class BrowserExtensionsController {
 
                 const { filePaths } = await dialog.showOpenDialog(
                     this.mainWindow,
-                    {                        
+                    {
                         properties: ['openFile'],
                         filters,
                     }
@@ -49,7 +49,20 @@ export class BrowserExtensionsController {
 
                 await this.browserExtensionsService.installExtension({
                     zipFilePath: filePath
-                });
+                })
+                    .catch( error => {
+                        console.error( error );
+
+                        const notification: InAppNotification = {
+                            type: 'error',
+                            message: 'Extension installation has failed!'
+                        };
+
+                        this.mainWindow.webContents.send(
+                            'notifications:show',
+                            notification
+                        );
+                    });
             }
         );
         

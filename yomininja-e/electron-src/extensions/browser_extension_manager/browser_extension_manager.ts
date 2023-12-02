@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs"
-import StreamZip from "node-stream-zip";
+import StreamZip, { StreamZipAsync } from "node-stream-zip";
 
 
 export class BrowserExtensionManager {
@@ -14,6 +14,11 @@ export class BrowserExtensionManager {
 
 
     async install( zipFilePath: string ): Promise< string > {
+
+        const isValid = await this.validateExtensionZip( zipFilePath );
+
+        if ( !isValid )
+            throw new Error('invalid-extension');
         
         const fileName = path.basename( zipFilePath ).split('.zip')[0];
             
@@ -33,5 +38,22 @@ export class BrowserExtensionManager {
     
     uninstall( extensionPath: string ) {
         fs.rmSync( extensionPath, { recursive: true, force: true } );
+    }
+
+    async validateExtensionZip( zipFilePath: string ): Promise< boolean > {
+
+        const zip = new StreamZip.async({ file: zipFilePath });
+
+        const entries = await zip.entries();
+
+        for ( const entry of Object.values(entries) ) {
+
+            if ( entry.name === 'manifest.json' ) {
+                await zip.close();
+                return true;
+            }
+        }
+
+        return false;
     }
 }

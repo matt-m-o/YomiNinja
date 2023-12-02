@@ -17,15 +17,18 @@ import { DictionaryProvider } from '../context/dictionary.provider';
 import { ExtensionsProvider } from '../context/extensions.provider';
 import ExtensionRoundedIcon from '@mui/icons-material/ExtensionRounded';
 import Extensions from '../components/Extensions/Extensions';
+import { NotificationsProvider } from '../context/notifications.provider';
 
 
 export default function IndexPage() {
 
-  const homeTabContents = (    
-    <LanguagesProvider>
-      <HomeContent/>
-    </LanguagesProvider>
-  )
+  const homeTabContents = (
+    <CaptureSourceProvider>
+      <LanguagesProvider>
+        <HomeContent/>
+      </LanguagesProvider>
+    </CaptureSourceProvider>
+  );
   
   const settingsTabContents = (
     <AppSettingsMenu/>    
@@ -90,19 +93,19 @@ export default function IndexPage() {
   }, [] );
 
   return (
-    <CaptureSourceProvider>
-      <ProfileProvider>
-        <AppInfoProvider>
-          <SettingsProvider>
-            <ExtensionsProvider>
+    <ProfileProvider>
+      <AppInfoProvider>
+        <SettingsProvider>
+          <ExtensionsProvider>
+            <NotificationsProvider>
 
               <Layout {...layoutProps}/>
 
-            </ExtensionsProvider>
-          </SettingsProvider>
-        </AppInfoProvider>
-      </ProfileProvider>
-    </CaptureSourceProvider>
+            </NotificationsProvider>
+          </ExtensionsProvider>
+        </SettingsProvider>
+      </AppInfoProvider>
+    </ProfileProvider>
   );
 }
 
