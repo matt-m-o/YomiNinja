@@ -76,7 +76,7 @@ export default function HomeContent() {
                         <Grid item>
                             <FormControlLabel label={'Capture source'}
                                 sx={{
-                                    alignItems: 'start',                            
+                                    alignItems: 'start',
                                 }}
                                 labelPlacement="top"
                                 control={
@@ -86,10 +86,11 @@ export default function HomeContent() {
                                         onClick={ openCaptureSourceSelectionWindow }
                                         sx={{
                                             width: 'max-content',
-                                            height: '56px',                                    
+                                            height: '56px',
+                                            textTransform: 'none'                  
                                         }}
                                     >                
-                                        <Typography color='#90caf9' fontSize='0.85rem' >
+                                        <Typography color='#90caf9'>
                                             {activeCaptureSource?.name}
                                         </Typography>
                                     </Button>
@@ -100,10 +101,10 @@ export default function HomeContent() {
                         <Grid item>                        
                             <Autocomplete autoHighlight
                                 renderInput={ (params) => {
-                                    return <CustomTextField {...params} label='OCR language' width='200px' />
+                                    return <CustomTextField {...params} label='OCR language' width='177px' />
                                 }}
-                                value={ activeOcrLanguage || 'english' }
-                                onChange={(event: any, newValue: string | null) => {
+                                value={ activeOcrLanguage || '' }
+                                onChange={( event: any, newValue: string | null ) => {
                                     handleLanguageSelectChange( newValue );
                                 }}
                                 options={ languageOptions || [] }
