@@ -16,6 +16,10 @@ import TabPanel from'@mui/lab/TabPanel';
 import TabList from '@mui/lab/TabList';
 import { defaultTheme } from './Theme';
 import { ExtensionsContext } from '../context/extensions.provider';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+
+
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -73,7 +77,41 @@ export default function Layout( { contents }: LayoutProps) {
   const [ activeTab, setActiveTab ] = React.useState('0');
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setActiveTab(newValue);
-  };  
+  }; 
+  const router = useRouter();
+
+  function hashToTabIdx( hash: string ) {
+    return hash.split('tab-')[1];
+  }
+
+  useEffect(() => {
+
+    const onHashChangeStart = ( hash ) => {
+
+      if ( !hash.includes('tab') )
+        return;
+
+      const tabIdx = hashToTabIdx(hash);
+
+      setActiveTab( tabIdx );
+    };
+
+    router.events.on("hashChangeStart", onHashChangeStart);
+
+    return () => {
+        router.events.off("hashChangeStart", onHashChangeStart);
+    };
+  }, [router.events]);
+
+  useEffect( () => {
+
+    if ( !location?.hash ) return;
+
+    const tabIdx = hashToTabIdx( location.hash );
+    setActiveTab( tabIdx );
+    
+  }, [] );
+
 
   const toolbarVariant = 'dense';
   const tabSx: SxProps<Theme> = {
@@ -115,9 +153,9 @@ export default function Layout( { contents }: LayoutProps) {
               backgroundColor: (theme) =>
               theme.palette.mode === 'light'
                 ? theme.palette.grey[100]
-                : theme.palette.grey[1000],
-                
+                : theme.palette.grey[1000],              
             }}
+            style={{ paddingRight: '12px' }}
           >
   
             <IconButton
@@ -160,7 +198,7 @@ export default function Layout( { contents }: LayoutProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-end',
-              px: [1],              
+              px: [1],
             }}
           >
             <IconButton onClick={toggleDrawer}>
@@ -187,7 +225,15 @@ export default function Layout( { contents }: LayoutProps) {
             }}          
           >
             { tabLabelsComponents.map( ( component, idx ) => (
-              <Tab label={component} {...a11yProps(0)} sx={tabSx} key={idx} value={idx.toString()}/>
+              <Tab
+                label={component} 
+                {...a11yProps(0)}
+                sx={tabSx}
+                key={idx}
+                value={idx.toString()}
+                component={Link}
+                href={'#tab-'+idx}
+              />
             ))}
           </TabList>
 

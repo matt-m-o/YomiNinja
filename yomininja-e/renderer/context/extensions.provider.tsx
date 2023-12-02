@@ -1,5 +1,7 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { BrowserExtension } from "../../electron-src/extensions/browser_extension";
+import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
+import { Button, Divider } from "@mui/material";
 
 
 
@@ -39,8 +41,8 @@ export const ExtensionsProvider = ( { children }: PropsWithChildren ) => {
         await global.ipcRenderer.invoke( 'extensions:open_extension_options', browserExtension );
     }
 
-    function handleActionButtonClick() {
-        global.ipcRenderer.invoke( 'extensions:handle_action_button_click' );
+    function refreshUI() {
+        global.ipcRenderer.invoke( 'refresh_all_windows' );
     }
 
     
@@ -51,7 +53,16 @@ export const ExtensionsProvider = ( { children }: PropsWithChildren ) => {
 
     const browserActionList = ( <>
         {/* @ts-expect-error */}
-        <browser-action-list onClick={ () => handleActionButtonClick() }></browser-action-list>
+        <browser-action-list></browser-action-list>
+        <Divider orientation="vertical" variant="middle" flexItem sx={{ ml: 2 }}/>
+
+        <Button variant="text" 
+            sx={{ marginLeft: 1, minWidth:'1px' }}
+            title='Refresh for potential extension fixes'
+            onClick={ refreshUI }
+        >
+            <RefreshRoundedIcon style={{ width: '28px' }}/>
+        </Button>
     </> )
     
     
