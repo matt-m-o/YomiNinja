@@ -117,7 +117,7 @@ export default function Extensions() {
                         </Box>
 
                         <Typography fontSize='1rem' lineHeight={2} mt='56px'>
-                            Notes:
+                            Important notes:
                         </Typography>                        
                         <ul
                             style={{
@@ -127,8 +127,10 @@ export default function Extensions() {
                                 marginLeft: 5
                             }}
                         >
-                            <li> Be aware that not all extensions are compatible! </li>
-                            <li> Download zipped extensions using {crxExtractorLink} or from {chromeStatsLink}</li>
+                            <li> Not all Chrome extensions are currently supported. </li>
+                            <li> Compatibility may improve in the future as Electron development progresses. </li>
+                            <li> Download extensions using {crxExtractorLink} or from {chromeStatsLink} </li>
+                            <li> Clicking on the refresh button might resolve some extension-related problems. </li>
                         </ul>
 
                     </Box>
