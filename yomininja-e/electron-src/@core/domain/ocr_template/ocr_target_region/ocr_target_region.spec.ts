@@ -3,24 +3,47 @@ import { OcrTargetRegion, OcrTargetRegionCreationInput } from "./ocr_target_regi
 
 describe( 'OcrTargetRegion tests', () => {
 
+    let props1: OcrTargetRegionCreationInput;
+
+    beforeEach( () => {
+        props1 = {
+            position: {
+                left: 0.50,
+                top: 0.50,
+            },
+            size: {
+                width: 0.25,
+                height: 0.10,
+            }
+        };
+    });
 
     it('should create a OcrTargetRegion', () => {
 
-        const props: OcrTargetRegionCreationInput = {
-            position: {
-                left: 50,
-                top: 50,
-            },
-            size: {
-                width: 100,
-                height: 10,
-            }
-        };
-
-        const targetRegion = OcrTargetRegion.create( props );
+        const targetRegion = OcrTargetRegion.create( props1 );
 
         expect( targetRegion.id ).toBeDefined();
-        expect( targetRegion.position ).toStrictEqual( props.position );
-        expect( targetRegion.size ).toStrictEqual( props.size );
+        expect( targetRegion.position ).toStrictEqual( props1.position );
+        expect( targetRegion.size ).toStrictEqual( props1.size );
+    });
+
+
+    it('should convert the values from percentages to pixels', () => {
+
+        const targetRegion = OcrTargetRegion.create( props1 );
+
+        const imageSize = {
+            width: 1000,
+            height: 900,
+        };
+
+        const targetRegionPixels = targetRegion.toPixels( imageSize );
+        expect( targetRegionPixels.id ).toStrictEqual( targetRegion.id )
+
+        const { position, size } = targetRegionPixels;
+        expect( position.left ).toStrictEqual( 500 );
+        expect( position.top ).toStrictEqual( 450 );
+        expect( size.width ).toStrictEqual( 250 );
+        expect( size.height ).toStrictEqual( 90 );
     });
 });

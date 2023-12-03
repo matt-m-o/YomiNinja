@@ -12,23 +12,23 @@ describe( 'OcrTemplate tests', () => {
 
         targetRegion1 = OcrTargetRegion.create({
             position: {
-                left: 50,
-                top: 50,
+                left: 0.50,
+                top: 0.50,
             },
             size: {
-                width: 100,
-                height: 10,
+                width: 0.25,
+                height: 0.10,
             }
         });
 
         targetRegion2 = OcrTargetRegion.create({
             position: {
-                left: 50,
-                top: 60,
+                left: 0.50,
+                top: 0.40,
             },
             size: {
-                width: 100,
-                height: 10,
+                width: 0.25,
+                height: 0.10,
             }
         });
     });
