@@ -1,4 +1,4 @@
-import { ImageProcessingAdapter, ImageResizeInput, ImageResizeOutput } from "../../../application/adapters/image_processing.adapter";
+import { ImageExtractInput, ImageMetadata, ImageProcessingAdapter, ImageResizeInput, ImageResizeOutput } from "../../../application/adapters/image_processing.adapter";
 
 
 export class FakeImageProcessingAdapter implements ImageProcessingAdapter {
@@ -28,5 +28,18 @@ export class FakeImageProcessingAdapter implements ImageProcessingAdapter {
         }
     }
     
-    invertColors: (imageBuffer: Buffer) => Promise<Buffer>;
+    async invertColors( imageBuffer: Buffer ) {
+        return imageBuffer;
+    }
+
+    async extract( input: ImageExtractInput ) {
+        return input.image;
+    }
+
+    async getMetadata( image: Buffer ) {
+        return {
+            width: 1000,
+            height: 1000
+        };
+    };
 }

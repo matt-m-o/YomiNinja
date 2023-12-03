@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { join } from 'path';
 import { SharpImageProcessingAdapter } from './sharp_image_process.adapter';
-import { ImageResizeInput } from '../../application/adapters/image_processing.adapter';
+import { ImageExtractInput, ImageResizeInput } from '../../application/adapters/image_processing.adapter';
 import sharp from 'sharp';
 
 
@@ -35,5 +35,37 @@ describe( 'SharpImageProcessingAdapter tests', () => {
 
         expect( output.width ).toStrictEqual( resizedImageMetadata.width );
         expect( output.height ).toStrictEqual( resizedImageMetadata.height );
+    });
+
+    it('should extract a subregion from a image', async () => {
+
+        const input: ImageExtractInput = {
+            image: imageBuffer,
+            position: {
+                top: 540,
+                left: 960,
+            },
+            size: {
+                width: 100,
+                height: 50,
+            },
+        };
+
+        const output = await imageProcessingAdapter.extract( input );
+
+
+        const metadata = await sharp( output )
+            .metadata();
+
+        expect( metadata.width ).toStrictEqual( 100 );
+        expect( metadata.height ).toStrictEqual( 50 );
+    });
+
+    it('should get the metadata of a 1920x1080 image', async () => {
+
+        const output = await imageProcessingAdapter.getMetadata( imageBuffer );
+
+        expect( output.width ).toStrictEqual( 1920 );
+        expect( output.height ).toStrictEqual( 1080 );
     });
 });

@@ -8,9 +8,28 @@ export type ImageResizeOutput = {
     resizedImage: Buffer;
     width?: number;
     height?: number;
+};
+
+export type ImageExtractInput = {
+    image: Buffer;
+    position: {
+        left: number;
+        top: number;
+    };
+    size: {
+        width: number;
+        height: number;
+    };
+};
+
+export type ImageMetadata = {
+    width: number;
+    height: number;
 }
 
 export interface ImageProcessingAdapter {
     resize: ( input: ImageResizeInput ) => Promise< ImageResizeOutput >;
-    invertColors: ( imageBuffer: Buffer ) => Promise< Buffer >;
+    invertColors: ( image: Buffer ) => Promise< Buffer >;
+    extract: ( input: ImageExtractInput ) => Promise< Buffer >;
+    getMetadata: ( image: Buffer ) => Promise< ImageMetadata >;
 }
