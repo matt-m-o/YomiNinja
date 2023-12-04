@@ -1,5 +1,7 @@
 import { Language } from "../../../domain/language/language";
+import { OcrResult } from "../../../domain/ocr_result/ocr_result";
 import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
+import { OcrTemplate } from "../../../domain/ocr_template/ocr_template";
 import { Profile } from "../../../domain/profile/profile";
 import { ProfileRepository } from "../../../domain/profile/profile.repository";
 import { SettingsPreset } from "../../../domain/settings_preset/settings_preset";
@@ -10,6 +12,7 @@ import { OcrAdapter } from "../../adapters/ocr.adapter";
 export type RecognizeImageInput = {    
     imageBuffer: Buffer;
     profileId: string;
+    template?: OcrTemplate;
 }
 
 export class RecognizeImageUseCase {
@@ -63,6 +66,16 @@ export class RecognizeImageUseCase {
             imageBuffer = await this.imageProcessing.invertColors( imageBuffer );
         }
 
+        if ( input.template ) {
+
+            return await this.recognizeWithTemplate({
+                image: imageBuffer,
+                languageCode: profile.active_ocr_language.two_letter_code,
+                ocrAdapter,
+                template: input.template,
+            });
+        }
+        
         const ocrResult = await ocrAdapter.recognize({
             imageBuffer,
             languageCode: profile.active_ocr_language.two_letter_code,
@@ -72,6 +85,66 @@ export class RecognizeImageUseCase {
             return null;
 
         return OcrResultScalable.createFromOcrResult( ocrResult );
+    }
+
+    private async recognizeWithTemplate(
+        input: {
+            image: Buffer,
+            template: OcrTemplate,
+            ocrAdapter: OcrAdapter,
+            languageCode: string,
+        }
+    ): Promise< OcrResultScalable > {
+
+        const { image, template, ocrAdapter, languageCode } = input;
+
+        const { target_regions } = template;
+
+        const metadata = await this.imageProcessing.getMetadata(image);
+
+        const result = OcrResultScalable.create({
+            id: 0,
+            context_resolution: {
+                width: metadata.width,
+                height: metadata.height,
+            }
+        });
+
+        for( const targetRegion of target_regions ) {
+
+            const targetRegionPixels = targetRegion.toPixels({
+                width: metadata.width,
+                height: metadata.height,
+            });
+
+            const regionImage = await this.imageProcessing.extract({
+                image,
+                position: targetRegionPixels.position,
+                size: targetRegionPixels.size,
+            });
+
+            const regionResult = await ocrAdapter.recognize({
+                imageBuffer: regionImage,
+                languageCode,
+            });
+
+            if ( !regionResult ) continue;
+
+            if ( result.id === 0 )
+                result.id = regionResult.id;
+
+            
+            const regionResultScalable = OcrResultScalable.createFromOcrResult( regionResult );
+
+            result.addRegionResult({
+                regionResult: regionResultScalable,
+                regionPosition: targetRegion.position,
+                regionSize: targetRegion.size,
+                globalScaling: false,
+            });
+        }
+
+        return result;
     }
 
     private getAdapter( adapterName?: string ): OcrAdapter | null {

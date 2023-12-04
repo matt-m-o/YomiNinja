@@ -10,6 +10,8 @@ import { ProfileTypeOrmSchema } from "../../../infra/db/typeorm/profile/profile.
 import { SettingsPresetTypeOrmSchema } from "../../../infra/db/typeorm/settings_preset/settings_preset.schema";
 import { LanguageTypeOrmSchema } from "../../../infra/db/typeorm/language/language.schema";
 import ProfileTypeOrmRepository from "../../../infra/db/typeorm/profile/profile.typeorm.repository";
+import { OcrTemplate } from "../../../domain/ocr_template/ocr_template";
+import { OcrTargetRegion } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region";
 
 describe("Recognize Image Use Case tests", () => {    
                 
@@ -29,6 +31,16 @@ describe("Recognize Image Use Case tests", () => {
                     bottom_left: { x: 0, y: 10 },
                     bottom_right: { x: 10, y: 10 },
                 }
+            },
+            {
+                text: "recognized_text",
+                score: 0.99,
+                box: {
+                    top_left: { x: 10, y: 10 },
+                    top_right: { x: 20, y: 10 },
+                    bottom_left: { x: 10, y: 20 },
+                    bottom_right: { x: 20, y: 20 },
+                }
             }
         ]
     };
@@ -40,6 +52,8 @@ describe("Recognize Image Use Case tests", () => {
     let recognizeImageUseCase: RecognizeImageUseCase;
 
     let profile: Profile;
+
+    let ocrTemplate: OcrTemplate;
 
     beforeEach( async () => {
         
@@ -83,6 +97,24 @@ describe("Recognize Image Use Case tests", () => {
             profileRepo,
         );
 
+
+        const targetRegion = OcrTargetRegion.create({
+            position: {
+                top: 0.5,
+                left: 0.5,
+            },
+            size: {
+                width: 0.5,
+                height: 0.5,
+            },
+        });
+
+        ocrTemplate = OcrTemplate.create({
+            image: Buffer.from(''),
+            name: 'template',
+            ocr_target_regions: [ targetRegion ]
+        });
+
     });
 
     it("should check if the use case has an adapter", () => {
@@ -103,8 +135,13 @@ describe("Recognize Image Use Case tests", () => {
 
         const result = await recognizeImageUseCase.execute( input );
 
+        expect( result ).toBeTruthy();
+        if ( !result ) return;
+
+        const { ocr_regions } = result;
+
         expect( result?.context_resolution ).toStrictEqual( ocrTestAdapterResultProps.context_resolution );
-        expect( result?.results[0].text ).toStrictEqual( testText );
+        expect( ocr_regions[0].results?.[0].text ).toStrictEqual( testText );
     });
     
 });

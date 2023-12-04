@@ -44,7 +44,10 @@ export default function OcrOverlay() {
 
       let value = false;
 
-      if ( element.id === 'overlay-frame' )
+      if (
+        element.id === 'overlay-frame' ||
+        element.id === 'ocr-region'
+      )
         value = true;
       else
         value = false;

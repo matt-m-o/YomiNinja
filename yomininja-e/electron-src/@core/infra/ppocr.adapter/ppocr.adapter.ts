@@ -63,11 +63,13 @@ export class PpOcrAdapter implements OcrAdapter {
         const ok = await this.ppocrServiceProcessStatusCheck();        
         if ( !ok ) return null;
         
+        this.idCounter++;
+        
         const requestInput: RecognizeBytesRequest = {
             id: this.idCounter.toString(),
             image_bytes: input.imageBuffer,
             language_code: input.languageCode            
-        };        
+        };
 
         console.log('processing recognition input');
         this.status = OcrAdapterStatus.Processing;
@@ -97,7 +99,6 @@ export class PpOcrAdapter implements OcrAdapter {
             !clientResponse?.results
         )
             return null;
-        
         
         return OcrResult.create({
             id: parseInt(clientResponse.id),

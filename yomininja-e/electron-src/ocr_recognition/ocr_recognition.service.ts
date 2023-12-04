@@ -12,6 +12,8 @@ import { screen } from 'electron';
 import { CaptureSource, ExternalWindow } from "./common/types";
 import sharp from 'sharp';
 import { displayImage } from "../util/debugging/debugging.util";
+import { OcrTemplate } from "../@core/domain/ocr_template/ocr_template";
+import { OcrTargetRegion } from "../@core/domain/ocr_template/ocr_target_region/ocr_target_region";
 
 
 export const entireScreenAutoCaptureSource: CaptureSource = {
@@ -71,9 +73,27 @@ export class OcrRecognitionService {
 
         // if ( !isValidImage ) return null;
 
+        const template = OcrTemplate.create({
+            image: imageBuffer,
+            name: 'test',
+        });
+        template.addTargetRegion( 
+            OcrTargetRegion.create({
+                position: {
+                    top: 0.25,
+                    left: 0.25
+                },
+                size: {
+                    width: 0.75,
+                    height: 0.75
+                }
+            })
+        );
+
         return await this.recognizeImageUseCase.execute({
             imageBuffer,
-            profileId: profileId
+            profileId: profileId,
+            template
         });
     }
 
