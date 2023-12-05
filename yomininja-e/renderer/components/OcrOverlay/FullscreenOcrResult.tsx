@@ -81,6 +81,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
             ":hover": {
                 backgroundColor: ocrItemBoxVisuals?.background_color || 'black',
                 color: ocrItemBoxVisuals?.text.color || 'white',
+                fontSize: fontSize + 'px',
             },
             borderColor: ocrItemBoxVisuals?.border_color || 'red',
             borderWidth: ocrItemBoxVisuals?.border_width || '1px',
@@ -97,12 +98,11 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
             <Box className="extracted-text"
                 style={{
                     left: box.position.left + '%',
-                    top: box.position.top * 0.994 + '%',
+                    top: box.position.top + '%',
                     transform: `rotate( ${box.angle_degrees}deg )`,
                     minWidth: minWidth + '%',
                     minHeight: box.dimensions.height + '%',
-                    maxHeight: box.dimensions.height * 1.80 + '%',            
-                    fontSize: fontSize + 'px',
+                    // maxHeight: box.dimensions.height + '%',
                     paddingLeft: isVertical ? 0 : '0.25%',
                     paddingRight: isVertical ? 0 : '0.25%'
                 }}                          
