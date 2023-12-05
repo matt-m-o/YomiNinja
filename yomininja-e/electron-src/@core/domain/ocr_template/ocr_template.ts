@@ -9,6 +9,8 @@ export type OcrTemplateConstructorProps = {
     ocr_target_regions: OcrTargetRegion[];
     image: Buffer;
     capture_source_name?: string;
+    created_at: Date;
+    updated_at: Date;
 };
 
 export interface OcrTemplateCreationInput extends Omit<
@@ -26,6 +28,8 @@ export class OcrTemplate {
     target_regions: OcrTargetRegion[];
     image: Buffer;
     capture_source_name?: string;
+    created_at: Date;
+    updated_at: Date;
 
     constructor( props: OcrTemplateConstructorProps ) {
 
@@ -42,7 +46,9 @@ export class OcrTemplate {
     static create( input: OcrTemplateCreationInput ): OcrTemplate {
         return new OcrTemplate({
             ...input,
-            ocr_target_regions: input.ocr_target_regions || []
+            ocr_target_regions: input.ocr_target_regions || [],
+            created_at: new Date(),
+            updated_at: new Date()
         });
     }
 

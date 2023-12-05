@@ -1,13 +1,13 @@
 import { EntitySchema } from 'typeorm';
-import { SettingsPreset } from '../../../../domain/settings_preset/settings_preset';
 import { generateIndexName } from '../common/schema_helpers';
+import { OcrTemplate } from '../../../../domain/ocr_template/ocr_template';
 
 
-const name = 'settings_preset';
-export const SettingsPresetTypeOrmSchema = new EntitySchema< SettingsPreset >({
+const name = 'ocr_template';
+export const OcrTemplateTypeOrmSchema = new EntitySchema< OcrTemplate >({
 
     name,
-    target: SettingsPreset,
+    target: OcrTemplate,
 
     columns: {
 
@@ -20,14 +20,21 @@ export const SettingsPresetTypeOrmSchema = new EntitySchema< SettingsPreset >({
         name: {
             type: String,
             length: 100,
+            unique: true,
         },
 
-        overlay: {
+        image: {
+            type: 'blob',
+        },
+
+        target_regions: {
             type: 'json',
         },
 
-        ocr_engine: {
-            type: 'json',
+        capture_source_name: {
+            type: String,
+            length: 100,
+            nullable: true
         },
 
         created_at: {
@@ -37,6 +44,6 @@ export const SettingsPresetTypeOrmSchema = new EntitySchema< SettingsPreset >({
         updated_at: {
             type: 'datetime',
             updateDate: true,
-        },
+        },       
     }
 })
