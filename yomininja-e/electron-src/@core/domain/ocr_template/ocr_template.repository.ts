@@ -1,9 +1,10 @@
-import { OcrTemplate } from "./ocr_template";
+import { OcrTemplate, OcrTemplateId } from "./ocr_template";
 
 
 export type OcrTemplateFindOneInput = {
-    id?: string;
+    id?: OcrTemplateId;
     name?: string;
+    capture_source_name?: string;
 }
 
 export interface OcrTemplateRepository {

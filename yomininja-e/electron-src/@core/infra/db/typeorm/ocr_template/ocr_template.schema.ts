@@ -27,10 +27,6 @@ export const OcrTemplateTypeOrmSchema = new EntitySchema< OcrTemplate >({
             type: 'blob',
         },
 
-        target_regions: {
-            type: 'json',
-        },
-
         capture_source_name: {
             type: String,
             length: 100,
@@ -44,6 +40,16 @@ export const OcrTemplateTypeOrmSchema = new EntitySchema< OcrTemplate >({
         updated_at: {
             type: 'datetime',
             updateDate: true,
-        },       
-    }
+        },
+    },
+
+    relations:{
+        target_regions: {
+            type: 'one-to-many',
+            target: 'OcrTargetRegion',
+            inverseSide: 'ocr_template',
+            cascade: false,
+            default: []
+        },
+    },
 })

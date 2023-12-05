@@ -6,7 +6,7 @@ export type OcrTemplateId = string;
 export type OcrTemplateConstructorProps = {
     id?: OcrTemplateId;
     name: string;
-    ocr_target_regions: OcrTargetRegion[];
+    target_regions: OcrTargetRegion[];
     image: Buffer;
     capture_source_name?: string;
     created_at: Date;
@@ -15,10 +15,12 @@ export type OcrTemplateConstructorProps = {
 
 export interface OcrTemplateCreationInput extends Omit<
     OcrTemplateConstructorProps,
-    'id' | 'ocr_target_regions' | 'capture_source_name'
+    'id' |
+    'target_regions' |
+    'created_at' |
+    'updated_at'
 > {
-    ocr_target_regions?: OcrTargetRegion[];
-    capture_source_name?: string;
+    target_regions?: OcrTargetRegion[];
 };
 
 export class OcrTemplate {
@@ -27,7 +29,7 @@ export class OcrTemplate {
     name: string;
     target_regions: OcrTargetRegion[];
     image: Buffer;
-    capture_source_name?: string;
+    capture_source_name: string | null;
     created_at: Date;
     updated_at: Date;
 
@@ -38,15 +40,21 @@ export class OcrTemplate {
         this.id = props?.id || OcrTemplate.generateId();
 
         this.name = props.name;
-        this.target_regions = props.ocr_target_regions;
+        this.target_regions = props?.target_regions || [];
         this.image = props.image;
-        this.capture_source_name = props.capture_source_name;
+        this.capture_source_name = props?.capture_source_name || null;
+        this.created_at = props.created_at;
+        this.updated_at = props.updated_at;
+
+        this.target_regions.forEach( item => {
+            item.ocr_template_id = this.id;
+        });
     }
 
     static create( input: OcrTemplateCreationInput ): OcrTemplate {
         return new OcrTemplate({
             ...input,
-            ocr_target_regions: input.ocr_target_regions || [],
+            target_regions: input.target_regions || [],
             created_at: new Date(),
             updated_at: new Date()
         });
@@ -59,6 +67,8 @@ export class OcrTemplate {
         });
 
         if ( exists ) return;
+
+        targetRegion.ocr_template_id = this.id;
 
         this.target_regions.push( targetRegion );
     }
@@ -76,5 +86,9 @@ export class OcrTemplate {
 
     static generateId(): OcrTemplateId {
         return crypto.randomUUID();
+    }
+
+    nullCheck() {
+        this.target_regions = this.target_regions || [];
     }
 };
