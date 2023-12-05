@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { OcrTemplate } from '../ocr_template';
 
 export type OcrTargetRegionId = string;
 
@@ -17,19 +18,31 @@ export type OcrTemplateId = string;
 
 export type OcrTargetRegionConstructorProps = {
     id?: string;
+    ocr_template_id: OcrTemplateId;
+    ocr_template?: OcrTemplate;
     position: Position; // Percentages 0 ... 1
     size: Size; // Percentages 
-    // angle: number; // degrees
+    angle?: number; // degrees
+    created_at: Date;
+    updated_at: Date;
 };
 
-export interface OcrTargetRegionCreationInput extends OcrTargetRegionConstructorProps {};
+export interface OcrTargetRegionCreationInput extends Omit<
+    OcrTargetRegionConstructorProps,
+    'created_at' | 
+    'updated_at'
+> {};
 
 export class OcrTargetRegion {
 
     id: OcrTargetRegionId;
+    ocr_template_id: OcrTemplateId;
+    ocr_template?: OcrTemplate;
     position: Position; // Percentages
     size: Size; // Percentages
-    // angle: number; // degrees
+    angle: number; // degrees
+    created_at: Date;
+    updated_at: Date;
 
     constructor( props: OcrTargetRegionConstructorProps ) {
 
@@ -37,12 +50,23 @@ export class OcrTargetRegion {
 
         this.id = props?.id || OcrTargetRegion.generateId();
 
+        if ( props.ocr_template )
+            this.ocr_template = props.ocr_template;
+
+        this.ocr_template_id = props.ocr_template_id;
         this.position = props.position;
         this.size = props.size;
+        this.angle = props?.angle || 0;
+        this.created_at = props.created_at;
+        this.updated_at = props.updated_at;
     }
 
     static create( input: OcrTargetRegionCreationInput ): OcrTargetRegion {
-        return new OcrTargetRegion(input);
+        return new OcrTargetRegion({
+            ...input,
+            created_at: new Date(),
+            updated_at: new Date()
+        });
     }
 
     toPixels( 

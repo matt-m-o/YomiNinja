@@ -7,6 +7,7 @@ describe( 'OcrTargetRegion tests', () => {
 
     beforeEach( () => {
         props1 = {
+            ocr_template_id: 'asdf',
             position: {
                 left: 0.50,
                 top: 0.50,
