@@ -99,6 +99,7 @@ describe("Recognize Image Use Case tests", () => {
 
 
         const targetRegion = OcrTargetRegion.create({
+            ocr_template_id: 'asdf',
             position: {
                 top: 0.5,
                 left: 0.5,
@@ -112,7 +113,7 @@ describe("Recognize Image Use Case tests", () => {
         ocrTemplate = OcrTemplate.create({
             image: Buffer.from(''),
             name: 'template',
-            ocr_target_regions: [ targetRegion ]
+            target_regions: [ targetRegion ]
         });
 
     });
