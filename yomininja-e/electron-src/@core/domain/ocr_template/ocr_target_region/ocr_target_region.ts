@@ -23,8 +23,6 @@ export type OcrTargetRegionConstructorProps = {
     position: Position; // Percentages 0 ... 1
     size: Size; // Percentages 
     angle?: number; // degrees
-    created_at: Date;
-    updated_at: Date;
 };
 
 export interface OcrTargetRegionCreationInput extends Omit<
@@ -41,8 +39,6 @@ export class OcrTargetRegion {
     position: Position; // Percentages
     size: Size; // Percentages
     angle: number; // degrees
-    created_at: Date;
-    updated_at: Date;
 
     constructor( props: OcrTargetRegionConstructorProps ) {
 
@@ -57,16 +53,10 @@ export class OcrTargetRegion {
         this.position = props.position;
         this.size = props.size;
         this.angle = props?.angle || 0;
-        this.created_at = props.created_at;
-        this.updated_at = props.updated_at;
     }
 
     static create( input: OcrTargetRegionCreationInput ): OcrTargetRegion {
-        return new OcrTargetRegion({
-            ...input,
-            created_at: new Date(),
-            updated_at: new Date()
-        });
+        return new OcrTargetRegion( input );
     }
 
     toPixels( 
@@ -98,4 +88,24 @@ export class OcrTargetRegion {
     static generateId(): OcrTemplateId {
         return crypto.randomUUID();
     }
+
+
+    toJson(): OcrTargetRegionJson {
+        return {
+            id: this.id,
+            ocr_template_id: this.ocr_template_id,
+            ocr_template: this?.ocr_template,
+            position: this.position,
+            size: this.size,
+            angle: this.angle
+        };
+    }
+};
+
+export interface OcrTargetRegionJson extends Omit< 
+    OcrTargetRegionConstructorProps,
+    'id' | 'angle'
+> {
+    id: OcrTargetRegionId;
+    angle: number;
 };

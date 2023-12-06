@@ -1,4 +1,4 @@
-import { OcrTargetRegion, OcrTargetRegionId } from "./ocr_target_region/ocr_target_region";
+import { OcrTargetRegion, OcrTargetRegionId, OcrTargetRegionJson } from "./ocr_target_region/ocr_target_region";
 import crypto from 'crypto';
 
 export type OcrTemplateId = string;
@@ -8,7 +8,7 @@ export type OcrTemplateConstructorProps = {
     name: string;
     target_regions: OcrTargetRegion[];
     image: Buffer;
-    capture_source_name?: string;
+    capture_source_name?: string | null;
     created_at: Date;
     updated_at: Date;
 };
@@ -73,6 +73,18 @@ export class OcrTemplate {
         this.target_regions.push( targetRegion );
     }
 
+    updateTargetRegion( targetRegion: OcrTargetRegion ) {
+
+        for( let item of this.target_regions  ) {
+
+            if ( item.id !== targetRegion.id )
+                continue;
+
+            targetRegion.ocr_template_id = this.id;
+            item = targetRegion;
+        }
+    }
+
     removeTargetRegion( targetRegionId: OcrTargetRegionId ) {
 
         const idx = this.target_regions.findIndex(
@@ -84,6 +96,10 @@ export class OcrTemplate {
         this.target_regions.splice( idx, 1 );
     }
 
+    getTargetRegion( targetRegionId: OcrTargetRegionId ): OcrTargetRegion | undefined  {
+        return this.target_regions.find( item => item.id === targetRegionId );
+    }
+
     static generateId(): OcrTemplateId {
         return crypto.randomUUID();
     }
@@ -91,4 +107,20 @@ export class OcrTemplate {
     nullCheck() {
         this.target_regions = this.target_regions || [];
     }
+
+    toJson(): OcrTemplateJson {
+        return {
+            id: this.id,
+            name: this.name,
+            image: this.image,
+            target_regions: this.target_regions.map( item => item.toJson() ),
+            capture_source_name: this.capture_source_name,
+            created_at: this.created_at,
+            updated_at: this.updated_at,
+        };
+    }
+};
+
+export interface OcrTemplateJson extends Required< Omit< OcrTemplateConstructorProps, 'target_regions' > > {
+    target_regions: OcrTargetRegionJson[];
 };

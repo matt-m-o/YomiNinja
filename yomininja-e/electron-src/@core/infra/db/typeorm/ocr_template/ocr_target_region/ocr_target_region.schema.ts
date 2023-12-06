@@ -32,16 +32,7 @@ export const OcrTargetRegionTypeOrmSchema = new EntitySchema< OcrTargetRegion >(
         angle: {
             type: Number,
             default: 0,
-        },
-
-        created_at: {
-            type: 'datetime',
-        },
-
-        updated_at: {
-            type: 'datetime',
-            updateDate: true,
-        },       
+        }
     },
 
     relations: {
