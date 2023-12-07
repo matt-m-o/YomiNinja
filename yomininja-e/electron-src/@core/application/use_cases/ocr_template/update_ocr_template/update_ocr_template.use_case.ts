@@ -1,7 +1,7 @@
-import { OcrTargetRegion } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region";
-import { OcrTargetRegionRepository } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region.repository";
-import { OcrTemplate, OcrTemplateJson } from "../../../domain/ocr_template/ocr_template";
-import { OcrTemplateRepository } from "../../../domain/ocr_template/ocr_template.repository";
+import { OcrTargetRegion } from "../../../../domain/ocr_template/ocr_target_region/ocr_target_region";
+import { OcrTargetRegionRepository } from "../../../../domain/ocr_template/ocr_target_region/ocr_target_region.repository";
+import { OcrTemplate, OcrTemplateJson } from "../../../../domain/ocr_template/ocr_template";
+import { OcrTemplateRepository } from "../../../../domain/ocr_template/ocr_template.repository";
 
 
 export interface UpdateOcrTemplate_Input {

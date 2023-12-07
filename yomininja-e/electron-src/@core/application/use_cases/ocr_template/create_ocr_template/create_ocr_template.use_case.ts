@@ -1,7 +1,7 @@
-import { OcrTargetRegion, OcrTargetRegionCreationInput, OcrTargetRegionJson } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region";
-import { OcrTargetRegionRepository } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region.repository";
-import { OcrTemplate, OcrTemplateCreationInput, OcrTemplateJson } from "../../../domain/ocr_template/ocr_template";
-import { OcrTemplateRepository } from "../../../domain/ocr_template/ocr_template.repository";
+import { OcrTargetRegion, OcrTargetRegionCreationInput, OcrTargetRegionJson } from "../../../../domain/ocr_template/ocr_target_region/ocr_target_region";
+import { OcrTargetRegionRepository } from "../../../../domain/ocr_template/ocr_target_region/ocr_target_region.repository";
+import { OcrTemplate, OcrTemplateCreationInput, OcrTemplateJson } from "../../../../domain/ocr_template/ocr_template";
+import { OcrTemplateRepository } from "../../../../domain/ocr_template/ocr_template.repository";
 
 
 export interface CreateOcrTemplate_Input extends Omit<

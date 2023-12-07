@@ -1,12 +1,12 @@
 import { DataSource } from 'typeorm';
-import { FakeOcrTestAdapter } from "../../../infra/test/fake_ocr.adapter/fake_ocr.adapter";
+import { FakeOcrTestAdapter } from "../../../../infra/test/fake_ocr.adapter/fake_ocr.adapter";
 import { CreateOcrTemplateUseCase, CreateOcrTemplate_Input } from "./create_ocr_template.use_case";
-import OcrTemplateTypeOrmRepository from "../../../infra/db/typeorm/ocr_template/ocr_template.typeorm.repository";
-import OcrTargetRegionTypeOrmRepository from "../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.typeorm.repository";
-import { OcrTemplate } from "../../../domain/ocr_template/ocr_template";
-import { OcrTargetRegion, OcrTargetRegionCreationInput, OcrTargetRegionJson } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region";
-import { OcrTemplateTypeOrmSchema } from '../../../infra/db/typeorm/ocr_template/ocr_template.schema';
-import { OcrTargetRegionTypeOrmSchema } from '../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.schema';
+import OcrTemplateTypeOrmRepository from "../../../../infra/db/typeorm/ocr_template/ocr_template.typeorm.repository";
+import OcrTargetRegionTypeOrmRepository from "../../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.typeorm.repository";
+import { OcrTemplate } from "../../../../domain/ocr_template/ocr_template";
+import { OcrTargetRegion, OcrTargetRegionCreationInput, OcrTargetRegionJson } from "../../../../domain/ocr_template/ocr_target_region/ocr_target_region";
+import { OcrTemplateTypeOrmSchema } from '../../../../infra/db/typeorm/ocr_template/ocr_template.schema';
+import { OcrTargetRegionTypeOrmSchema } from '../../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.schema';
 
 
 describe("CreateOcrTemplateUseCase tests", () => {    
