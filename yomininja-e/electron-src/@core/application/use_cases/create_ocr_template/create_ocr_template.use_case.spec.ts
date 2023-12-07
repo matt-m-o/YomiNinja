@@ -4,7 +4,7 @@ import { CreateOcrTemplateUseCase, CreateOcrTemplate_Input } from "./create_ocr_
 import OcrTemplateTypeOrmRepository from "../../../infra/db/typeorm/ocr_template/ocr_template.typeorm.repository";
 import OcrTargetRegionTypeOrmRepository from "../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.typeorm.repository";
 import { OcrTemplate } from "../../../domain/ocr_template/ocr_template";
-import { OcrTargetRegion, OcrTargetRegionCreationInput } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region";
+import { OcrTargetRegion, OcrTargetRegionCreationInput, OcrTargetRegionJson } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region";
 import { OcrTemplateTypeOrmSchema } from '../../../infra/db/typeorm/ocr_template/ocr_template.schema';
 import { OcrTargetRegionTypeOrmSchema } from '../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.schema';
 
@@ -69,7 +69,7 @@ describe("CreateOcrTemplateUseCase tests", () => {
     
     it("should create an ocr template with target regions", async () => {  
         
-        const ocrTargetRegionData: OcrTargetRegionCreationInput = {
+        const ocrTargetRegionData = OcrTargetRegion.create({
             ocr_template_id: '',
             position: {
                 left: 0.50,
@@ -79,12 +79,12 @@ describe("CreateOcrTemplateUseCase tests", () => {
                 width: 0.25,
                 height: 0.10,
             }
-        };
+        });
 
         const input: CreateOcrTemplate_Input = {
             image: Buffer.from('asdf'),
             name: 'template1',
-            targetRegions: [ ocrTargetRegionData ]
+            target_regions: [ ocrTargetRegionData.toJson() ]
         };
 
         const output = await useCase.execute(input);

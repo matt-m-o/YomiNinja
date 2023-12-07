@@ -1,14 +1,19 @@
-import { OcrTargetRegion, OcrTargetRegionCreationInput } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region";
+import { OcrTargetRegion, OcrTargetRegionCreationInput, OcrTargetRegionJson } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region";
 import { OcrTargetRegionRepository } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region.repository";
-import { OcrTemplate, OcrTemplateCreationInput } from "../../../domain/ocr_template/ocr_template";
+import { OcrTemplate, OcrTemplateCreationInput, OcrTemplateJson } from "../../../domain/ocr_template/ocr_template";
 import { OcrTemplateRepository } from "../../../domain/ocr_template/ocr_template.repository";
 
 
-export interface CreateOcrTemplate_Input extends Omit< 
-    OcrTemplateCreationInput,
-    'target_regions'
+export interface CreateOcrTemplate_Input extends Omit<
+    OcrTemplateJson,
+    'id' |
+    'created_at' |
+    'updated_at' |
+    'target_regions' |
+    'capture_source_name'
 > {
-    targetRegions?: Omit< OcrTargetRegionCreationInput, 'ocr_template_id' >[]
+    target_regions?: OcrTargetRegionJson[],
+    capture_source_name?: string,
 };
 
 export class CreateOcrTemplateUseCase {
@@ -31,15 +36,15 @@ export class CreateOcrTemplateUseCase {
             throw new Error('ocr-template-already-exists');
 
         const ocrTemplate = OcrTemplate.create({
-            name: input.name,
-            image: input.image,
+            ...input,
+            target_regions: []
         });
 
         await this.ocrTemplateRepo.insert( ocrTemplate );
         
-        if ( input?.targetRegions ) {
+        if ( input?.target_regions ) {
 
-            for ( const data of input?.targetRegions ) {
+            for ( const data of input.target_regions ) {
 
                 const region = OcrTargetRegion.create({
                     ...data,
