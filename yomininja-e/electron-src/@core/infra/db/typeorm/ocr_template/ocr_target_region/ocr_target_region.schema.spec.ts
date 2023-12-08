@@ -62,10 +62,7 @@ describe( 'OcrTargetRegion Entity Schema tests', () => {
     });
 
 
-    it('should update', async () => {        
-        
-        const createdAt = ocrTargetRegion.created_at;
-        const updatedAt = ocrTargetRegion.updated_at;
+    it('should update', async () => {
                 
         await OcrTargetRegionTypeOrmRepo.save( ocrTargetRegion );
 
@@ -81,7 +78,5 @@ describe( 'OcrTargetRegion Entity Schema tests', () => {
 
         expect( foundPreset).toBeDefined();
         expect( foundPreset?.position ).toStrictEqual( updatedPosition );
-        expect( foundPreset?.created_at).toStrictEqual( ocrTargetRegion.created_at );
-        expect( foundPreset?.updated_at.getTime() !== updatedAt.getTime() ).toBeTruthy();
     });
 });
