@@ -18,6 +18,8 @@ import { ExtensionsProvider } from '../context/extensions.provider';
 import ExtensionRoundedIcon from '@mui/icons-material/ExtensionRounded';
 import Extensions from '../components/Extensions/Extensions';
 import { NotificationsProvider } from '../context/notifications.provider';
+import ViewComfyRoundedIcon from '@mui/icons-material/ViewComfyRounded';
+import OcrTemplates from '../components/OcrTemplates/OcrTemplates';
 
 
 export default function IndexPage() {
@@ -46,6 +48,10 @@ export default function IndexPage() {
     <Extensions/>
   );
 
+  const ocrTemplatesTabContents = (
+    <OcrTemplates/>
+  );
+
   const layoutProps: LayoutProps = {
     contents: [
       {
@@ -54,6 +60,13 @@ export default function IndexPage() {
           icon: <Home/>,
         },
         tabContent: homeTabContents
+      },
+      {
+        tabLabel: {
+          text: 'OCR Templates',
+          icon: <ViewComfyRoundedIcon/>,
+        },
+        tabContent: ocrTemplatesTabContents
       },
       {
         tabLabel: {

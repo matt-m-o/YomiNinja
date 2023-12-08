@@ -3,7 +3,7 @@ import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import MuiDrawer from '@mui/material/Drawer';
 
 
-const drawerWidth: number = 195;
+const drawerWidth: number = 218;
 
 
 interface AppBarProps extends MuiAppBarProps {

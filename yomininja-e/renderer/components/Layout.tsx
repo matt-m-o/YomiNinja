@@ -126,7 +126,7 @@ export default function Layout( { contents }: LayoutProps) {
 
   const tabLabelStyle: React.CSSProperties = {
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
   }
   
   const tabLabelsComponents = contents.map( item => (
@@ -134,7 +134,13 @@ export default function Layout( { contents }: LayoutProps) {
       <ListItemIcon sx={{ minWidth: '48px' }}>
         {item.tabLabel.icon}
       </ListItemIcon>
-      <ListItemText primary={item.tabLabel.text} sx={{ paddingTop: '1px' }} />
+      <ListItemText
+        primary={item.tabLabel.text}
+        sx={{
+          paddingTop: '1px',
+          // textTransform: 'capitalize'
+        }}
+      />
     </div>
   ));
 
