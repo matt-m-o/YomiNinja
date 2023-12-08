@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { Registry, container_registry } from './container_registry';
 import { GetSupportedLanguagesUseCase } from "../../application/use_cases/get_supported_languages/get_supported_languages.use_case";
 import { RecognizeImageUseCase } from "../../application/use_cases/recognize_image/recognize_image.use_case";
-import { get_SettingsPresetRepository } from "./repositories_registry";
+import { get_OcrTemplateRepository, get_SettingsPresetRepository } from "./repositories_registry";
 import { GetActiveSettingsPresetUseCase } from "../../application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
 import { UpdateSettingsPresetUseCase } from "../../application/use_cases/update_settings_preset/update_settings_preset.use_case";
 import { CheckForAppUpdatesUseCase } from "../../application/use_cases/check_for_app_updates/check_for_app_updates.use_case";
@@ -15,6 +15,10 @@ import { ImportFuriganaDictionaryUseCase } from "../../application/use_cases/dic
 import { GetDictionariesUseCase } from "../../application/use_cases/dictionary/get_dictionaries/get_dictionaries.use_case";
 import { DeleteAllDictionariesUseCase } from "../../application/use_cases/dictionary/delete_all_dictionaries/delete_all_dictionaries.use_case";
 import { CreateSettingsPresetUseCase } from "../../application/use_cases/create_settings_preset/create_settings_preset.use_case";
+import { CreateOcrTemplateUseCase } from "../../application/use_cases/ocr_template/create_ocr_template/create_ocr_template.use_case";
+import { UpdateOcrTemplateUseCase } from "../../application/use_cases/ocr_template/update_ocr_template/update_ocr_template.use_case";
+import { GetOcrTemplatesUseCase } from "../../application/use_cases/ocr_template/get_ocr_template/get_ocr_templates.use_case";
+import { DeleteOcrTemplateUseCase } from "../../application/use_cases/ocr_template/delete_ocr_template/delete_ocr_template.use_case";
 
 
 container_registry.bind( Registry.RecognizeImageUseCase )
@@ -176,6 +180,48 @@ container_registry.bind( Registry.CreateSettingsPresetUseCase )
         })
     });
 
+container_registry.bind( Registry.CreateOcrTemplateUseCase )
+    .toDynamicValue( (context) => {
+        return new CreateOcrTemplateUseCase({            
+            ocrTemplateRepo: context.container.get(
+                Registry.OcrTemplateTypeOrmRepository
+            ),
+            ocrTargetRegionRepo: context.container.get(
+                Registry.OcrTargetRegionTypeOrmRepository
+            ),
+        })
+    });
+
+container_registry.bind( Registry.UpdateOcrTemplateUseCase )
+    .toDynamicValue( (context) => {
+        return new UpdateOcrTemplateUseCase({            
+            ocrTemplateRepo: context.container.get(
+                Registry.OcrTemplateTypeOrmRepository
+            ),
+            ocrTargetRegionRepo: context.container.get(
+                Registry.OcrTargetRegionTypeOrmRepository
+            ),
+        })
+    });
+
+container_registry.bind( Registry.GetOcrTemplatesUseCase )
+    .toDynamicValue( (context) => {
+        return new GetOcrTemplatesUseCase({
+            ocrTemplateRepo: context.container.get(
+                Registry.OcrTemplateTypeOrmRepository
+            ),
+        })
+    });
+
+container_registry.bind( Registry.DeleteOcrTemplateUseCase )
+    .toDynamicValue( (context) => {
+        return new DeleteOcrTemplateUseCase({
+            ocrTemplateRepo: context.container.get(
+                Registry.OcrTemplateTypeOrmRepository
+            ),
+        })
+    });
+
 
 export function get_RecognizeImageUseCase(): RecognizeImageUseCase {
     return container_registry.get< RecognizeImageUseCase >( Registry.RecognizeImageUseCase )
@@ -231,6 +277,24 @@ export function get_DeleteAllDictionariesUseCase(): DeleteAllDictionariesUseCase
     return container_registry.get< DeleteAllDictionariesUseCase >( Registry.DeleteAllDictionariesUseCase );
 }
 
+
 export function get_CreateSettingsPresetUseCase(): CreateSettingsPresetUseCase {    
     return container_registry.get< CreateSettingsPresetUseCase >( Registry.CreateSettingsPresetUseCase );
+}
+
+
+export function get_CreateOcrTemplateUseCase(): CreateOcrTemplateUseCase {    
+    return container_registry.get< CreateOcrTemplateUseCase >( Registry.CreateOcrTemplateUseCase );
+}
+
+export function get_UpdateOcrTemplateUseCase(): UpdateOcrTemplateUseCase {    
+    return container_registry.get< UpdateOcrTemplateUseCase >( Registry.UpdateOcrTemplateUseCase );
+}
+
+export function get_GetOcrTemplatesUseCase(): GetOcrTemplatesUseCase {    
+    return container_registry.get< GetOcrTemplatesUseCase >( Registry.GetOcrTemplatesUseCase );
+}
+
+export function get_DeleteOcrTemplateUseCase(): DeleteOcrTemplateUseCase {    
+    return container_registry.get< DeleteOcrTemplateUseCase >( Registry.DeleteOcrTemplateUseCase );
 }

@@ -13,7 +13,7 @@ export interface CreateOcrTemplate_Input extends Omit<
     'capture_source_name'
 > {
     target_regions?: OcrTargetRegionJson[],
-    capture_source_name?: string,
+    capture_source_name?: string | null,
 };
 
 export class CreateOcrTemplateUseCase {

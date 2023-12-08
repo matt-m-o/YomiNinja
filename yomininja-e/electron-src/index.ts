@@ -15,6 +15,7 @@ import { mainController } from './main/main.index';
 import { dictionariesController } from './dictionaries/dictionaries.index';
 import { createDebuggingWindow } from './util/debugging/debugging.util';
 import { browserExtensionsController } from './extensions/extensions.index';
+import { ocrTemplatesController } from './ocr_templates/ocr_templates.index';
 
 
 
@@ -43,6 +44,7 @@ app.on('ready', async () => {
       appInfoController.init( mainWindow );
       profileController.init( mainWindow );
       dictionariesController.init({ mainWindow, overlayWindow });
+      ocrTemplatesController.init({ mainWindow });
 
       browserExtensionsController.addBrowserWindow( mainWindow );
     });

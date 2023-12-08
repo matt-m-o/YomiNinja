@@ -16,6 +16,10 @@ import DictionaryDefinitionTypeOrmRepository from "../db/typeorm/dictionary/dict
 import { DictionaryDefinition } from "../../domain/dictionary/dictionary_definition/dictionary_definition";
 import DictionaryHeadwordTypeOrmRepository from "../db/typeorm/dictionary/dictionary_headword/dictionary_headword.typeorm.repository";
 import { DictionaryHeadword } from "../../domain/dictionary/dictionary_headword/dictionary_headword";
+import OcrTemplateTypeOrmRepository from "../db/typeorm/ocr_template/ocr_template.typeorm.repository";
+import { OcrTemplate } from "../../domain/ocr_template/ocr_template";
+import OcrTargetRegionTypeOrmRepository from "../db/typeorm/ocr_template/ocr_target_region/ocr_target_region.typeorm.repository";
+import { OcrTargetRegion } from "../../domain/ocr_template/ocr_target_region/ocr_target_region";
 
 
 container_registry.bind( Registry.SettingsPresetInMemoryRepository )
@@ -87,6 +91,27 @@ container_registry.bind( Registry.DictionaryHeadwordTypeOrmRepository )
     })
     .inSingletonScope();
 
+
+container_registry.bind( Registry.OcrTemplateTypeOrmRepository )
+    .toDynamicValue( (context) => {
+        return new OcrTemplateTypeOrmRepository(
+            get_DictionaryDataSource().getRepository( OcrTemplate )
+        );
+    })
+    .inSingletonScope();
+
+
+container_registry.bind( Registry.OcrTargetRegionTypeOrmRepository )
+    .toDynamicValue( (context) => {
+        return new OcrTargetRegionTypeOrmRepository(
+            get_DictionaryDataSource().getRepository( OcrTargetRegion )
+        );
+    })
+    .inSingletonScope();
+
+    
+
+
 export function get_SettingsPresetRepository(): SettingsPresetTypeOrmRepository {    
     return container_registry.get< SettingsPresetTypeOrmRepository >( Registry.SettingsPresetTypeOrmRepository );
 }
@@ -114,4 +139,12 @@ export function get_DictionaryDefinitionRepository(): DictionaryDefinitionTypeOr
 
 export function get_DictionaryHeadwordRepository(): DictionaryHeadwordTypeOrmRepository {    
     return container_registry.get< DictionaryHeadwordTypeOrmRepository >( Registry.DictionaryHeadwordTypeOrmRepository );
+}
+
+export function get_OcrTemplateRepository(): OcrTemplateTypeOrmRepository {    
+    return container_registry.get< OcrTemplateTypeOrmRepository >( Registry.OcrTemplateTypeOrmRepository );
+}
+
+export function get_OcrTargetRegionRepository(): OcrTargetRegionTypeOrmRepository {    
+    return container_registry.get< OcrTargetRegionTypeOrmRepository >( Registry.OcrTargetRegionTypeOrmRepository );
 }
