@@ -1,6 +1,6 @@
-import { Repository } from "typeorm";
+import { FindOptionsWhere, Like, Repository, UnorderedBulkOperation } from "typeorm";
 import { OcrTemplate } from "../../../../domain/ocr_template/ocr_template";
-import { OcrTemplateFindOneInput, OcrTemplateRepository } from "../../../../domain/ocr_template/ocr_template.repository";
+import { OcrTemplateFindManyInput, OcrTemplateFindOneInput, OcrTemplateRepository } from "../../../../domain/ocr_template/ocr_template.repository";
 
 
 
@@ -22,6 +22,26 @@ export default class OcrTemplateTypeOrmRepository implements OcrTemplateReposito
             where: {
                 ...params,
             },
+            relations: [ 'target_regions' ]
+        });
+
+        this.runNullCheck( template );
+
+        return template;
+    }
+
+    async findMany( params: OcrTemplateFindManyInput ): Promise< OcrTemplate[] > {
+
+        const where: FindOptionsWhere< OcrTemplate > = {};
+
+        if ( params.name )
+            where.name = Like(`%${params.name}%`);
+
+        if ( params.capture_source_name )
+            where.capture_source_name = Like(`%${params.capture_source_name}%`);
+
+        const template = await this.ormRepo.find({
+            where,
             relations: [ 'target_regions' ]
         });
 

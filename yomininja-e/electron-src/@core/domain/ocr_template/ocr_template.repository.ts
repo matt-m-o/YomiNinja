@@ -7,6 +7,11 @@ export type OcrTemplateFindOneInput = {
     capture_source_name?: string;
 }
 
+export type OcrTemplateFindManyInput = {        
+    name?: string;
+    capture_source_name?: string | null;
+}
+
 export interface OcrTemplateRepository {
 
     insert( ocrTemplate: OcrTemplate ): Promise< void >;
@@ -14,6 +19,8 @@ export interface OcrTemplateRepository {
     update( ocrTemplate: OcrTemplate ): Promise< void >;
 
     findOne( input: OcrTemplateFindOneInput ): Promise< OcrTemplate | null >;
+
+    findMany( input: OcrTemplateFindManyInput ): Promise< OcrTemplate[] >;
 
     getAll(): Promise< OcrTemplate[] >;
 

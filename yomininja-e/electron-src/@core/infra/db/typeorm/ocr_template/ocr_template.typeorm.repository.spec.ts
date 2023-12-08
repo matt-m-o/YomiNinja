@@ -105,6 +105,31 @@ describe( "OcrTemplate TypeOrm Repository tests", () => {
         expect( foundById ).toStrictEqual( ocrTemplate2 );
     });
 
+    it('should find MANY by name or capture source', async () => {
+
+        const ocrTemplate2 = OcrTemplate.create({
+            image: Buffer.from(''),
+            name: 'template2',
+            capture_source_name: 'application name'
+        });
+        await ormRepo.save([
+            ocrTemplate,
+            ocrTemplate2
+        ]);
+
+        const byName = await repo.findMany({
+            name: ocrTemplate.name
+        });
+        const byCaptureSource = await repo.findMany({
+            capture_source_name: ocrTemplate2.capture_source_name
+        });
+
+        expect( byName ).toContainEqual( ocrTemplate );
+        expect( byName ).toHaveLength( 1 );
+        expect( byCaptureSource ).toContainEqual( ocrTemplate2 );
+        expect( byCaptureSource ).toHaveLength( 1 );
+    });
+
     it('should get ALL', async () => {
 
         const ocrTemplate2 = OcrTemplate.create({
