@@ -24,14 +24,16 @@ export class GetOcrTemplatesUseCase {
         let templates: OcrTemplate[] = [];
 
         if ( name || capture_source_name )
-            templates  = await this.ocrTemplateRepo.findMany({ name, capture_source_name })
+            templates  = await this.ocrTemplateRepo.findMany({ name, capture_source_name });
 
-
-        if ( id ) {
+        else if ( id ) {
             const template = await this.ocrTemplateRepo.findOne({ id });
 
             if ( template )
                 templates.push( template );
+        }
+        else {
+            templates = await this.ocrTemplateRepo.getAll();
         }
 
         return templates;

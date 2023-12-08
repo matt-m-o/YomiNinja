@@ -92,4 +92,13 @@ describe("GetOcrTemplatesUseCase tests", () => {
         expect( output ).toContainEqual( ocrTemplate2 );        
         expect( output ).toHaveLength( 1 );
     });
+
+    it("should get all ocr templates", async () => {
+
+        const input: GetOcrTemplates_Input = {};
+
+        const output = await useCase.execute( input );
+
+        expect( output ).toHaveLength( 2 );
+    });
 });
