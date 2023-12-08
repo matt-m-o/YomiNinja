@@ -130,7 +130,7 @@ export default function Layout( { contents }: LayoutProps) {
   }
   
   const tabLabelsComponents = contents.map( item => (
-    <div style={tabLabelStyle}>
+    <div style={tabLabelStyle} title={item.tabLabel.text}>
       <ListItemIcon sx={{ minWidth: '48px' }}>
         {item.tabLabel.icon}
       </ListItemIcon>
