@@ -70,9 +70,12 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
         // const fontSize = isVertical ? box.dimensions.width * 90 : box.dimensions.height * 65;
 
-        const fontSize = isVertical ?
-            window.innerWidth * ( box.dimensions.width / 100 ) * 0.8:
-            window.innerHeight * ( box.dimensions.height / 100 ) * 0.85;
+        const boxWidthPx = window.innerWidth * ( box.dimensions.width / 100 );
+        const boxHeightPx = window.innerHeight * ( box.dimensions.height / 100 );
+
+        const fontSize = isVertical ? boxWidthPx * 0.6 : boxHeightPx * 0.65;
+
+        const fontSizeOffset = ( isVertical ? fontSize * 1.15 : fontSize * 1.2 ) - fontSize;
 
         if ( box.angle_degrees < -70 )
             isVertical = true;
@@ -81,13 +84,14 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
             ":hover": {
                 backgroundColor: ocrItemBoxVisuals?.background_color || 'black',
                 color: ocrItemBoxVisuals?.text.color || 'white',
-                fontSize: fontSize + 'px',
+                fontSize: ( fontSize + fontSizeOffset ) + 'px', // isVertical ? fontSize * 0.8 : fontSize * 0.85
             },
             borderColor: ocrItemBoxVisuals?.border_color || 'red',
             borderWidth: ocrItemBoxVisuals?.border_width || '1px',
             borderRadius: ocrItemBoxVisuals?.border_radius || '2rem',
             writingMode: isVertical ? 'vertical-rl' :'inherit',
             textOrientation: isVertical ? 'upright' :'inherit',
+            fontSize: fontSize + 'px'
         });
 
         const { width } = box.dimensions;
@@ -98,11 +102,10 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
             <Box className="extracted-text"
                 style={{
                     left: box.position.left + '%',
-                    top: box.position.top + '%',
+                    top: (box.position.top * 0.999) + '%',
                     transform: `rotate( ${box.angle_degrees}deg )`,
                     minWidth: minWidth + '%',
                     minHeight: box.dimensions.height + '%',
-                    // maxHeight: box.dimensions.height + '%',
                     paddingLeft: isVertical ? 0 : '0.25%',
                     paddingRight: isVertical ? 0 : '0.25%'
                 }}                          
