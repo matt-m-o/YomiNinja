@@ -8,23 +8,6 @@ import { uIOhook } from 'uiohook-napi'
 
 // Handlers used by multiple controllers
 
-ipcMain.handle( 'settings_preset:update', async ( event: IpcMainInvokeEvent, message: SettingsPresetJson ) => {
-
-    if ( !message )
-        return;    
-
-    const { restartOcrAdapter } = await settingsController.updateSettingsPreset( message );
-
-    uIOhook.removeAllListeners();
-    
-    overlayController.applySettingsPreset( message );
-    ocrRecognitionController.applySettingsPreset( message );
-
-    return {
-        restartOcrAdapter
-    };
-});
-
 ipcMain.handle( 'ocr_recognition:restart_engine', async ( event: IpcMainInvokeEvent, message: SettingsPresetJson ) => {
 
     ocrRecognitionController.restartEngine();

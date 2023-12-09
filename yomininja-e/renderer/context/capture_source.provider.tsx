@@ -24,11 +24,11 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
         // console.log( captureSource );
 
         setActiveCaptureSource( captureSource );
-        global.ipcRenderer.invoke( 'ocr_recognition:set_capture_source', captureSource );
+        global.ipcRenderer.invoke( 'app:set_capture_source', captureSource );
     }
 
     async function getCaptureSources() {
-        const result: CaptureSource[] = await global.ipcRenderer.invoke( 'ocr_recognition:get_capture_sources' );
+        const result: CaptureSource[] = await global.ipcRenderer.invoke( 'app:get_capture_sources' );
 
         console.log( result );
 
@@ -36,7 +36,7 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
     }
 
     async function getActiveCaptureSource( ) {
-        const source = await global.ipcRenderer.invoke( 'ocr_recognition:get_active_capture_source' );
+        const source = await global.ipcRenderer.invoke( 'app:get_active_capture_source' );
         // console.log(source);
         setActiveCaptureSource(source);
     }
@@ -49,12 +49,12 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
 
         getActiveCaptureSource();
 
-        global.ipcRenderer.on( 'ocr_recognition:active_capture_source', ( event, data: CaptureSource ) => {
+        global.ipcRenderer.on( 'app:active_capture_source', ( event, data: CaptureSource ) => {
             setActiveCaptureSource( data );
         });
         
         return () => {
-            global.ipcRenderer.removeAllListeners( 'ocr_recognition:active_capture_source' );            
+            global.ipcRenderer.removeAllListeners( 'app:active_capture_source' );            
         }
     }, [ global.ipcRenderer ] );
 

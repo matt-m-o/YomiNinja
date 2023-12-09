@@ -16,6 +16,7 @@ import { dictionariesController } from './dictionaries/dictionaries.index';
 import { createDebuggingWindow } from './util/debugging/debugging.util';
 import { browserExtensionsController } from './extensions/extensions.index';
 import { ocrTemplatesController } from './ocr_templates/ocr_templates.index';
+import { appController } from './app/app.index';
 
 
 
@@ -24,30 +25,7 @@ app.on('ready', async () => {
   // Prepare the renderer once the app is ready
   await prepareNext('./renderer');
 
-  const mainWindow = await mainController.init();
-  
-  await browserExtensionsController.init({ mainWindow });
-
-  if ( isDev )
-    createDebuggingWindow();
-  
-  
-  initializeApp()
-    .then( async () => {
-      
-      const overlayWindow = await overlayController.init( mainWindow );
-      browserExtensionsController.addBrowserWindow( overlayWindow );
-      
-      ocrRecognitionController.init({ mainWindow, overlayWindow });
-      mainController.loadMainPage();
-      settingsController.init( mainWindow );
-      appInfoController.init( mainWindow );
-      profileController.init( mainWindow );
-      dictionariesController.init({ mainWindow, overlayWindow });
-      ocrTemplatesController.init({ mainWindow });
-
-      browserExtensionsController.addBrowserWindow( mainWindow );
-    });
+  await appController.init();
 });
 
 // Quit the app once all windows are closed
