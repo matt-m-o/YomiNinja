@@ -2,9 +2,10 @@ import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { CaptureSource } from '../../electron-src/ocr_recognition/common/types';
 
 export type CaptureSourceContextType = {
-    updateActiveCaptureSource: ( update: CaptureSource ) => Promise< void >;
     activeCaptureSource: CaptureSource;
     captureSources: CaptureSource[];
+    captureSourceImage?: Buffer;
+    updateActiveCaptureSource: ( update: CaptureSource ) => Promise< void >;
     refreshCaptureSources: () => void; 
 };
 
@@ -17,6 +18,7 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
     
     const [ activeCaptureSource, setActiveCaptureSource ] = useState<CaptureSource>();
     const [ captureSources, setCaptureSources ] = useState< CaptureSource[] >();
+    const [ captureSourceImage, setCaptureSourceImage ] = useState< Buffer | undefined >();
 
 
     async function updateActiveCaptureSource( captureSource: CaptureSource ) {
@@ -52,9 +54,14 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
         global.ipcRenderer.on( 'app:active_capture_source', ( event, data: CaptureSource ) => {
             setActiveCaptureSource( data );
         });
+
+        global.ipcRenderer.on( 'app:capture_source_image', ( event, data: Buffer ) => {
+            setCaptureSourceImage( data );
+        });
         
         return () => {
-            global.ipcRenderer.removeAllListeners( 'app:active_capture_source' );            
+            global.ipcRenderer.removeAllListeners( 'app:active_capture_source' );
+            global.ipcRenderer.removeAllListeners( 'app:capture_source_image' );
         }
     }, [ global.ipcRenderer ] );
 
@@ -66,6 +73,7 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
                 refreshCaptureSources,
                 activeCaptureSource,
                 captureSources,
+                captureSourceImage,
             }}
         >            
             {children}

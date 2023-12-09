@@ -42,6 +42,8 @@ export class AppController {
 
     private showOverlayWindowWithoutFocus: boolean = false;
 
+    private isEditingOcrTemplate: boolean = false;
+
 
     constructor( input: {
         appService: AppService
@@ -158,6 +160,13 @@ export class AppController {
                     'app:active_capture_source',
                     this.activeCaptureSource
                 ); 
+            }
+        );
+
+        ipcMain.handle( 'app:editing_ocr_template',
+            async ( event: IpcMainInvokeEvent, message: boolean ): Promise< void > => {
+                this.isEditingOcrTemplate = message;
+                console.log( 'app:editing_ocr_template: '+message );
             }
         );
     }
@@ -363,26 +372,34 @@ export class AppController {
         return false
     }
 
-    private async handleOcrCommand( entireScreenImage?: Buffer, runFullScreenImageCheck?: boolean ) {
+    private async handleOcrCommand( image?: Buffer, runFullScreenImageCheck?: boolean ) {
 
         console.log('AppController.handleOcrCommand');
 
         await this.handleCaptureSourceSelection();
 
-        entireScreenImage = await this.appService.getCaptureSourceImage({
-            image: entireScreenImage,
+        image = await this.appService.getCaptureSourceImage({
+            image,
             display: this.captureSourceDisplay,
             window: this.captureSourceWindow,
         });
 
-        if ( !entireScreenImage ) return;
+        if ( !image ) return;
 
-        ocrRecognitionController.recognize( entireScreenImage );
+        if ( this.isEditingOcrTemplate ) {
+            this.mainWindow.webContents.send(
+                'app:capture_source_image',
+                image.toString('base64')
+            );
+        }
+        else {
+            ocrRecognitionController.recognize( image );
+        }
 
         let isFullScreenImage = true;
 
-        if ( entireScreenImage && runFullScreenImageCheck)
-            isFullScreenImage = await this.isFullScreenImage(entireScreenImage);
+        if ( image && runFullScreenImageCheck)
+            isFullScreenImage = await this.isFullScreenImage(image);
 
         this.setOverlayBounds( isFullScreenImage ? 'fullscreen' :  'maximized' );
         this.showOverlayWindow();

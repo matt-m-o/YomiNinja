@@ -49,7 +49,9 @@ export default function IndexPage() {
   );
 
   const ocrTemplatesTabContents = (
-    <OcrTemplates/>
+    <CaptureSourceProvider>
+      <OcrTemplates/>
+    </CaptureSourceProvider>
   );
 
   const layoutProps: LayoutProps = {

@@ -1,13 +1,17 @@
 import { Box, Button, FormControl, InputLabel, MenuItem, Modal, Select, SelectChangeEvent, TextField, Typography, styled } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
+import { OcrTemplate } from "../../../electron-src/@core/domain/ocr_template/ocr_template";
+import { CaptureSourceContext } from "../../context/capture_source.provider";
+import Image  from 'next/image';
+
 
 const style = {
     position: 'absolute',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 500,
+    width: 'max-content',
     bgcolor: 'background.paper',
     border: '2px solid #000',
     boxShadow: 24,
@@ -18,6 +22,8 @@ const style = {
 export type CreateOcrTemplateModalProps = {
     open: boolean;
     handleClose: () => void;
+    template?: OcrTemplate;
+    captureSourceImage?: Buffer;
 };
 
 export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalProps ) {
@@ -28,6 +34,15 @@ export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalPro
     const [ image, setImage ] = useState< Buffer >();
 
     const { createOcrTemplate } = useContext( OcrTemplatesContext );
+    const { captureSourceImage } = useContext( CaptureSourceContext );
+
+  
+
+    useEffect( () => {
+
+        global.ipcRenderer.invoke( 'app:editing_ocr_template', open )
+
+    }, [open]);
 
     function saveOcrTemplate() {
 
@@ -55,12 +70,20 @@ export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalPro
                 />
 
 
-                <Box>
-                    <Typography align="center" mt={4}>
-                        Press the OCR hotkey to set the capture source dimensions
+                <Box display='flex' justifyContent='center' flexDirection='column'>
+                    <Typography align="center" mt={4} mb={2}>
+                        Press the OCR hotkey to set the capture source image
                     </Typography>
-                    
-                    
+
+                    { captureSourceImage &&
+                        <img src={ 'data:image/png;base64,' + captureSourceImage }
+                            alt="capture source image"
+                            style={{
+                                maxWidth: '500px',
+                                maxHeight: '400px'
+                            }}
+                        />
+                    }
                 </Box>
 
 

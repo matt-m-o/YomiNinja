@@ -19,6 +19,8 @@ export class OcrTemplatesController {
     init( input: { mainWindow: BrowserWindow }) {
 
         this.mainWindow = input.mainWindow;
+
+        this.registersIpcHandlers();
     }
 
     private registersIpcHandlers() {
@@ -32,7 +34,7 @@ export class OcrTemplatesController {
             }
         );
         
-        ipcMain.handle( 'ocr_templates:get', 
+        ipcMain.handle( 'ocr_templates:get',
             async ( event: IpcMainInvokeEvent, message?: GetOcrTemplates_Input ): Promise< OcrTemplateJson[] > => {
                 
                 return await this.ocrTemplatesService.getOcrTemplates( message || {} );
