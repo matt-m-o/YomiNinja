@@ -24,5 +24,5 @@ export interface OcrTemplateRepository {
 
     getAll(): Promise< OcrTemplate[] >;
 
-    delete( id: string ): Promise< void >;
+    delete( id: OcrTemplateId ): Promise< void >;
 }

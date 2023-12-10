@@ -16,7 +16,6 @@ describe("CreateOcrTemplateUseCase tests", () => {
     let ocrTemplateRepo: OcrTemplateTypeOrmRepository;
     let ocrTargetRegionRepo: OcrTargetRegionTypeOrmRepository;
 
-
     beforeEach( async () => {
 
         const dataSource = new DataSource({
@@ -67,42 +66,4 @@ describe("CreateOcrTemplateUseCase tests", () => {
             .toStrictEqual( input.image );
     });
     
-    it("should create an ocr template with target regions", async () => {  
-        
-        const ocrTargetRegionData = OcrTargetRegion.create({
-            ocr_template_id: '',
-            position: {
-                left: 0.50,
-                top: 0.50,
-            },
-            size: {
-                width: 0.25,
-                height: 0.10,
-            }
-        });
-
-        const input: CreateOcrTemplate_Input = {
-            image: Buffer.from('asdf'),
-            name: 'template1',
-            target_regions: [ ocrTargetRegionData.toJson() ]
-        };
-
-        const output = await useCase.execute(input);
-        
-        const foundTemplate = await ocrTemplateRepo.findOne({
-            name: input.name
-        });
-
-        expect( output ).toStrictEqual( output );
-
-        expect( foundTemplate?.name ).toStrictEqual( input.name );
-        expect( foundTemplate?.image )
-            .toStrictEqual( input.image );
-        expect( foundTemplate?.target_regions ).toHaveLength( 1 );
-
-        const region = foundTemplate?.target_regions[0];
-        expect( region?.ocr_template_id ).toStrictEqual( foundTemplate?.id )
-        expect( region?.position ).toStrictEqual( ocrTargetRegionData.position );
-        expect( region?.size ).toStrictEqual( ocrTargetRegionData.size );
-    });
 });

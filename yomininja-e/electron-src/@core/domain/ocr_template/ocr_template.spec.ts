@@ -7,11 +7,12 @@ describe( 'OcrTemplate tests', () => {
     let targetRegion1: OcrTargetRegion;
     let targetRegion2: OcrTargetRegion;
 
+    const ocrTemplateId = 1;
 
     beforeEach( () => {
 
         targetRegion1 = OcrTargetRegion.create({
-            ocr_template_id: 'asdf',
+            ocr_template_id: ocrTemplateId,
             position: {
                 left: 0.50,
                 top: 0.50,
@@ -23,7 +24,7 @@ describe( 'OcrTemplate tests', () => {
         });
 
         targetRegion2 = OcrTargetRegion.create({
-            ocr_template_id: 'asdf',
+            ocr_template_id: ocrTemplateId,
             position: {
                 left: 0.50,
                 top: 0.40,
@@ -43,16 +44,17 @@ describe( 'OcrTemplate tests', () => {
             image: Buffer.from(''),
         };
 
-        const targetTemplate = OcrTemplate.create( props );
+        const template = OcrTemplate.create( props );
 
-        expect( targetTemplate.id ).toBeDefined();
-        expect( targetTemplate.image ).toStrictEqual( props.image );
+        expect( template.name ).toStrictEqual( props.name );
+        expect( template.image ).toStrictEqual( props.image );
 
     });
 
     it('should add target regions to a OcrTemplate', () => {
 
         const template = OcrTemplate.create({
+            id: ocrTemplateId,
             name: 'custom',
             image: Buffer.from(''),
         });
@@ -60,8 +62,8 @@ describe( 'OcrTemplate tests', () => {
         template.addTargetRegion( targetRegion1 );
         template.addTargetRegion( targetRegion2 );
 
-        expect( template.target_regions ).toContain( targetRegion1 );
-        expect( template.target_regions ).toContain( targetRegion2 );
+        expect( template.target_regions ).toContainEqual( targetRegion1 );
+        expect( template.target_regions ).toContainEqual( targetRegion2 );
         expect( template.target_regions[0].ocr_template_id )
             .toStrictEqual( targetRegion1.ocr_template_id );
     });

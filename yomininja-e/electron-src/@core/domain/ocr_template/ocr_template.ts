@@ -1,7 +1,6 @@
 import { OcrTargetRegion, OcrTargetRegionId, OcrTargetRegionJson } from "./ocr_target_region/ocr_target_region";
-import crypto from 'crypto';
 
-export type OcrTemplateId = string;
+export type OcrTemplateId = number;
 
 export type OcrTemplateConstructorProps = {
     id?: OcrTemplateId;
@@ -20,6 +19,7 @@ export interface OcrTemplateCreationInput extends Omit<
     'created_at' |
     'updated_at'
 > {
+    id?: OcrTemplateId,
     target_regions?: OcrTargetRegion[];
 };
 
@@ -37,7 +37,8 @@ export class OcrTemplate {
 
         if ( !props ) return;
 
-        this.id = props?.id || OcrTemplate.generateId();
+        if ( props?.id )
+            this.id = props?.id;
 
         this.name = props.name;
         this.target_regions = props?.target_regions || [];
@@ -100,10 +101,6 @@ export class OcrTemplate {
         return this.target_regions.find( item => item.id === targetRegionId );
     }
 
-    static generateId(): OcrTemplateId {
-        return crypto.randomUUID();
-    }
-
     nullCheck() {
         this.target_regions = this.target_regions || [];
     }
@@ -113,6 +110,7 @@ export class OcrTemplate {
             id: this.id,
             name: this.name,
             image: this.image,
+            image_base64: this.image.toString('base64'),
             target_regions: this.target_regions.map( item => item.toJson() ),
             capture_source_name: this.capture_source_name,
             created_at: this.created_at,
@@ -121,6 +119,12 @@ export class OcrTemplate {
     }
 };
 
-export interface OcrTemplateJson extends Required< Omit< OcrTemplateConstructorProps, 'target_regions' > > {
+export interface OcrTemplateJson extends Required<
+    Omit< 
+        OcrTemplateConstructorProps,
+        'target_regions'
+    >
+> {
+    image_base64: string,
     target_regions: OcrTargetRegionJson[];
 };

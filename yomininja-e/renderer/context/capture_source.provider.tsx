@@ -5,6 +5,7 @@ export type CaptureSourceContextType = {
     activeCaptureSource: CaptureSource;
     captureSources: CaptureSource[];
     captureSourceImage?: Buffer;
+    captureSourceImageBase64?: string;
     updateActiveCaptureSource: ( update: CaptureSource ) => Promise< void >;
     refreshCaptureSources: () => void; 
 };
@@ -19,6 +20,7 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
     const [ activeCaptureSource, setActiveCaptureSource ] = useState<CaptureSource>();
     const [ captureSources, setCaptureSources ] = useState< CaptureSource[] >();
     const [ captureSourceImage, setCaptureSourceImage ] = useState< Buffer | undefined >();
+    const [ captureSourceImageBase64, setCaptureSourceImageBase64 ] = useState< string | undefined >();
 
 
     async function updateActiveCaptureSource( captureSource: CaptureSource ) {
@@ -55,8 +57,9 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
             setActiveCaptureSource( data );
         });
 
-        global.ipcRenderer.on( 'app:capture_source_image', ( event, data: Buffer ) => {
-            setCaptureSourceImage( data );
+        global.ipcRenderer.on( 'app:capture_source_image', ( event, data: { image: Buffer, imageBase64: string } ) => {
+            setCaptureSourceImage( data.image );
+            setCaptureSourceImageBase64( data.imageBase64 );
         });
         
         return () => {
@@ -74,6 +77,7 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
                 activeCaptureSource,
                 captureSources,
                 captureSourceImage,
+                captureSourceImageBase64
             }}
         >            
             {children}

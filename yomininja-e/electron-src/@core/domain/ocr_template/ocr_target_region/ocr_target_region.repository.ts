@@ -1,4 +1,4 @@
-import { OcrTargetRegion, OcrTargetRegionId, OcrTemplateId } from "./ocr_target_region";
+import { OcrTargetRegion, OcrTargetRegionId } from "./ocr_target_region";
 
 
 export type OcrTargetRegionFindOneInput = {

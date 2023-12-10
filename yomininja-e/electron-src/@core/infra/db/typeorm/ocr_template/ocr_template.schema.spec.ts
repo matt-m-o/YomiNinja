@@ -14,6 +14,8 @@ describe( 'OcrTemplate Entity Schema tests', () => {
         'target_regions'
     ];
 
+    const ocrTemplateId = 1;
+
     beforeEach( async () => {
         dataSource = new DataSource({
             type: 'sqlite',
@@ -32,7 +34,7 @@ describe( 'OcrTemplate Entity Schema tests', () => {
         const ocrTargetRegionTypeOrmRepo = dataSource.getRepository( OcrTargetRegion );
 
         targetRegion1 = OcrTargetRegion.create({
-            ocr_template_id: 'asdf',
+            ocr_template_id: ocrTemplateId,
             position: {
                 left: 0.50,
                 top: 0.50,
@@ -43,19 +45,21 @@ describe( 'OcrTemplate Entity Schema tests', () => {
             }
         });
         await ocrTargetRegionTypeOrmRepo.insert( targetRegion1 );
-        const insertTargetRegion1 = await ocrTargetRegionTypeOrmRepo.findOneBy({ id: targetRegion1.id });
+        // const insertTargetRegion1 = await ocrTargetRegionTypeOrmRepo.findOneBy({ id: targetRegion1.id });
         // targetRegion1 = insertTargetRegion1 || targetRegion1;
 
-        console.log(targetRegion1);
-        console.log(insertTargetRegion1);
+        // console.log(targetRegion1);
+        // console.log(insertTargetRegion1);
     });
 
     it("should insert", async () => {
 
         const ocrTemplate = OcrTemplate.create({
+            id: ocrTemplateId,
             image: Buffer.from(''),
             name: 'template1'
-        });        
+        });
+        ocrTemplate.addTargetRegion( targetRegion1 );
         
         await ocrTemplateTypeOrmRepo.save(ocrTemplate);
 
@@ -71,6 +75,8 @@ describe( 'OcrTemplate Entity Schema tests', () => {
         if ( !foundTemplate ) return; 
 
         foundTemplate.updated_at = ocrTemplate.updated_at;
+        
+        // console.log( foundTemplate );
 
         expect( foundTemplate?.id ).toStrictEqual( ocrTemplate.id );
         expect( foundTemplate ).toStrictEqual( ocrTemplate ); // Relations date properties fails
@@ -110,9 +116,11 @@ describe( 'OcrTemplate Entity Schema tests', () => {
     it('should update', async () => {        
         
         const ocrTemplate = OcrTemplate.create({
+            id: ocrTemplateId,
             name: 'template1',
             image: Buffer.from(''),
         });
+        ocrTemplate.addTargetRegion( targetRegion1 );
         const created_at = ocrTemplate.created_at;
         const updatedAt = ocrTemplate.updated_at;
                 

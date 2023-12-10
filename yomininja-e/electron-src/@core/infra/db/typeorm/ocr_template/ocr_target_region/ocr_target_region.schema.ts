@@ -17,8 +17,7 @@ export const OcrTargetRegionTypeOrmSchema = new EntitySchema< OcrTargetRegion >(
         },
 
         ocr_template_id: {
-            type: String,
-            length: 100,
+            type: Number,
         },
         
         position: {

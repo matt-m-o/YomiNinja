@@ -141,7 +141,7 @@ describe( "OcrTemplate TypeOrm Repository tests", () => {
             ocrTemplate2
         ]);        
 
-        const items = await repo.getAll();        
+        const items = await repo.getAll();
 
         expect( items ).toHaveLength( 2 );
         expect( items[0] ).toStrictEqual( ocrTemplate );

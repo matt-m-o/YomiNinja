@@ -1,5 +1,5 @@
 import { FindOptionsWhere, Like, Repository, UnorderedBulkOperation } from "typeorm";
-import { OcrTemplate } from "../../../../domain/ocr_template/ocr_template";
+import { OcrTemplate, OcrTemplateId } from "../../../../domain/ocr_template/ocr_template";
 import { OcrTemplateFindManyInput, OcrTemplateFindOneInput, OcrTemplateRepository } from "../../../../domain/ocr_template/ocr_template.repository";
 
 
@@ -52,14 +52,16 @@ export default class OcrTemplateTypeOrmRepository implements OcrTemplateReposito
     
     async getAll(): Promise< OcrTemplate[] > {
 
-        const items = await this.ormRepo.find();
+        const items = await this.ormRepo.find({
+            relations: [ 'target_regions' ]
+        });
 
         this.runNullCheck( items );
 
         return items;
     }
 
-    async delete(id: string): Promise<void> {
+    async delete( id: OcrTemplateId ): Promise<void> {
         await this.ormRepo.delete( { id } );
     }
 

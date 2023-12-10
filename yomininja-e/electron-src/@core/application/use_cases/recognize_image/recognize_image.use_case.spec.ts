@@ -97,9 +97,14 @@ describe("Recognize Image Use Case tests", () => {
             profileRepo,
         );
 
+        ocrTemplate = OcrTemplate.create({
+            id: 1,
+            image: Buffer.from(''),
+            name: 'template',
+        });
 
         const targetRegion = OcrTargetRegion.create({
-            ocr_template_id: 'asdf',
+            ocr_template_id: ocrTemplate.id,
             position: {
                 top: 0.5,
                 left: 0.5,
@@ -110,11 +115,8 @@ describe("Recognize Image Use Case tests", () => {
             },
         });
 
-        ocrTemplate = OcrTemplate.create({
-            image: Buffer.from(''),
-            name: 'template',
-            target_regions: [ targetRegion ]
-        });
+        ocrTemplate.addTargetRegion( targetRegion );
+
 
     });
 

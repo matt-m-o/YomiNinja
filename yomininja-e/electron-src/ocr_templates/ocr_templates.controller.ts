@@ -36,8 +36,10 @@ export class OcrTemplatesController {
         
         ipcMain.handle( 'ocr_templates:get',
             async ( event: IpcMainInvokeEvent, message?: GetOcrTemplates_Input ): Promise< OcrTemplateJson[] > => {
+
+                const items = await this.ocrTemplatesService.getOcrTemplates( message || {} );
                 
-                return await this.ocrTemplatesService.getOcrTemplates( message || {} );
+                return items.map( item => item.toJson() );
             }
         );
     }

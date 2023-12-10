@@ -56,6 +56,26 @@ container_registry.bind( Registry.ProfileTypeOrmRepository )
     .inSingletonScope();
 
 
+container_registry.bind( Registry.OcrTemplateTypeOrmRepository )
+    .toDynamicValue( (context) => {
+        return new OcrTemplateTypeOrmRepository(
+            get_MainDataSource().getRepository( OcrTemplate )
+        );
+    })
+    .inSingletonScope();
+
+
+container_registry.bind( Registry.OcrTargetRegionTypeOrmRepository )
+    .toDynamicValue( (context) => {
+        return new OcrTargetRegionTypeOrmRepository(
+            get_MainDataSource().getRepository( OcrTargetRegion )
+        );
+    })
+    .inSingletonScope();
+
+
+// Dictionaries 
+
 container_registry.bind( Registry.DictionaryTypeOrmRepository )
     .toDynamicValue( (context) => {
         return new DictionaryTypeOrmRepository(
@@ -87,24 +107,6 @@ container_registry.bind( Registry.DictionaryHeadwordTypeOrmRepository )
     .toDynamicValue( (context) => {
         return new DictionaryHeadwordTypeOrmRepository(
             get_DictionaryDataSource().getRepository( DictionaryHeadword )
-        );
-    })
-    .inSingletonScope();
-
-
-container_registry.bind( Registry.OcrTemplateTypeOrmRepository )
-    .toDynamicValue( (context) => {
-        return new OcrTemplateTypeOrmRepository(
-            get_DictionaryDataSource().getRepository( OcrTemplate )
-        );
-    })
-    .inSingletonScope();
-
-
-container_registry.bind( Registry.OcrTargetRegionTypeOrmRepository )
-    .toDynamicValue( (context) => {
-        return new OcrTargetRegionTypeOrmRepository(
-            get_DictionaryDataSource().getRepository( OcrTargetRegion )
         );
     })
     .inSingletonScope();

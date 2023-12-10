@@ -7,7 +7,7 @@ describe( 'OcrTargetRegion tests', () => {
 
     beforeEach( () => {
         props1 = {
-            ocr_template_id: 'asdf',
+            ocr_template_id: 1,
             position: {
                 left: 0.50,
                 top: 0.50,
@@ -23,7 +23,7 @@ describe( 'OcrTargetRegion tests', () => {
 
         const targetRegion = OcrTargetRegion.create( props1 );
 
-        expect( targetRegion.id ).toBeDefined();
+        expect( targetRegion.id.split('/')[0] ).toStrictEqual( props1.ocr_template_id.toString() );
         expect( targetRegion.position ).toStrictEqual( props1.position );
         expect( targetRegion.size ).toStrictEqual( props1.size );
     });

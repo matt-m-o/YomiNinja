@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { OcrTemplate } from '../ocr_template';
+import { OcrTemplate, OcrTemplateId } from '../ocr_template';
 
 export type OcrTargetRegionId = string;
 
@@ -13,11 +13,8 @@ type Size = {
     height: number;
 };
 
-
-export type OcrTemplateId = string;
-
 export type OcrTargetRegionConstructorProps = {
-    id?: string;
+    id?: OcrTargetRegionId;
     ocr_template_id: OcrTemplateId;
     ocr_template?: OcrTemplate;
     position: Position; // Percentages 0 ... 1
@@ -44,7 +41,14 @@ export class OcrTargetRegion {
 
         if ( !props ) return;
 
-        this.id = props?.id || OcrTargetRegion.generateId();
+        if ( props?.id ) {
+            this.id = props?.id;
+        }
+        else if ( props?.ocr_template_id ) {
+            this.id = OcrTargetRegion.generateId({
+                ocrTemplateId: props.ocr_template_id
+            });
+        }
 
         if ( props.ocr_template )
             this.ocr_template = props.ocr_template;
@@ -85,11 +89,6 @@ export class OcrTargetRegion {
         };
     }
 
-    static generateId(): OcrTemplateId {
-        return crypto.randomUUID();
-    }
-
-
     toJson(): OcrTargetRegionJson {
         return {
             id: this.id,
@@ -99,6 +98,11 @@ export class OcrTargetRegion {
             size: this.size,
             angle: this.angle
         };
+    }
+
+    static generateId( input: { ocrTemplateId: OcrTemplateId }) {
+        const randomNumber = Math.floor( Math.random() * 1000000 );
+        return input.ocrTemplateId + '/' + randomNumber;
     }
 };
 

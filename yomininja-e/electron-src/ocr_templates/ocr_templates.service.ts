@@ -27,16 +27,14 @@ export class OcrTemplatesService {
         this.deleteOcrTemplateUseCase = input.deleteOcrTemplateUseCase;
     }
 
-    async createOcrTemplate( templateData: OcrTemplateJson ): Promise< void > {
+    async createOcrTemplate( templateData: OcrTemplateJson ): Promise< OcrTemplate > {
 
-        await this.createOcrTemplateUseCase.execute( templateData );
+        return await this.createOcrTemplateUseCase.execute( templateData );
     }
 
-    async updateOcrTemplate( templateData: OcrTemplateJson ): Promise< void > {
+    async updateOcrTemplate( templateData: OcrTemplateJson ): Promise< OcrTemplate | undefined > {
 
-        await this.updateOcrTemplateUseCase.execute({
-            template: templateData
-        });
+        return await this.updateOcrTemplateUseCase.execute( templateData );
     }
 
     async getOcrTemplates( input: GetOcrTemplates_Input ): Promise< OcrTemplate[] > {

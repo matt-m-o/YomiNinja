@@ -389,7 +389,10 @@ export class AppController {
         if ( this.isEditingOcrTemplate ) {
             this.mainWindow.webContents.send(
                 'app:capture_source_image',
-                image.toString('base64')
+                {
+                    image,
+                    imageBase64 :image.toString('base64')
+                }
             );
         }
         else {

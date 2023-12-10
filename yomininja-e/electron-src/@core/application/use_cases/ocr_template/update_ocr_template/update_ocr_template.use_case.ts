@@ -4,9 +4,10 @@ import { OcrTemplate, OcrTemplateJson } from "../../../../domain/ocr_template/oc
 import { OcrTemplateRepository } from "../../../../domain/ocr_template/ocr_template.repository";
 
 
-export interface UpdateOcrTemplate_Input {
-    template: OcrTemplateJson;
-};
+export interface UpdateOcrTemplate_Input extends Omit<
+    OcrTemplateJson,
+    'image_base64'
+> {};
 
 export class UpdateOcrTemplateUseCase {
 
@@ -21,23 +22,23 @@ export class UpdateOcrTemplateUseCase {
         this.ocrTargetRegionRepo = input.ocrTargetRegionRepo;
     }
 
-    async execute( input: UpdateOcrTemplate_Input ): Promise< void > {
+    async execute( input: UpdateOcrTemplate_Input ): Promise< OcrTemplate | undefined > {
 
-        const template = await this.ocrTemplateRepo.findOne({ id: input.template.id });
+        const template = await this.ocrTemplateRepo.findOne({ id: input.id });
 
         if ( !template ) {
-            console.log(`ocr template not found: ${input.template.id}`);
+            console.log(`ocr template not found: ${input.id}`);
             return;
         }
 
-        const changedRegions = input.template.target_regions.filter( item => {
+        const changedRegions = input.target_regions.filter( item => {
 
             const regionExists = template.getTargetRegion( item.id );
 
             return Boolean( regionExists );
         });
 
-        const newRegions = input.template.target_regions.filter( item => {
+        const newRegions = input.target_regions.filter( item => {
 
             const regionExists = template.getTargetRegion( item.id );
 
@@ -46,7 +47,7 @@ export class UpdateOcrTemplateUseCase {
 
         const removedRegions = template.target_regions.filter( region => {
 
-            const regionExists = input.template.target_regions.some( r => r.id === region.id  );
+            const regionExists = input.target_regions.some( r => r.id === region.id  );
 
             return !Boolean( regionExists );
         });
@@ -74,10 +75,12 @@ export class UpdateOcrTemplateUseCase {
             await this.ocrTargetRegionRepo.delete( region.id );
         }
 
-        template.name = input.template.name;
-        template.image = input.template.image;
-        template.capture_source_name = input.template.capture_source_name;
+        template.name = input.name;
+        template.image = input.image;
+        template.capture_source_name = input.capture_source_name;
 
         await this.ocrTemplateRepo.update( template );
+
+        return template;
     }
 }

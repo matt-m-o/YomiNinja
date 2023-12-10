@@ -12,9 +12,9 @@ export const OcrTemplateTypeOrmSchema = new EntitySchema< OcrTemplate >({
     columns: {
 
         id: {
-            type: String,
-            length: 100,
+            type: Number,
             primary: true,
+            generated: 'increment'
         },
         
         name: {
