@@ -33,21 +33,31 @@ export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalPro
     const [ name, setName ] = useState< string >('');
     const [ image, setImage ] = useState< Buffer >();
 
-    const { createOcrTemplate } = useContext( OcrTemplatesContext );
-    const { captureSourceImage } = useContext( CaptureSourceContext );
+    const { createOcrTemplate, getOcrTemplates } = useContext( OcrTemplatesContext );
+    const {
+        captureSourceImage,
+        captureSourceImageBase64
+    } = useContext( CaptureSourceContext );
 
-  
 
     useEffect( () => {
 
-        global.ipcRenderer.invoke( 'app:editing_ocr_template', open )
+        global.ipcRenderer.invoke( 'app:editing_ocr_template', open );
 
     }, [open]);
 
-    function saveOcrTemplate() {
+    useEffect( () => {
+        setImage( captureSourceImage )
+    }, [captureSourceImage] );
 
-        // save
-        // .....
+    async function saveOcrTemplate() {
+
+        await createOcrTemplate({
+            image: captureSourceImage,
+            name,
+        });
+
+        getOcrTemplates();
 
         handleClose();
     }
@@ -76,7 +86,7 @@ export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalPro
                     </Typography>
 
                     { captureSourceImage &&
-                        <img src={ 'data:image/png;base64,' + captureSourceImage }
+                        <img src={ 'data:image/png;base64,' + captureSourceImageBase64 }
                             alt="capture source image"
                             style={{
                                 maxWidth: '500px',

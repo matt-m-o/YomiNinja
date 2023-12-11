@@ -1,15 +1,22 @@
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
-import { OcrTemplate } from "../../../electron-src/@core/domain/ocr_template/ocr_template";
+import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import { OcrTemplate, OcrTemplateJson } from "../../../electron-src/@core/domain/ocr_template/ocr_template";
+import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
+import { useContext } from "react";
 
 
 
 export type OcrTemplatesTableProps = {
-    templates: OcrTemplate[];
+    templates: OcrTemplateJson[];
 }
 
 export default function OcrTemplatesTable( props: OcrTemplatesTableProps ) {
 
     const { templates } = props;
+
+    const {
+        deleteOcrTemplate,
+        loadOcrTemplate,
+    } = useContext( OcrTemplatesContext );
 
 
     return (
@@ -22,6 +29,9 @@ export default function OcrTemplatesTable( props: OcrTemplatesTableProps ) {
                         </TableCell>
                         <TableCell align="left" sx={{ fontWeight: 600 }}>
                             Capture source
+                        </TableCell>
+                        <TableCell align="left" sx={{ fontWeight: 600 }}>
+                            {/* Actions */}
                         </TableCell>
                     </TableRow>
                 </TableHead>
@@ -39,7 +49,19 @@ export default function OcrTemplatesTable( props: OcrTemplatesTableProps ) {
                             >
                                 {item.name}
                             </TableCell>
-                            <TableCell align="left">{item.capture_source_name}</TableCell>
+                            <TableCell align="right">{item.capture_source_name}</TableCell>
+                            <TableCell align="right" width='220px'>
+                                <Button variant="outlined" sx={{ mr: 1 }}
+                                    onClick={ () => loadOcrTemplate( item.id ) }
+                                >
+                                    Load
+                                </Button>
+                                <Button variant="outlined"
+                                    onClick={ () => deleteOcrTemplate( item.id ) }
+                                >
+                                    Delete
+                                </Button>
+                            </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>

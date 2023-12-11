@@ -1,6 +1,6 @@
 import { BrowserWindow, IpcMainInvokeEvent, ipcMain } from "electron";
 import { OcrTemplatesService } from "./ocr_templates.service";
-import { OcrTemplateJson } from "../@core/domain/ocr_template/ocr_template";
+import { OcrTemplateId, OcrTemplateJson } from "../@core/domain/ocr_template/ocr_template";
 import { GetOcrTemplates_Input } from "../@core/application/use_cases/ocr_template/get_ocr_template/get_ocr_templates.use_case";
 
 
@@ -40,6 +40,24 @@ export class OcrTemplatesController {
                 const items = await this.ocrTemplatesService.getOcrTemplates( message || {} );
                 
                 return items.map( item => item.toJson() );
+            }
+        );
+
+        ipcMain.handle( 'ocr_templates:delete',
+            async ( event: IpcMainInvokeEvent, message: OcrTemplateId ): Promise< void > => {
+
+                await this.ocrTemplatesService.deleteOcrTemplate( message );
+            }
+        );
+
+        ipcMain.handle( 'ocr_templates:update', 
+            async ( event: IpcMainInvokeEvent, message: OcrTemplateJson ): Promise< OcrTemplateJson | undefined > => {
+                
+                if ( !message ) return;
+
+                const updatedTemplate = await this.ocrTemplatesService.updateOcrTemplate( message );
+
+                return updatedTemplate?.toJson();
             }
         );
     }

@@ -20,6 +20,7 @@ import Extensions from '../components/Extensions/Extensions';
 import { NotificationsProvider } from '../context/notifications.provider';
 import ViewComfyRoundedIcon from '@mui/icons-material/ViewComfyRounded';
 import OcrTemplates from '../components/OcrTemplates/OcrTemplates';
+import { OcrTemplatesProvider } from '../context/ocr_templates.provider';
 
 
 export default function IndexPage() {
@@ -49,9 +50,11 @@ export default function IndexPage() {
   );
 
   const ocrTemplatesTabContents = (
-    <CaptureSourceProvider>
-      <OcrTemplates/>
-    </CaptureSourceProvider>
+    <OcrTemplatesProvider>
+      <CaptureSourceProvider>
+        <OcrTemplates/>
+      </CaptureSourceProvider>
+    </OcrTemplatesProvider>
   );
 
   const layoutProps: LayoutProps = {
