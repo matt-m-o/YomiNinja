@@ -1,11 +1,16 @@
 import { Box, Button, Card, CardContent, Container, Typography } from "@mui/material";
 import OcrTemplatesTable from "./OcrTemplatesTable";
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 import CreateOcrTemplateModal from "./CreateOcrTemplateModal";
 import Moveable from "react-moveable";
 import OcrTargetRegion from "./OcrTargetRegion";
+import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
 
+export type Size = { // Pixels
+    width: number;
+    height: number;
+};
 
 export default function OcrTemplates() {
 
@@ -15,8 +20,54 @@ export default function OcrTemplates() {
         addTargetRegion,
     } = useContext( OcrTemplatesContext );
 
-    const [ openCreateOcrTemplateModal, setOpenCreateOcrTemplateModal ] = useState(false);
+    const [
+        openCreateOcrTemplateModal,
+        setOpenCreateOcrTemplateModal
+    ] = useState(false);
+
+    const imgRef = useRef<HTMLImageElement>(null);
+    const [ templateSize, setTemplateSize ] = useState<Size>();
+
+
+    useEffect(() => {
+        const handleResize = ( entries: ResizeObserverEntry[] ) => {
+            if ( entries && entries.length > 0 ) {
+                const firstEntry = entries[0];
+                const { width, height } = firstEntry.contentRect;
+                setTemplateSize({ width, height });
+            }
+        };
     
+        const resizeObserver = new ResizeObserver(handleResize);
+    
+        if ( imgRef.current ) {
+            resizeObserver.observe(imgRef.current);
+            setTemplateSize({
+                width: imgRef.current.clientWidth,
+                height: imgRef.current.clientHeight
+            });
+        }
+    
+        return () => {
+            if ( imgRef.current ) 
+                resizeObserver.unobserve(imgRef.current);
+        };
+    }, []);
+    
+
+    function onImageLoad() {
+        if ( imgRef?.current ) {
+            setTemplateSize({
+                width: imgRef.current.clientWidth,
+                height: imgRef.current.clientHeight
+            });
+        }
+    }
+
+    // TODO: Add debounce
+    function updateRegion( region: OcrTargetRegionJson) {
+        console.log(region);
+    }
 
     return <>
         <Card variant="elevation" sx={{ borderRadius: 4, userSelect: 'none', width: '100%' }}>
@@ -77,13 +128,20 @@ export default function OcrTemplates() {
                                     }}>
 
                                     { activeOcrTemplate?.target_regions.map( region => {
-                                        return <OcrTargetRegion key={region.id} region={region} />
+                                        return <OcrTargetRegion
+                                            key={region.id} 
+                                            region={region}
+                                            templateSize={templateSize}
+                                            onChange={ updateRegion }
+                                        />
                                     }) }
                                     
 
                                     <img src={ 'data:image/png;base64,' + activeOcrTemplate?.image_base64 }
+                                        ref={imgRef}
                                         alt="template background image"
                                         draggable={false}
+                                        onLoad={onImageLoad}
                                         style={{
                                             top: 0,
                                             left: 0,

@@ -1,11 +1,14 @@
 import { useRef } from "react";
 import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
-import Moveable from "react-moveable";
+import Moveable, { OnDrag, OnResize } from "react-moveable";
 import { Box } from "@mui/material";
+import { Size } from "electron";
 
 
 export type OcrTargetRegionProps = {
     region: OcrTargetRegionJson;
+    templateSize: Size;
+    onChange: ( region: OcrTargetRegionJson ) => void;
 };
 
 
@@ -13,12 +16,43 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
 
     const targetRef = useRef<HTMLDivElement>(null);
 
-    const { region } = props;
+    const { region, templateSize, onChange } = props;
 
     const { position, size } = region;
 
     function toCssPercentage( value: number ): string {
-        return ( value * 100 ) + "%";
+
+        let result = ( value * 100 )
+
+        if ( result > 100 )
+            result = 100;
+
+        else if ( result < 0)
+            result = 0;
+
+        return result + "%";
+    }
+
+    function handleChange( input: {
+        width?: number;
+        height?: number;
+        top?: number;
+        left?: number;
+    }) {
+        const { width, height, top, left } = input;
+        onChange({
+            ...region,
+            size: {
+                ...region.size,
+                width,
+                height
+            },
+            position: {
+                ...region.position,
+                top,
+                left,
+            },
+        });
     }
 
     return ( <>
@@ -37,12 +71,7 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
                 minHeight: "auto",
             }}
         >
-            <div className="target">
-                Region
-            </div>
-
         </Box>
-        
         <Moveable
             target={targetRef}
             draggable={true}
@@ -50,9 +79,9 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
             edgeDraggable={false}
             startDragRotate={0}
             throttleDragRotate={0}
-            onDrag={e => {
-                e.target.style.transform = e.transform;
-                console.log(e.transform);
+            onDrag={ ( e: OnDrag ) => {
+                e.target.style.top = toCssPercentage( e.top / templateSize.height );
+                e.target.style.left = toCssPercentage( e.left / templateSize.width ); 
             }}
 
             useResizeObserver={true}
@@ -60,15 +89,28 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
             resizable={true}
             throttleResize={1}
             renderDirections={["nw","n","ne","w","e","sw","s","se"]}
-            onResize={ e => {
-                // e.target.style.width = `${e.width}px`;
-                // e.target.style.height = `${e.height}px`;
+            onResize={ ( e: OnResize ) => {
+                e.target.style.width = `${e.width}px`;
+                e.target.style.height = `${e.height}px`;
                 // e.target.style.transform = e.drag.transform;
 
-                console.log(e.transform);
+                // console.log({
+                //     top: e.drag.top,
+                //     left: e.drag.left,
+                // });
 
-                e.target.style.cssText += `width: ${e.width}px; height: ${e.height}px`;
-                e.target.style.transform = e.drag.transform;
+                // e.target.style.width = toCssPercentage( e.width / templateSize.width );
+                // e.target.style.height = toCssPercentage( e.height / templateSize.height ); 
+                
+                e.target.style.top = toCssPercentage( e.drag.top / templateSize.height );
+                e.target.style.left = toCssPercentage( e.drag.left / templateSize.width ); 
+                
+                handleChange({
+                    width: e.width / templateSize.width,
+                    height: e.height / templateSize.height,
+                    top: e.drag.top / templateSize.height,
+                    left: e.drag.left / templateSize.width,
+                });
             }}
         />
     </> )
