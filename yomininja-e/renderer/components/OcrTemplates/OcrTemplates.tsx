@@ -18,6 +18,8 @@ export default function OcrTemplates() {
         ocrTemplates,
         activeOcrTemplate,
         addTargetRegion,
+        updateTargetRegion,
+        saveOcrTemplate
     } = useContext( OcrTemplatesContext );
 
     const [
@@ -64,10 +66,6 @@ export default function OcrTemplates() {
         }
     }
 
-    // TODO: Add debounce
-    function updateRegion( region: OcrTargetRegionJson) {
-        console.log(region);
-    }
 
     return <>
         <Card variant="elevation" sx={{ borderRadius: 4, userSelect: 'none', width: '100%' }}>
@@ -112,9 +110,20 @@ export default function OcrTemplates() {
                             Add region
                         </Button>
 
+                        <Button
+                            onClick={ () => {
+                                saveOcrTemplate();
+                            }}
+                        >
+                            Save
+                        </Button>
+
                         <Box display='flex' justifyContent='center' flexDirection='column'>
 
-                            <Typography visibility={ activeOcrTemplate ? 'unset' : 'hidden' }>
+                            <Typography
+                                visibility={ activeOcrTemplate ? 'unset' : 'hidden' }
+                                textAlign='center'
+                            >
                                 {activeOcrTemplate?.name}
                             </Typography>
 
@@ -122,19 +131,23 @@ export default function OcrTemplates() {
                                 <div className='container'
                                     style={{
                                         position: 'relative',
-                                        width: '100%',
+                                        // width: 'max-content',
+                                        maxWidth: '100%',
                                         boxSizing: 'border-box',
                                         overflow: 'hidden',
+                                        margin: 'auto',
                                     }}>
 
-                                    { activeOcrTemplate?.target_regions.map( region => {
-                                        return <OcrTargetRegion
-                                            key={region.id} 
-                                            region={region}
-                                            templateSize={templateSize}
-                                            onChange={ updateRegion }
-                                        />
-                                    }) }
+                                    { templateSize &&
+                                        activeOcrTemplate?.target_regions.map( region => {
+                                            return <OcrTargetRegion
+                                                key={region.id} 
+                                                region={region}
+                                                templateSize={templateSize}
+                                                onChange={ updateTargetRegion }
+                                            />
+                                        }) 
+                                    }
                                     
 
                                     <img src={ 'data:image/png;base64,' + activeOcrTemplate?.image_base64 }

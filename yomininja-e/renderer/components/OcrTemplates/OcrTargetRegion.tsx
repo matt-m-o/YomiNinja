@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
-import Moveable, { OnDrag, OnResize } from "react-moveable";
+import Moveable, { OnDrag, OnResize, OnResizeEnd } from "react-moveable";
 import { Box } from "@mui/material";
 import { Size } from "electron";
 
@@ -20,15 +20,22 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
 
     const { position, size } = region;
 
+    function handlePercentageOverflow( value: number ) {
+
+        if ( value > 1 )
+            return 1;
+
+        else if ( value < 0)
+            return 0;
+
+        return value;
+    }
+
     function toCssPercentage( value: number ): string {
 
-        let result = ( value * 100 )
+        value = handlePercentageOverflow( value );
 
-        if ( result > 100 )
-            result = 100;
-
-        else if ( result < 0)
-            result = 0;
+        let result = ( value * 100 )        
 
         return result + "%";
     }
@@ -40,10 +47,12 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
         left?: number;
     }) {
         const { width, height, top, left } = input;
+
+        // console.log({ width, height });
+
         onChange({
             ...region,
             size: {
-                ...region.size,
                 width,
                 height
             },
@@ -54,6 +63,7 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
             },
         });
     }
+
 
     return ( <>
         <Box ref={targetRef}
@@ -80,38 +90,71 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
             startDragRotate={0}
             throttleDragRotate={0}
             onDrag={ ( e: OnDrag ) => {
-                e.target.style.top = toCssPercentage( e.top / templateSize.height );
-                e.target.style.left = toCssPercentage( e.left / templateSize.width ); 
+
+                const top = handlePercentageOverflow( e.top / templateSize.height );
+                const left = handlePercentageOverflow( e.left / templateSize.width );
+
+                e.target.style.top = toCssPercentage( top );
+                e.target.style.left = toCssPercentage( left );
+
+                // console.log( region );
+
+                handleChange({
+                    top,
+                    left,
+                });
             }}
 
+            useMutationObserver={true}
             useResizeObserver={true}
 
             resizable={true}
             throttleResize={1}
             renderDirections={["nw","n","ne","w","e","sw","s","se"]}
             onResize={ ( e: OnResize ) => {
-                e.target.style.width = `${e.width}px`;
-                e.target.style.height = `${e.height}px`;
-                // e.target.style.transform = e.drag.transform;
+
+                let width = e.width / templateSize.width;
+                let height = e.height / templateSize.height;
+                
+                const widthPx = width < 1 ?
+                    e.width :
+                    (1 / width) * e.width;
+                                
+                const heightPx = height < 1 ?
+                    e.height :
+                    (1 / height) * e.height;
+
+                width = handlePercentageOverflow( e.width / templateSize.width );
+                height = handlePercentageOverflow( e.height / templateSize.height );
 
                 // console.log({
-                //     top: e.drag.top,
-                //     left: e.drag.left,
+                //     width,
+                //     height
                 // });
 
-                // e.target.style.width = toCssPercentage( e.width / templateSize.width );
-                // e.target.style.height = toCssPercentage( e.height / templateSize.height ); 
+                e.target.style.width = `${widthPx}px`;
+                e.target.style.height = `${heightPx}px`;
+
+                const top = e.drag.top / templateSize.height;
+                const left = e.drag.left / templateSize.width;
+
+                // console.log({ top, left });
                 
-                e.target.style.top = toCssPercentage( e.drag.top / templateSize.height );
-                e.target.style.left = toCssPercentage( e.drag.left / templateSize.width ); 
+                e.target.style.top = toCssPercentage( top );
+                e.target.style.left = toCssPercentage( left );
+
+                // console.log(region);
+
+                // console.log({ width, height });
                 
                 handleChange({
-                    width: e.width / templateSize.width,
-                    height: e.height / templateSize.height,
-                    top: e.drag.top / templateSize.height,
-                    left: e.drag.left / templateSize.width,
+                    width,
+                    height,
+                    top,
+                    left,
                 });
             }}
+            
         />
     </> )
 }
