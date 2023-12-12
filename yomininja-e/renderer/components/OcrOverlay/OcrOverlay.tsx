@@ -4,6 +4,8 @@ import { SettingsContext } from "../../context/settings.provider";
 import { debounce, styled } from "@mui/material";
 import FullscreenOcrResult from "./FullscreenOcrResult";
 import { DictionaryContext } from "../../context/dictionary.provider";
+import CustomCursor from "./CustomCursor/CustomCursor";
+import { OcrResultContext } from "../../context/ocr_result.provider";
 
 
 const OverlayFrame = styled('div')({
@@ -19,6 +21,8 @@ export default function OcrOverlay() {
       activeSettingsPreset,
     } = useContext( SettingsContext );
     const { toggleScanner } = useContext( DictionaryContext );
+
+    const { ocrResult } = useContext( OcrResultContext );
 
     const ocrItemBoxVisuals: OverlayOcrItemBoxVisuals = activeSettingsPreset?.overlay?.visuals.ocr_item_box;
     const overlayFrameVisuals: OverlayFrameVisuals = activeSettingsPreset?.overlay?.visuals.frame;
@@ -69,6 +73,8 @@ export default function OcrOverlay() {
 
     }, [] );
 
+    const showCustomCursor = true;
+
 
     return (
         <OverlayFrame id='overlay-frame'
@@ -83,6 +89,10 @@ export default function OcrOverlay() {
               overlayHotkeys={overlayHotkeys}
               overlayBehavior={overlayBehavior}
             />
+
+            { showCustomCursor && ocrResult &&
+              <CustomCursor/>
+            }
 
         </OverlayFrame>
     )
