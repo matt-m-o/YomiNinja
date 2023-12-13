@@ -10,7 +10,13 @@ const CursorImage = styled(Image)({
   pointerEvents: 'none'
 });
 
-export default function CustomCursor() {
+export type CustomCursorProps = {
+  size: number;
+}
+
+export default function CustomCursor( props: CustomCursorProps ) {
+
+  const { size } = props;
 
   const windows = navigator.userAgent
     .toLowerCase()
@@ -39,7 +45,7 @@ export default function CustomCursor() {
       priority
       src={CursorSvg}
       alt="custom cursor"
-      height={100}
+      height={size}
     />
   );
 }

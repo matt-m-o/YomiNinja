@@ -18,6 +18,10 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                     text: {
                         color: "#ffffff", // White
                     }
+                },
+                mouse: {
+                    show_custom_cursor: false,
+                    custom_cursor_size: 30
                 }
             },
             hotkeys: {

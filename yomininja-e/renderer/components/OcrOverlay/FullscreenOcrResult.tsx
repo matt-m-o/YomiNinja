@@ -19,6 +19,7 @@ const BaseOcrResultBox = styled('div')({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+    cursor: 'auto'
 });
 
 export type FullscreenOcrResultProps = {
