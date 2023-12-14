@@ -84,7 +84,7 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
                 left: toCssPercentage(position.left),
                 width: toCssPercentage(size.width),
                 height: toCssPercentage(size.height),
-                border: 'solid 2px purple',
+                border: 'solid 2px rgba(50, 147, 227, 1)',
                 zIndex: 10,
                 maxWidth: "auto",
                 maxHeight: "auto",
@@ -101,7 +101,11 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
             throttleDrag={1}
             edgeDraggable={false}
             startDragRotate={0}
-            throttleDragRotate={0}
+            throttleDragRotate={0}          
+            bounds={{ "left": 0, "top": 0, "right": 0, "bottom": 0, "position": "css" }}
+            hideDefaultLines={true}
+            snappable={true}
+            origin={false}
             onDrag={ ( e: OnDrag ) => {
 
                 const top = handlePercentageOverflow( e.top / templateSize.height );
@@ -121,9 +125,11 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
             useMutationObserver={true}
             useResizeObserver={true}
 
-            resizable={true}
+            resizable={{
+                edge: ["nw","n","ne","w","e","sw","s","se"],
+                renderDirections: [],
+            }}
             throttleResize={1}
-            renderDirections={["nw","n","ne","w","e","sw","s","se"]}
             onResize={ ( e: OnResize ) => {
 
                 let width = e.width / templateSize.width;

@@ -52,20 +52,20 @@ export default function OcrTemplates() {
                     top
                 } = firstEntry.contentRect;
 
-                console.log()
-
                 setTemplateSize({ width, height });
                 setTemplatePosition({ left, top });
+
+                console.log({
+                    templateSize,
+                    templatePosition
+                })
             }
         };
     
         const resizeObserver = new ResizeObserver(handleResize);
     
-        if ( imgRef.current ) {
-            resizeObserver.observe(imgRef.current);
-        }
-
-        
+        if ( imgRef.current )
+            resizeObserver.observe( imgRef.current );
     
         return () => {
             if ( imgRef.current ) 
@@ -98,11 +98,7 @@ export default function OcrTemplates() {
 
     useEffect( () => {
 
-        console.log( selectedTargetRegion );
-
         const handleKeyDown = ( e: KeyboardEvent ) => {
-
-            console.log( selectedTargetRegion );
 
             if ( 
                 !selectedTargetRegion?.id ||
@@ -199,23 +195,14 @@ export default function OcrTemplates() {
                             }
 
                             <Selecto
-                                // The container to add a selection element
                                 selectableTargets={[".ocr-template-div .ocr-region"]}
-
-                                // The area to drag selection element (default: container)
-                                // dragContainer={window}
-                                // Whether to select by click (default: true)
                                 selectByClick={true}
-                                // Whether to select from the target inside (default: true)
                                 selectFromInside={false}
-                                // After the select, whether to select the next target with the selected target (deselected if the target is selected again).
                                 continueSelect={false}
-                                // Determines which key to continue selecting the next target via keydown and keyup.
                                 toggleContinueSelect={"shift"}
-                                // The container for keydown and keyup events
                                 keyContainer={window}
-                                // The rate at which the target overlaps the drag area to be selected. (default: 100)
                                 hitRate={100}
+                                boundContainer={ document.getElementById( 'ocr-template-div' ) }
                                 onSelectEnd={ e => {
 
                                     // console.log( e );
@@ -232,9 +219,7 @@ export default function OcrTemplates() {
                                         didSelectARegion = true;
                                         
                                         return true;
-                                    })
-                                    // console.log(e.selected[0]);
-                                    // console.log(selectedTargetRegion);
+                                    });
 
                                     if ( !didSelectARegion )
                                         setSelectedTargetRegion( null );
@@ -243,26 +228,17 @@ export default function OcrTemplates() {
 
                                     const selectionRect = e.rect;
 
-                                    console.log(selectionRect)
+                                    const { scrollTop } = document.querySelector('main');
                                     
                                     const width = selectionRect.width / templateSize.width;
                                     const height = selectionRect.height / templateSize.height;
 
-                                    const top = ( selectionRect.top - templatePosition.top ) / templateSize.height;
+                                    const top = ( selectionRect.top - templatePosition.top + scrollTop ) / templateSize.height;
                                     const left = ( selectionRect.left - templatePosition.left ) / templateSize.width;
 
-                                    if (
-                                        width < 0.025 ||
-                                        height < 0.025
-                                    )
+                                    if ( width < 0.025 || height < 0.025 )
                                         return;
                                     
-                                    // console.log({
-                                    //     width,
-                                    //     height,
-                                    //     top,
-                                    //     left
-                                    // });
                                     addTargetRegion({
                                         ocr_template_id: activeOcrTemplate.id,
                                         position: {

@@ -41,7 +41,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
 
         const templates = await global.ipcRenderer.invoke( 'ocr_templates:get', input );
 
-        console.log({ templates })
+        // console.log({ templates })
         setOcrTemplates( templates );
 
         return templates;
@@ -60,7 +60,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
 
         setActiveOcrTemplate( ocrTemplates.find( item => item.id === id ) );
 
-        console.log( activeOcrTemplate );
+        // console.log( activeOcrTemplate );
     }
 
     async function updateOcrTemplate( data: OcrTemplateJson ): Promise< OcrTemplateJson > {
@@ -68,7 +68,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
         // console.log( data );
 
         const result = await global.ipcRenderer.invoke( 'ocr_templates:update', data );
-        console.log( result );
+        // console.log( result );
 
         if ( result ) {
             ocrTemplates.find( item => {
@@ -97,7 +97,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
         ];
         
         const updatedOcrTemplate = await updateOcrTemplate( activeOcrTemplate );
-        console.log( updatedOcrTemplate );
+        // console.log( updatedOcrTemplate );
 
         setActiveOcrTemplate( updatedOcrTemplate );
         
@@ -138,7 +138,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
         });
     
         const result = await updateOcrTemplate( activeOcrTemplate );
-        console.log( result );
+        // console.log( result );
 
         setActiveOcrTemplate( result );   
     }
@@ -148,7 +148,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
     }, [] );
     
     useEffect( () => {
-        console.log(activeOcrTemplate);
+        // console.log(activeOcrTemplate);
     }, [ activeOcrTemplate ]);
     
     
