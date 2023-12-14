@@ -2,7 +2,7 @@ import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { OcrTemplate, OcrTemplateId, OcrTemplateJson } from "../../electron-src/@core/domain/ocr_template/ocr_template";
 import { GetOcrTemplates_Input } from "../../electron-src/@core/application/use_cases/ocr_template/get_ocr_template/get_ocr_templates.use_case";
 import { CreateOcrTemplate_Input } from "../../electron-src/@core/application/use_cases/ocr_template/create_ocr_template/create_ocr_template.use_case";
-import { OcrTargetRegionJson } from "../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
+import { OcrTargetRegion, OcrTargetRegionId, OcrTargetRegionJson } from "../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
 
 
 
@@ -16,8 +16,9 @@ export type OcrTemplatesContextType = {
     deleteOcrTemplate: ( id: OcrTemplateId ) => Promise< void >;
     loadOcrTemplate: ( id: OcrTemplateId ) => Promise< void >;
     addTargetRegion: ( input: AddTargetRegion_Input ) => Promise< void >;
+    removeTargetRegion: ( id: OcrTargetRegionId ) => void;
     updateTargetRegion:  ( input: OcrTargetRegionJson ) => Promise< void >;
-    saveOcrTemplate: () => Promise< void >;
+    // saveOcrTemplate: () => Promise< void >;
 };
 
 export interface AddTargetRegion_Input extends Omit< OcrTargetRegionJson,'id' > {};
@@ -65,28 +66,68 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
     async function updateOcrTemplate( data: OcrTemplateJson ): Promise< OcrTemplateJson > {
 
         // console.log( data );
+
+        const result = await global.ipcRenderer.invoke( 'ocr_templates:update', data );
+        console.log( result );
+
+        if ( result ) {
+            ocrTemplates.find( item => {
+
+                if ( item.id !== result.id )
+                    return;
+
+                item = result;
+
+                return true;
+            });
+
+            setOcrTemplates( ocrTemplates );
+        }
         
-        return await global.ipcRenderer.invoke( 'ocr_templates:update', data );
+        return result;
     }
 
     async function addTargetRegion( input: AddTargetRegion_Input ) {
 
-        activeOcrTemplate?.target_regions.push( { ...input, id: '' });
+        if ( !activeOcrTemplate ) return;
 
-        setActiveOcrTemplate( activeOcrTemplate );
+        activeOcrTemplate.target_regions = [
+            ...activeOcrTemplate?.target_regions,
+            { ...input, id: '' }
+        ];
+        
+        const updatedOcrTemplate = await updateOcrTemplate( activeOcrTemplate );
+        console.log( updatedOcrTemplate );
 
-        await updateOcrTemplate( activeOcrTemplate );
+        setActiveOcrTemplate( updatedOcrTemplate );
+        
+        
     }
 
-    async function updateTargetRegion( data: OcrTargetRegionJson, save = false ) {
+    async function removeTargetRegion( id: OcrTargetRegionId ) {
+
+        if ( !activeOcrTemplate ) return;
+
+        activeOcrTemplate.target_regions = activeOcrTemplate.target_regions
+            .filter( region => region.id !== id );
+
+            
+        const updatedOcrTemplate = await updateOcrTemplate( activeOcrTemplate );
+        setActiveOcrTemplate( updatedOcrTemplate );
+
+        getOcrTemplates();
+    }
+
+    async function updateTargetRegion( data: OcrTargetRegionJson ) {
 
         // console.log( data );
 
+        
         activeOcrTemplate.target_regions = activeOcrTemplate.target_regions.map( item => {
 
             if ( item?.id !== data.id )
-                return item;
-
+            return item;
+        
             return {
                 ...data,
                 size: {
@@ -95,15 +136,11 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
                 },
             };
         });
+    
+        const result = await updateOcrTemplate( activeOcrTemplate );
+        console.log( result );
 
-        setActiveOcrTemplate( activeOcrTemplate );
-
-        if ( save )
-            await updateOcrTemplate( activeOcrTemplate );
-    }
-
-    async function saveOcrTemplate() {
-        await updateOcrTemplate( activeOcrTemplate );
+        setActiveOcrTemplate( result );   
     }
     
     useEffect( () => {
@@ -112,7 +149,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
     
     useEffect( () => {
         console.log(activeOcrTemplate);
-    }, [activeOcrTemplate]);
+    }, [ activeOcrTemplate ]);
     
     
     return (
@@ -125,9 +162,9 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
                 deleteOcrTemplate,
                 loadOcrTemplate,
                 addTargetRegion,
+                removeTargetRegion,
                 updateTargetRegion,
                 // updateOcrTemplate,
-                saveOcrTemplate
             }}
         >
             {children}

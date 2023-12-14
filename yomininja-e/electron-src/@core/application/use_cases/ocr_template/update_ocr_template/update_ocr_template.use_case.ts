@@ -81,6 +81,11 @@ export class UpdateOcrTemplateUseCase {
 
         await this.ocrTemplateRepo.update( template );
 
-        return template;
+        const updatedTemplate = await this.ocrTemplateRepo.findOne({ id: template.id });
+
+        if ( !updatedTemplate )
+            throw new Error('ocr-template-not-found');
+
+        return updatedTemplate;
     }
 }

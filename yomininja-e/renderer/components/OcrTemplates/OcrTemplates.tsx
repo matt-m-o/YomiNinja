@@ -3,13 +3,19 @@ import OcrTemplatesTable from "./OcrTemplatesTable";
 import { useContext, useEffect, useRef, useState } from "react";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 import CreateOcrTemplateModal from "./CreateOcrTemplateModal";
-import Moveable from "react-moveable";
 import OcrTargetRegion from "./OcrTargetRegion";
 import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
+import Selecto, { OnSelectEnd } from "react-selecto";
+import Moveable from "react-moveable";
 
 export type Size = { // Pixels
     width: number;
     height: number;
+};
+
+export type Position = { // Pixels
+    top: number;
+    left: number;
 };
 
 export default function OcrTemplates() {
@@ -18,8 +24,8 @@ export default function OcrTemplates() {
         ocrTemplates,
         activeOcrTemplate,
         addTargetRegion,
+        removeTargetRegion,
         updateTargetRegion,
-        saveOcrTemplate
     } = useContext( OcrTemplatesContext );
 
     const [
@@ -28,15 +34,28 @@ export default function OcrTemplates() {
     ] = useState(false);
 
     const imgRef = useRef<HTMLImageElement>(null);
-    const [ templateSize, setTemplateSize ] = useState<Size>();
+    const [ templateSize, setTemplateSize ] = useState< Size >();
+    const [ templatePosition, setTemplatePosition ] = useState< Position >();
 
+    const [ selectedTargetRegion, setSelectedTargetRegion ] = useState< OcrTargetRegionJson | null >();
+
+    const moveableRef = useRef<Moveable>(null);
 
     useEffect(() => {
         const handleResize = ( entries: ResizeObserverEntry[] ) => {
             if ( entries && entries.length > 0 ) {
                 const firstEntry = entries[0];
-                const { width, height } = firstEntry.contentRect;
+                const { 
+                    width,
+                    height,
+                    left,
+                    top
+                } = firstEntry.contentRect;
+
+                console.log()
+
                 setTemplateSize({ width, height });
+                setTemplatePosition({ left, top });
             }
         };
     
@@ -44,11 +63,9 @@ export default function OcrTemplates() {
     
         if ( imgRef.current ) {
             resizeObserver.observe(imgRef.current);
-            setTemplateSize({
-                width: imgRef.current.clientWidth,
-                height: imgRef.current.clientHeight
-            });
         }
+
+        
     
         return () => {
             if ( imgRef.current ) 
@@ -59,12 +76,48 @@ export default function OcrTemplates() {
 
     function onImageLoad() {
         if ( imgRef?.current ) {
+
+            const { 
+                width,
+                height,
+                top,
+                left,
+            } = imgRef.current.getClientRects()[0];
+
             setTemplateSize({
-                width: imgRef.current.clientWidth,
-                height: imgRef.current.clientHeight
+                width,
+                height,
+            });
+            setTemplatePosition({
+                left,
+                top
             });
         }
     }
+
+
+    useEffect( () => {
+
+        console.log( selectedTargetRegion );
+
+        const handleKeyDown = ( e: KeyboardEvent ) => {
+
+            console.log( selectedTargetRegion );
+
+            if ( 
+                !selectedTargetRegion?.id ||
+                e.key !== 'Delete'
+            ) return;
+            
+            removeTargetRegion( selectedTargetRegion.id );
+        }
+
+        document.addEventListener( 'keydown', handleKeyDown );
+
+        return () => {
+            document.removeEventListener( 'keydown', handleKeyDown );
+        };
+    }, [ selectedTargetRegion ] );
 
 
     return <>
@@ -93,31 +146,6 @@ export default function OcrTemplates() {
                             New Template
                         </Button>
 
-                        <Button
-                            onClick={ () => addTargetRegion({
-                                ocr_template_id: activeOcrTemplate.id,
-                                position: {
-                                    top: 0.25,
-                                    left: 0.25,
-                                },
-                                size: {
-                                    width: 0.25,
-                                    height: 0.25,
-                                },
-                                angle: 0,
-                            }) }
-                        >
-                            Add region
-                        </Button>
-
-                        <Button
-                            onClick={ () => {
-                                saveOcrTemplate();
-                            }}
-                        >
-                            Save
-                        </Button>
-
                         <Box display='flex' justifyContent='center' flexDirection='column'>
 
                             <Typography
@@ -128,7 +156,7 @@ export default function OcrTemplates() {
                             </Typography>
 
                             { activeOcrTemplate &&
-                                <div className='container'
+                                <div id='ocr-template-div' className='ocr-template-div'
                                     style={{
                                         position: 'relative',
                                         // width: 'max-content',
@@ -139,12 +167,14 @@ export default function OcrTemplates() {
                                     }}>
 
                                     { templateSize &&
-                                        activeOcrTemplate?.target_regions.map( region => {
+                                        activeOcrTemplate?.target_regions.map( ( region, idx ) => {
                                             return <OcrTargetRegion
-                                                key={region.id} 
+                                                moveableRef={moveableRef}
+                                                key={idx}
                                                 region={region}
                                                 templateSize={templateSize}
                                                 onChange={ updateTargetRegion }
+                                                isSelected={ selectedTargetRegion?.id === region.id }
                                             />
                                         }) 
                                     }
@@ -159,6 +189,7 @@ export default function OcrTemplates() {
                                             top: 0,
                                             left: 0,
                                             maxWidth: '100%',
+                                            maxHeight: '75vh',
                                             userSelect: 'none',
                                             objectFit: 'cover', 
                                         }}
@@ -166,6 +197,87 @@ export default function OcrTemplates() {
                                 </div>
                                 
                             }
+
+                            <Selecto
+                                // The container to add a selection element
+                                selectableTargets={[".ocr-template-div .ocr-region"]}
+
+                                // The area to drag selection element (default: container)
+                                // dragContainer={window}
+                                // Whether to select by click (default: true)
+                                selectByClick={true}
+                                // Whether to select from the target inside (default: true)
+                                selectFromInside={false}
+                                // After the select, whether to select the next target with the selected target (deselected if the target is selected again).
+                                continueSelect={false}
+                                // Determines which key to continue selecting the next target via keydown and keyup.
+                                toggleContinueSelect={"shift"}
+                                // The container for keydown and keyup events
+                                keyContainer={window}
+                                // The rate at which the target overlaps the drag area to be selected. (default: 100)
+                                hitRate={100}
+                                onSelectEnd={ e => {
+
+                                    // console.log( e );
+
+                                    let didSelectARegion = false;
+
+                                    activeOcrTemplate.target_regions?.find( item => {
+
+                                        const element = e.selected.find( element => element.id === item.id );
+                                        if ( !element ) return;
+
+                                        setSelectedTargetRegion( item );
+
+                                        didSelectARegion = true;
+                                        
+                                        return true;
+                                    })
+                                    // console.log(e.selected[0]);
+                                    // console.log(selectedTargetRegion);
+
+                                    if ( !didSelectARegion )
+                                        setSelectedTargetRegion( null );
+                                    else 
+                                        return;
+
+                                    const selectionRect = e.rect;
+
+                                    console.log(selectionRect)
+                                    
+                                    const width = selectionRect.width / templateSize.width;
+                                    const height = selectionRect.height / templateSize.height;
+
+                                    const top = ( selectionRect.top - templatePosition.top ) / templateSize.height;
+                                    const left = ( selectionRect.left - templatePosition.left ) / templateSize.width;
+
+                                    if (
+                                        width < 0.025 ||
+                                        height < 0.025
+                                    )
+                                        return;
+                                    
+                                    // console.log({
+                                    //     width,
+                                    //     height,
+                                    //     top,
+                                    //     left
+                                    // });
+                                    addTargetRegion({
+                                        ocr_template_id: activeOcrTemplate.id,
+                                        position: {
+                                            top,
+                                            left,
+                                        },
+                                        size: {
+                                            width,
+                                            height,
+                                        },
+                                        angle: 0,
+                                    });
+                                }}
+                
+                            />
                         </Box>
 
                         <OcrTemplatesTable templates={ocrTemplates} />

@@ -1,7 +1,7 @@
-import { useRef } from "react";
+import { MutableRefObject, useRef } from "react";
 import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
 import Moveable, { OnDrag, OnResize, OnResizeEnd } from "react-moveable";
-import { Box } from "@mui/material";
+import { Box, debounce } from "@mui/material";
 import { Size } from "electron";
 
 
@@ -9,6 +9,9 @@ export type OcrTargetRegionProps = {
     region: OcrTargetRegionJson;
     templateSize: Size;
     onChange: ( region: OcrTargetRegionJson ) => void;
+    onClick?: () => void;
+    moveableRef: MutableRefObject<Moveable<{}>>;
+    isSelected: boolean;
 };
 
 
@@ -16,7 +19,14 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
 
     const targetRef = useRef<HTMLDivElement>(null);
 
-    const { region, templateSize, onChange } = props;
+    const {
+        region,
+        templateSize,
+        onChange,
+        onClick,
+        moveableRef,
+        isSelected
+    } = props;
 
     const { position, size } = region;
 
@@ -40,15 +50,15 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
         return result + "%";
     }
 
-    function handleChange( input: {
+    const handleChange = debounce( ( input: {
         width?: number;
         height?: number;
         top?: number;
         left?: number;
-    }) {
+    }) => {
         const { width, height, top, left } = input;
 
-        // console.log({ width, height });
+        console.log({ width, height });
 
         onChange({
             ...region,
@@ -62,11 +72,12 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
                 left,
             },
         });
-    }
+    }, 250 );
 
 
     return ( <>
-        <Box ref={targetRef}
+        <Box id={region.id} ref={targetRef} className='ocr-region'
+            onClick={ onClick }
             style={{
                 position: 'absolute', // relative
                 top: toCssPercentage(position.top),
@@ -79,10 +90,12 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
                 maxHeight: "auto",
                 minWidth: "auto",
                 minHeight: "auto",
+                backgroundColor: isSelected ? 'rgb(50 147 227 / 66%)' : 'transparent'
             }}
         >
         </Box>
         <Moveable
+            ref={moveableRef}
             target={targetRef}
             draggable={true}
             throttleDrag={1}
@@ -154,7 +167,6 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
                     left,
                 });
             }}
-            
         />
     </> )
 }

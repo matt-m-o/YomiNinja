@@ -56,8 +56,11 @@ export class OcrTemplatesController {
                 if ( !message ) return;
 
                 const updatedTemplate = await this.ocrTemplatesService.updateOcrTemplate( message );
+                const json = updatedTemplate?.toJson()
+                
+                // console.log( json?.image_base64 );
 
-                return updatedTemplate?.toJson();
+                return json;
             }
         );
     }
