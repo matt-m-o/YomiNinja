@@ -121,7 +121,6 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
     async function updateTargetRegion( data: OcrTargetRegionJson ) {
 
         // console.log( data );
-
         
         activeOcrTemplate.target_regions = activeOcrTemplate.target_regions.map( item => {
 

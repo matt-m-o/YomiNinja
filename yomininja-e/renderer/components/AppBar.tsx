@@ -15,7 +15,7 @@ export const AppBar = styled(
   { shouldForwardProp: (prop) => prop !== 'open' }
 )<AppBarProps>( ({ theme, open }) => ({
     
-  zIndex: theme.zIndex.drawer + 1,
+  zIndex: theme.zIndex.drawer + 2000,
   transition: theme.transitions.create(
     ['width', 'margin'],
     {

@@ -35,64 +35,31 @@ export default function OcrTemplates() {
 
     const imgRef = useRef<HTMLImageElement>(null);
     const [ templateSize, setTemplateSize ] = useState< Size >();
-    const [ templatePosition, setTemplatePosition ] = useState< Position >();
 
     const [ selectedTargetRegion, setSelectedTargetRegion ] = useState< OcrTargetRegionJson | null >();
 
     const moveableRef = useRef<Moveable>(null);
 
     useEffect(() => {
-        const handleResize = ( entries: ResizeObserverEntry[] ) => {
-            if ( entries && entries.length > 0 ) {
-                const firstEntry = entries[0];
-                const { 
-                    width,
-                    height,
-                    left,
-                    top
-                } = firstEntry.contentRect;
-
-                setTemplateSize({ width, height });
-                setTemplatePosition({ left, top });
-
-                console.log({
-                    templateSize,
-                    templatePosition
-                })
-            }
-        };
-    
-        const resizeObserver = new ResizeObserver(handleResize);
-    
-        if ( imgRef.current )
-            resizeObserver.observe( imgRef.current );
-    
-        return () => {
-            if ( imgRef.current ) 
-                resizeObserver.unobserve(imgRef.current);
-        };
+        window.onresize = handleWindowResize;
     }, []);
     
 
-    function onImageLoad() {
-        if ( imgRef?.current ) {
+    function getTemplateRect(): DOMRect {
+        return imgRef.current.getClientRects()[0];
+    }
 
-            const { 
-                width,
-                height,
-                top,
-                left,
-            } = imgRef.current.getClientRects()[0];
+    function handleWindowResize() {
 
-            setTemplateSize({
-                width,
-                height,
-            });
-            setTemplatePosition({
-                left,
-                top
-            });
-        }
+        if ( !imgRef?.current )
+            return;
+
+        const rect = getTemplateRect();
+
+        setTemplateSize({
+            width: rect.width,
+            height: rect.height,
+        });
     }
 
 
@@ -153,9 +120,10 @@ export default function OcrTemplates() {
 
                             { activeOcrTemplate &&
                                 <div id='ocr-template-div' className='ocr-template-div'
+                                    onResize={ console.log }
                                     style={{
+                                        display: 'flex',
                                         position: 'relative',
-                                        // width: 'max-content',
                                         maxWidth: '100%',
                                         boxSizing: 'border-box',
                                         overflow: 'hidden',
@@ -165,6 +133,7 @@ export default function OcrTemplates() {
                                     { templateSize &&
                                         activeOcrTemplate?.target_regions.map( ( region, idx ) => {
                                             return <OcrTargetRegion
+                                                ocrTemplateElementId="ocr-template-div"
                                                 moveableRef={moveableRef}
                                                 key={idx}
                                                 region={region}
@@ -180,7 +149,7 @@ export default function OcrTemplates() {
                                         ref={imgRef}
                                         alt="template background image"
                                         draggable={false}
-                                        onLoad={onImageLoad}
+                                        onLoad={handleWindowResize}
                                         style={{
                                             top: 0,
                                             left: 0,
@@ -227,14 +196,13 @@ export default function OcrTemplates() {
                                         return;
 
                                     const selectionRect = e.rect;
-
-                                    const { scrollTop } = document.querySelector('main');
+                                    const templateRect = getTemplateRect();
                                     
-                                    const width = selectionRect.width / templateSize.width;
-                                    const height = selectionRect.height / templateSize.height;
+                                    const width = selectionRect.width / templateRect.width;
+                                    const height = selectionRect.height / templateRect.height;
 
-                                    const top = ( selectionRect.top - templatePosition.top + scrollTop ) / templateSize.height;
-                                    const left = ( selectionRect.left - templatePosition.left ) / templateSize.width;
+                                    const top = ( selectionRect.top - templateRect.top ) / templateRect.height;
+                                    const left = ( selectionRect.left - templateRect.left ) / templateRect.width;
 
                                     if ( width < 0.025 || height < 0.025 )
                                         return;
