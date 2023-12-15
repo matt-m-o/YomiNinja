@@ -3,6 +3,8 @@ import { Profile } from "../../../domain/profile/profile";
 import { SettingsPreset } from "../../../domain/settings_preset/settings_preset";
 import { SettingsPresetInMemoryRepository } from "../../../infra/db/in_memory/settings_preset/settings_preset.in_memory.repository";
 import { LanguageTypeOrmSchema } from "../../../infra/db/typeorm/language/language.schema";
+import { OcrTargetRegionTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.schema";
+import { OcrTemplateTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_template.schema";
 import { ProfileTypeOrmSchema } from "../../../infra/db/typeorm/profile/profile.schema";
 import ProfileTypeOrmRepository from "../../../infra/db/typeorm/profile/profile.typeorm.repository";
 import { SettingsPresetTypeOrmSchema } from "../../../infra/db/typeorm/settings_preset/settings_preset.schema";
@@ -28,7 +30,9 @@ describe("GetActiveSettingsPresetUseCase tests", () => {
             entities: [
                 ProfileTypeOrmSchema,
                 SettingsPresetTypeOrmSchema,
-                LanguageTypeOrmSchema
+                LanguageTypeOrmSchema,
+                OcrTemplateTypeOrmSchema,
+                OcrTargetRegionTypeOrmSchema
             ],
         });
 

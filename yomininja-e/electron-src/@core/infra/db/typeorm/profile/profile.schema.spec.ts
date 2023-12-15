@@ -6,6 +6,9 @@ import { Profile } from '../../../../domain/profile/profile';
 import { SettingsPresetTypeOrmSchema } from '../settings_preset/settings_preset.schema';
 import { LanguageTypeOrmSchema } from '../language/language.schema';
 import { Language } from '../../../../domain/language/language';
+import { OcrTemplateTypeOrmSchema } from '../ocr_template/ocr_template.schema';
+import { OcrTemplate } from '../../../../domain/ocr_template/ocr_template';
+import { OcrTargetRegionTypeOrmSchema } from '../ocr_template/ocr_target_region/ocr_target_region.schema';
 
 describe( 'Profile Entity Schema tests', () => {
 
@@ -14,10 +17,12 @@ describe( 'Profile Entity Schema tests', () => {
 
     let settingsPreset: SettingsPreset;
     let languageJa: Language;
+    let ocrTemplate: OcrTemplate;
 
     const relations = [
         'active_settings_preset',
-        'active_ocr_language'
+        'active_ocr_language',
+        'active_ocr_template'
     ];
 
     beforeEach( async () => {
@@ -29,7 +34,9 @@ describe( 'Profile Entity Schema tests', () => {
             entities: [
                 ProfileTypeOrmSchema,
                 SettingsPresetTypeOrmSchema,
-                LanguageTypeOrmSchema
+                LanguageTypeOrmSchema,
+                OcrTemplateTypeOrmSchema,
+                OcrTargetRegionTypeOrmSchema
             ],
         });
 
@@ -41,6 +48,17 @@ describe( 'Profile Entity Schema tests', () => {
         languageJa = Language.create({ name: 'japanese', two_letter_code: 'ja' });
         await dataSource.getRepository( Language ).insert( languageJa );
 
+        const ocrTemplateRepo = dataSource.getRepository( OcrTemplate );
+        ocrTemplate = OcrTemplate.create({ name: 'Template 1', image: Buffer.from('') });
+        await ocrTemplateRepo.insert( ocrTemplate );
+        ocrTemplate = await ocrTemplateRepo.findOne({
+            where: {
+                id: ocrTemplate.id
+            }
+        }) as OcrTemplate;
+
+        expect( ocrTemplate ).toBeTruthy();
+
         profileTypeOrmRepo = dataSource.getRepository( Profile );
     });
 
@@ -48,7 +66,8 @@ describe( 'Profile Entity Schema tests', () => {
 
         const profile = Profile.create({
             active_settings_preset: settingsPreset,
-            active_ocr_language: languageJa
+            active_ocr_language: languageJa,
+            active_ocr_template: ocrTemplate
         });
         
         
@@ -73,6 +92,7 @@ describe( 'Profile Entity Schema tests', () => {
         const profile = Profile.create({
             active_settings_preset: settingsPreset,
             active_ocr_language: languageJa,
+            active_ocr_template: undefined,
         });
         const createdAt = profile.created_at;
         const updatedAt = profile.updated_at;
@@ -90,6 +110,7 @@ describe( 'Profile Entity Schema tests', () => {
             },
             relations
         });
+        // foundProfile?.nullCheck();
 
         
         expect( foundProfile ).toBeDefined();

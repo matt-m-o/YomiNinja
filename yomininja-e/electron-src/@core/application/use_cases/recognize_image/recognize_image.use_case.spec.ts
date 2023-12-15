@@ -12,6 +12,8 @@ import { LanguageTypeOrmSchema } from "../../../infra/db/typeorm/language/langua
 import ProfileTypeOrmRepository from "../../../infra/db/typeorm/profile/profile.typeorm.repository";
 import { OcrTemplate } from "../../../domain/ocr_template/ocr_template";
 import { OcrTargetRegion } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region";
+import { OcrTemplateTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_template.schema";
+import { OcrTargetRegionTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.schema";
 
 describe("Recognize Image Use Case tests", () => {    
                 
@@ -65,7 +67,9 @@ describe("Recognize Image Use Case tests", () => {
             entities: [
                 ProfileTypeOrmSchema,
                 SettingsPresetTypeOrmSchema,
-                LanguageTypeOrmSchema
+                LanguageTypeOrmSchema,
+                OcrTemplateTypeOrmSchema,
+                OcrTargetRegionTypeOrmSchema
             ],
         });
 

@@ -9,6 +9,9 @@ import { ProfileRepository } from '../../../../domain/profile/profile.repository
 import { SettingsPresetTypeOrmSchema } from '../settings_preset/settings_preset.schema';
 import { Language } from '../../../../domain/language/language';
 import { LanguageTypeOrmSchema } from '../language/language.schema';
+import { OcrTemplate } from '../../../../domain/ocr_template/ocr_template';
+import { OcrTemplateTypeOrmSchema } from '../ocr_template/ocr_template.schema';
+import { OcrTargetRegionTypeOrmSchema } from '../ocr_template/ocr_target_region/ocr_target_region.schema';
 
 
 describe( "Profile TypeOrm Repository tests", () => {
@@ -20,10 +23,12 @@ describe( "Profile TypeOrm Repository tests", () => {
     let settingsPreset: SettingsPreset;
     let languageJa: Language;
     let languageEn: Language;
+    let ocrTemplate: OcrTemplate;
 
     const relations = [
         'active_settings_preset',
-        'active_ocr_language'
+        'active_ocr_language',
+        'active_ocr_template'
     ];
 
     beforeEach( async () => {
@@ -36,7 +41,9 @@ describe( "Profile TypeOrm Repository tests", () => {
             entities: [
                 ProfileTypeOrmSchema,
                 SettingsPresetTypeOrmSchema,
-                LanguageTypeOrmSchema
+                LanguageTypeOrmSchema,
+                OcrTemplateTypeOrmSchema,
+                OcrTargetRegionTypeOrmSchema
             ]
         });
 
@@ -51,6 +58,15 @@ describe( "Profile TypeOrm Repository tests", () => {
             languageJa,
             languageEn
         ]);
+
+        const ocrTemplateRepo = dataSource.getRepository( OcrTemplate );
+        ocrTemplate = OcrTemplate.create({ name: 'Template 1', image: Buffer.from('') });
+        await ocrTemplateRepo.insert( ocrTemplate );
+        ocrTemplate = await ocrTemplateRepo.findOne({
+            where: {
+                id: ocrTemplate.id
+            }
+        }) as OcrTemplate;
 
         // Settings Preset repository by TypeOrm
         ormRepo = dataSource.getRepository( Profile );
@@ -74,6 +90,7 @@ describe( "Profile TypeOrm Repository tests", () => {
             },
             relations,
         });
+        // foundProfile?.nullCheck();
 
         expect( foundProfile ).toStrictEqual( profile );
     });
@@ -83,6 +100,7 @@ describe( "Profile TypeOrm Repository tests", () => {
         const profile = Profile.create({
             active_settings_preset: settingsPreset,
             active_ocr_language: languageJa,
+            active_ocr_template: undefined,
         });
         await ormRepo.save( profile );
 
@@ -90,14 +108,15 @@ describe( "Profile TypeOrm Repository tests", () => {
         profile.active_ocr_language = languageEn;
         await repo.update( profile );
 
-        const foundPreset = await ormRepo.findOne({
+        const foundProfile = await ormRepo.findOne({
             where: {
                 id: profile.id
             },
             relations,
         });
+        // foundProfile?.nullCheck();
 
-        expect( foundPreset ).toStrictEqual( profile );        
+        expect( foundProfile ).toStrictEqual( profile );        
     });
 
     it('should find ONE by id and name', async () => {
@@ -118,7 +137,9 @@ describe( "Profile TypeOrm Repository tests", () => {
 
         const foundById = await repo.findOne({ id: customProfile.id });
         const foundByName = await repo.findOne({ name: customProfile.name });        
-
+        // foundById?.nullCheck();
+        // foundByName?.nullCheck();
+        
         expect( foundById ).toStrictEqual( customProfile );
         expect( foundByName ).toStrictEqual( customProfile );
     });

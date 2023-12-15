@@ -36,25 +36,33 @@ export default class ProfileTypeOrmRepository implements ProfileRepository {
         if ( cachedResult )
             return cachedResult;
 
-        const result = this.ormRepo.findOne({
+        const result = await this.ormRepo.findOne({
             where: params,
             relations: [
                 'active_settings_preset',
-                'active_ocr_language'
+                'active_ocr_language',
+                'active_ocr_template'
             ]
         });
+
+        this.runNullCheck( result );
 
         this.cache.set( cacheKey, result );
 
         return result;
     }
     async getAll(): Promise< Profile[] > {
-        return this.ormRepo.find({
+
+        const results = await this.ormRepo.find({
             relations: [
                 'active_settings_preset',
-                'active_ocr_language'
+                'active_ocr_language',
+                'active_ocr_template'
             ],
         });
+        this.runNullCheck( results );
+
+        return results
     }
 
     async delete(id: string): Promise<void> {
@@ -78,5 +86,18 @@ export default class ProfileTypeOrmRepository implements ProfileRepository {
         if ( !this.cache.has(key) ) return;
         
         return this.cache.get( key );
+    }
+
+    private runNullCheck( input?: Profile | Profile[] | null ) {
+
+        if ( !input ) return;
+
+        if ( Array.isArray(input) ) {
+            input.forEach( item =>
+                item?.active_ocr_template?.nullCheck()
+            );
+        }
+        else 
+            input?.active_ocr_template?.nullCheck();
     }
 }
