@@ -40,7 +40,6 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
     async function getOcrTemplates( input?: GetOcrTemplates_Input ) {
 
         const templates = await global.ipcRenderer.invoke( 'ocr_templates:get', input );
-
         // console.log({ templates })
         setOcrTemplates( templates );
 
@@ -97,11 +96,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
         ];
         
         const updatedOcrTemplate = await updateOcrTemplate( activeOcrTemplate );
-        // console.log( updatedOcrTemplate );
-
         setActiveOcrTemplate( updatedOcrTemplate );
-        
-        
     }
 
     async function removeTargetRegion( id: OcrTargetRegionId ) {
@@ -111,11 +106,8 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
         activeOcrTemplate.target_regions = activeOcrTemplate.target_regions
             .filter( region => region.id !== id );
 
-            
         const updatedOcrTemplate = await updateOcrTemplate( activeOcrTemplate );
         setActiveOcrTemplate( updatedOcrTemplate );
-
-        getOcrTemplates();
     }
 
     async function updateTargetRegion( data: OcrTargetRegionJson ) {
@@ -136,10 +128,8 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
             };
         });
     
-        const result = await updateOcrTemplate( activeOcrTemplate );
-        // console.log( result );
-
-        setActiveOcrTemplate( result );   
+        const updatedOcrTemplate = await updateOcrTemplate( activeOcrTemplate );
+        setActiveOcrTemplate( updatedOcrTemplate );   
     }
     
     useEffect( () => {
@@ -147,7 +137,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
     }, [] );
     
     useEffect( () => {
-        // console.log(activeOcrTemplate);
+        console.log(activeOcrTemplate);
     }, [ activeOcrTemplate ]);
     
     
@@ -163,7 +153,6 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
                 addTargetRegion,
                 removeTargetRegion,
                 updateTargetRegion,
-                // updateOcrTemplate,
             }}
         >
             {children}

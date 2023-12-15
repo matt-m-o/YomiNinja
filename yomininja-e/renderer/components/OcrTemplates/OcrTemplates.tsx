@@ -1,4 +1,4 @@
-import { Box, Button, Card, CardContent, Container, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, Container, Typography, styled } from "@mui/material";
 import OcrTemplatesTable from "./OcrTemplatesTable";
 import { useContext, useEffect, useRef, useState } from "react";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
@@ -17,6 +17,15 @@ export type Position = { // Pixels
     top: number;
     left: number;
 };
+
+const TemplateDiv = styled('div')( {
+    '& .moveable-line': {
+        backgroundColor: 'red !important'
+    },
+    '& .moveable-control': {
+        backgroundColor: 'red !important'
+    }
+});
 
 export default function OcrTemplates() {
 
@@ -119,8 +128,7 @@ export default function OcrTemplates() {
                             </Typography>
 
                             { activeOcrTemplate &&
-                                <div id='ocr-template-div' className='ocr-template-div'
-                                    onResize={ console.log }
+                                <TemplateDiv id='ocr-template-div' className='ocr-template-div'
                                     style={{
                                         display: 'flex',
                                         position: 'relative',
@@ -159,7 +167,7 @@ export default function OcrTemplates() {
                                             objectFit: 'cover', 
                                         }}
                                     />
-                                </div>
+                                </TemplateDiv>
                                 
                             }
 

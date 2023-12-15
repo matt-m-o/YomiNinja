@@ -1,6 +1,6 @@
 import { MutableRefObject, useRef } from "react";
 import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
-import Moveable, { OnDrag, OnDragEnd, OnResize, OnResizeEnd } from "react-moveable";
+import Moveable, { OnDrag, OnDragEnd, OnRender, OnResize, OnResizeEnd } from "react-moveable";
 import { Box, debounce } from "@mui/material";
 import { Size } from "electron";
 
@@ -91,7 +91,7 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
                 maxHeight: "auto",
                 minWidth: "auto",
                 minHeight: "auto",
-                backgroundColor: isSelected ? 'rgb(50 147 227 / 66%)' : 'transparent'
+                // backgroundColor: isSelected ? 'rgb(50 147 227 / 66%)' : 'transparent'
             }}
         />
         <Moveable
@@ -108,12 +108,8 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
             scrollable={true}
             origin={false}
             onDrag={ ( e: OnDrag ) => {
-
-                const top = handlePercentageOverflow( e.top / templateSize.height );
-                const left = handlePercentageOverflow( e.left / templateSize.width );
-
-                e.target.style.top = toCssPercentage( top );
-                e.target.style.left = toCssPercentage( left );
+                e.target.style.top = toCssPercentage( e.top / templateSize.height );
+                e.target.style.left = toCssPercentage( e.left / templateSize.width );
             }}
             onDragEnd={ ( e: OnDragEnd ) => {
 
@@ -135,7 +131,11 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
 
             resizable={{
                 edge: ["nw","n","ne","w","e","sw","s","se"],
-                renderDirections: ["nw","n","ne","w","e","sw","s","se"],
+                renderDirections: (
+                    isSelected ? 
+                        ["nw","n","ne","w","e","sw","s","se"] :
+                        []
+                ),
             }}
             controlPadding={20}
             throttleResize={1}
