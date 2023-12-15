@@ -12,7 +12,6 @@ import { OcrAdapter } from "../../adapters/ocr.adapter";
 export type RecognizeImageInput = {    
     imageBuffer: Buffer;
     profileId: string;
-    template?: OcrTemplate;
 }
 
 export class RecognizeImageUseCase {
@@ -66,13 +65,13 @@ export class RecognizeImageUseCase {
             imageBuffer = await this.imageProcessing.invertColors( imageBuffer );
         }
 
-        if ( input.template ) {
+        if ( profile.active_ocr_template ) {
 
             return await this.recognizeWithTemplate({
                 image: imageBuffer,
                 languageCode: profile.active_ocr_language.two_letter_code,
                 ocrAdapter,
-                template: input.template,
+                template: profile.active_ocr_template,
             });
         }
         

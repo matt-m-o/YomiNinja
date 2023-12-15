@@ -9,8 +9,8 @@ export default class ProfileTypeOrmRepository implements ProfileRepository {
     cache: NodeCache;
 
     constructor ( private ormRepo: Repository< Profile > ) {
-        const stdTTL = 60 * 60 * 6; // 6 hours
-        const checkperiod =  60 * 60 // 1 hour
+        const stdTTL = 1; // 1 second
+        const checkperiod =  2 // 2 seconds
         this.cache = new NodeCache({ stdTTL, checkperiod, maxKeys: 1000 });
     }
 
