@@ -13,22 +13,28 @@ export type ChangeActiveOcrTemplate_Input = {
 
 export class ChangeActiveOcrTemplateUseCase {
 
-    constructor(
-        private profileRepo: ProfileRepository,
-        private ocrTemplateRepo: OcrTemplateRepository,
-    ) {}
+    private profilesRepo: ProfileRepository;
+    private ocrTemplatesRepo: OcrTemplateRepository;
+
+    constructor( input: {
+        profilesRepo: ProfileRepository;
+        ocrTemplatesRepo: OcrTemplateRepository;
+    }) {
+        this.profilesRepo = input.profilesRepo;
+        this.ocrTemplatesRepo = input.ocrTemplatesRepo;
+    }
 
     async execute( input: ChangeActiveOcrTemplate_Input ): Promise< void > {
                 
         let ocrTemplate: OcrTemplate | null = null;
 
         if ( input?.ocrTemplateId ) {
-            ocrTemplate = await this.ocrTemplateRepo.findOne({
+            ocrTemplate = await this.ocrTemplatesRepo.findOne({
                 id: input.ocrTemplateId,
             });
         }
 
-        const profile: Profile | null = await this.profileRepo.findOne({
+        const profile: Profile | null = await this.profilesRepo.findOne({
             id: input.profileId
         });
         
@@ -37,6 +43,6 @@ export class ChangeActiveOcrTemplateUseCase {
         
         profile.active_ocr_template = ocrTemplate;
 
-        await this.profileRepo.update( profile );
+        await this.profilesRepo.update( profile );
     }
 }

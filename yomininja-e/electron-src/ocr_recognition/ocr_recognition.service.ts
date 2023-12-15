@@ -35,7 +35,7 @@ export class OcrRecognitionService {
     ){
         this.recognizeImageUseCase = input.recognizeImageUseCase;
         this.getSupportedLanguagesUseCase = input.getSupportedLanguagesUseCase;
-        this.getActiveSettingsPresetUseCase = input.getActiveSettingsPresetUseCase;        
+        this.getActiveSettingsPresetUseCase = input.getActiveSettingsPresetUseCase;
         this.ocrAdapter = input.ocrAdapter;
     }
 
@@ -58,27 +58,9 @@ export class OcrRecognitionService {
 
         // if ( !isValidImage ) return null;
 
-        // const template = OcrTemplate.create({
-        //     image: imageBuffer,
-        //     name: 'test',
-        // });
-        // template.addTargetRegion( 
-        //     OcrTargetRegion.create({
-        //         position: {
-        //             top: 0.25,
-        //             left: 0.25
-        //         },
-        //         size: {
-        //             width: 0.75,
-        //             height: 0.75
-        //         }
-        //     })
-        // );
-
         return await this.recognizeImageUseCase.execute({
             imageBuffer,
             profileId: profileId,
-            // template
         });
     }
 

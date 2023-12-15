@@ -19,7 +19,7 @@ describe("ChangeActiveOcrTemplateUseCase tests", () => {
 
     let initialProfile: Profile;
 
-    let profileRepo: ProfileTypeOrmRepository;
+    let profilesRepo: ProfileTypeOrmRepository;
 
     let ocrTemplate: OcrTemplate;
 
@@ -48,19 +48,19 @@ describe("ChangeActiveOcrTemplateUseCase tests", () => {
         await dataSource.getRepository( Language ).insert( languageJa );
 
         
-        const ocrTemplateRepo = new OcrTemplateTypeOrmRepository(
+        const ocrTemplatesRepo = new OcrTemplateTypeOrmRepository(
             dataSource.getRepository( OcrTemplate )
         );
         ocrTemplate = OcrTemplate.create({
             name: 'Template 1',
             image: Buffer.from('')
         });
-        await ocrTemplateRepo.insert( ocrTemplate );
-        ocrTemplate = await ocrTemplateRepo.findOne({
+        await ocrTemplatesRepo.insert( ocrTemplate );
+        ocrTemplate = await ocrTemplatesRepo.findOne({
             id: ocrTemplate.id
         }) as OcrTemplate;
 
-        profileRepo = new ProfileTypeOrmRepository( dataSource.getRepository( Profile ) );
+        profilesRepo = new ProfileTypeOrmRepository( dataSource.getRepository( Profile ) );
 
 
         initialProfile = Profile.create({
@@ -68,12 +68,12 @@ describe("ChangeActiveOcrTemplateUseCase tests", () => {
             active_settings_preset: settingsPreset,
         });
 
-        await profileRepo.insert( initialProfile );
+        await profilesRepo.insert( initialProfile );
 
-        changeActiveOcrTemplateUseCase = new ChangeActiveOcrTemplateUseCase(
-            profileRepo,
-            ocrTemplateRepo
-        );
+        changeActiveOcrTemplateUseCase = new ChangeActiveOcrTemplateUseCase({
+            profilesRepo,
+            ocrTemplatesRepo
+        });
 
     });
 
@@ -86,7 +86,7 @@ describe("ChangeActiveOcrTemplateUseCase tests", () => {
 
         await changeActiveOcrTemplateUseCase.execute( input );
         
-        const currentProfile = await profileRepo.findOne({ id: initialProfile.id });
+        const currentProfile = await profilesRepo.findOne({ id: initialProfile.id });
 
         expect( currentProfile?.active_ocr_template )
             .toStrictEqual( ocrTemplate );
@@ -102,7 +102,7 @@ describe("ChangeActiveOcrTemplateUseCase tests", () => {
 
         await changeActiveOcrTemplateUseCase.execute( input );
         
-        const currentProfile = await profileRepo.findOne({ id: initialProfile.id });
+        const currentProfile = await profilesRepo.findOne({ id: initialProfile.id });
 
         expect( currentProfile?.active_ocr_template )
             .toStrictEqual( null );

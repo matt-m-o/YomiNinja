@@ -38,6 +38,7 @@ export const Registry = {
     UpdateOcrTemplateUseCase: Symbol.for('UpdateOcrTemplateUseCase'),
     GetOcrTemplatesUseCase: Symbol.for('GetOcrTemplatesUseCase'),
     DeleteOcrTemplateUseCase: Symbol.for('DeleteOcrTemplatesUseCase'),
+    ChangeActiveOcrTemplateUseCase: Symbol.for('ChangeActiveOcrTemplateUseCase'),
 
     // Repositories
     SettingsPresetInMemoryRepository: Symbol.for('SettingsPresetInMemoryRepository'),

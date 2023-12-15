@@ -19,6 +19,7 @@ import { CreateOcrTemplateUseCase } from "../../application/use_cases/ocr_templa
 import { UpdateOcrTemplateUseCase } from "../../application/use_cases/ocr_template/update_ocr_template/update_ocr_template.use_case";
 import { GetOcrTemplatesUseCase } from "../../application/use_cases/ocr_template/get_ocr_template/get_ocr_templates.use_case";
 import { DeleteOcrTemplateUseCase } from "../../application/use_cases/ocr_template/delete_ocr_template/delete_ocr_template.use_case";
+import { ChangeActiveOcrTemplateUseCase } from "../../application/use_cases/change_active_ocr_template/change_active_ocr_template.use_case";
 
 
 container_registry.bind( Registry.RecognizeImageUseCase )
@@ -222,6 +223,18 @@ container_registry.bind( Registry.DeleteOcrTemplateUseCase )
         })
     });
 
+container_registry.bind( Registry.ChangeActiveOcrTemplateUseCase )
+    .toDynamicValue( (context) => {
+        return new ChangeActiveOcrTemplateUseCase({
+            profilesRepo: context.container.get(
+                Registry.ProfileTypeOrmRepository
+            ),
+            ocrTemplatesRepo: context.container.get(
+                Registry.OcrTemplateTypeOrmRepository
+            )
+        });
+    });
+
 
 export function get_RecognizeImageUseCase(): RecognizeImageUseCase {
     return container_registry.get< RecognizeImageUseCase >( Registry.RecognizeImageUseCase )
@@ -297,4 +310,8 @@ export function get_GetOcrTemplatesUseCase(): GetOcrTemplatesUseCase {
 
 export function get_DeleteOcrTemplateUseCase(): DeleteOcrTemplateUseCase {    
     return container_registry.get< DeleteOcrTemplateUseCase >( Registry.DeleteOcrTemplateUseCase );
+}
+
+export function get_ChangeActiveOcrTemplateUseCase(): ChangeActiveOcrTemplateUseCase {    
+    return container_registry.get< ChangeActiveOcrTemplateUseCase >( Registry.ChangeActiveOcrTemplateUseCase );
 }

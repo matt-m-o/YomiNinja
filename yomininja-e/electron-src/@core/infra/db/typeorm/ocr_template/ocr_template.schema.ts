@@ -49,7 +49,8 @@ export const OcrTemplateTypeOrmSchema = new EntitySchema< OcrTemplate >({
             target: 'OcrTargetRegion',
             inverseSide: 'ocr_template',
             cascade: false,
-            default: []
+            default: [],
+            eager: true
         },
     },
 })

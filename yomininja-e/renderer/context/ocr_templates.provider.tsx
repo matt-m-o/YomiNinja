@@ -43,6 +43,10 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
         // console.log({ templates })
         setOcrTemplates( templates );
 
+        const activeTemplate = await global.ipcRenderer.invoke( 'ocr_templates:get_active' );
+        console.log({ activeTemplate });
+        setActiveOcrTemplate( activeTemplate );
+
         return templates;
     }
 
@@ -55,7 +59,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
 
     async function loadOcrTemplate( id: OcrTemplateId ) {
 
-        // await global.ipcRenderer.invoke( 'ocr_templates:load', id );
+        await global.ipcRenderer.invoke( 'ocr_templates:change_active', id );
 
         setActiveOcrTemplate( ocrTemplates.find( item => item.id === id ) );
 
