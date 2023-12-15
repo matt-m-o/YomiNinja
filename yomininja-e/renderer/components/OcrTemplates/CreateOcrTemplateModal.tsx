@@ -63,7 +63,9 @@ export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalPro
     }
 
     return (
-        <Modal open={open}>
+        <Modal open={open}
+            style={{ zIndex: 4000 }}
+        >
             <Box sx={style}>
                 <Typography variant="h6" component="h2" mb={4}>
                     New OCR Template

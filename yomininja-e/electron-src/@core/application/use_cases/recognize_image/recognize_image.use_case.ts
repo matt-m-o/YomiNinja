@@ -116,8 +116,6 @@ export class RecognizeImageUseCase {
                 height: metadata.height,
             });
 
-            console.log( targetRegionPixels );
-
             const regionImage = await this.imageProcessing.extract({
                 image,
                 position: targetRegionPixels.position,

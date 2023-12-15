@@ -61,9 +61,15 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         setHoveredText( '' );
     }
 
-    function OcrResultBox( props: { ocrItem: OcrItemScalable } ): JSX.Element {
+    function OcrResultBox( props: {
+        ocrItem: OcrItemScalable,
+        ocrRegionSize: { // Pixels
+            width: number;
+            height: number;
+        }
+    } ): JSX.Element {
 
-        const { ocrItem } = props;
+        const { ocrItem, ocrRegionSize } = props;
 
         const { box } = ocrItem;
 
@@ -71,8 +77,11 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
         // const fontSize = isVertical ? box.dimensions.width * 90 : box.dimensions.height * 65;
 
-        const boxWidthPx = window.innerWidth * ( box.dimensions.width / 100 );
-        const boxHeightPx = window.innerHeight * ( box.dimensions.height / 100 );
+        const regionWidthPx = ocrRegionSize.width * window.innerWidth;
+        const regionHeightPx = ocrRegionSize.height * window.innerHeight;
+
+        const boxWidthPx = regionWidthPx * ( box.dimensions.width / 100 );
+        const boxHeightPx = regionHeightPx * ( box.dimensions.height / 100 );
 
         const fontSize = isVertical ? boxWidthPx * 0.6 : boxHeightPx * 0.65;
 
@@ -131,8 +140,8 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
     return ( <>
         { ocrResult?.ocr_regions?.map(
-            ( ocrRegion, idx ) => (
-                <div id='ocr-region'
+            ( ocrRegion, regionIdx ) => (
+                <div id='ocr-region' key={regionIdx}
                     style={{
                         // border: 'solid 2px yellow',
                         position: 'absolute',
@@ -144,8 +153,12 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                     }}
                 >
                     {
-                        ocrRegion.results.map( item => (
-                            <OcrResultBox ocrItem={item} key={idx} />
+                        ocrRegion.results.map( ( item, resultIdx ) => (
+                            <OcrResultBox 
+                                key={resultIdx}
+                                ocrItem={item}
+                                ocrRegionSize={ocrRegion.size}
+                            />
                         ))
                     }
                 </div>
