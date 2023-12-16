@@ -59,7 +59,8 @@ container_registry.bind( Registry.ProfileTypeOrmRepository )
 container_registry.bind( Registry.OcrTemplateTypeOrmRepository )
     .toDynamicValue( (context) => {
         return new OcrTemplateTypeOrmRepository(
-            get_MainDataSource().getRepository( OcrTemplate )
+            get_MainDataSource().getRepository( OcrTemplate ),
+            get_MainDataSource().getRepository( OcrTargetRegion )
         );
     })
     .inSingletonScope();

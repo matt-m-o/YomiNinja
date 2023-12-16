@@ -47,12 +47,14 @@ export class OcrTemplatesService {
         return profile.active_ocr_template;
     }
 
-    async changeActiveOcrTemplate( ocrTemplateId: OcrTemplateId | null ) {
+    async changeActiveOcrTemplate( ocrTemplateId: OcrTemplateId | null ): Promise< OcrTemplate | null > {
 
-        await this.changeActiveOcrTemplateUseCase.execute({
+        const template = await this.changeActiveOcrTemplateUseCase.execute({
             ocrTemplateId,
             profileId: getActiveProfile().id
         });
+
+        return template;
     }
 
     async createOcrTemplate( templateData: OcrTemplateJson ): Promise< OcrTemplate > {

@@ -4,6 +4,7 @@ import { OcrTemplate } from "../../../../domain/ocr_template/ocr_template";
 import { OcrTemplateTypeOrmSchema } from '../../../../infra/db/typeorm/ocr_template/ocr_template.schema';
 import { OcrTargetRegionTypeOrmSchema } from '../../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.schema';
 import { DeleteOcrTemplateUseCase, DeleteOcrTemplate_Input } from './delete_ocr_template.use_case';
+import { OcrTargetRegion } from '../../../../domain/ocr_template/ocr_target_region/ocr_target_region';
 
 
 describe("DeleteOcrTemplateUseCase tests", () => {    
@@ -31,7 +32,8 @@ describe("DeleteOcrTemplateUseCase tests", () => {
         await dataSource.initialize();
 
         ocrTemplateRepo = new OcrTemplateTypeOrmRepository(
-            dataSource.getRepository( OcrTemplate )
+            dataSource.getRepository( OcrTemplate ),
+            dataSource.getRepository( OcrTargetRegion )
         );
 
         useCase = new DeleteOcrTemplateUseCase({ ocrTemplateRepo });

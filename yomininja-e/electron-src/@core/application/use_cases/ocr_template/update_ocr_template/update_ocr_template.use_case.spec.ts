@@ -35,7 +35,8 @@ describe("UpdateOcrTemplateUseCase tests", () => {
         await dataSource.initialize();
 
         ocrTemplateRepo = new OcrTemplateTypeOrmRepository(
-            dataSource.getRepository( OcrTemplate )
+            dataSource.getRepository( OcrTemplate ),
+            dataSource.getRepository( OcrTargetRegion )
         );
 
         ocrTargetRegionRepo = new OcrTargetRegionTypeOrmRepository(

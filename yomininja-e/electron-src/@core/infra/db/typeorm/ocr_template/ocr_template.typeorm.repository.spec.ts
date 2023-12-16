@@ -39,7 +39,10 @@ describe( "OcrTemplate TypeOrm Repository tests", () => {
         ormRepo = dataSource.getRepository( OcrTemplate );
         
         // actual repository
-        repo = new OcrTemplateTypeOrmRepository( ormRepo );
+        repo = new OcrTemplateTypeOrmRepository(
+            ormRepo,
+            dataSource.getRepository( OcrTargetRegion )
+        );
 
         ocrTemplate = OcrTemplate.create({
             name: 'template1',

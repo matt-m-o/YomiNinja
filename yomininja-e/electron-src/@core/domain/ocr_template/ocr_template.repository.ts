@@ -14,7 +14,7 @@ export type OcrTemplateFindManyInput = {
 
 export interface OcrTemplateRepository {
 
-    insert( ocrTemplate: OcrTemplate ): Promise< void >;
+    insert( ocrTemplate: OcrTemplate ): Promise< OcrTemplate >;
 
     update( ocrTemplate: OcrTemplate ): Promise< void >;
 

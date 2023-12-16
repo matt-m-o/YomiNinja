@@ -24,7 +24,7 @@ export class ChangeActiveOcrTemplateUseCase {
         this.ocrTemplatesRepo = input.ocrTemplatesRepo;
     }
 
-    async execute( input: ChangeActiveOcrTemplate_Input ): Promise< void > {
+    async execute( input: ChangeActiveOcrTemplate_Input ): Promise< OcrTemplate | null > {
                 
         let ocrTemplate: OcrTemplate | null = null;
 
@@ -39,10 +39,12 @@ export class ChangeActiveOcrTemplateUseCase {
         });
         
         if ( !profile )
-            return;
+            return null;
         
         profile.active_ocr_template = ocrTemplate;
 
         await this.profilesRepo.update( profile );
+
+        return ocrTemplate;
     }
 }

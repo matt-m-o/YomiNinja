@@ -31,12 +31,15 @@ describe("CreateOcrTemplateUseCase tests", () => {
 
         await dataSource.initialize();
 
+        const targetRegionOrmRepo = dataSource.getRepository( OcrTargetRegion );
+
         ocrTemplateRepo = new OcrTemplateTypeOrmRepository(
-            dataSource.getRepository( OcrTemplate )
+            dataSource.getRepository( OcrTemplate ),
+            targetRegionOrmRepo
         );
 
         ocrTargetRegionRepo = new OcrTargetRegionTypeOrmRepository(
-            dataSource.getRepository( OcrTargetRegion )
+            targetRegionOrmRepo
         );
 
         useCase = new CreateOcrTemplateUseCase({

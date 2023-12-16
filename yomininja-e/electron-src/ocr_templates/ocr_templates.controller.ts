@@ -37,18 +37,22 @@ export class OcrTemplatesController {
 
         ipcMain.handle( 'ocr_templates:change_active',
 
-            async ( event: IpcMainInvokeEvent, message: OcrTemplateId | null ): Promise< void > => {
+            async ( event: IpcMainInvokeEvent, message: OcrTemplateId | null ): Promise< OcrTemplateJson | null > => {
 
-                 await this.ocrTemplatesService.changeActiveOcrTemplate( message );
+                const template = await this.ocrTemplatesService.changeActiveOcrTemplate( message );
+
+                return template?.toJson() || null;
             }
         );
 
         ipcMain.handle( 'ocr_templates:create',
-            async ( event: IpcMainInvokeEvent, message: OcrTemplateJson ): Promise< void > => {
+            async ( event: IpcMainInvokeEvent, message: OcrTemplateJson ): Promise< OcrTemplateJson | null > => {
                 
-                if ( !message ) return;
+                if ( !message ) return null;
 
-                await this.ocrTemplatesService.createOcrTemplate( message );
+                const template = await this.ocrTemplatesService.createOcrTemplate( message );
+
+                return template?.toJson() || null;
             }
         );
         

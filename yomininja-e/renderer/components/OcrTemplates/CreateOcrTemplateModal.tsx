@@ -33,7 +33,12 @@ export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalPro
     const [ name, setName ] = useState< string >('');
     const [ image, setImage ] = useState< Buffer >();
 
-    const { createOcrTemplate, getOcrTemplates } = useContext( OcrTemplatesContext );
+    const {
+        createOcrTemplate,
+        getOcrTemplates,
+        loadOcrTemplate,
+        ocrTemplates
+    } = useContext( OcrTemplatesContext );
     const {
         captureSourceImage,
         captureSourceImageBase64
@@ -52,19 +57,23 @@ export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalPro
 
     async function saveOcrTemplate() {
 
-        await createOcrTemplate({
+        const template = await createOcrTemplate({
             image: captureSourceImage,
             name,
         });
 
-        getOcrTemplates();
+        console.log(template);
+
+        await loadOcrTemplate( template.id );
 
         handleClose();
     }
 
     return (
         <Modal open={open}
-            style={{ zIndex: 4000 }}
+            style={{
+                zIndex: 4000,
+            }}
         >
             <Box sx={style}>
                 <Typography variant="h6" component="h2" mb={4}>
@@ -91,8 +100,12 @@ export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalPro
                         <img src={ 'data:image/png;base64,' + captureSourceImageBase64 }
                             alt="capture source image"
                             style={{
-                                maxWidth: '500px',
-                                maxHeight: '400px'
+                                // maxWidth: '50%',
+                                maxHeight: '50vh',
+                                userSelect: 'none',
+                                objectFit: 'cover',
+                                margin: 'auto',
+                                border: 'solid 1px #90caf9'
                             }}
                         />
                     }

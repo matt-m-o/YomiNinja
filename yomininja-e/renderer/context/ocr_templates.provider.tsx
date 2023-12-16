@@ -15,6 +15,7 @@ export type OcrTemplatesContextType = {
     getOcrTemplates: ( input?: GetOcrTemplates_Input ) => Promise< OcrTemplateJson[] >;
     deleteOcrTemplate: ( id: OcrTemplateId ) => Promise< void >;
     loadOcrTemplate: ( id: OcrTemplateId ) => Promise< void >;
+    unloadOcrTemplate: () => void;
     addTargetRegion: ( input: AddTargetRegion_Input ) => Promise< void >;
     removeTargetRegion: ( id: OcrTargetRegionId ) => void;
     updateTargetRegion:  ( input: OcrTargetRegionJson ) => Promise< void >;
@@ -34,7 +35,11 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
 
     async function createOcrTemplate( data: CreateOcrTemplate_Input ): Promise< OcrTemplateJson > {
 
-        return await global.ipcRenderer.invoke( 'ocr_templates:create', data );
+        const template = await global.ipcRenderer.invoke( 'ocr_templates:create', data );
+
+        await getOcrTemplates();
+
+        return template;
     }
 
     async function getOcrTemplates( input?: GetOcrTemplates_Input ) {
@@ -54,7 +59,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
 
         await global.ipcRenderer.invoke( 'ocr_templates:delete', id );
 
-        if ( id === activeOcrTemplate.id )
+        if ( id === activeOcrTemplate?.id )
             loadOcrTemplate( null );
 
         setOcrTemplates( ocrTemplates.filter( item => item.id !== id ) );
@@ -62,15 +67,19 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
 
     async function loadOcrTemplate( id: OcrTemplateId | null ) {
 
-        await global.ipcRenderer.invoke( 'ocr_templates:change_active', id );
+        const template = await global.ipcRenderer.invoke( 'ocr_templates:change_active', id );
 
         if ( id )
-            setActiveOcrTemplate( ocrTemplates.find( item => item.id === id ) );
+            setActiveOcrTemplate( template );
 
         else
             setActiveOcrTemplate( null );
 
         console.log( activeOcrTemplate );
+    }
+
+    function unloadOcrTemplate() {
+        loadOcrTemplate( null );
     }
 
     async function updateOcrTemplate( data: OcrTemplateJson ): Promise< OcrTemplateJson > {
@@ -161,6 +170,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
                 getOcrTemplates,
                 deleteOcrTemplate,
                 loadOcrTemplate,
+                unloadOcrTemplate,
                 addTargetRegion,
                 removeTargetRegion,
                 updateTargetRegion,

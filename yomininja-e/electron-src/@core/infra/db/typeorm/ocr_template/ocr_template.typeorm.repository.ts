@@ -1,24 +1,28 @@
 import { FindOptionsWhere, Like, Repository, UnorderedBulkOperation } from "typeorm";
 import { OcrTemplate, OcrTemplateId } from "../../../../domain/ocr_template/ocr_template";
 import { OcrTemplateFindManyInput, OcrTemplateFindOneInput, OcrTemplateRepository } from "../../../../domain/ocr_template/ocr_template.repository";
+import { OcrTargetRegion } from "../../../../domain/ocr_template/ocr_target_region/ocr_target_region";
 
 
 
 export default class OcrTemplateTypeOrmRepository implements OcrTemplateRepository {
 
-    constructor ( private ormRepo: Repository< OcrTemplate > ) {}
+    constructor (
+        private ocrTemplatesOrmRepo: Repository< OcrTemplate >,
+        private ocrTargetRegionsOrmRepo: Repository< OcrTargetRegion >,
+    ) {}
 
-    async insert( template: OcrTemplate ): Promise<void> {
-        await this.ormRepo.save( template );
+    async insert( template: OcrTemplate ): Promise< OcrTemplate > {
+        return await this.ocrTemplatesOrmRepo.save( template );
     }
 
     async update( template: OcrTemplate ): Promise<void> {
-        await this.ormRepo.save( template );
+        await this.ocrTemplatesOrmRepo.save( template );
     }
 
     async findOne( params: OcrTemplateFindOneInput ): Promise< OcrTemplate | null > {
 
-        const template = await this.ormRepo.findOne({
+        const template = await this.ocrTemplatesOrmRepo.findOne({
             where: {
                 ...params,
             },
@@ -40,7 +44,7 @@ export default class OcrTemplateTypeOrmRepository implements OcrTemplateReposito
         if ( params.capture_source_name )
             where.capture_source_name = Like(`%${params.capture_source_name}%`);
 
-        const template = await this.ormRepo.find({
+        const template = await this.ocrTemplatesOrmRepo.find({
             where,
             relations: [ 'target_regions' ]
         });
@@ -52,7 +56,7 @@ export default class OcrTemplateTypeOrmRepository implements OcrTemplateReposito
     
     async getAll(): Promise< OcrTemplate[] > {
 
-        const items = await this.ormRepo.find({
+        const items = await this.ocrTemplatesOrmRepo.find({
             relations: [ 'target_regions' ]
         });
 
@@ -62,7 +66,22 @@ export default class OcrTemplateTypeOrmRepository implements OcrTemplateReposito
     }
 
     async delete( id: OcrTemplateId ): Promise<void> {
-        await this.ormRepo.delete( { id } );
+
+        const ocrTemplate = await this.ocrTemplatesOrmRepo.findOne({
+            where: {
+                id,
+            }
+        });
+
+        if ( !ocrTemplate ) return;
+
+        for( const region of ocrTemplate?.target_regions ) {
+            await this.ocrTargetRegionsOrmRepo.delete({
+                id: region.id
+            });
+        }
+        
+        await this.ocrTemplatesOrmRepo.delete({ id });
     }
 
     private runNullCheck( input?: OcrTemplate | OcrTemplate[] | null ) {

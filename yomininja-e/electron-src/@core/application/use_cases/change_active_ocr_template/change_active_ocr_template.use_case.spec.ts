@@ -12,6 +12,7 @@ import { OcrTemplateTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template
 import { OcrTargetRegionTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.schema";
 import { OcrTemplate } from "../../../domain/ocr_template/ocr_template";
 import OcrTemplateTypeOrmRepository from "../../../infra/db/typeorm/ocr_template/ocr_template.typeorm.repository";
+import { OcrTargetRegion } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region";
 
 describe("ChangeActiveOcrTemplateUseCase tests", () => {
         
@@ -49,7 +50,8 @@ describe("ChangeActiveOcrTemplateUseCase tests", () => {
 
         
         const ocrTemplatesRepo = new OcrTemplateTypeOrmRepository(
-            dataSource.getRepository( OcrTemplate )
+            dataSource.getRepository( OcrTemplate ),
+            dataSource.getRepository( OcrTargetRegion )
         );
         ocrTemplate = OcrTemplate.create({
             name: 'Template 1',

@@ -36,12 +36,12 @@ export class CreateOcrTemplateUseCase {
         if ( foundOcrTemplate )
             throw new Error('ocr-template-already-exists');
 
-        const ocrTemplate = OcrTemplate.create({
+        let ocrTemplate = OcrTemplate.create({
             ...input,
             target_regions: []
         });
 
-        await this.ocrTemplateRepo.insert( ocrTemplate );
+        ocrTemplate = await this.ocrTemplateRepo.insert( ocrTemplate );
         
         if ( input?.target_regions ) {
 
@@ -57,6 +57,11 @@ export class CreateOcrTemplateUseCase {
                 ocrTemplate.addTargetRegion( region );
             }
         }
+
+        // For some reason this is required to get the correct base64 encoded image
+        ocrTemplate = await this.ocrTemplateRepo.findOne({
+            id: ocrTemplate.id
+        }) || ocrTemplate;
 
         return ocrTemplate;
     }

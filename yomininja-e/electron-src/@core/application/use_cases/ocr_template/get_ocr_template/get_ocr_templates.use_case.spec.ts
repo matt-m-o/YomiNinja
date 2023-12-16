@@ -33,7 +33,8 @@ describe("GetOcrTemplatesUseCase tests", () => {
         await dataSource.initialize();
 
         ocrTemplateRepo = new OcrTemplateTypeOrmRepository(
-            dataSource.getRepository( OcrTemplate )
+            dataSource.getRepository( OcrTemplate ),
+            dataSource.getRepository( OcrTargetRegion )
         );
 
         useCase = new GetOcrTemplatesUseCase({ ocrTemplateRepo });
