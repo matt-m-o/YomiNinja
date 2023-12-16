@@ -7,25 +7,10 @@ import OcrTargetRegion from "./OcrTargetRegion";
 import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
 import Selecto, { OnSelectEnd } from "react-selecto";
 import Moveable from "react-moveable";
+import OcrTemplateEditor from "./OcrTemplateEditor";
 
-export type Size = { // Pixels
-    width: number;
-    height: number;
-};
 
-export type Position = { // Pixels
-    top: number;
-    left: number;
-};
 
-const TemplateDiv = styled('div')( {
-    '& .moveable-line': {
-        backgroundColor: 'red !important'
-    },
-    '& .moveable-control': {
-        backgroundColor: 'red !important'
-    }
-});
 
 export default function OcrTemplates() {
 
@@ -41,55 +26,6 @@ export default function OcrTemplates() {
         openCreateOcrTemplateModal,
         setOpenCreateOcrTemplateModal
     ] = useState(false);
-
-    const imgRef = useRef<HTMLImageElement>(null);
-    const [ templateSize, setTemplateSize ] = useState< Size >();
-
-    const [ selectedTargetRegion, setSelectedTargetRegion ] = useState< OcrTargetRegionJson | null >();
-
-    const moveableRef = useRef<Moveable>(null);
-
-    useEffect(() => {
-        window.onresize = handleWindowResize;
-    }, []);
-    
-
-    function getTemplateRect(): DOMRect {
-        return imgRef.current.getClientRects()[0];
-    }
-
-    function handleWindowResize() {
-
-        if ( !imgRef?.current )
-            return;
-
-        const rect = getTemplateRect();
-
-        setTemplateSize({
-            width: rect.width,
-            height: rect.height,
-        });
-    }
-
-
-    useEffect( () => {
-
-        const handleKeyDown = ( e: KeyboardEvent ) => {
-
-            if ( 
-                !selectedTargetRegion?.id ||
-                e.key !== 'Delete'
-            ) return;
-            
-            removeTargetRegion( selectedTargetRegion.id );
-        }
-
-        document.addEventListener( 'keydown', handleKeyDown );
-
-        return () => {
-            document.removeEventListener( 'keydown', handleKeyDown );
-        };
-    }, [ selectedTargetRegion ] );
 
 
     return <>
@@ -121,115 +57,15 @@ export default function OcrTemplates() {
                         <Box display='flex' justifyContent='center' flexDirection='column'>
 
                             <Typography
+                                fontSize='1.75rem'
                                 visibility={ activeOcrTemplate ? 'unset' : 'hidden' }
                                 textAlign='center'
                             >
                                 {activeOcrTemplate?.name}
                             </Typography>
 
-                            { activeOcrTemplate &&
-                                <TemplateDiv id='ocr-template-div' className='ocr-template-div'
-                                    style={{
-                                        display: 'flex',
-                                        position: 'relative',
-                                        maxWidth: '100%',
-                                        boxSizing: 'border-box',
-                                        overflow: 'hidden',
-                                        margin: 'auto',
-                                    }}>
+                            <OcrTemplateEditor/>
 
-                                    { templateSize &&
-                                        activeOcrTemplate?.target_regions.map( ( region, idx ) => {
-                                            return <OcrTargetRegion
-                                                ocrTemplateElementId="ocr-template-div"
-                                                moveableRef={moveableRef}
-                                                key={idx}
-                                                region={region}
-                                                templateSize={templateSize}
-                                                onChange={ updateTargetRegion }
-                                                isSelected={ selectedTargetRegion?.id === region.id }
-                                            />
-                                        }) 
-                                    }
-                                    
-
-                                    <img src={ 'data:image/png;base64,' + activeOcrTemplate?.image_base64 }
-                                        ref={imgRef}
-                                        alt="template background image"
-                                        draggable={false}
-                                        onLoad={handleWindowResize}
-                                        style={{
-                                            top: 0,
-                                            left: 0,
-                                            maxWidth: '100%',
-                                            maxHeight: '75vh',
-                                            userSelect: 'none',
-                                            objectFit: 'cover', 
-                                        }}
-                                    />
-                                </TemplateDiv>
-                                
-                            }
-
-                            <Selecto
-                                selectableTargets={[".ocr-template-div .ocr-region"]}
-                                selectByClick={true}
-                                selectFromInside={false}
-                                continueSelect={false}
-                                toggleContinueSelect={"shift"}
-                                keyContainer={window}
-                                hitRate={100}
-                                boundContainer={ document.getElementById( 'ocr-template-div' ) }
-                                onSelectEnd={ e => {
-
-                                    // console.log( e );
-
-                                    let didSelectARegion = false;
-
-                                    activeOcrTemplate.target_regions?.find( item => {
-
-                                        const element = e.selected.find( element => element.id === item.id );
-                                        if ( !element ) return;
-
-                                        setSelectedTargetRegion( item );
-
-                                        didSelectARegion = true;
-                                        
-                                        return true;
-                                    });
-
-                                    if ( !didSelectARegion )
-                                        setSelectedTargetRegion( null );
-                                    else 
-                                        return;
-
-                                    const selectionRect = e.rect;
-                                    const templateRect = getTemplateRect();
-                                    
-                                    const width = selectionRect.width / templateRect.width;
-                                    const height = selectionRect.height / templateRect.height;
-
-                                    const top = ( selectionRect.top - templateRect.top ) / templateRect.height;
-                                    const left = ( selectionRect.left - templateRect.left ) / templateRect.width;
-
-                                    if ( width < 0.025 || height < 0.025 )
-                                        return;
-                                    
-                                    addTargetRegion({
-                                        ocr_template_id: activeOcrTemplate.id,
-                                        position: {
-                                            top,
-                                            left,
-                                        },
-                                        size: {
-                                            width,
-                                            height,
-                                        },
-                                        angle: 0,
-                                    });
-                                }}
-                
-                            />
                         </Box>
 
                         <OcrTemplatesTable templates={ocrTemplates} />

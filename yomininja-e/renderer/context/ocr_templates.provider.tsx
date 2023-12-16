@@ -29,7 +29,7 @@ export const OcrTemplatesContext = createContext( {} as OcrTemplatesContextType 
 export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
         
     const [ ocrTemplates, setOcrTemplates ] = useState< OcrTemplateJson[] >();
-    const [ activeOcrTemplate, setActiveOcrTemplate ] = useState< OcrTemplateJson | undefined >();
+    const [ activeOcrTemplate, setActiveOcrTemplate ] = useState< OcrTemplateJson | null >();
     
 
     async function createOcrTemplate( data: CreateOcrTemplate_Input ): Promise< OcrTemplateJson > {
@@ -54,16 +54,23 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
 
         await global.ipcRenderer.invoke( 'ocr_templates:delete', id );
 
+        if ( id === activeOcrTemplate.id )
+            loadOcrTemplate( null );
+
         setOcrTemplates( ocrTemplates.filter( item => item.id !== id ) );
     }
 
-    async function loadOcrTemplate( id: OcrTemplateId ) {
+    async function loadOcrTemplate( id: OcrTemplateId | null ) {
 
         await global.ipcRenderer.invoke( 'ocr_templates:change_active', id );
 
-        setActiveOcrTemplate( ocrTemplates.find( item => item.id === id ) );
+        if ( id )
+            setActiveOcrTemplate( ocrTemplates.find( item => item.id === id ) );
 
-        // console.log( activeOcrTemplate );
+        else
+            setActiveOcrTemplate( null );
+
+        console.log( activeOcrTemplate );
     }
 
     async function updateOcrTemplate( data: OcrTemplateJson ): Promise< OcrTemplateJson > {
