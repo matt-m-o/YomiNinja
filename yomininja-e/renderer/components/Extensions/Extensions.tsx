@@ -96,7 +96,8 @@ export default function Extensions() {
                         </Typography> */}
 
 
-                        <Box display='flex' 
+                        <Box display='flex'
+                            flexDirection='column'
                             justifyContent='center'
                             alignItems='center'
                             mb={1}

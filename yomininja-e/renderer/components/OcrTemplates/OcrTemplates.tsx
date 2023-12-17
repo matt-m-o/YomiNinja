@@ -1,4 +1,4 @@
-import { Box, Button, Card, CardContent, Container, Grid, SxProps, Theme, Typography, styled } from "@mui/material";
+import { Box, Button, Card, CardContent, Container, Grid, InputAdornment, SxProps, TextField, Theme, Typography, styled } from "@mui/material";
 import OcrTemplatesTable from "./OcrTemplatesTable";
 import { CSSProperties, useContext, useEffect, useState } from "react";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
@@ -11,6 +11,7 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import OcrTemplateItem from "./OcrTemplateItem";
 import EditOcrTemplateModal from "./EditOcrTemplateModal";
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 
 
 const TemplateActionBtn = styled( Button )({
@@ -41,6 +42,11 @@ export default function OcrTemplates() {
         setOpenEditOcrTemplateModal
     ] = useState(false);
 
+    const [ searchValue, setSearchValue ] = useState< string >('');
+
+    const displaySearch = ocrTemplates?.length > 0;
+
+
     const iconStyle: CSSProperties = {
         width: '28px',
         height: '28px',
@@ -55,19 +61,22 @@ export default function OcrTemplates() {
     };
 
     const ocrTemplateItems = (
-        ocrTemplates?.map( item => {
-            return (
-                <Grid item key={item.id}>
-                    <OcrTemplateItem
-                        isActive={ item.id === activeOcrTemplate?.id }
-                        template={ item }
-                        loadItem={ () => loadOcrTemplate( item.id ) }
-                        editItem={ () => {} }
-                        deleteItem={ () => deleteOcrTemplate( item.id ) }
-                    />
-                </Grid>
+        ocrTemplates?.filter(
+                item => item.name.toLowerCase().includes( searchValue.toLowerCase() )
             )
-        })
+            .map( item => {
+                return (
+                    <Grid item key={item.id}>
+                        <OcrTemplateItem
+                            isActive={ item.id === activeOcrTemplate?.id }
+                            template={ item }
+                            loadItem={ () => loadOcrTemplate( item.id ) }
+                            editItem={ () => {} }
+                            deleteItem={ () => deleteOcrTemplate( item.id ) }
+                        />
+                    </Grid>
+                )
+            })
     );
 
     return (
@@ -115,6 +124,16 @@ export default function OcrTemplates() {
                             New Template
                         </Button>
                     </Box>
+                        
+                    { !displaySearch &&
+                        <Typography
+                            textAlign='center'
+                            fontStyle='italic'
+                            mt={5}
+                        >
+                            Create a new OCR Template to get started
+                        </Typography>
+                    }
                     
                     { activeOcrTemplate &&
                         <Box display='flex' flexDirection='column'
@@ -130,6 +149,7 @@ export default function OcrTemplates() {
                                 mb={1}
                             >
                                 <Typography
+                                    title='Active OCR Template'
                                     fontSize='1.75rem'
                                     visibility={ activeOcrTemplate ? 'unset' : 'hidden' }
                                     mr={1}
@@ -161,13 +181,38 @@ export default function OcrTemplates() {
                         </Box>
                     }
 
-                    <Box display='flex' 
+                    <Box display='flex'
+                        flexDirection='column'
                         justifyContent='center'
                         alignItems='center'
                         mt={4}
                         mb={1}
                     >
-                        <Box display='flex'       
+                        { displaySearch &&
+                            <TextField type="search"
+                                placeholder="Search"
+                                value={searchValue}
+                                onChange={ (event: React.ChangeEvent<HTMLInputElement>) => {
+                                    setSearchValue( event.target.value );
+                                }}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                        <SearchRoundedIcon />
+                                        </InputAdornment>
+                                    ),
+                                }}
+                                sx={{
+                                    width: '100%',
+                                    minWidth: '25vw',
+                                    maxWidth: '500px',
+                                    mt: 5,
+                                    mb: 2,
+                                }}
+                            />
+                        }
+
+                        <Box display='flex'
                             alignItems='center'
                             sx={{ flexGrow: 1, margin: 1 }}
                         >
@@ -178,7 +223,6 @@ export default function OcrTemplates() {
                                 { ocrTemplateItems }
                             </Grid>
                         </Box>
-
                     </Box>
 
                 </Box>

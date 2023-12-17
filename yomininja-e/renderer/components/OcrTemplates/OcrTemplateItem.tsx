@@ -137,7 +137,7 @@ export default function OcrTemplateItem( props: OcrTemplateItemProps ) {
                     </TemplateActionBtn>
                     <TemplateActionBtn variant="outlined"
                         onClick={ deleteItem }
-                        title='Edit'
+                        title='Delete'
                         sx={actionButtonSx}
                     >
                         <DeleteRoundedIcon style={iconStyle}/>
