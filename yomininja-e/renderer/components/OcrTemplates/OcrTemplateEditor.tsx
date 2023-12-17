@@ -123,7 +123,8 @@ export default function OcrTemplateEditor() {
                         maxHeight: '75vh',
                         userSelect: 'none',
                         objectFit: 'cover', 
-                        border: 'solid 1px #90caf9'
+                        border: 'solid 1px #90caf9',
+                        cursor: 'crosshair'
                     }}
                 />
 

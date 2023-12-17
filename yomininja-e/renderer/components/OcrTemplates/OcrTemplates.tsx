@@ -1,4 +1,4 @@
-import { Box, Button, Card, CardContent, Container, Grid, InputAdornment, SxProps, TextField, Theme, Typography, styled } from "@mui/material";
+import { Box, Button, Card, CardContent, Container, Divider, Grid, InputAdornment, SxProps, TextField, Theme, Typography, styled } from "@mui/material";
 import OcrTemplatesTable from "./OcrTemplatesTable";
 import { CSSProperties, useContext, useEffect, useState } from "react";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
@@ -11,7 +11,8 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import OcrTemplateItem from "./OcrTemplateItem";
 import EditOcrTemplateModal from "./EditOcrTemplateModal";
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import AlertDialog from "../common/AlertDialog";
+import OcrTemplateList from "./OcrTemplateList";
 
 
 const TemplateActionBtn = styled( Button )({
@@ -42,8 +43,6 @@ export default function OcrTemplates() {
         setOpenEditOcrTemplateModal
     ] = useState(false);
 
-    const [ searchValue, setSearchValue ] = useState< string >('');
-
     const displaySearch = ocrTemplates?.length > 0;
 
 
@@ -60,24 +59,7 @@ export default function OcrTemplates() {
         borderRadius: '100px'
     };
 
-    const ocrTemplateItems = (
-        ocrTemplates?.filter(
-                item => item.name.toLowerCase().includes( searchValue.toLowerCase() )
-            )
-            .map( item => {
-                return (
-                    <Grid item key={item.id}>
-                        <OcrTemplateItem
-                            isActive={ item.id === activeOcrTemplate?.id }
-                            template={ item }
-                            loadItem={ () => loadOcrTemplate( item.id ) }
-                            editItem={ () => {} }
-                            deleteItem={ () => deleteOcrTemplate( item.id ) }
-                        />
-                    </Grid>
-                )
-            })
-    );
+    
 
     return (
     <Card variant="elevation" sx={{ borderRadius: 4, userSelect: 'none', width: '100%' }}>
@@ -104,7 +86,7 @@ export default function OcrTemplates() {
 
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }} m={0}>
                         <Typography gutterBottom variant="h6" component="div" margin={0} ml={0} mb={2}>
-                            Predefine regions to improve OCR efficiency
+                            Manually Defined OCR Regions for Targeted Text Extraction
                         </Typography>
 
                         <Button variant="outlined"
@@ -181,49 +163,13 @@ export default function OcrTemplates() {
                         </Box>
                     }
 
-                    <Box display='flex'
-                        flexDirection='column'
-                        justifyContent='center'
-                        alignItems='center'
-                        mt={4}
-                        mb={1}
-                    >
-                        { displaySearch &&
-                            <TextField type="search"
-                                placeholder="Search"
-                                value={searchValue}
-                                onChange={ (event: React.ChangeEvent<HTMLInputElement>) => {
-                                    setSearchValue( event.target.value );
-                                }}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                        <SearchRoundedIcon />
-                                        </InputAdornment>
-                                    ),
-                                }}
-                                sx={{
-                                    width: '100%',
-                                    minWidth: '25vw',
-                                    maxWidth: '500px',
-                                    mt: 5,
-                                    mb: 2,
-                                }}
-                            />
-                        }
+                    { activeOcrTemplate &&
+                        <Divider sx={{ width: '100%', mt: 4 }}/>
+                    }
 
-                        <Box display='flex'
-                            alignItems='center'
-                            sx={{ flexGrow: 1, margin: 1 }}
-                        >
-                            <Grid container display={'flex'}
-                                spacing={{ xs: 2, md: 2 }}
-                                columns={{ xs: 1, sm: 4, md: 12 }}
-                            >
-                                { ocrTemplateItems }
-                            </Grid>
-                        </Box>
-                    </Box>
+                    { displaySearch &&
+                        <OcrTemplateList/>
+                    }
 
                 </Box>
 

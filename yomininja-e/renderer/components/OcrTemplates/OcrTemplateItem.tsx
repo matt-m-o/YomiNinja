@@ -132,15 +132,19 @@ export default function OcrTemplateItem( props: OcrTemplateItemProps ) {
                         onClick={ loadItem }
                         title='Load'
                         sx={ actionButtonSx }
+                        // startIcon={ <OpenInNewRoundedIcon style={iconStyle}/> }
                     >
-                        <OpenInNewRoundedIcon style={iconStyle}/>
+                        {/* <OpenInNewRoundedIcon style={iconStyle}/> */}
+                        Load
                     </TemplateActionBtn>
                     <TemplateActionBtn variant="outlined"
                         onClick={ deleteItem }
                         title='Delete'
                         sx={actionButtonSx}
+                        // startIcon={ <DeleteRoundedIcon style={iconStyle}/> }
                     >
-                        <DeleteRoundedIcon style={iconStyle}/>
+                        {/* <DeleteRoundedIcon style={iconStyle}/> */}
+                        Delete
                     </TemplateActionBtn>
                 </Box>
 
