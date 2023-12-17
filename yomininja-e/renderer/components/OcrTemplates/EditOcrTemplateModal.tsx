@@ -1,10 +1,9 @@
 import { Box, Button, FormControl, InputLabel, MenuItem, Modal, Select, SelectChangeEvent, TextField, Typography, styled } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
-import { OcrTemplate } from "../../../electron-src/@core/domain/ocr_template/ocr_template";
+import { OcrTemplate, OcrTemplateJson } from "../../../electron-src/@core/domain/ocr_template/ocr_template";
 import { CaptureSourceContext } from "../../context/capture_source.provider";
-import Image  from 'next/image';
-
+import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 
 const style = {
     position: 'absolute',
@@ -19,24 +18,23 @@ const style = {
 };
 
   
-export type CreateOcrTemplateModalProps = {
+export type EditOcrTemplateModalProps = {
+    template: OcrTemplateJson;
     open: boolean;
     handleClose: () => void;
-    template?: OcrTemplate;
-    captureSourceImage?: Buffer;
 };
 
-export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalProps ) {
+export default function EditOcrTemplateModal( props: EditOcrTemplateModalProps ) {
 
-    const { open } = props;
+    const { template, open } = props;
 
     const [ name, setName ] = useState< string >('');
     const [ image, setImage ] = useState< Buffer >();
 
-    const canSave = !Boolean( name && image );
+    const canSave = !Boolean( name );
 
     const {
-        createOcrTemplate,
+        updateOcrTemplate,
         loadOcrTemplate,
     } = useContext( OcrTemplatesContext );
     const {
@@ -45,27 +43,43 @@ export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalPro
         clearCaptureSourceImage
     } = useContext( CaptureSourceContext );
 
+    useEffect( () => {
 
+        if ( !template )
+            return;
+
+        console.log( template.image );
+
+        setName( template.name );
+        setImage( template.image );
+    }, [ template ] );
+
+    
     useEffect( () => {
         setEditingState( open );
     }, [ open ]);
 
     useEffect( () => {
-        setImage( captureSourceImage )
-    }, [captureSourceImage] );
+        setImage( captureSourceImage );
+
+        console.log({ captureSourceImage })
+
+    }, [ captureSourceImage ] );
 
     async function saveOcrTemplate() {
 
-        const template = await createOcrTemplate({
-            image: captureSourceImage,
+        const updatedTemplate = await updateOcrTemplate({
+            ...template,
+            image,
             name,
         });
 
-        console.log(template);
-
-        await loadOcrTemplate( template.id );
-
+        loadOcrTemplate( updatedTemplate.id );
         handleClose();
+    }
+
+    function setEditingState( isEditing: boolean ) {
+        global.ipcRenderer.invoke( 'app:editing_ocr_template', isEditing );
     }
 
     function handleClose() {
@@ -74,9 +88,7 @@ export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalPro
         setEditingState( false );
     }
 
-    function setEditingState( isEditing: boolean ) {
-        global.ipcRenderer.invoke( 'app:editing_ocr_template', isEditing );
-    }
+    const base64Image = captureSourceImageBase64 || template?.image_base64;
 
     return (
         <Modal open={open}
@@ -86,7 +98,7 @@ export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalPro
         >
             <Box sx={style}>
                 <Typography variant="h6" component="h2" mb={4}>
-                    New OCR Template
+                    Edit OCR Template
                 </Typography>
                 
                 <TextField
@@ -105,8 +117,9 @@ export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalPro
                         Press the OCR hotkey to set the capture source image
                     </Typography>
 
-                    { captureSourceImage &&
-                        <img src={ 'data:image/png;base64,' + captureSourceImageBase64 }
+                    { base64Image &&
+                        <img
+                            src={ 'data:image/png;base64,'+ base64Image }
                             alt="capture source image"
                             style={{
                                 // maxWidth: '50%',

@@ -11,14 +11,14 @@ export type OcrTemplatesContextType = {
     ocrTemplates: OcrTemplateJson[];
     activeOcrTemplate: OcrTemplateJson | undefined;
     createOcrTemplate: ( data: CreateOcrTemplate_Input ) => Promise< OcrTemplateJson >;
-    // updateOcrTemplate: ( data: OcrTemplateJson ) => Promise< OcrTemplateJson >;
+    updateOcrTemplate: ( data: OcrTemplateJson ) => Promise< OcrTemplateJson >;
     getOcrTemplates: ( input?: GetOcrTemplates_Input ) => Promise< OcrTemplateJson[] >;
     deleteOcrTemplate: ( id: OcrTemplateId ) => Promise< void >;
     loadOcrTemplate: ( id: OcrTemplateId ) => Promise< void >;
     unloadOcrTemplate: () => void;
     addTargetRegion: ( input: AddTargetRegion_Input ) => Promise< void >;
     removeTargetRegion: ( id: OcrTargetRegionId ) => void;
-    updateTargetRegion:  ( input: OcrTargetRegionJson ) => Promise< void >;
+    updateTargetRegion: ( input: OcrTargetRegionJson ) => Promise< void >;
     // saveOcrTemplate: () => Promise< void >;
 };
 
@@ -90,17 +90,14 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
         // console.log( result );
 
         if ( result ) {
-            ocrTemplates.find( item => {
+            setOcrTemplates(
+                ocrTemplates.map( item => {
+                    if ( item.id !== result.id )
+                        return item;
 
-                if ( item.id !== result.id )
-                    return;
-
-                item = result;
-
-                return true;
-            });
-
-            setOcrTemplates( ocrTemplates );
+                    return result;
+                }) 
+            );
         }
         
         return result;
@@ -167,7 +164,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
     }, [] );
     
     useEffect( () => {
-        console.log(activeOcrTemplate);
+        console.log( activeOcrTemplate );
     }, [ activeOcrTemplate ]);
     
     
@@ -177,6 +174,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
                 ocrTemplates,
                 activeOcrTemplate,
                 createOcrTemplate,
+                updateOcrTemplate,
                 getOcrTemplates,
                 deleteOcrTemplate,
                 loadOcrTemplate,

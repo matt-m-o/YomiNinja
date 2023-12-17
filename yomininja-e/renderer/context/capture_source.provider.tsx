@@ -8,6 +8,7 @@ export type CaptureSourceContextType = {
     captureSourceImageBase64?: string;
     updateActiveCaptureSource: ( update: CaptureSource ) => Promise< void >;
     refreshCaptureSources: () => void; 
+    clearCaptureSourceImage: () => void;
 };
 
 
@@ -48,6 +49,11 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
     async function refreshCaptureSources() {
         getCaptureSources();
     }
+
+    function clearCaptureSourceImage() {
+        setCaptureSourceImage( undefined );
+        setCaptureSourceImageBase64( undefined );
+    }
     
     useEffect( () => {
 
@@ -74,6 +80,7 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
             value={{
                 updateActiveCaptureSource,
                 refreshCaptureSources,
+                clearCaptureSourceImage,
                 activeCaptureSource,
                 captureSources,
                 captureSourceImage,

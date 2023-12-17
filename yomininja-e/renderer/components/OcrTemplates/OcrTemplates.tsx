@@ -9,6 +9,8 @@ import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import OcrTemplateItem from "./OcrTemplateItem";
+import EditOcrTemplateModal from "./EditOcrTemplateModal";
+import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 
 
 const TemplateActionBtn = styled( Button )({
@@ -32,6 +34,11 @@ export default function OcrTemplates() {
     const [
         openCreateOcrTemplateModal,
         setOpenCreateOcrTemplateModal
+    ] = useState(false);
+
+    const [
+        openEditOcrTemplateModal,
+        setOpenEditOcrTemplateModal
     ] = useState(false);
 
     const iconStyle: CSSProperties = {
@@ -66,10 +73,20 @@ export default function OcrTemplates() {
     return (
     <Card variant="elevation" sx={{ borderRadius: 4, userSelect: 'none', width: '100%' }}>
 
-        <CreateOcrTemplateModal
-            open={openCreateOcrTemplateModal}
-            handleClose={ () => setOpenCreateOcrTemplateModal(false) }
-        />
+        { openCreateOcrTemplateModal &&
+            <CreateOcrTemplateModal
+                open={openCreateOcrTemplateModal}
+                handleClose={ () => setOpenCreateOcrTemplateModal(false) }
+            />
+        }
+
+        { openEditOcrTemplateModal &&
+            <EditOcrTemplateModal
+                template={ activeOcrTemplate }
+                open={ openEditOcrTemplateModal }
+                handleClose={ () => setOpenEditOcrTemplateModal(false) }
+            />
+        }
 
         <CardContent>
             <Container maxWidth='xl' sx={{ p: 0 }}>
@@ -123,11 +140,11 @@ export default function OcrTemplates() {
                                 
                                 <Box>
                                     <TemplateActionBtn variant="outlined"
-                                        onClick={ () => setOpenCreateOcrTemplateModal( true ) }
+                                        onClick={ () => setOpenEditOcrTemplateModal( true ) }
                                         title='Edit OCR Template'
                                         sx={actionButtonSx}
                                     >
-                                        <ModeEditOutlineRoundedIcon style={iconStyle}/>
+                                        <MoreVertRoundedIcon style={iconStyle}/>
                                     </TemplateActionBtn>
 
                                     <TemplateActionBtn variant="outlined"
