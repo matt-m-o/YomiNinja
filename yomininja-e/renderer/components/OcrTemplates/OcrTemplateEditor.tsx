@@ -5,6 +5,7 @@ import OcrTargetRegion from "./OcrTargetRegion";
 import Moveable from "react-moveable";
 import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
 import Selecto from "react-selecto";
+import OcrTargetRegionMoveable from "./OcrTargetRegionMoveable";
 
 export type Size = { // Pixels
     width: number;
@@ -16,7 +17,14 @@ export type Position = { // Pixels
     left: number;
 };
 
-const TemplateDiv = styled('div')( {
+export const TemplateDiv = styled('div')( {
+    display: 'flex',
+    position: 'relative',
+    maxWidth: '100%',
+    boxSizing: 'border-box',
+    overflow: 'hidden',
+    margin: 'auto',
+    cursor: 'crosshair',
     '& .moveable-line': {
         backgroundColor: 'red !important'
     },
@@ -85,12 +93,7 @@ export default function OcrTemplateEditor() {
         { activeOcrTemplate &&
             <TemplateDiv id='ocr-template-div' className='ocr-template-div'
                 style={{
-                    display: 'flex',
-                    position: 'relative',
-                    maxWidth: '100%',
-                    boxSizing: 'border-box',
-                    overflow: 'hidden',
-                    margin: 'auto',
+                    
                 }}>
 
                 { templateSize &&
@@ -120,6 +123,7 @@ export default function OcrTemplateEditor() {
                         maxHeight: '75vh',
                         userSelect: 'none',
                         objectFit: 'cover', 
+                        border: 'solid 1px #90caf9'
                     }}
                 />
 

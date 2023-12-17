@@ -1,4 +1,4 @@
-import { Box, Button, Card, CardContent, Container, SxProps, Theme, Typography, styled } from "@mui/material";
+import { Box, Button, Card, CardContent, Container, Grid, SxProps, Theme, Typography, styled } from "@mui/material";
 import OcrTemplatesTable from "./OcrTemplatesTable";
 import { CSSProperties, useContext, useEffect, useState } from "react";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
@@ -8,13 +8,15 @@ import ModeEditOutlineRoundedIcon from '@mui/icons-material/ModeEditOutlineRound
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import OcrTemplateItem from "./OcrTemplateItem";
+
 
 const TemplateActionBtn = styled( Button )({
     minWidth:'fit-content',
     padding: 5,
     marginLeft: 2,
     marginBottom: 2
-})
+});
 
 
 export default function OcrTemplates() {
@@ -22,8 +24,9 @@ export default function OcrTemplates() {
     const {
         ocrTemplates,
         activeOcrTemplate,
+        loadOcrTemplate,
         unloadOcrTemplate,
-        deleteOcrTemplate
+        deleteOcrTemplate,
     } = useContext( OcrTemplatesContext );
 
     const [
@@ -35,13 +38,30 @@ export default function OcrTemplates() {
         width: '28px',
         height: '28px',
         margin: 1,
-        marginRight: 4,
-        marginLeft: 4,
+        marginRight: 1,
+        marginLeft: 1,
     };
 
     const actionButtonSx: SxProps< Theme > = {
-        m: 0.5
+        m: 0.5,
+        borderRadius: '100px'
     };
+
+    const ocrTemplateItems = (
+        ocrTemplates?.map( item => {
+            return (
+                <Grid item key={item.id}>
+                    <OcrTemplateItem
+                        isActive={ item.id === activeOcrTemplate?.id }
+                        template={ item }
+                        loadItem={ () => loadOcrTemplate( item.id ) }
+                        editItem={ () => {} }
+                        deleteItem={ () => deleteOcrTemplate( item.id ) }
+                    />
+                </Grid>
+            )
+        })
+    );
 
     return (
     <Card variant="elevation" sx={{ borderRadius: 4, userSelect: 'none', width: '100%' }}>
@@ -63,7 +83,10 @@ export default function OcrTemplates() {
 
                         <Button variant="outlined"
                             onClick={ () => setOpenCreateOcrTemplateModal( true ) }
-                            sx={actionButtonSx}
+                            sx={{
+                                ...actionButtonSx,
+                                borderRadius: undefined
+                            }}
                             startIcon={
                                 <AddRoundedIcon style={{
                                     ...iconStyle,
@@ -87,12 +110,13 @@ export default function OcrTemplates() {
                                 flexDirection='row'
                                 alignItems='center'
                                 justifyContent='center'
-                                mb={2}
+                                mb={1}
                             >
                                 <Typography
                                     fontSize='1.75rem'
                                     visibility={ activeOcrTemplate ? 'unset' : 'hidden' }
-                                    mr={5}
+                                    mr={1}
+                                    color='#90caf9'
                                 >
                                     {activeOcrTemplate?.name}
                                 </Typography>
@@ -109,25 +133,36 @@ export default function OcrTemplates() {
                                     <TemplateActionBtn variant="outlined"
                                         onClick={ () => unloadOcrTemplate() }
                                         title='Unload OCR Template'
+                                        // color="error"
                                         sx={actionButtonSx}
                                     >
                                         <CloseRoundedIcon style={iconStyle} />
-                                    </TemplateActionBtn>
-
-                                    <TemplateActionBtn variant="outlined"
-                                        onClick={ () => deleteOcrTemplate( activeOcrTemplate?.id ) }
-                                        title='Delete OCR Template'
-                                        sx={actionButtonSx}
-                                    >
-                                        <DeleteRoundedIcon style={iconStyle} />
                                     </TemplateActionBtn>
                                 </Box>
                             </Box>
                             <OcrTemplateEditor/>
                         </Box>
                     }
-                    
-                    <OcrTemplatesTable templates={ocrTemplates} />
+
+                    <Box display='flex' 
+                        justifyContent='center'
+                        alignItems='center'
+                        mt={4}
+                        mb={1}
+                    >
+                        <Box display='flex'       
+                            alignItems='center'
+                            sx={{ flexGrow: 1, margin: 1 }}
+                        >
+                            <Grid container display={'flex'}
+                                spacing={{ xs: 2, md: 2 }}
+                                columns={{ xs: 1, sm: 4, md: 12 }}
+                            >
+                                { ocrTemplateItems }
+                            </Grid>
+                        </Box>
+
+                    </Box>
 
                 </Box>
 

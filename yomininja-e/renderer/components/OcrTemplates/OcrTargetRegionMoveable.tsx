@@ -1,40 +1,10 @@
 import { MutableRefObject, useRef } from "react";
 import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
 import Moveable, { OnDrag, OnDragEnd, OnRender, OnResize, OnResizeEnd } from "react-moveable";
-import { Box, debounce, styled } from "@mui/material";
+import { Box, debounce } from "@mui/material";
 import { Size } from "electron";
+import OcrTargetRegion from "./OcrTargetRegion";
 
-export const OcrTargetRegionDiv = styled('div')({
-    position: 'absolute', // relative
-    zIndex: 10,
-    maxWidth: "auto",
-    maxHeight: "auto",
-    minWidth: "auto",
-    minHeight: "auto",
-    cursor: 'auto'
-    // border: 'solid 2px rgba(50, 147, 227, 1)',
-    // backgroundColor: isSelected ? 'rgb(50 147 227 / 66%)' : 'transparent'
-});
-
-export function handlePercentageOverflow( value: number ) {
-
-    if ( value > 1 )
-        return 1;
-
-    else if ( value < 0)
-        return 0;
-
-    return value;
-}
-
-export function toCssPercentage( value: number ): string {
-
-    value = handlePercentageOverflow( value );
-
-    let result = ( value * 100 )        
-
-    return result + "%";
-}
 
 export type OcrTargetRegionProps = {
     ocrTemplateElementId: string;
@@ -47,7 +17,7 @@ export type OcrTargetRegionProps = {
 };
 
 
-export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
+export default function OcrTargetRegionMoveable( props: OcrTargetRegionProps  ) {
 
     const targetRef = useRef<HTMLDivElement>(null);
 
@@ -63,7 +33,25 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
 
     const { position, size } = region;
 
-    
+    function handlePercentageOverflow( value: number ) {
+
+        if ( value > 1 )
+            return 1;
+
+        else if ( value < 0)
+            return 0;
+
+        return value;
+    }
+
+    function toCssPercentage( value: number ): string {
+
+        value = handlePercentageOverflow( value );
+
+        let result = ( value * 100 )        
+
+        return result + "%";
+    }
 
     const handleChange = debounce( ( input: {
         width?: number;
@@ -90,14 +78,8 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
     }, 250 );
 
     return ( <>
-        <OcrTargetRegionDiv id={region.id} ref={targetRef} className='ocr-region'
+        <OcrTargetRegion region={region} ref={targetRef}
             onClick={ onClick }
-            style={{
-                top: toCssPercentage(position.top),
-                left: toCssPercentage(position.left),
-                width: toCssPercentage(size.width),
-                height: toCssPercentage(size.height),
-            }}
         />
         <Moveable
             ref={moveableRef}

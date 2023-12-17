@@ -149,7 +149,17 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
         });
     
         const updatedOcrTemplate = await updateOcrTemplate( activeOcrTemplate );
-        setActiveOcrTemplate( updatedOcrTemplate );   
+        setActiveOcrTemplate( updatedOcrTemplate );
+
+        setOcrTemplates(
+            ocrTemplates.map( item => {
+
+                if ( item.id !== updatedOcrTemplate.id )
+                    return item;
+
+                return updatedOcrTemplate;
+            })
+        );
     }
     
     useEffect( () => {
