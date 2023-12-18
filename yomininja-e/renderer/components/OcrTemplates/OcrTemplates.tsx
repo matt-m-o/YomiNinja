@@ -105,7 +105,8 @@ export default function OcrTemplates() {
                         </Button>
                     </Box>
                     
-                    <Divider sx={{ width: '100%', mt: 4 }}/>
+                    <Divider sx={{ width: '100%', mt: 4, mb: 4 }}/>
+
                     <Typography
                         fontSize='1.25rem'
                         // visibility={ activeOcrTemplate ? 'unset' : 'hidden' }
@@ -134,18 +135,6 @@ export default function OcrTemplates() {
                             }}
                         >
 
-                            <Typography
-                                fontStyle='italic'
-                                mt={3}
-                                color='#ff5858'
-                                sx={{
-                                    display: ( activeOcrTemplate?.target_regions.length > 0 ?
-                                                'none' : 'inherit' )
-                                }}
-                            >
-                                Please draw at least one OCR region to extract text.
-                            </Typography>
-
                             <Box display='flex'
                                 flexDirection='row'
                                 alignItems='center'
@@ -161,6 +150,8 @@ export default function OcrTemplates() {
                                 >
                                     {activeOcrTemplate?.name}
                                 </Typography>
+
+                                
                                 
                                 <Box>
                                     <TemplateActionBtn variant="outlined"
@@ -181,16 +172,26 @@ export default function OcrTemplates() {
                                     </TemplateActionBtn>
                                 </Box>
                             </Box>
+
+                            <Typography
+                                fontStyle='italic'
+                                mt={3}
+                                color='#ff5858'
+                                margin='auto'
+                                sx={{
+                                    display: ( activeOcrTemplate?.target_regions.length > 0 ?
+                                                'none' : 'inherit' )
+                                }}
+                            >
+                                Draw at least one OCR region to extract text!
+                            </Typography>
                             <OcrTemplateEditor/>
                         </Box>
                     }
 
-                    <Divider sx={{ width: '100%', mt: 4 }}/>
-                    <Typography
-                        fontSize='1.25rem'
-                        mr={1}
-                        mt={2}
-                    >
+                    <Divider sx={{ width: '100%', mt: 4, mb: 4 }}/>
+
+                    <Typography fontSize='1.25rem'>
                         Your templates
                     </Typography>
                     <OcrTemplateList/>

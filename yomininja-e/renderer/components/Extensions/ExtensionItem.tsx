@@ -23,7 +23,7 @@ export default function ExtensionItem( props: ExtensionItemProps ) {
                 flexDirection: 'column',
                 backgroundColor: '#202124',
                 borderRadius: '8px',
-                width: '400px',
+                width: '465px',
                 height: '100%'
             }}
         >

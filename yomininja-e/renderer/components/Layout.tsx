@@ -150,7 +150,7 @@ export default function Layout( { contents }: LayoutProps) {
     <TabContext value={activeTab}>
       <Box sx={{ display: 'flex', height: '100vh' }}>
   
-        <CssBaseline />
+        <CssBaseline enableColorScheme/>
   
         <AppBar position="absolute" open={open}>
           <Toolbar variant={toolbarVariant}

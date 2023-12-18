@@ -27,7 +27,7 @@ export default function Dictionary() {
             />
 
             <CardContent>
-                <Container maxWidth='md'>
+                <Container maxWidth='xl'>
 
                     <Box sx={{ flexGrow: 1, margin: 1 }}>
 
@@ -46,6 +46,9 @@ export default function Dictionary() {
                         </Typography>
 
                         <FormControlLabel label='Enable Yomi Ninja dictionary'
+                            sx={{
+                                ml: 2
+                            }}
                             control={
                                 <Switch
                                     checked={ Boolean( dictionary?.enabled ) }

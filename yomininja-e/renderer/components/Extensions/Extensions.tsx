@@ -98,7 +98,7 @@ export default function Extensions() {
             />
 
             <CardContent>
-                <Container maxWidth='md'>
+                <Container maxWidth='xl'>
 
                     <Box sx={{ flexGrow: 1, margin: 1, mb: 2 }}>
 
@@ -128,8 +128,7 @@ export default function Extensions() {
                             alignItems='center'
                             mb={1}
                         >
-                            <Box display='flex'       
-                                alignItems='center'
+                            <Box display='flex'
                                 sx={{ flexGrow: 1, margin: 1 }}
                             >
                                 <Grid container display={'flex'}
@@ -165,7 +164,7 @@ export default function Extensions() {
                     <SectionDivider/>
 
                     <Typography gutterBottom variant="h6" component="div" margin='16px' ml={0} mb={10}>
-                        Test Dictionary Extensions
+                        Test Extensions
                     </Typography>
 
                     <Box display='flex' 
