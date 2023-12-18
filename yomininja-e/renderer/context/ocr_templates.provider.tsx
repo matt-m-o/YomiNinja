@@ -49,7 +49,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
         setOcrTemplates( templates );
 
         const activeTemplate = await global.ipcRenderer.invoke( 'ocr_templates:get_active' );
-        console.log({ activeTemplate });
+        // console.log({ activeTemplate });
         setActiveOcrTemplate( activeTemplate );
 
         return templates;
@@ -75,7 +75,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
         else
             setActiveOcrTemplate( null );
 
-        console.log( activeOcrTemplate );
+        // console.log( activeOcrTemplate );
     }
 
     function unloadOcrTemplate() {
@@ -164,7 +164,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
     }, [] );
     
     useEffect( () => {
-        console.log( activeOcrTemplate );
+        // console.log( activeOcrTemplate );
     }, [ activeOcrTemplate ]);
     
     

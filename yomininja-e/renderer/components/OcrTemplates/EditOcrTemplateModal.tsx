@@ -48,7 +48,7 @@ export default function EditOcrTemplateModal( props: EditOcrTemplateModalProps )
         if ( !template )
             return;
 
-        console.log( template.image );
+        // console.log( template.image );
 
         setName( template.name );
         setImage( template.image );
@@ -61,9 +61,7 @@ export default function EditOcrTemplateModal( props: EditOcrTemplateModalProps )
 
     useEffect( () => {
         setImage( captureSourceImage );
-
-        console.log({ captureSourceImage })
-
+        // console.log({ captureSourceImage })
     }, [ captureSourceImage ] );
 
     async function saveOcrTemplate() {

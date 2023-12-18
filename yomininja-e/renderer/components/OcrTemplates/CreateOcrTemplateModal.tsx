@@ -61,7 +61,7 @@ export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalPro
             name,
         });
 
-        console.log(template);
+        // console.log(template);
 
         await loadOcrTemplate( template.id );
 
