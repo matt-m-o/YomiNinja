@@ -85,12 +85,12 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
         const fontSize = isVertical ? boxWidthPx * 0.6 : boxHeightPx * 0.65; // Pixels
 
-        let { font_size_multiplier } = ocrItemBoxVisuals.text;
+        let { font_size_factor } = ocrItemBoxVisuals.text;
 
         if ( isVertical )
-            font_size_multiplier = font_size_multiplier * 1.10;
+            font_size_factor = font_size_factor * 1.10;
 
-        const fontSizeOffset =  ( fontSize * ( font_size_multiplier / 100 ) ) - fontSize;
+        const fontSizeOffset =  ( fontSize * ( font_size_factor / 100 ) ) - fontSize;
 
         // console.log({ fontSizeOffset });
 

@@ -1,5 +1,4 @@
 import { Box, Button, Card, CardContent, Container, Divider, Grid, InputAdornment, SxProps, TextField, Theme, Typography, styled } from "@mui/material";
-import OcrTemplatesTable from "./OcrTemplatesTable";
 import { CSSProperties, useContext, useEffect, useState } from "react";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 import CreateOcrTemplateModal from "./CreateOcrTemplateModal";
@@ -122,7 +121,7 @@ export default function OcrTemplates() {
                             fontStyle='italic'
                             mt={3}
                         >
-                            There is no active OCR Template
+                            No active OCR template
                         </Typography>
                     }
                     

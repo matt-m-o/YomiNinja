@@ -21,7 +21,7 @@ export type OverlayOcrItemBoxVisuals = {
     background_color: string;
     text: {
         color: string;
-        font_size_multiplier: number; // 0.1 to 10 ( 10% to 1000% )
+        font_size_factor: number; // 10% to 1000%
     };
 };
 
@@ -42,12 +42,16 @@ export type OverlayVisualCustomizations = {
 };
 
 export type ClickThroughMode = 'auto' | 'enabled' | 'disabled';
+export type ShowWindowOnCopy = {
+    enabled: boolean;
+    title: string;
+};
 export type OverlayBehavior = {
     copy_text_on_hover: boolean;
     copy_text_on_click: boolean;
     always_on_top: boolean;
     click_through_mode: ClickThroughMode;
-    show_yomichan_window_on_copy: boolean;
+    show_window_on_copy: ShowWindowOnCopy
     always_forward_mouse_clicks: boolean;
     show_window_without_focus: boolean;
 };

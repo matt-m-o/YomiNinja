@@ -1,6 +1,6 @@
 import { Box, Container, Divider, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Select, Switch, SxProps, TextField, Theme, Typography, styled } from "@mui/material";
 import { SettingsContext } from "../../context/settings.provider";
-import { useContext, useEffect, useState } from "react";
+import { ChangeEvent, useContext, useEffect, useState } from "react";
 import { ClickThroughMode, OverlayBehavior } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
 
 
@@ -21,6 +21,10 @@ export default function AppSettingsOthers() {
 
     }, [ overlayBehavior ] )
     
+    const switchFormControlLabelSx: SxProps<Theme> = {
+        mt: 0.1,
+        mb: 0.1
+    }
 
     return (
         <Box sx={{ flexGrow: 1, margin: 1, }}>
@@ -63,6 +67,7 @@ export default function AppSettingsOthers() {
 
                     
                     <FormControlLabel label='React to clicks with click-through enabled'
+                        sx={ switchFormControlLabelSx }
                         control={
                             <Switch
                                 checked={ Boolean( overlayBehavior?.always_forward_mouse_clicks ) }
@@ -76,6 +81,7 @@ export default function AppSettingsOthers() {
                     />
 
                     <FormControlLabel label='Always on top' title="Not available when click-through is disabled"
+                        sx={ switchFormControlLabelSx }
                         control={
                             <Switch
                                 checked={ Boolean( overlayBehavior?.always_on_top ) }
@@ -89,6 +95,7 @@ export default function AppSettingsOthers() {
                     />
 
                     <FormControlLabel label='Copy text on click'
+                        sx={ switchFormControlLabelSx }
                         control={
                             <Switch
                                 checked={ Boolean( overlayBehavior?.copy_text_on_click ) }
@@ -101,6 +108,7 @@ export default function AppSettingsOthers() {
                         }
                     />
                     <FormControlLabel label='Auto-copy text on hover'
+                        sx={ switchFormControlLabelSx }
                         control={
                             <Switch
                                 checked={ Boolean( overlayBehavior?.copy_text_on_hover ) }
@@ -113,6 +121,7 @@ export default function AppSettingsOthers() {
                         }
                     />
                     <FormControlLabel label='Show overlay without stealing focus'
+                        sx={ switchFormControlLabelSx }
                         control={
                             <Switch
                                 checked={ Boolean( overlayBehavior.show_window_without_focus ) }
@@ -124,18 +133,48 @@ export default function AppSettingsOthers() {
                             /> 
                         }
                     />
-                    <FormControlLabel label='Show Yomichan window on text copy'
+
+                    <FormControlLabel label='Show window on text copy (e.g. Yomichan Search)'
+                        title='Use this feature to show popup dictionaries like Yomichan or Yomitan'
+                        sx={{
+                            ...switchFormControlLabelSx,
+                            mb: 0
+                        }}
                         control={
                             <Switch
-                                checked={ Boolean( overlayBehavior?.show_yomichan_window_on_copy ) }
+                                checked={ Boolean( overlayBehavior?.show_window_on_copy.enabled ) }
                                 onChange={ ( event ) => {
                                     updateActivePresetBehavior({
-                                        show_yomichan_window_on_copy: event.target.checked
+                                        show_window_on_copy: {
+                                            ...overlayBehavior?.show_window_on_copy,
+                                            enabled: event.target.checked
+                                        }
                                     });
                                 }}
                             /> 
                         }
                     />
+
+                    <TextField type="text"
+                        label="Window title"
+                        size="small"
+                        value={ overlayBehavior?.show_window_on_copy.title }
+                        onChange={ (event: ChangeEvent< HTMLInputElement >) => {
+                            updateActivePresetBehavior({
+                                show_window_on_copy: {
+                                    ...overlayBehavior?.show_window_on_copy,
+                                    title: event.target.value
+                                }
+                            });
+                        }}
+                        sx={{
+                            width: '100%',
+                            maxWidth: '450px',
+                            mt: 1,
+                            mb: 2,
+                        }}
+                    />
+
                 </FormGroup>
             
             </Container>

@@ -133,12 +133,12 @@ export default function AppSettingsVisuals() {
                         type="number"
                         inputProps={{ style: { textAlign: 'center' } }}
                         value={ 
-                            ocrItemBoxVisuals?.text.font_size_multiplier || 100 }
+                            ocrItemBoxVisuals?.text.font_size_factor || 100 }
                         onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
                             updateOcrItemBoxVisuals({                                
                                 text: {
                                     ...ocrItemBoxVisuals?.text,
-                                    font_size_multiplier: Number( event.target.value )
+                                    font_size_factor: Number( event.target.value )
                                 }
                             });
                         }}
