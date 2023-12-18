@@ -121,10 +121,11 @@ export default function HomeContent() {
                             marginLeft: 20
                         }}
                     >
-                        <li> Extensions toolbar buttons. </li>
-                        <li> Click-through auto mode. </li>
-                        <li> Option to enable overlay clicks even with click-through enabled. </li>
-                        <li> Option to show the overlay without stealing focus from the current application. </li>
+                        <li> Chrome Extensions Manager. </li>
+                        <li> OCR Templates. </li>
+                        <li> Option to control which window is displayed when the text is copied (e.g. Yomichan, Yomitan, Yomibaba...). </li>
+                        <li> Option to enable a custom mouse cursor for games that hide the mouse cursor. </li>
+                        <li> Option to change the overlay font size. </li>
                     </ul>
 
                 </CardContent>
