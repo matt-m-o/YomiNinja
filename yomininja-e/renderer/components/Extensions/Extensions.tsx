@@ -1,10 +1,12 @@
 import { Box, Button, Card, CardContent, Container, Divider, Grid, Typography, styled } from "@mui/material";
-import { CSSProperties, useContext, useEffect } from "react";
+import { CSSProperties, useContext, useEffect, useState } from "react";
 import { ExtensionsContext } from "../../context/extensions.provider";
 import Image  from 'next/image';
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ExtensionItem from "./ExtensionItem";
+import AlertDialog from "../common/AlertDialog";
+import { BrowserExtension } from "../../../electron-src/extensions/browser_extension";
 
 
 const SectionDivider = styled( Divider )({
@@ -22,6 +24,13 @@ export default function Extensions() {
         openExtensionOptions,
     } = useContext( ExtensionsContext );
 
+    const [ openUninstallDialog, setOpenUninstallDialog ] = useState< boolean >( false );
+    const [ itemToUninstall, setItemToUninstall ] = useState< BrowserExtension | null >();
+
+    function handleConfirmation() {
+        uninstallExtension( itemToUninstall );
+    }
+
     const InstalledExtensions = (
         installedExtensions?.map( item => {
             return (
@@ -29,7 +38,10 @@ export default function Extensions() {
                     <ExtensionItem
                         extension={ item }
                         openOptions={ () => openExtensionOptions( item ) }
-                        uninstall={ () => uninstallExtension( item ) }
+                        uninstall={ () => {
+                            setItemToUninstall( item );
+                            setOpenUninstallDialog( true );
+                        }}
                     />
                 </Grid>
             )
@@ -70,6 +82,20 @@ export default function Extensions() {
 
     return (
         <Card variant="elevation" sx={{ borderRadius: 4, userSelect: 'none' }}>
+
+            <AlertDialog
+                title={'Confirm removal'}
+                message="Are you sure you want to uninstall this extension?"
+                okButtonText="Yes"
+                cancelButtonText="No"
+                open={ openUninstallDialog }
+                handleCancel={ () => {
+                    setOpenUninstallDialog( false );
+                    setItemToUninstall( null );
+                }}
+                handleOk={ handleConfirmation }
+                handleClose={ () => setOpenUninstallDialog( false ) }
+            />
 
             <CardContent>
                 <Container maxWidth='md'>
@@ -137,7 +163,6 @@ export default function Extensions() {
                     </Box>
 
                     <SectionDivider/>
-
 
                     <Typography gutterBottom variant="h6" component="div" margin='16px' ml={0} mb={10}>
                         Test Dictionary Extensions

@@ -11,7 +11,6 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import OcrTemplateItem from "./OcrTemplateItem";
 import EditOcrTemplateModal from "./EditOcrTemplateModal";
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
-import AlertDialog from "../common/AlertDialog";
 import OcrTemplateList from "./OcrTemplateList";
 
 
