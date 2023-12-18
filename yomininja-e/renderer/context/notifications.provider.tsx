@@ -41,6 +41,9 @@ export const NotificationsProvider = ( { children }: PropsWithChildren ) => {
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                 onClose={ () => setOpenSnackbar(false) }
                 sx={{ minWidth: '300px', alignItems: 'center' }}
+                style={{
+                    zIndex: 999999
+                }}
             >
                 <Alert severity={ notification?.type }
                     sx={{

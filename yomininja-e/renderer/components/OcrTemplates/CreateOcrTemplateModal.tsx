@@ -33,6 +33,8 @@ export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalPro
     const [ name, setName ] = useState< string >('');
     const [ image, setImage ] = useState< Buffer >();
 
+    const [ savingHasFailed, setSavingHasFailed ] = useState< boolean >( false );
+
     const canSave = !Boolean( name && image );
 
     const {
@@ -61,11 +63,22 @@ export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalPro
             name,
         });
 
+        if ( !template ) {
+            setSavingHasFailed( true );
+            return;
+        }
+
         // console.log(template);
 
         await loadOcrTemplate( template.id );
 
         handleClose();
+    }
+
+    function handleNameChange( newName: string ) {
+        setName( newName );
+        if ( savingHasFailed )
+            setSavingHasFailed( false );
     }
 
     function handleClose() {
@@ -94,10 +107,19 @@ export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalPro
                     required
                     value={ name }
                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                        setName(event.target.value);
+                        handleNameChange( event.target.value )
                     }}
                     sx={{ width: '100%' }}
                 />
+
+                { savingHasFailed &&
+                    <Typography mt={0} mb={2}
+                        color='#ff5858'
+                        fontSize='1.1rem'
+                    >
+                        Template name already exists!
+                    </Typography>
+                }
 
 
                 <Box display='flex' justifyContent='center' flexDirection='column'>

@@ -2,6 +2,7 @@ import { BrowserWindow, IpcMainInvokeEvent, ipcMain } from "electron";
 import { OcrTemplatesService } from "./ocr_templates.service";
 import { OcrTemplateId, OcrTemplateJson } from "../@core/domain/ocr_template/ocr_template";
 import { GetOcrTemplates_Input } from "../@core/application/use_cases/ocr_template/get_ocr_template/get_ocr_templates.use_case";
+import { InAppNotification } from "../common/types/in_app_notification";
 
 
 export class OcrTemplatesController {
@@ -50,7 +51,7 @@ export class OcrTemplatesController {
                 
                 if ( !message ) return null;
 
-                const template = await this.ocrTemplatesService.createOcrTemplate( message );
+                const template = await this.ocrTemplatesService.createOcrTemplate( message )
 
                 return template?.toJson() || null;
             }
@@ -77,7 +78,11 @@ export class OcrTemplatesController {
                 
                 if ( !message ) return;
 
-                const updatedTemplate = await this.ocrTemplatesService.updateOcrTemplate( message );
+                const updatedTemplate = await this.ocrTemplatesService.updateOcrTemplate( message )
+                    .catch( error => {
+                        console.error( error );
+                    });
+                    
                 const json = updatedTemplate?.toJson()
                 
                 // console.log( json?.image_base64 );

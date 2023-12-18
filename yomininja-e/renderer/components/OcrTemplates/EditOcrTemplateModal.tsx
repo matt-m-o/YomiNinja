@@ -31,6 +31,8 @@ export default function EditOcrTemplateModal( props: EditOcrTemplateModalProps )
     const [ name, setName ] = useState< string >('');
     const [ image, setImage ] = useState< Buffer >();
 
+    const [ savingHasFailed, setSavingHasFailed ] = useState< boolean >( false );
+
     const canSave = !Boolean( name );
 
     const {
@@ -72,12 +74,23 @@ export default function EditOcrTemplateModal( props: EditOcrTemplateModalProps )
             name,
         });
 
+        if ( !updatedTemplate ) {
+            setSavingHasFailed( true );
+            return;
+        }
+
         loadOcrTemplate( updatedTemplate.id );
         handleClose();
     }
 
     function setEditingState( isEditing: boolean ) {
         global.ipcRenderer.invoke( 'app:editing_ocr_template', isEditing );
+    }
+
+    function handleNameChange( newName: string ) {
+        setName( newName );
+        if ( savingHasFailed )
+            setSavingHasFailed( false );
     }
 
     function handleClose() {
@@ -104,10 +117,18 @@ export default function EditOcrTemplateModal( props: EditOcrTemplateModalProps )
                     required
                     value={ name }
                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                        setName(event.target.value);
+                        handleNameChange( event.target.value );
                     }}
                     sx={{ width: '100%' }}
                 />
+                { savingHasFailed &&
+                    <Typography mt={0} mb={2}
+                        color='#ff5858'
+                        fontSize='1.1rem'
+                    >
+                        Template name already exists!
+                    </Typography>
+                }
 
 
                 <Box display='flex' justifyContent='center' flexDirection='column'>
