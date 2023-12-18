@@ -21,6 +21,7 @@ export type OverlayOcrItemBoxVisuals = {
     background_color: string;
     text: {
         color: string;
+        font_size_multiplier: number; // 0.1 to 10 ( 10% to 1000% )
     };
 };
 

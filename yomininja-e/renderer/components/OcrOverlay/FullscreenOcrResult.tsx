@@ -83,9 +83,16 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         const boxWidthPx = regionWidthPx * ( box.dimensions.width / 100 );
         const boxHeightPx = regionHeightPx * ( box.dimensions.height / 100 );
 
-        const fontSize = isVertical ? boxWidthPx * 0.6 : boxHeightPx * 0.65;
+        const fontSize = isVertical ? boxWidthPx * 0.6 : boxHeightPx * 0.65; // Pixels
 
-        const fontSizeOffset = ( isVertical ? fontSize * 1.15 : fontSize * 1.2 ) - fontSize;
+        let { font_size_multiplier } = ocrItemBoxVisuals.text;
+
+        if ( isVertical )
+            font_size_multiplier = font_size_multiplier * 1.10;
+
+        const fontSizeOffset =  ( fontSize * ( font_size_multiplier / 100 ) ) - fontSize;
+
+        // console.log({ fontSizeOffset });
 
         if ( box.angle_degrees < -70 )
             isVertical = true;

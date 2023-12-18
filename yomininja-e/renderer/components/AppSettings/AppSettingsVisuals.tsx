@@ -121,11 +121,27 @@ export default function AppSettingsVisuals() {
                         onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
                             updateOcrItemBoxVisuals({                                
                                 text: {
+                                    ...ocrItemBoxVisuals?.text,
                                     color: event.target.value
                                 }
                             });
                         }}
-                        
+                    />
+
+                    <TextField label="Font size (%)" sx={textFieldBaseSx}                      
+                        size='small'
+                        type="number"
+                        inputProps={{ style: { textAlign: 'center' } }}
+                        value={ 
+                            ocrItemBoxVisuals?.text.font_size_multiplier || 100 }
+                        onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
+                            updateOcrItemBoxVisuals({                                
+                                text: {
+                                    ...ocrItemBoxVisuals?.text,
+                                    font_size_multiplier: Number( event.target.value )
+                                }
+                            });
+                        }}
                     />
 
                     <TextField label="Border color" sx={textFieldBaseSx}                      
