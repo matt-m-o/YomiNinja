@@ -27,9 +27,11 @@ export default function IndexPage() {
 
   const homeTabContents = (
     <CaptureSourceProvider>
-      <LanguagesProvider>
-        <HomeContent/>
-      </LanguagesProvider>
+      <OcrTemplatesProvider>
+        <LanguagesProvider>
+          <HomeContent/>
+        </LanguagesProvider>
+      </OcrTemplatesProvider>
     </CaptureSourceProvider>
   );
   

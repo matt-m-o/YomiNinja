@@ -1,11 +1,13 @@
 import { useContext, useEffect } from "react"
 import { LanguagesContext } from "../../context/languages.provider";
-import { Autocomplete, Box, Button, Card, CardContent, Container, FormControlLabel, Grid, TextField, TextFieldProps, Typography } from "@mui/material";
+import { Autocomplete, Box, Button, Card, CardContent, Container, FormControlLabel, Grid, SxProps, TextField, TextFieldProps, Theme, Typography } from "@mui/material";
 import { ProfileContext } from "../../context/profile.provider";
 import { CaptureSourceContext, CaptureSourceProvider } from "../../context/capture_source.provider";
 import HotkeyHints from "./HotkeyHints";
 import { ScreenshotMonitorRounded } from "@mui/icons-material";
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
+import OcrTemplateSelector from "./OcrTemplateSelector";
+import CustomTextField from "./CustomTextField";
 
 
 
@@ -36,20 +38,6 @@ export default function HomeContent() {
         changeActiveOcrLanguage( language );
     }
 
-
-    function CustomTextField( props: { label?: string, width?: string } & TextFieldProps ) {
-        return (
-            <FormControlLabel label={props.label}
-                sx={{
-                    alignItems: 'start',
-                }}
-                labelPlacement="top"
-                control={
-                    <TextField {...props } label='' sx={{ width: props.width }}/>
-                }
-            />
-        )
-    }
 
     function openCaptureSourceSelectionWindow() {
         global.ipcRenderer.invoke('main:show_capture_source_selection');
@@ -98,10 +86,13 @@ export default function HomeContent() {
                             />
                         </Grid>
                         
-                        <Grid item>                        
+                        <Grid item>
                             <Autocomplete autoHighlight
                                 renderInput={ (params) => {
-                                    return <CustomTextField {...params} label='OCR language' width='177px' />
+                                    return <CustomTextField {...params}
+                                        label='OCR language'
+                                        sx={{ width: '177px' }}
+                                    />
                                 }}
                                 value={ activeOcrLanguage || '' }
                                 onChange={( event: any, newValue: string | null ) => {
@@ -109,6 +100,11 @@ export default function HomeContent() {
                                 }}
                                 options={ languageOptions || [] }
                             />
+                        </Grid>
+                            
+                        
+                        <Grid item>
+                            <OcrTemplateSelector/>
                         </Grid>
 
                     </Grid>                    
