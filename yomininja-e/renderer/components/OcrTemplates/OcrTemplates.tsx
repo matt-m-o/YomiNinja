@@ -134,6 +134,19 @@ export default function OcrTemplates() {
                                 margin: 'auto',
                             }}
                         >
+
+                            <Typography
+                                fontStyle='italic'
+                                mt={3}
+                                color='#ff5858'
+                                sx={{
+                                    display: ( activeOcrTemplate?.target_regions.length > 0 ?
+                                                'none' : 'inherit' )
+                                }}
+                            >
+                                Please draw at least one OCR region to extract text.
+                            </Typography>
+
                             <Box display='flex'
                                 flexDirection='row'
                                 alignItems='center'
