@@ -106,18 +106,29 @@ export default function OcrTemplates() {
                             New Template
                         </Button>
                     </Box>
-                        
-                    { !displaySearch &&
+                    
+                    <Divider sx={{ width: '100%', mt: 4 }}/>
+                    <Typography
+                        fontSize='1.25rem'
+                        // visibility={ activeOcrTemplate ? 'unset' : 'hidden' }
+                        mr={1}
+                        mt={2}
+                    >
+                        Active template
+                    </Typography>
+
+                    { !activeOcrTemplate &&
                         <Typography
                             textAlign='center'
                             fontStyle='italic'
-                            mt={5}
+                            mt={3}
                         >
-                            Create a new OCR Template to get started
+                            There is no active OCR Template
                         </Typography>
                     }
                     
                     { activeOcrTemplate &&
+
                         <Box display='flex' flexDirection='column'
                             sx={{
                                 width: 'fit-content',
@@ -163,13 +174,15 @@ export default function OcrTemplates() {
                         </Box>
                     }
 
-                    { activeOcrTemplate &&
-                        <Divider sx={{ width: '100%', mt: 4 }}/>
-                    }
-
-                    { displaySearch &&
-                        <OcrTemplateList/>
-                    }
+                    <Divider sx={{ width: '100%', mt: 4 }}/>
+                    <Typography
+                        fontSize='1.25rem'
+                        mr={1}
+                        mt={2}
+                    >
+                        Your templates
+                    </Typography>
+                    <OcrTemplateList/>
 
                 </Box>
 

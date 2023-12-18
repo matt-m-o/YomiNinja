@@ -88,6 +88,9 @@ export default function OcrTemplateItem( props: OcrTemplateItemProps ) {
                     p: '24px',
                     flex: 1
                 }}
+                style={{
+                    padding: '10px'
+                }}
             >
 
                 <Box display='flex'

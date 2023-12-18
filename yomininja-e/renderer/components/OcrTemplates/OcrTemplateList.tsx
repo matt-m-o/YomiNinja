@@ -1,4 +1,4 @@
-import { Box, Grid, InputAdornment, TextField } from "@mui/material";
+import { Box, Grid, InputAdornment, TextField, Typography } from "@mui/material";
 import { ChangeEvent, useContext, useState } from "react";
 import AlertDialog from "../common/AlertDialog";
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
@@ -47,12 +47,12 @@ export default function OcrTemplateList() {
         deleteOcrTemplate( itemToDelete?.id );
     }
 
-    return (
+    return ( <>
         <Box display='flex'
             flexDirection='column'
             justifyContent='center'
             alignItems='center'
-            mt={4}
+            mt={2}
         >
             <AlertDialog
                 title={'Confirm deletion'}
@@ -103,5 +103,5 @@ export default function OcrTemplateList() {
                 </Grid>
             </Box>
         </Box>
-    )
+    </> )
 }

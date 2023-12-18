@@ -101,8 +101,11 @@ export default function CreateOcrTemplateModal( props: CreateOcrTemplateModalPro
 
 
                 <Box display='flex' justifyContent='center' flexDirection='column'>
-                    <Typography align="center" mt={4} mb={2}>
-                        Press the OCR hotkey to set the capture source image
+                    <Typography align="center" mt={4} mb={2}
+                        color='#90caf9'
+                        fontSize='1.1rem'
+                    >
+                        Press the OCR hotkey to set the template dimensions and background
                     </Typography>
 
                     { captureSourceImage &&
