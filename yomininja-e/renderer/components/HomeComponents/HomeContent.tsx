@@ -29,7 +29,7 @@ export default function HomeContent() {
 
     function handleLanguageSelectChange( languageName: string ) {
 
-        if (!languageName) return;        
+        if (!languageName) return;
 
         const language = languages?.find( language => language.name === languageName.toLowerCase() );
 
