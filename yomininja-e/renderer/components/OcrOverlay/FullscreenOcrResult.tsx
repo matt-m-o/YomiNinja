@@ -83,7 +83,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         const boxWidthPx = regionWidthPx * ( box.dimensions.width / 100 );
         const boxHeightPx = regionHeightPx * ( box.dimensions.height / 100 );
 
-        const fontSize = isVertical ? boxWidthPx * 0.6 : boxHeightPx * 0.65; // Pixels
+        const fontSize = isVertical ? boxWidthPx * 0.7 : boxHeightPx * 0.75; // Pixels
 
         let { font_size_factor } = ocrItemBoxVisuals.text;
 
@@ -97,18 +97,22 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         if ( box.angle_degrees < -70 )
             isVertical = true;
 
+        const adjustedFontSize = fontSize + fontSizeOffset; // px
+
         const Box = styled( BaseOcrResultBox )({            
             ":hover": {
                 backgroundColor: ocrItemBoxVisuals?.background_color || 'black',
                 color: ocrItemBoxVisuals?.text.color || 'white',
-                fontSize: ( fontSize + fontSizeOffset ) + 'px', // isVertical ? fontSize * 0.8 : fontSize * 0.85
+                fontSize: adjustedFontSize + 'px', // isVertical ? fontSize * 0.8 : fontSize * 0.85
+                lineHeight: adjustedFontSize + 'px'
             },
             borderColor: ocrItemBoxVisuals?.border_color || 'red',
             borderWidth: ocrItemBoxVisuals?.border_width || '1px',
             borderRadius: ocrItemBoxVisuals?.border_radius || '2rem',
             writingMode: isVertical ? 'vertical-rl' :'inherit',
             textOrientation: isVertical ? 'upright' :'inherit',
-            fontSize: fontSize + 'px'
+            fontSize: fontSize + 'px',
+            lineHeight: fontSize + 'px'
         });
 
         const { width } = box.dimensions;
@@ -148,7 +152,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
     return ( <>
         { ocrResult?.ocr_regions?.map(
             ( ocrRegion, regionIdx ) => (
-                <div id='ocr-region' key={regionIdx}
+                <div className="ocr-region" key={regionIdx}
                     style={{
                         // border: 'solid 2px yellow',
                         position: 'absolute',
