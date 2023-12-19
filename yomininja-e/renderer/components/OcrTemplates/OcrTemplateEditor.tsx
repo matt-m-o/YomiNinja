@@ -5,7 +5,6 @@ import OcrTargetRegion from "./OcrTargetRegion";
 import Moveable from "react-moveable";
 import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
 import Selecto from "react-selecto";
-import OcrTargetRegionMoveable from "./OcrTargetRegionMoveable";
 
 export type Size = { // Pixels
     width: number;

@@ -42,8 +42,9 @@ export type OcrTargetRegionProps = {
     templateSize: Size;
     onChange: ( region: OcrTargetRegionJson ) => void;
     onClick?: () => void;
-    moveableRef: MutableRefObject<Moveable<{}>>;
+    moveableRef: MutableRefObject < Moveable< {} > >;
     isSelected: boolean;
+    ref?: MutableRefObject< HTMLDivElement >;
 };
 
 

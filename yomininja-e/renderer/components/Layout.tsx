@@ -159,7 +159,8 @@ export default function Layout( { contents }: LayoutProps) {
               backgroundColor: (theme) =>
               theme.palette.mode === 'light'
                 ? theme.palette.grey[100]
-                : theme.palette.grey[1000],              
+                : theme.palette.grey[1000],
+              userSelect: 'none'
             }}
             style={{ paddingRight: '12px' }}
           >

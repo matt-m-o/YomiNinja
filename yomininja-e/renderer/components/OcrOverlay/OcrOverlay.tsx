@@ -1,7 +1,8 @@
 import { useContext, useState, useEffect } from "react";
 import { OverlayOcrItemBoxVisuals, OverlayFrameVisuals, OverlayHotkeys, OverlayBehavior, OverlayMouseVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
 import { SettingsContext } from "../../context/settings.provider";
-import { debounce, styled } from "@mui/material";
+import { debounce } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import FullscreenOcrResult from "./FullscreenOcrResult";
 import { DictionaryContext } from "../../context/dictionary.provider";
 import CustomCursor from "./CustomCursor/CustomCursor";

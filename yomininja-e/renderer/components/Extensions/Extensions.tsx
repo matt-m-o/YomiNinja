@@ -102,7 +102,7 @@ export default function Extensions() {
 
                     <Box sx={{ flexGrow: 1, margin: 1, mb: 2 }}>
 
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }} m={2} ml={0} mr={0}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }} mb={2} ml={0} mr={0}>
                             <Typography gutterBottom variant="h6" component="div" margin={0} ml={0} mb={4}>
                                 Installed Chrome Extensions
                             </Typography>
@@ -110,7 +110,7 @@ export default function Extensions() {
                                 variant="outlined"
                                 onClick={ installExtension }
                                 startIcon={< AddRoundedIcon/> }
-                                sx={{ maxHeight: '36px' }}
+                                sx={{ maxHeight: '42px' }}
                             >
                                 Install (zip)
                             </Button>
