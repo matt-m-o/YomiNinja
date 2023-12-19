@@ -125,7 +125,8 @@ export class RecognizeImageUseCase {
             const regionResult = await ocrAdapter.recognize({
                 imageBuffer: regionImage,
                 languageCode,
-            });
+            })
+                .catch( console.error );
 
             if ( !regionResult ) continue;
 

@@ -396,7 +396,8 @@ export class AppController {
             );
         }
         else {
-            ocrRecognitionController.recognize( image );
+            await ocrRecognitionController.recognize( image )
+                .catch( console.error );
         }
 
         let isFullScreenImage = true;
