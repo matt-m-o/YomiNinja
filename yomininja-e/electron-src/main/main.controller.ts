@@ -13,6 +13,7 @@ export class MainController {
 
     private mainWindow: BrowserWindow;
     private captureSourceWindow: BrowserWindow | null;    
+    private mainWindowUrl: string;
 
     constructor() {}
 
@@ -70,21 +71,21 @@ export class MainController {
     }
 
     async loadMainPage(): Promise< void >  {
-        const url = isDev
-        ? 'http://localhost:8000/'
-        : format({
-            pathname: join( PAGES_DIR, '/index.html'),
-            protocol: 'file:',
-            slashes: true,
-        });
+        this.mainWindowUrl = isDev ?
+            'http://localhost:8000/' :
+            format({
+                pathname: join( PAGES_DIR, '/index.html'),
+                protocol: 'file:',
+                slashes: true,
+            });
 
-        await this.mainWindow.loadURL(url);
+        await this.mainWindow.loadURL (this.mainWindowUrl );
 
         this.mainWindow.show();
     }
 
     refreshPage(): void {
-        this.mainWindow.reload();
+        this.mainWindow.loadURL( this.mainWindowUrl );
     }
 
     private createCaptureSourceSelectionWindow() {
