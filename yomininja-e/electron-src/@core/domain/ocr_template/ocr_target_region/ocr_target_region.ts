@@ -73,13 +73,13 @@ export class OcrTargetRegion {
         const { width, height } = imageSize;
         
         const position: Position = {
-            left: Math.round( this.position.left * width ),
-            top: Math.round( this.position.top * height ),
+            left: Math.floor( this.position.left * width ),
+            top: Math.floor( this.position.top * height ),
         };
 
         const size: Size = {
-            width: Math.round( this.size.width * width ),
-            height: Math.round( this.size.height * height ),
+            width: Math.floor( this.size.width * width ),
+            height: Math.floor( this.size.height * height ),
         }
 
         return {
