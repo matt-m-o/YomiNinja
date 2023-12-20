@@ -15,6 +15,8 @@ export class MainController {
     private captureSourceWindow: BrowserWindow | null;    
     private mainWindowUrl: string;
 
+    private activeTabId: string; // Temporary solution for reloading UI without loosing tab
+
     constructor() {}
 
     async init(): Promise<BrowserWindow> {
@@ -60,6 +62,14 @@ export class MainController {
 
     private registersIpcHandlers() {
 
+        ipcMain.handle( 'main:set_active_tab', ( event: IpcMainInvokeEvent, message: string ) => {
+            this.activeTabId = message;
+        });
+
+        ipcMain.handle( 'main:get_active_tab', ( event: IpcMainInvokeEvent, message: string ) => {
+            return this.activeTabId;
+        });
+
         ipcMain.handle( 'main:show_capture_source_selection', ( event: IpcMainInvokeEvent, message: string ) => {
             this.createCaptureSourceSelectionWindow();
         });
@@ -68,6 +78,8 @@ export class MainController {
             this.captureSourceWindow?.close();
             this.captureSourceWindow = null;
         });
+
+        
     }
 
     async loadMainPage(): Promise< void >  {

@@ -77,6 +77,7 @@ export default function Layout( { contents }: LayoutProps) {
   const [ activeTab, setActiveTab ] = React.useState('0');
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setActiveTab(newValue);
+    global.ipcRenderer.invoke( 'main:set_active_tab', newValue );
   }; 
   const router = useRouter();
 
@@ -105,10 +106,19 @@ export default function Layout( { contents }: LayoutProps) {
 
   useEffect( () => {
 
-    if ( !location?.hash ) return;
+    // if ( !location?.hash ) return;
 
-    const tabIdx = hashToTabIdx( location.hash );
-    setActiveTab( tabIdx );
+    // const tabIdx = hashToTabIdx( location.hash );
+    // setActiveTab( tabIdx );
+
+    global.ipcRenderer.invoke( 'main:get_active_tab' )
+      .then( ( tabId: string ) => {
+        console.log({ tabId });
+
+        if ( !tabId ) return;
+  
+        setActiveTab( tabId );
+      });
     
   }, [] );
 
@@ -238,8 +248,8 @@ export default function Layout( { contents }: LayoutProps) {
                 sx={tabSx}
                 key={idx}
                 value={idx.toString()}
-                component={Link}
-                href={'#tab-'+idx}
+                // component={Link}
+                // href={'#tab-'+idx}
               />
             ))}
           </TabList>
