@@ -32,7 +32,13 @@ export const TemplateDiv = styled('div')( {
     }
 });
 
-export default function OcrTemplateEditor() {
+export type OcrTemplateEditorProps = {
+    ignoreKeyboard?: boolean;
+}
+
+export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
+
+    const { ignoreKeyboard } = props;
 
     const {
         activeOcrTemplate,
@@ -72,9 +78,12 @@ export default function OcrTemplateEditor() {
 
         const handleKeyDown = ( e: KeyboardEvent ) => {
 
+            // console.log({ ignoreKeyboard });
+
             if ( 
                 !selectedTargetRegion?.id ||
-                e.key !== 'Delete'
+                e.key !== 'Delete' ||
+                ignoreKeyboard
             ) return;
             
             removeTargetRegion( selectedTargetRegion.id );
@@ -85,15 +94,13 @@ export default function OcrTemplateEditor() {
         return () => {
             document.removeEventListener( 'keydown', handleKeyDown );
         };
-    }, [ selectedTargetRegion ] );
+    }, [ selectedTargetRegion, ignoreKeyboard ] );
     
 
     return ( <>
         { activeOcrTemplate &&
-            <TemplateDiv id='ocr-template-div' className='ocr-template-div'
-                style={{
+            <TemplateDiv id='ocr-template-div' className='ocr-template-div'>
                     
-                }}>
 
                 { templateSize &&
                     activeOcrTemplate?.target_regions.map( ( region, idx ) => {

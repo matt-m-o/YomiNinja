@@ -7,7 +7,12 @@ import OcrTemplateItem from "./OcrTemplateItem";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 
 
-export default function OcrTemplateList() {
+export type OcrTemplateListProps = {
+    onSearchInputFocus?: () => void;
+    onSearchInputBlur?: () => void;
+};
+
+export default function OcrTemplateList( props: OcrTemplateListProps ) {
 
     const {
         ocrTemplates,
@@ -47,6 +52,14 @@ export default function OcrTemplateList() {
         deleteOcrTemplate( itemToDelete?.id );
     }
 
+    function handleSearchInputFocus() {
+        props?.onSearchInputFocus();
+    }
+
+    function handleSearchInputBlur() {
+        props?.onSearchInputBlur();
+    }
+    
     return ( <>
         <Box display='flex'
             flexDirection='column'
@@ -88,6 +101,8 @@ export default function OcrTemplateList() {
                     // mt: 5,
                     mb: 2,
                 }}
+                onFocus={ handleSearchInputFocus }
+                onBlur={ handleSearchInputBlur }
             />
             
 

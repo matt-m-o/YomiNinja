@@ -43,6 +43,8 @@ export default function OcrTemplates() {
         setOpenEditOcrTemplateModal
     ] = useState(false);
 
+    const [ ignoreKeyboardEvents, setIgnoreKeyboardEvents ] = useState< boolean >();
+
     const { activeSettingsPreset, updateActivePresetVisuals } = useContext( SettingsContext );
     const overlayRegionVisuals: OverlayOcrRegionVisuals = activeSettingsPreset?.overlay?.visuals.ocr_region;
     
@@ -75,6 +77,7 @@ export default function OcrTemplates() {
     useEffect( () => {
         console.log( activeSettingsPreset?.overlay.visuals.ocr_region );
     }, [activeSettingsPreset?.overlay.visuals.ocr_region] );
+    
 
     return (
     <Card variant="elevation" sx={{ borderRadius: 4, userSelect: 'none', width: '100%' }}>
@@ -202,7 +205,13 @@ export default function OcrTemplates() {
                             >
                                 Draw at least one OCR region to extract text!
                             </Typography>
-                            <OcrTemplateEditor/>
+                            <OcrTemplateEditor
+                                ignoreKeyboard={
+                                    ignoreKeyboardEvents ||
+                                    openCreateOcrTemplateModal ||
+                                    openEditOcrTemplateModal
+                                }
+                            />
                             
                             {/* This should be in the settings but will stay here for convenience */}
                             <FormControlLabel label='Show region borders in the overlay'
@@ -231,7 +240,15 @@ export default function OcrTemplates() {
                     <Typography fontSize='1.25rem'>
                         Your templates
                     </Typography>
-                    <OcrTemplateList/>
+
+                    <OcrTemplateList
+                        onSearchInputFocus={
+                            () => setIgnoreKeyboardEvents(true)
+                        }
+                        onSearchInputBlur={
+                            () => setIgnoreKeyboardEvents(false)
+                        }
+                    />
 
                 </Box>
 
