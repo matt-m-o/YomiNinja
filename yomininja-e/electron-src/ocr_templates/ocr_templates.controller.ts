@@ -29,6 +29,11 @@ export class OcrTemplatesController {
         this.mainWindow = input.mainWindow;
         this.overlayWindow = input.overlayWindow;
 
+        this.ocrTemplatesService.getActiveOcrTemplate()
+            .then( template => {
+                this.activeOcrTemplateId = template?.id || null;
+            });
+
         this.registersIpcHandlers();
     }
 

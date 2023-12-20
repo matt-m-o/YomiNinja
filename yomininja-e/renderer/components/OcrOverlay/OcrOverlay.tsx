@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from "react";
-import { OverlayOcrItemBoxVisuals, OverlayFrameVisuals, OverlayHotkeys, OverlayBehavior, OverlayMouseVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import { OverlayOcrItemBoxVisuals, OverlayFrameVisuals, OverlayHotkeys, OverlayBehavior, OverlayMouseVisuals, OverlayOcrRegionVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
 import { SettingsContext } from "../../context/settings.provider";
 import { debounce } from "@mui/material";
 import { styled } from "@mui/material/styles";
@@ -30,6 +30,7 @@ export default function OcrOverlay() {
 
   const ocrItemBoxVisuals: OverlayOcrItemBoxVisuals = activeSettingsPreset?.overlay?.visuals.ocr_item_box;
   const overlayFrameVisuals: OverlayFrameVisuals = activeSettingsPreset?.overlay?.visuals.frame;
+  const overlayOcrRegionVisuals: OverlayOcrRegionVisuals = activeSettingsPreset?.overlay?.visuals.ocr_region;
   const overlayMouseVisuals: OverlayMouseVisuals = activeSettingsPreset?.overlay?.visuals.mouse;
   const overlayHotkeys: OverlayHotkeys = activeSettingsPreset?.overlay?.hotkeys;
   const overlayBehavior: OverlayBehavior = activeSettingsPreset?.overlay?.behavior;
@@ -99,7 +100,7 @@ export default function OcrOverlay() {
             style={{
               border: 'solid',
               borderColor: overlayFrameVisuals?.border_color || 'red',
-              borderWidth: overlayFrameVisuals?.border_width || '1px',
+              borderWidth: overlayOcrRegionVisuals?.border_width + 'px',
               top: toCssPercentage( position.top ),
               left: toCssPercentage( position.left ),
               width: toCssPercentage( size.width ),
@@ -114,7 +115,7 @@ export default function OcrOverlay() {
     <OverlayFrame id='overlay-frame'
       sx={{
         borderColor: overlayFrameVisuals?.border_color || 'red',
-        borderWidth: overlayFrameVisuals?.border_width || '0px'
+        borderWidth: overlayFrameVisuals?.border_width + 'px'
       }}
     >
       {templateRegions}

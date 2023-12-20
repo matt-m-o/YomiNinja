@@ -1,4 +1,4 @@
-import { Box, Button, Card, CardContent, Container, Divider, Grid, InputAdornment, SxProps, TextField, Theme, Typography, styled } from "@mui/material";
+import { Box, Button, Card, CardContent, Container, Divider, FormControlLabel, Grid, InputAdornment, Switch, SxProps, TextField, Theme, Typography, styled } from "@mui/material";
 import { CSSProperties, useContext, useEffect, useState } from "react";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 import CreateOcrTemplateModal from "./CreateOcrTemplateModal";
@@ -11,6 +11,8 @@ import OcrTemplateItem from "./OcrTemplateItem";
 import EditOcrTemplateModal from "./EditOcrTemplateModal";
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import OcrTemplateList from "./OcrTemplateList";
+import { SettingsContext } from "../../context/settings.provider";
+import { OverlayBehavior, OverlayOcrRegionVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
 
 
 const TemplateActionBtn = styled( Button )({
@@ -41,8 +43,9 @@ export default function OcrTemplates() {
         setOpenEditOcrTemplateModal
     ] = useState(false);
 
-    const displaySearch = ocrTemplates?.length > 0;
-
+    const { activeSettingsPreset, updateActivePresetVisuals } = useContext( SettingsContext );
+    const overlayRegionVisuals: OverlayOcrRegionVisuals = activeSettingsPreset?.overlay?.visuals.ocr_region;
+    
 
     const iconStyle: CSSProperties = {
         width: '28px',
@@ -57,7 +60,21 @@ export default function OcrTemplates() {
         borderRadius: '100px'
     };
 
-    
+    function updateOverlayOcrRegionVisuals( update: Partial< OverlayOcrRegionVisuals > ){
+
+        console.log({ update })
+
+        updateActivePresetVisuals({
+            ocr_region: {
+                ...activeSettingsPreset.overlay.visuals.ocr_region,
+                ...update
+            }
+        });
+    }
+
+    useEffect( () => {
+        console.log( activeSettingsPreset?.overlay.visuals.ocr_region );
+    }, [activeSettingsPreset?.overlay.visuals.ocr_region] );
 
     return (
     <Card variant="elevation" sx={{ borderRadius: 4, userSelect: 'none', width: '100%' }}>
@@ -186,6 +203,26 @@ export default function OcrTemplates() {
                                 Draw at least one OCR region to extract text!
                             </Typography>
                             <OcrTemplateEditor/>
+                            
+                            {/* This should be in the settings but will stay here for convenience */}
+                            <FormControlLabel label='Show region borders in the overlay'
+                                title='This helps you verify if the regions are correctly positioned'
+                                sx={{ mt: 2 }}
+                                control={
+                                    <Switch
+                                        checked={ Boolean( overlayRegionVisuals?.border_width ) }
+                                        onChange={ ( event ) => {
+                                            console.log( event.target.checked )
+
+                                            console.log( Number( event.target.checked ) )
+
+                                            updateOverlayOcrRegionVisuals({
+                                                border_width: Number( event.target.checked )
+                                            });
+                                        }}
+                                    /> 
+                                }
+                            />
                         </Box>
                     }
 

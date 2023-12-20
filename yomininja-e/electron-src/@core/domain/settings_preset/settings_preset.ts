@@ -14,6 +14,10 @@ export type OcrEngineSettings = {
     inference_runtime: string;
 };
 
+export type OverlayOcrRegionVisuals = {
+    border_width: number;
+};
+
 export type OverlayOcrItemBoxVisuals = {
     border_color: string;
     border_width: number; // pixels
@@ -38,6 +42,7 @@ export type OverlayFrameVisuals = {
 export type OverlayVisualCustomizations = {
     ocr_item_box: OverlayOcrItemBoxVisuals;
     frame: OverlayFrameVisuals;
+    ocr_region: OverlayOcrRegionVisuals;
     mouse: OverlayMouseVisuals;
 };
 

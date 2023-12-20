@@ -73,8 +73,10 @@ export default function OcrTemplateItem( props: OcrTemplateItemProps ) {
                 flexDirection: 'column',
                 backgroundColor: '#202124',
                 borderRadius: '8px',
-                width: '352px',
+                // width: '352px',
                 height: '100%',
+                minWidth: '290px',
+                maxWidth: '25vw',
                 border: 'solid',
                 borderColor: '#90caf9',
                 borderWidth: isActive ? '1px' : '0px',
@@ -103,11 +105,13 @@ export default function OcrTemplateItem( props: OcrTemplateItemProps ) {
                         <img
                             src={'data:image/png;base64,'+template.image_base64}
                             alt={template.name}
+                            onClick={ loadItem }
                             style={{
                                 maxWidth: '100%',
                                 maxHeight: '20vh',
                                 userSelect: 'none',
                                 objectFit: 'cover', 
+                                cursor: 'pointer',
                             }}
                         />
                     </TemplateDiv>

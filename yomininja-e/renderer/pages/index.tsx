@@ -19,7 +19,7 @@ import ExtensionRoundedIcon from '@mui/icons-material/ExtensionRounded';
 import Extensions from '../components/Extensions/Extensions';
 import { NotificationsProvider } from '../context/notifications.provider';
 import ViewComfyRoundedIcon from '@mui/icons-material/ViewComfyRounded';
-import OcrTemplates from '../components/OcrTemplates/OcrTemplates';
+import OcrTemplates from "../components/OcrTemplates/OcrTemplates";
 import { OcrTemplatesProvider } from '../context/ocr_templates.provider';
 
 

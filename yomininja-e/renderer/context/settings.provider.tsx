@@ -94,10 +94,15 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
                 ...newVisuals.frame,
             },
 
+            ocr_region: {
+                ...activeSettingsPreset.overlay.visuals.ocr_region,
+                ...newVisuals.ocr_region,
+            },
+
             mouse: {
                 ...activeSettingsPreset.overlay.visuals.mouse,
                 ...newVisuals.mouse,
-            }
+            },
         };
 
         updateActivePreset( activeSettingsPreset );
