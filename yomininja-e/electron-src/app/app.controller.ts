@@ -85,7 +85,8 @@ export class AppController {
                     overlayWindow: this.overlayWindow
                 });
                 ocrTemplatesController.init({
-                    mainWindow: this.mainWindow
+                    mainWindow: this.mainWindow,
+                    overlayWindow: this.overlayWindow
                 });
 
                 browserExtensionsController.addBrowserWindow( this.mainWindow );

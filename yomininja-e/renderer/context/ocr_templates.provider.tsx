@@ -134,7 +134,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
         activeOcrTemplate.target_regions = activeOcrTemplate.target_regions.map( item => {
 
             if ( item?.id !== data.id )
-            return item;
+                return item;
         
             return {
                 ...data,
@@ -158,9 +158,22 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
             })
         );
     }
+
+    function handleActiveOcrTemplateChange( event, template: OcrTemplateJson | null ) {
+        console.log( template );
+        setActiveOcrTemplate( template );
+    }
     
     useEffect( () => {
+
         getOcrTemplates();
+
+        global.ipcRenderer.on( 'ocr_templates:active_template', handleActiveOcrTemplateChange );
+
+        return () => {
+            global.ipcRenderer.removeAllListeners( 'ocr_templates:active_template' );
+        };
+
     }, [] );
     
     useEffect( () => {

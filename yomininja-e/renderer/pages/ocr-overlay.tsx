@@ -4,6 +4,7 @@ import FullscreenOcrResult from '../components/OcrOverlay/FullscreenOcrResult';
 import { SettingsContext, SettingsProvider } from '../context/settings.provider';
 import OcrOverlay from '../components/OcrOverlay/OcrOverlay';
 import { DictionaryProvider } from '../context/dictionary.provider';
+import { OcrTemplatesProvider } from '../context/ocr_templates.provider';
 
 
 
@@ -25,9 +26,11 @@ export default function OcrOverlayPage() {
       <SettingsProvider>
         <DictionaryProvider>
           <OcrResultProvider>
+            <OcrTemplatesProvider>
 
-            <OcrOverlay/>          
-
+              <OcrOverlay/>
+              
+            </OcrTemplatesProvider>
           </OcrResultProvider>
         </DictionaryProvider>
       </SettingsProvider>

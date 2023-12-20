@@ -7,6 +7,9 @@ import FullscreenOcrResult from "./FullscreenOcrResult";
 import { DictionaryContext } from "../../context/dictionary.provider";
 import CustomCursor from "./CustomCursor/CustomCursor";
 import { OcrResultContext } from "../../context/ocr_result.provider";
+import { OcrTemplateJson } from "../../../electron-src/@core/domain/ocr_template/ocr_template";
+import { OcrTargetRegionDiv, toCssPercentage } from "../OcrTemplates/OcrTargetRegion";
+import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 
 
 const OverlayFrame = styled('div')({
@@ -18,10 +21,10 @@ const OverlayFrame = styled('div')({
 
 export default function OcrOverlay() {
 
-  const {
-    activeSettingsPreset,
-  } = useContext( SettingsContext );
+  const { activeSettingsPreset } = useContext( SettingsContext );
   const { toggleScanner } = useContext( DictionaryContext );
+  const { activeOcrTemplate } = useContext( OcrTemplatesContext );
+  
 
   const { ocrResult } = useContext( OcrResultContext );
 
@@ -54,7 +57,7 @@ export default function OcrOverlay() {
 
     if (
       element.id === 'overlay-frame' ||
-      element.id === 'ocr-region'
+      element.classList.contains('ocr-region')
     )
       value = true;
       
@@ -78,7 +81,6 @@ export default function OcrOverlay() {
     }
   };
 
-
   useEffect( () => {
 
     document.addEventListener( 'mousemove', handleClickThrough );
@@ -89,14 +91,33 @@ export default function OcrOverlay() {
 
   }, [] );
 
+
+  const templateRegions = activeOcrTemplate?.target_regions.map( region => {
+    const { position, size } = region;
+    return (
+        <OcrTargetRegionDiv className="ocr-region" key={ region.id }
+            style={{
+              border: 'solid',
+              borderColor: overlayFrameVisuals?.border_color || 'red',
+              borderWidth: overlayFrameVisuals?.border_width || '1px',
+              top: toCssPercentage( position.top ),
+              left: toCssPercentage( position.left ),
+              width: toCssPercentage( size.width ),
+              height: toCssPercentage( size.height ),
+              zIndex: -10
+            }}
+        />
+    );
+  });
+
   return (
     <OverlayFrame id='overlay-frame'
       sx={{
         borderColor: overlayFrameVisuals?.border_color || 'red',
-        borderWidth: overlayFrameVisuals?.border_width || '1px'
+        borderWidth: overlayFrameVisuals?.border_width || '0px'
       }}
     >
-
+      {templateRegions}
       <FullscreenOcrResult
         ocrItemBoxVisuals={ocrItemBoxVisuals}
         overlayHotkeys={overlayHotkeys}

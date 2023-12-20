@@ -83,7 +83,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         const boxWidthPx = regionWidthPx * ( box.dimensions.width / 100 );
         const boxHeightPx = regionHeightPx * ( box.dimensions.height / 100 );
 
-        const fontSize = isVertical ? boxWidthPx * 0.7 : boxHeightPx * 0.75; // Pixels
+        const fontSize = isVertical ? boxWidthPx * 0.88 : boxHeightPx * 0.93; // Pixels
 
         let { font_size_factor } = ocrItemBoxVisuals.text;
 
@@ -91,8 +91,6 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
             font_size_factor = font_size_factor * 1.10;
 
         const fontSizeOffset =  ( fontSize * ( font_size_factor / 100 ) ) - fontSize;
-
-        // console.log({ fontSizeOffset });
 
         if ( box.angle_degrees < -70 )
             isVertical = true;
@@ -107,7 +105,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                 lineHeight: adjustedFontSize + 'px'
             },
             borderColor: ocrItemBoxVisuals?.border_color || 'red',
-            borderWidth: ocrItemBoxVisuals?.border_width || '1px',
+            borderWidth: ocrItemBoxVisuals?.border_width || '0px',
             borderRadius: ocrItemBoxVisuals?.border_radius || '2rem',
             writingMode: isVertical ? 'vertical-rl' :'inherit',
             textOrientation: isVertical ? 'upright' :'inherit',

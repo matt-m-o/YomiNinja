@@ -1,6 +1,6 @@
 import { BrowserWindow, IpcMainInvokeEvent, ipcMain } from "electron";
 import { OcrTemplatesService } from "./ocr_templates.service";
-import { OcrTemplateId, OcrTemplateJson } from "../@core/domain/ocr_template/ocr_template";
+import { OcrTemplate, OcrTemplateId, OcrTemplateJson } from "../@core/domain/ocr_template/ocr_template";
 import { GetOcrTemplates_Input } from "../@core/application/use_cases/ocr_template/get_ocr_template/get_ocr_templates.use_case";
 import { InAppNotification } from "../common/types/in_app_notification";
 
@@ -9,6 +9,8 @@ export class OcrTemplatesController {
 
     ocrTemplatesService: OcrTemplatesService;
     mainWindow: BrowserWindow;
+    overlayWindow: BrowserWindow;
+    activeOcrTemplateId: OcrTemplateId | null;
 
     constructor( input: {
         ocrTemplatesService: OcrTemplatesService
@@ -17,9 +19,15 @@ export class OcrTemplatesController {
     }
 
 
-    init( input: { mainWindow: BrowserWindow }) {
+    init(
+        input: {
+            mainWindow: BrowserWindow;
+            overlayWindow: BrowserWindow;
+        }
+    ) {
 
         this.mainWindow = input.mainWindow;
+        this.overlayWindow = input.overlayWindow;
 
         this.registersIpcHandlers();
     }
@@ -41,6 +49,10 @@ export class OcrTemplatesController {
             async ( event: IpcMainInvokeEvent, message: OcrTemplateId | null ): Promise< OcrTemplateJson | null > => {
 
                 const template = await this.ocrTemplatesService.changeActiveOcrTemplate( message );
+
+                this.broadcastActiveTemplate( template );
+
+                this.activeOcrTemplateId = template?.id || null;
 
                 return template?.toJson() || null;
             }
@@ -69,6 +81,11 @@ export class OcrTemplatesController {
         ipcMain.handle( 'ocr_templates:delete',
             async ( event: IpcMainInvokeEvent, message: OcrTemplateId ): Promise< void > => {
 
+                if ( message === this.activeOcrTemplateId ) {
+                    this.activeOcrTemplateId = null;
+                    this.broadcastActiveTemplate( null );
+                }
+
                 await this.ocrTemplatesService.deleteOcrTemplate( message );
             }
         );
@@ -83,12 +100,30 @@ export class OcrTemplatesController {
                         console.error( error );
                     });
                     
-                const json = updatedTemplate?.toJson()
+                const json = updatedTemplate?.toJson();
+
+                if ( updatedTemplate?.id === this.activeOcrTemplateId )
+                    this.broadcastActiveTemplate( updatedTemplate );
                 
                 // console.log( json?.image_base64 );
 
                 return json;
             }
         );
+    }
+
+    private broadcastActiveTemplate( template: OcrTemplate | null ) {
+
+        const json = template?.toJson();
+
+        this.overlayWindow.webContents.send(
+            'ocr_templates:active_template',
+            json
+        );
+
+        // this.mainWindow.webContents.send(
+        //     'ocr_templates:active_template',
+        //     json
+        // );
     }
 }
