@@ -14,7 +14,7 @@ export default function AppSettingsOthers() {
 
     useEffect( () => {
 
-        if ( !overlayBehavior.click_through_mode )
+        if ( !overlayBehavior?.click_through_mode )
             return;
 
         setClickThroughMode( overlayBehavior.click_through_mode );
@@ -124,7 +124,7 @@ export default function AppSettingsOthers() {
                         sx={ switchFormControlLabelSx }
                         control={
                             <Switch
-                                checked={ Boolean( overlayBehavior.show_window_without_focus ) }
+                                checked={ Boolean( overlayBehavior?.show_window_without_focus ) }
                                 onChange={ ( event ) => {
                                     updateActivePresetBehavior({
                                         show_window_without_focus: event.target.checked

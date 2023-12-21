@@ -83,7 +83,7 @@ export default function AppInfo() {
                             {versionText}
                         </AboutText>
 
-                        { !versionInfo.isUpToDate &&
+                        { !versionInfo?.isUpToDate &&
                             <AboutText sx={{ mt: 0 }}>
                                 ✨{newVersionText} <GithubReleasesLink />
                             </AboutText>

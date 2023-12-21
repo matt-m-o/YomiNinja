@@ -45,6 +45,14 @@ export const ExtensionsProvider = ( { children }: PropsWithChildren ) => {
         global.ipcRenderer.invoke( 'refresh_all_windows' );
     }
 
+    function getExtensionActionButton( extensionId: string ): Element {
+        const element = document.querySelector("browser-action-list")
+            .shadowRoot
+            .querySelector("#"+extensionId);
+
+        return element;
+    }
+
     
     useEffect( () => {
         getInstalledExtensions();
@@ -64,6 +72,30 @@ export const ExtensionsProvider = ( { children }: PropsWithChildren ) => {
             <RefreshRoundedIcon style={{ width: '28px' }}/>
         </Button>
     </> )
+    
+    useEffect( () => {
+
+        if ( !installedExtensions )
+            return;
+
+        const tenTen = installedExtensions.find( item => {
+            
+            if ( !item.name.includes('10ten') )
+                return;
+
+            return item;
+        });
+
+        if ( !tenTen ) return;
+
+        getExtensionActionButton( tenTen.id )
+            ?.addEventListener('click', refreshUI );
+
+        return () => {
+            document.removeEventListener( 'click', refreshUI );
+        };
+
+    }, [ installedExtensions ] );
     
     
     return (
