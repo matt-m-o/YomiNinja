@@ -249,7 +249,7 @@ export default function AppSettingsVisuals() {
 
                     <Box display={'flex'} flexDirection={'row'} >
                         <Typography gutterBottom component="div" margin={2} mb={1} ml={0} mr={0.4} fontSize={'1rem'}>
-                            Custom cursor size
+                            Cursor size
                         </Typography>
                     </Box>
 

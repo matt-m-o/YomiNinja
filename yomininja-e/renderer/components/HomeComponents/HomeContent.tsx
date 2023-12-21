@@ -153,6 +153,7 @@ export default function HomeContent() {
                         <li>Achieve the lowest latency by using the "PrintScreen" key.</li>
                         <li>Customize hotkeys, text auto-copy, and more in the settings menu.</li>
                         <li>The copied text is also transmitted via WebSockets on port 6677.</li>
+                        <li>If the game hides the mouse cursor, enable the custom cursor in the settings menu.</li>
                     </ul>
 
                 </CardContent>
