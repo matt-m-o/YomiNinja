@@ -137,7 +137,7 @@
       ]
     },
     "linux": {
-      "icon": "electron_resources/icon_512x512.png",
+      "icon": "./electron_resources/icon.icns",
       "asarUnpack": [
         "**/node_modules/sharp/**",
         "**/node_modules/x11/**"
@@ -148,7 +148,8 @@
           "to": "bin",
           "filter": "**/*"
         }
-      ]
+      ],
+      "target": [ "deb", "rpm", "pacman", "zip" ]
     }
   },
   "jest": {
