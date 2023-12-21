@@ -7,7 +7,9 @@ import { styled } from '@mui/material';
 const CursorImage = styled(Image)({
   position: 'absolute',
   zIndex: -20,
-  pointerEvents: 'none'
+  pointerEvents: 'none',
+  marginTop: '-0.2%',
+  marginLeft: '-0.1%',
 });
 
 export type CustomCursorProps = {
