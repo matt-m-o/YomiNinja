@@ -95,4 +95,8 @@ export class BrowserExtensionsController {
         this.browserExtensionsService.addBrowserWindow( window );
     }
 
+    async loadExtensions() {
+        await this.browserExtensionsService.loadExtensions();
+        this.browserExtensionsService.reloadWindows();
+    }
 }

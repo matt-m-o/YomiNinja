@@ -85,7 +85,7 @@ export class BrowserExtensionsService {
         
         // console.log({ EXTENSIONS_DIR });
 
-        await this.loadExtensions();
+        // await this.loadExtensions();
 
         // console.log(
         //     Array.from(this.installedExtensions)[0]
@@ -99,6 +99,12 @@ export class BrowserExtensionsService {
 
         this.extensionsApi.addTab( window.webContents, window );
         this.extensionsApi.selectTab( window.webContents );
+    }
+
+    reloadWindows = () => {
+        this.windows.forEach( window => {
+            window.reload();
+        });
     }
 
     getInstalledExtensions = async (): Promise< BrowserExtension[] > => {
@@ -135,7 +141,7 @@ export class BrowserExtensionsService {
         return extensions;
     }
 
-    private loadExtensions = async () => {
+    loadExtensions = async () => {
 
         this.installedExtensions.forEach( extension => {
             this.session.removeExtension( extension.id );
@@ -275,9 +281,7 @@ export class BrowserExtensionsService {
 
         await this.loadExtensions();
 
-        this.windows.forEach( window => {
-            window.reload();
-        });
+        this.reloadWindows();
     }
 
     uninstallExtension = async ( extension: BrowserExtension ) => {

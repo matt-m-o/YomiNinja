@@ -122,6 +122,10 @@
       "output": "dist"
     },
     "forceCodeSigning": true,
+    "nsis": {
+      "oneClick": false,
+      "runAfterFinish": true
+    },
     "win": {
       "publisherName": "Matt M.",
       "extraResources": [

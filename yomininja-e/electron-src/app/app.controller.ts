@@ -60,10 +60,10 @@ export class AppController {
   
         await browserExtensionsController.init({
             mainWindow: this.mainWindow
-        });
+        })
 
-        if ( isDev )
-            createDebuggingWindow();
+        // if ( isDev )
+        //     createDebuggingWindow();
   
 
         await initializeApp()
@@ -76,7 +76,7 @@ export class AppController {
                     mainWindow: this.mainWindow,
                     overlayWindow: this.overlayWindow
                 });
-                mainController.loadMainPage();
+                
                 settingsController.init( this.mainWindow );
                 appInfoController.init( this.mainWindow );
                 profileController.init( this.mainWindow );
@@ -89,12 +89,19 @@ export class AppController {
                     overlayWindow: this.overlayWindow
                 });
 
-                browserExtensionsController.addBrowserWindow( this.mainWindow );
+                await mainController.loadMainPage();
+                
+                setTimeout( () => {
+                    browserExtensionsController.addBrowserWindow( this.mainWindow );
+                    browserExtensionsController.loadExtensions();
+                }, 500 );
             });
+                
 
 
         const settings = await this.appService.getActiveSettingsPreset();
-        if ( !settings ) return;
+        if ( !settings )
+            throw new Error('no-active-settings-preset');
 
         this.showOverlayWindowWithoutFocus = Boolean( settings.overlay.behavior.show_window_without_focus );
 
