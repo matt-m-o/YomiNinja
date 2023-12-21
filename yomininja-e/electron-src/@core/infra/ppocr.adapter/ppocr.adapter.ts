@@ -140,13 +140,21 @@ export class PpOcrAdapter implements OcrAdapter {
 
         const executableName = platform === 'win32'
             ? 'ppocr_infer_service_grpc.exe'
-            : 'start.sh';
-            
-        addExecutionPermissionToPPOCR( cwd );
+            : 'start.sh'; // start.sh | ppocr_infer_service_grpc
 
         const executable = join( cwd + `/${executableName}` );
         
-        this.ppocrServiceProcess = spawn( executable, [/* command line arguments */], { cwd } );
+        this.ppocrServiceProcess = spawn(
+            executable,
+            [/*arguments */],
+            {
+                cwd,
+                // env: {
+                //     ...process.env,
+                //     LD_LIBRARY_PATH: './lib'
+                // }
+            }
+        );
 
         // Handle stdout and stderr data
         this.ppocrServiceProcess.stdout.on('data', ( data: string ) => {
