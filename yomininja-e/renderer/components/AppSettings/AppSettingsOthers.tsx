@@ -23,7 +23,7 @@ export default function AppSettingsOthers() {
     
     const switchFormControlLabelSx: SxProps<Theme> = {
         mt: 0.1,
-        mb: 0.1
+        mb: 0.1,
     }
 
     return (
@@ -42,7 +42,7 @@ export default function AppSettingsOthers() {
                             display: 'flex',
                             alignItems: 'flex-start',
                             ml: 0,
-                            mb: 2
+                            mb: 0
                         }}
                         control={
                             <Select size="small"
@@ -67,7 +67,10 @@ export default function AppSettingsOthers() {
 
                     
                     <FormControlLabel label='React to clicks with click-through enabled'
-                        sx={ switchFormControlLabelSx }
+                        sx={{
+                            ...switchFormControlLabelSx,
+                            mb: 1
+                        }}
                         control={
                             <Switch
                                 checked={ Boolean( overlayBehavior?.always_forward_mouse_clicks ) }
@@ -121,7 +124,10 @@ export default function AppSettingsOthers() {
                         }
                     />
                     <FormControlLabel label='Show overlay without stealing focus'
-                        sx={ switchFormControlLabelSx }
+                        sx={{
+                            ...switchFormControlLabelSx,
+                            mb: 1
+                        }}
                         control={
                             <Switch
                                 checked={ Boolean( overlayBehavior?.show_window_without_focus ) }
