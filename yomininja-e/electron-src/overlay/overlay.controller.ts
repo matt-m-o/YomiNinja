@@ -118,6 +118,7 @@ export class OverlayController {
 
     refreshPage(): void {
         this.overlayWindow.reload();
+        this.overlayWindow.setTitle('OCR Overlay - YomiNinja');
     }
 
     private registersIpcHandlers() {

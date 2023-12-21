@@ -19,22 +19,18 @@ export default function OcrOverlayPage() {
   }, []);
   
 
-  return (
-    <>      
-      <title>OCR Overlay - YomiNinja</title>
+  return ( <>
+  
+    <SettingsProvider>
+      <DictionaryProvider>
+        <OcrResultProvider>
+          <OcrTemplatesProvider>
 
-      <SettingsProvider>
-        <DictionaryProvider>
-          <OcrResultProvider>
-            <OcrTemplatesProvider>
-
-              <OcrOverlay/>
-              
-            </OcrTemplatesProvider>
-          </OcrResultProvider>
-        </DictionaryProvider>
-      </SettingsProvider>
-    </>
-    
-  );
+            <OcrOverlay/>
+            
+          </OcrTemplatesProvider>
+        </OcrResultProvider>
+      </DictionaryProvider>
+    </SettingsProvider>
+  </> );
 }
