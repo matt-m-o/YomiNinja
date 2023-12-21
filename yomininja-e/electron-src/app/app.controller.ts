@@ -402,6 +402,7 @@ export class AppController {
                     imageBase64 :image.toString('base64')
                 }
             );
+            this.mainWindow.show();
         }
         else {
             await ocrRecognitionController.recognize( image )
