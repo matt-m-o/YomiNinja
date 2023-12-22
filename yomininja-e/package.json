@@ -149,7 +149,7 @@
           "filter": "**/*"
         }
       ],
-      "target": [ "deb", "rpm", "pacman", "zip" ]
+      "target": [ "deb", "rpm", "pacman" ]
     }
   },
   "jest": {
