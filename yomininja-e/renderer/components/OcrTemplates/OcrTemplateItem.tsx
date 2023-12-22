@@ -60,6 +60,7 @@ export default function OcrTemplateItem( props: OcrTemplateItemProps ) {
                     left: toCssPercentage( position.left ),
                     width: toCssPercentage( size.width ),
                     height: toCssPercentage( size.height ),
+                    cursor: 'inherit'
                 }}
             />
         );
@@ -100,18 +101,19 @@ export default function OcrTemplateItem( props: OcrTemplateItemProps ) {
                     alignItems='center'
                     mb={1}
                 >
-                    <TemplateDiv style={{ cursor: 'auto' }}>
+                    <TemplateDiv 
+                        style={{ cursor: 'pointer' }}
+                        onClick={ loadItem }
+                    >
                         {regions}
                         <img
                             src={'data:image/png;base64,'+template.image_base64}
                             alt={template.name}
-                            onClick={ loadItem }
                             style={{
                                 maxWidth: '100%',
                                 maxHeight: '20vh',
                                 userSelect: 'none',
-                                objectFit: 'cover', 
-                                cursor: 'pointer',
+                                objectFit: 'cover'
                             }}
                         />
                     </TemplateDiv>
