@@ -16,7 +16,6 @@ import { UpdateSettingsPresetResponse__Output } from "../../../../grpc/rpc/ocr_s
 import { UpdateSettingsPresetRequest } from "../../../../grpc/rpc/ocr_service/UpdateSettingsPresetRequest";
 import { applyCpuHotfix } from "./hotfix/hardware_compatibility_hotfix";
 import os from 'os';
-import { addExecutionPermissionToPPOCR } from "./ppocr_executable_permission";
 
 export class PpOcrAdapter implements OcrAdapter {
     
@@ -147,13 +146,7 @@ export class PpOcrAdapter implements OcrAdapter {
         this.ppocrServiceProcess = spawn(
             executable,
             [/*arguments */],
-            {
-                cwd,
-                // env: {
-                //     ...process.env,
-                //     LD_LIBRARY_PATH: './lib'
-                // }
-            }
+            { cwd }
         );
 
         // Handle stdout and stderr data
