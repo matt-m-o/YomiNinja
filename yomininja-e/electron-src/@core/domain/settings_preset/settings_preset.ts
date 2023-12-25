@@ -11,7 +11,7 @@ export type OcrEngineSettings = {
     max_image_width: number;
     cpu_threads: number;
     invert_colors: boolean;
-    inference_runtime: string
+    inference_runtime: string;
 };
 
 export type OverlayOcrItemBoxVisuals = {
@@ -34,12 +34,15 @@ export type OverlayVisualCustomizations = {
     frame: OverlayFrameVisuals;
 };
 
+export type ClickThroughMode = 'auto' | 'enabled' | 'disabled';
 export type OverlayBehavior = {
     copy_text_on_hover: boolean;
     copy_text_on_click: boolean;
-    always_on_top: boolean;
-    click_through: boolean;
+    always_on_top: boolean;    
+    click_through_mode: ClickThroughMode;
     show_yomichan_window_on_copy: boolean;
+    always_forward_mouse_clicks: boolean;
+    show_window_without_focus: boolean;
 };
 
 export type OverlayHotkeys = {
@@ -162,13 +165,13 @@ export class SettingsPreset {
             }
         };
 
-        const { always_on_top, click_through } = this.overlay.behavior
+        const { always_on_top, click_through_mode } = this.overlay.behavior
 
-        if ( !click_through )
+        if ( click_through_mode === 'disabled' )
             this.overlay.behavior.always_on_top = false;
 
-        if ( always_on_top )
-            this.overlay.behavior.click_through = true;        
+        if ( always_on_top && click_through_mode === 'disabled' )
+            this.overlay.behavior.click_through_mode = 'auto';
     }
 
     updateOcrEngineSettings( update: Partial< OcrEngineSettings > ) {

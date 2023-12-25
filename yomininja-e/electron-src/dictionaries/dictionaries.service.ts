@@ -8,7 +8,7 @@ import { Dictionary } from "../@core/domain/dictionary/dictionary";
 import { DictionaryHeadword, DictionaryHeadwordId } from "../@core/domain/dictionary/dictionary_headword/dictionary_headword";
 import { Language } from "../@core/domain/language/language";
 import { getActiveProfile } from "../@core/infra/app_initialization";
-import { browserExtensions } from "../extensions/extensions";
+import { browserExtensions } from "../extensions/browser_extensions.service";
 import { BrowserExtension } from "../extensions/browser_extension";
 
 export class DictionariesService {

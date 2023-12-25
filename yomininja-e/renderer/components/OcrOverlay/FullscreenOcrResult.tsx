@@ -32,42 +32,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
     const { ocrItemBoxVisuals, overlayHotkeys, overlayBehavior } = props;
 
     const { ocrResult } = useContext( OcrResultContext );
-    const [ hoveredText, setHoveredText ] = useState< string >('');    
-    
-    useEffect(() => {
-
-        // console.log('hoveredElement');
-
-        if ( !overlayHotkeys?.copy_text && hoveredText )
-            return;
-
-        let copyTextHotkey = overlayHotkeys?.copy_text
-            .split('+')
-            .find( value => value != 'undefined' );
-
-        if ( !copyTextHotkey )
-            return;
-
-        if ( copyTextHotkey.length == 1 )
-            copyTextHotkey = copyTextHotkey.toLowerCase();
-
-        // console.log({ copyTextHotkey })
-
-        const handleKeyPress = ( e: KeyboardEvent ) => {            
-
-            // console.log(e.key);
-            if ( e.key === copyTextHotkey && hoveredText ) {
-                global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', hoveredText );
-            }
-        };
-
-        document.addEventListener('keyup', handleKeyPress);
-
-        return () => {
-            document.removeEventListener('keyup', handleKeyPress);
-        };
-
-    }, [ hoveredText, global.ipcRenderer ]);
+    const [ hoveredText, setHoveredText ] = useState< string >('');
 
     useEffect( () => {
 
@@ -82,13 +47,25 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
     }, [ hoveredText ] );
 
+    const handleBoxMouseEnter = ( item: OcrItemScalable ) => {
+        if ( !overlayBehavior.copy_text_on_hover )
+            return;
+        setHoveredText( item.text )
+    }
+
+    const handleBoxMouseLeave = () => {
+        if ( !overlayBehavior.copy_text_on_hover )
+            return;
+        setHoveredText( '' );
+    }
+
     function OcrResultBox( props: { ocrItem: OcrItemScalable } ): JSX.Element {
 
         const { ocrItem } = props;
 
         const { box } = ocrItem;
 
-        let isVertical = box.dimensions.height > ( box.dimensions.width * 1.40);
+        let isVertical = box.dimensions.height > ( box.dimensions.width * 1.40 );
 
         const fontSize = isVertical ? box.dimensions.width * 90 : box.dimensions.height * 65;
 
@@ -123,8 +100,8 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                     maxHeight: box.dimensions.height *1.10 + '%',            
                     fontSize: fontSize + '%',
                 }}                          
-                onMouseEnter={ () => setHoveredText( ocrItem.text ) }
-                onMouseLeave={ () => setHoveredText( '' ) }
+                onMouseEnter={ () => handleBoxMouseEnter( ocrItem ) }
+                onMouseLeave={ () => handleBoxMouseLeave() }
                 onClick={ () => handleBoxClick( ocrItem.text ) }
                 // onMouseMove={ ( event ) => onMouseMoveHandler(event) }
             >
@@ -138,7 +115,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         if ( !overlayBehavior.copy_text_on_click || !text )
             return;
 
-        console.log( { text } );
+        // console.log( { text } );
         global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', text );
     }
 

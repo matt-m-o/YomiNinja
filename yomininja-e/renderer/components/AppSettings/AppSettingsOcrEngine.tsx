@@ -91,7 +91,7 @@ export default function AppSettingsOcrEngine() {
                 OCR Engine
             </Typography>
             
-            <Container sx={{ mt: 2, mb: 4 }}>
+            <Container sx={{ mt: 2, mb: 2 }}>
 
                 <FormControlLabel label='Invert image colors'
                     control={
@@ -192,7 +192,7 @@ export default function AppSettingsOcrEngine() {
                         CPU threads
                     </Typography>
                     {requiresRestartIcon}
-                </Box>            
+                </Box>
 
                 <Stack spacing={2} direction="row" sx={{ mb: 1, pl: 2, pr: 2 }} alignItems="center">
 
@@ -228,7 +228,7 @@ export default function AppSettingsOcrEngine() {
                                 console.log(value)
                                 updateActivePresetOcrEngine({ inference_runtime: value });
                             }
-                        }}                        
+                        }}
                     >
                         <MenuItem value='Open_VINO'>OpenVino CPU (fastest)</MenuItem>
                         <MenuItem value='ONNX_CPU'>ONNX CPU</MenuItem>

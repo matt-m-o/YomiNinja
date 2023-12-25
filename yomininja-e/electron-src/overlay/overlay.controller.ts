@@ -1,23 +1,28 @@
-import { BrowserWindow, IpcMainInvokeEvent, clipboard, globalShortcut, ipcMain } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, MouseInputEvent, clipboard, globalShortcut, ipcMain } from "electron";
 import { OverlayService } from "./overlay.service";
 import { join } from "path";
 import isDev from 'electron-is-dev';
 import { format } from "url";
-import { PAGES_DIR } from "../util/directories";
+import { PAGES_DIR } from "../util/directories.util";
 import { WindowManager } from "../../gyp_modules/window_management/window_manager";
-import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
+import { ClickThroughMode, SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
+import { uIOhook } from "uiohook-napi";
+import { windowManager } from "../@core/infra/app_initialization";
+import { getBrowserWindowHandle } from "../util/browserWindow.util";
+import os from 'os';
 
 export class OverlayController {
 
     private overlayService: OverlayService;
     private mainWindow: BrowserWindow;
-    private overlayWindow: BrowserWindow;
-    private windowManager: WindowManager;
+    private overlayWindow: BrowserWindow;    
 
     private overlayAlwaysOnTop: boolean = true;
-    private clickThrough: boolean = true;
+    private clickThroughMode: ClickThroughMode = 'auto';
     private copyTextOnClick: boolean = false;
     private showYomichanWindowOnCopy: boolean = true;
+    private alwaysForwardMouseClicks: boolean = false;
+    private showWindowWithoutFocus: boolean = false;
 
     private globalShortcutAccelerators: string[] = [];
 
@@ -38,7 +43,9 @@ export class OverlayController {
 
             this.overlayAlwaysOnTop = Boolean( settingsJson.overlay.behavior.always_on_top );
             this.showYomichanWindowOnCopy = Boolean( settingsJson.overlay.behavior.show_yomichan_window_on_copy );
-            this.clickThrough = Boolean( settingsJson.overlay.behavior.click_through );
+            this.clickThroughMode = settingsJson.overlay.behavior.click_through_mode;
+            this.alwaysForwardMouseClicks = Boolean( settingsJson.overlay.behavior.always_forward_mouse_clicks );
+            this.showWindowWithoutFocus = Boolean( settingsJson.overlay.behavior.show_window_without_focus );
         }
 
         this.createOverlayWindow();
@@ -47,9 +54,7 @@ export class OverlayController {
 
         this.overlayWindow.on( 'show', ( ) => {
             this.showOverlayWindow();
-        });
-
-        this.windowManager = new WindowManager();
+        });        
 
         this.overlayService.initWebSocket();
 
@@ -92,18 +97,17 @@ export class OverlayController {
         const showDevTools = isDev && false;
         if (showDevTools) {
             this.overlayWindow.webContents.openDevTools();
-            this.clickThrough = false;
+            this.clickThroughMode = 'disabled';
         }
-
         
         this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop && !showDevTools, "normal" ); // normal, pop-up-menu och screen-saver
 
         // "True" Prevents black image when using youtube on some browsers (e.g. Brave)
-        this.overlayWindow.setIgnoreMouseEvents( this.clickThrough, { // !showDevTools
+        this.overlayWindow.setIgnoreMouseEvents( this.clickThroughMode !== 'disabled', { // !showDevTools
             forward: true, // !!showDevTools
         });
 
-        console.log({ clickThrough: this.clickThrough })
+        // console.log({ clickThrough: this.clickThrough })
     }
 
     refreshPage(): void {
@@ -112,33 +116,48 @@ export class OverlayController {
 
     private registersIpcHandlers() {
 
-        ipcMain.handle( 'user_command:copy_to_clipboard', ( event: IpcMainInvokeEvent, message: string ) => {
+        ipcMain.handle( 'user_command:copy_to_clipboard', async ( event: IpcMainInvokeEvent, message: string ) => {
 
             try {
 
                 if ( !message || message.length === 0 ) return;
 
-                console.log({ text_to_copy: message });
-                
                 clipboard.writeText( message );
                 this.overlayService.sendOcrTextTroughWS( message );
+                // console.log({ text_to_copy: message });
                 
                 if ( !this.showYomichanWindowOnCopy )
                     return;
 
-                const windows = this.windowManager.getAllWindows();
+                const windows = await windowManager.searchWindow( 'Yomichan Search' );
             
-                const yomichanWindow = windows.find( window => window.title.includes( '- Yomichan Search' ) );
-            
-                if ( !yomichanWindow ) 
+                if ( windows.length === 0 ) 
                     return;
             
-                this.windowManager.setForegroundWindow( yomichanWindow.handle );
+                const yomichanWindow = windows[0];
+                
+                windowManager.setForegroundWindow( yomichanWindow.handle );
 
             } catch (error) {
-                console.error(error);
+                console.error( error );
             }
+            
           
+        });
+
+        ipcMain.handle( 'overlay:set_ignore_mouse_events', ( event: IpcMainInvokeEvent, value: boolean ) => {
+
+            // console.log(`overlay:set_ignore_mouse_events: ${value}`);
+
+            // console.log('clickThroughMode: '+ this.clickThroughMode);
+
+            if ( this.clickThroughMode === 'auto' ) {
+
+                this.overlayWindow.setIgnoreMouseEvents(
+                    value,
+                    { forward: true }
+                );
+            }
         });
     }
 
@@ -160,7 +179,7 @@ export class OverlayController {
         globalShortcut.register( overlayHotkeys.show, () => {
 
             this.showOverlayWindow();
-            this.overlayWindow.webContents.send( 'user_command:copy_to_clipboard' );
+            // this.overlayWindow.webContents.send( 'user_command:copy_to_clipboard' );
         });
         this.globalShortcutAccelerators.push( overlayHotkeys.show );
 
@@ -172,6 +191,87 @@ export class OverlayController {
         });
         this.globalShortcutAccelerators.push( overlayHotkeys.show_and_clear );
 
+
+        uIOhook.on( 'mousemove', async ( e ) => {
+
+            if ( 
+                this.clickThroughMode === 'disabled' ||
+                process.platform === 'win32'
+            ) return;
+
+            const { x, y } = this.getMousePosition(e);
+
+            const mouseEvent: Electron.MouseInputEvent = {
+                type: 'mouseMove',
+                x,
+                y,
+                // globalX: e.x,
+                // globalY: e.y,
+            };
+            this.overlayWindow.webContents.sendInputEvent(mouseEvent);
+        });
+
+        uIOhook.on( 'wheel', async ( e ) => {
+
+            if ( this.clickThroughMode !== 'enabled' ) return;
+
+            const { x, y } = this.getMousePosition(e);
+
+            const deltaY = -1 * e.rotation * 100;
+            
+            const mouseEvent: Electron.MouseWheelInputEvent = {
+                type: 'mouseWheel',
+                deltaY,
+                x: x,
+                y: y,
+                // globalX: e.x,
+                // globalY: e.y,
+            };
+            this.overlayWindow.webContents.sendInputEvent(mouseEvent);
+        });
+
+        uIOhook.on( 'click', async ( e ) => {
+
+            if (
+                this.clickThroughMode === 'disabled' ||
+                !this.alwaysForwardMouseClicks
+            ) return;
+
+            const { x, y } = this.getMousePosition(e);
+
+            const button = [ 'left', 'right', 'middle' ][ Number( e.button ) - 1 ] as MouseInputEvent['button'];
+
+            this.overlayWindow.webContents.sendInputEvent({
+                type: 'mouseDown',
+                x,
+                y,
+                button,
+                clickCount: 1
+            });
+            this.overlayWindow.webContents.sendInputEvent({
+                type: 'mouseUp',
+                x,
+                y,
+                button,
+                clickCount: 1
+            });
+        });
+
+    }
+
+    private getMousePosition( absolutePosition: { x: number, y: number } ) {
+
+        const [ xOffset, yOffset ] = this.overlayWindow.getPosition();
+        let x = absolutePosition.x - xOffset;
+        let y = absolutePosition.y - yOffset;
+
+        x = x >= 0 ? x : 0;
+        y = y >= 0 ? y : 0;
+
+        return {
+            x,
+            y
+        }
     }
 
     private unregisterGlobalShortcuts() {
@@ -184,17 +284,29 @@ export class OverlayController {
     }
 
     private showOverlayWindow() {
+        // console.log("OverlayController.showOverlayWindow");
         
-        const overlayWindowHandle = Number(this.overlayWindow.getMediaSourceId().split(':')[1]);
+        const overlayWindowHandle = getBrowserWindowHandle( this.overlayWindow );
+        
+        console.log({ overlayWindowHandle });
+        
+        if ( !this.showWindowWithoutFocus ) {
 
-        this.windowManager.setForegroundWindow( overlayWindowHandle );
+            this.overlayWindow.setVisibleOnAllWorkspaces(
+                true, { visibleOnFullScreen:true }
+            );
+            // if ( process.platform !== 'linux' ) {
+            windowManager.setForegroundWindow( overlayWindowHandle );
+            // }
+        }
+
         this.overlayWindow.setAlwaysOnTop( false, "normal" );
-        this.overlayWindow.setAlwaysOnTop( true, "normal" ); // normal, pop-up-menu och screen-saver
+        this.overlayWindow.setAlwaysOnTop( true, "screen-saver" ); // normal, pop-up-menu, och, screen-saver
         
-        this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );
+        this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop, "screen-saver" );
     }
 
-    async refreshActiveSettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
+    async applySettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
 
         if ( !settingsPresetJson ) {
             settingsPresetJson = ( await this.overlayService.getActiveSettingsPreset() )
@@ -204,12 +316,14 @@ export class OverlayController {
         if ( !settingsPresetJson ) return;
 
         this.overlayAlwaysOnTop = Boolean( settingsPresetJson.overlay.behavior.always_on_top );
-        this.clickThrough = Boolean( settingsPresetJson.overlay.behavior.click_through );
+        this.clickThroughMode = settingsPresetJson.overlay.behavior.click_through_mode;
         this.showYomichanWindowOnCopy = Boolean( settingsPresetJson.overlay.behavior.show_yomichan_window_on_copy );
-        
+        this.alwaysForwardMouseClicks = Boolean( settingsPresetJson.overlay.behavior.always_forward_mouse_clicks );
+        this.showWindowWithoutFocus = Boolean( settingsPresetJson.overlay.behavior.show_window_without_focus );
+
         this.overlayWindow?.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );
-        this.overlayWindow.setIgnoreMouseEvents( this.clickThrough, {
-            forward: this.clickThrough,
+        this.overlayWindow.setIgnoreMouseEvents( this.clickThroughMode !== 'disabled', {
+            forward: true,
         });
 
         this.registerGlobalShortcuts( settingsPresetJson );

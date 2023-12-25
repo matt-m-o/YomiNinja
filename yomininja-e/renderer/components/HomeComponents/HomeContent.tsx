@@ -1,13 +1,11 @@
 import { useContext, useEffect } from "react"
 import { LanguagesContext } from "../../context/languages.provider";
-import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Box, Button, Card, CardActions, CardContent, Container, FormControlLabel, FormGroup, Grid, TextField, TextFieldProps, Typography } from "@mui/material";
+import { Autocomplete, Box, Button, Card, CardContent, Container, FormControlLabel, Grid, TextField, TextFieldProps, Typography } from "@mui/material";
 import { ProfileContext } from "../../context/profile.provider";
-import CaptureSourceMenu from "./CaptureSourceMenu";
 import { CaptureSourceContext, CaptureSourceProvider } from "../../context/capture_source.provider";
 import HotkeyHints from "./HotkeyHints";
 import { ScreenshotMonitorRounded } from "@mui/icons-material";
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 
 
@@ -126,9 +124,10 @@ export default function HomeContent() {
                             marginLeft: 20
                         }}
                     >
-                        <li> Built-in popup dictionaries. </li>
-                        <li> Copy text on click. (only with Click-through disabled for now). </li>
                         <li> Extensions toolbar buttons. </li>
+                        <li> Click-through auto mode. </li>
+                        <li> Option to enable overlay clicks even with click-through enabled. </li>
+                        <li> Option to show the overlay without stealing focus from the current application. </li>
                     </ul>
 
                 </CardContent>

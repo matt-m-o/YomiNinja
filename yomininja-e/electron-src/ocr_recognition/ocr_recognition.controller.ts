@@ -2,7 +2,7 @@ import { BrowserWindow, globalShortcut, screen, desktopCapturer, clipboard, ipcM
 import isDev from 'electron-is-dev';
 import { join } from "path";
 import { format } from 'url';
-import { PAGES_DIR } from "../util/directories";
+import { PAGES_DIR } from "../util/directories.util";
 import { uIOhook, UiohookKey } from 'uiohook-napi'
 import { activeProfile, getActiveProfile } from "../@core/infra/app_initialization";
 import { OcrRecognitionService, entireScreenAutoCaptureSource } from "./ocr_recognition.service";
@@ -10,7 +10,7 @@ import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_pre
 import { CaptureSource, ExternalWindow } from "./common/types";
 import { TaskbarProperties } from "../../gyp_modules/window_management/window_manager";
 import sharp from "sharp";
-
+import os from 'os';
 
 export class OcrRecognitionController {
     
@@ -31,6 +31,8 @@ export class OcrRecognitionController {
 
     private globalShortcutAccelerators: string[] = [];
 
+    private showOverlayWindowWithoutFocus: boolean = false;
+
     constructor( input: {        
         ocrRecognitionService: OcrRecognitionService;        
     }) {
@@ -49,7 +51,9 @@ export class OcrRecognitionController {
 
         const settings = await this.ocrRecognitionService.getActiveSettingsPreset();
 
-        if (!settings) return;        
+        if (!settings) return;
+
+        this.showOverlayWindowWithoutFocus = Boolean( settings.overlay.behavior.show_window_without_focus );
         
         this.registerGlobalShortcuts( settings.toJson() );
         this.registersIpcHandlers();        
@@ -87,9 +91,11 @@ export class OcrRecognitionController {
         ipcMain.handle( 'ocr_recognition:set_capture_source',
             async ( event: IpcMainInvokeEvent, message: CaptureSource ): Promise< void > => {
 
-                this.userSelectedDisplayId = message?.displayId && message?.displayId > 0 ? 
+                const { type, displayId } = message;
+
+                this.userSelectedDisplayId = type === 'screen' && displayId != -1  ? 
                     message.displayId :
-                    undefined;                
+                    undefined;
 
                 if ( !message?.displayId )
                     this.userSelectedWindowId = Number( message.id.split(':')[1] );
@@ -107,11 +113,12 @@ export class OcrRecognitionController {
     }
 
     async recognize( entireScreenImage?: Buffer, runFullScreenImageCheck?: boolean ) {
-        console.log('');
-        console.time('controller.recognize');
+        // console.log('');
+        // console.time('controller.recognize');
 
         try {
             // console.log(activeProfile);
+            // console.log('OcrRecognitionController.recognize')
 
             await this.handleCaptureSourceSelection();
 
@@ -120,10 +127,11 @@ export class OcrRecognitionController {
                 profileId: getActiveProfile().id,
                 display: this.captureSourceDisplay,
                 window: this.captureSourceWindow,
-            });            
+            });
+            // console.log({ ocrResultScalable });
 
-            console.timeEnd('controller.recognize');
-            console.log('');
+            // console.timeEnd('controller.recognize');
+            // console.log('');
 
             this.overlayWindow.webContents.send( 'ocr:result', ocrResultScalable );
 
@@ -210,16 +218,18 @@ export class OcrRecognitionController {
             globalShortcut.unregister( accelerator );
         });
 
-        uIOhook.removeAllListeners();
-
         this.globalShortcutAccelerators = [];
     }
 
     private showOverlayWindow() {
-        this.overlayWindow.show();
+
+        if ( this.showOverlayWindowWithoutFocus )
+            this.overlayWindow.showInactive();
+        else
+            this.overlayWindow.show();
     }
 
-    async refreshActiveSettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
+    async applySettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
 
         if ( !settingsPresetJson ) {
             settingsPresetJson = ( await this.ocrRecognitionService.getActiveSettingsPreset() )
@@ -227,9 +237,11 @@ export class OcrRecognitionController {
         }
 
         if ( !settingsPresetJson )
-            return;        
+            return;
 
-        this.registerGlobalShortcuts( settingsPresetJson );        
+        this.showOverlayWindowWithoutFocus = Boolean( settingsPresetJson.overlay.behavior.show_window_without_focus );
+
+        this.registerGlobalShortcuts( settingsPresetJson );
     }
 
     restartEngine() {
@@ -263,16 +275,26 @@ export class OcrRecognitionController {
 
         else if ( this.captureSourceWindow ) {
 
-            const targetWindowBounds = {
+            let targetWindowBounds = {
                 width: this.captureSourceWindow.size.width,
                 height: this.captureSourceWindow.size.height,
                 x: this.captureSourceWindow.position.x,
                 y: this.captureSourceWindow.position.y,
             };
 
-            // Handling potential issues with DIP
-            let dipRect = screen.screenToDipRect( this.overlayWindow, targetWindowBounds );
-            this.overlayWindow.setBounds( dipRect );
+            if ( os.platform() === 'linux' )
+                this.overlayWindow.setFullScreen( false );
+
+            if ( os.platform() === 'win32' ) {
+                // Handling potential issues with DIP
+                targetWindowBounds = screen.screenToDipRect( this.overlayWindow, targetWindowBounds );
+            }
+
+            this.overlayWindow.setBounds( targetWindowBounds );
+
+            console.log({
+                targetWindowBounds
+            });
 
             // Might be necessary to calculate and set twice
             // dipRect = screen.screenToDipRect( this.overlayWindow, targetWindowBounds )
@@ -285,13 +307,13 @@ export class OcrRecognitionController {
 
     handleDisplaySource() {
 
-        if ( this.userSelectedDisplayId ) {
+        if ( this.userSelectedDisplayId !== undefined ) {
             this.captureSourceDisplay = this.ocrRecognitionService.getDisplay( this.userSelectedDisplayId );
             return;
         }
 
         if ( 
-            !this.userSelectedDisplayId &&
+            this.userSelectedDisplayId === undefined &&
             !this.userSelectedWindowId
         ) 
             this.captureSourceDisplay = this.ocrRecognitionService.getCurrentDisplay();

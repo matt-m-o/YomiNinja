@@ -10,12 +10,13 @@ import { join } from "path";
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { dialog } from 'electron';
 import isDev from 'electron-is-dev';
-import { BIN_DIR } from "../../../util/directories";
+import { BIN_DIR } from "../../../util/directories.util";
 import { OcrEngineSettings } from "../../domain/settings_preset/settings_preset";
 import { UpdateSettingsPresetResponse__Output } from "../../../../grpc/rpc/ocr_service/UpdateSettingsPresetResponse";
 import { UpdateSettingsPresetRequest } from "../../../../grpc/rpc/ocr_service/UpdateSettingsPresetRequest";
 import { applyCpuHotfix } from "./hotfix/hardware_compatibility_hotfix";
 import os from 'os';
+import { addExecutionPermissionToPPOCR } from "./ppocr_executable_permission";
 
 export class PpOcrAdapter implements OcrAdapter {
     
@@ -74,6 +75,7 @@ export class PpOcrAdapter implements OcrAdapter {
         const clientResponse = await new Promise< RecognizeDefaultResponse__Output | undefined >(
             (resolve, reject) => this.ocrServiceClient?.RecognizeBytes( requestInput, ( error, response ) => {
                 if (error) {
+                    this.restart( () => {} );
                     return reject(error)
                 }
                 resolve(response);
@@ -112,6 +114,7 @@ export class PpOcrAdapter implements OcrAdapter {
         const clientResponse = await new Promise< GetSupportedLanguagesResponse__Output | undefined >(
             (resolve, reject) => this.ocrServiceClient?.GetSupportedLanguages( {}, ( error, response ) => {
                 if (error) {
+                    this.restart( () => {} );
                     return reject(error)
                 }
                 resolve(response);
@@ -128,14 +131,20 @@ export class PpOcrAdapter implements OcrAdapter {
 
     startProcess() {
 
+        const platform = os.platform();
+
         const cwd = isDev
-        ? join( BIN_DIR, `/${process.platform}/ppocr` )
-        : join( process.resourcesPath, '/bin/ppocr/' );
+            ? join( BIN_DIR, `/${platform}/ppocr` )
+            : join( process.resourcesPath, '/bin/ppocr/' );
 
-        // let cwd = join( __dirname, "../../../../../../bin/ppocr" );
-        const executable = join( cwd + "/ppocr_infer_service_grpc.exe" );
+        const executableName = platform === 'win32'
+            ? 'ppocr_infer_service_grpc.exe'
+            : 'start.sh';
+            
+        addExecutionPermissionToPPOCR( cwd );
 
-        // Replace 'your_program.exe' with the actual .exe file path you want to run
+        const executable = join( cwd + `/${executableName}` );
+        
         this.ppocrServiceProcess = spawn( executable, [/* command line arguments */], { cwd } );
 
         // Handle stdout and stderr data
@@ -145,8 +154,13 @@ export class PpOcrAdapter implements OcrAdapter {
 
                 const jsonData = JSON.parse( data.toString().split('[INFO-JSON]:')[1] );
 
-                if ( 'server_address' in jsonData )
-                    this.initialize( jsonData.server_address );
+                const timeout = process.platform !== 'linux' ? 0 : 1000;
+
+                if ( 'server_address' in jsonData ) {
+                    setTimeout( () => {
+                        this.initialize( jsonData.server_address );
+                    }, timeout );
+                }
             }
             
             console.log(`stdout: ${data}`);        

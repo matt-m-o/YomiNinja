@@ -115,7 +115,6 @@ export default function Dictionary() {
                             }}
                         >
                             <li> Extension customizations take effect on the next launch. </li>
-                            <li> Disable the Click-through to interact with the popup. </li>                            
                         </ul>
 
                     </Box>

@@ -9,9 +9,11 @@ import LanguageTypeOrmRepository from './db/typeorm/language/language.typeorm.re
 import { applyCpuHotfix } from './ppocr.adapter/hotfix/hardware_compatibility_hotfix';
 import { get_CreateSettingsPresetUseCase, get_GetActiveSettingsPresetUseCase, get_UpdateSettingsPresetUseCase } from './container_registry/use_cases_registry';
 import { get_PpOcrAdapter } from './container_registry/adapters_registry';
+import { WindowManager } from '../../../gyp_modules/window_management/window_manager';
 
 
 export let activeProfile: Profile;
+export let windowManager: WindowManager;
 
 
 async function populateLanguagesRepository( languageRepo: LanguageTypeOrmRepository ) {
@@ -87,6 +89,9 @@ export async function initializeApp() {
         }
 
         activeProfile = defaultProfile;
+
+        windowManager = new WindowManager();
+        await windowManager.init();
 
     } catch (error) {
         console.error( error )

@@ -17,7 +17,7 @@ export default function AppSettingsHotkeys() {
     const overlayHotkeys = activeSettingsPreset?.overlay.hotkeys;
     
     const ocrKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.ocr );
-    const copyTextKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.copy_text );
+    // const copyTextKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.copy_text );
     const showOverlayKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.show );
     const clearOverlayKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.show_and_clear );
     // const [ ocrOnPrintScreen, setOcrOnPrintScreen ] = useState< boolean >( Boolean(overlayHotkeys?.ocr_on_screen_shot) );
@@ -79,15 +79,6 @@ export default function AppSettingsHotkeys() {
                     }
                 />
             </FormGroup>
-
-            <HotkeyFields
-                title='Copy text'
-                hotkeyCombinationState={ copyTextKeys }
-                onChangeHandler={ ( input: HotkeyCombination ) => {
-                    if ( !input ) return;
-                    updateActivePresetHotkeys({ copy_text: hotkeyCombinationToString( input ) })
-                }}
-            />
 
             <HotkeyFields
                 title='Show overlay'
