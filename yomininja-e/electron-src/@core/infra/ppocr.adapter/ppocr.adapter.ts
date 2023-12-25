@@ -141,7 +141,7 @@ export class PpOcrAdapter implements OcrAdapter {
             ? 'ppocr_infer_service_grpc.exe'
             : 'start.sh';
             
-        addExecutionPermissionToPPOCR( cwd );
+        // addExecutionPermissionToPPOCR( cwd );
 
         const executable = join( cwd + `/${executableName}` );
         
