@@ -124,7 +124,6 @@ export default function HomeContent() {
                             marginLeft: 20
                         }}
                     >
-                        <li> Extensions toolbar buttons. </li>
                         <li> Click-through auto mode. </li>
                         <li> Option to enable overlay clicks even with click-through enabled. </li>
                         <li> Option to show the overlay without stealing focus from the current application. </li>

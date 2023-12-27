@@ -67,7 +67,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
         let isVertical = box.dimensions.height > ( box.dimensions.width * 1.40 );
 
-        const fontSize = isVertical ? box.dimensions.width * 90 : box.dimensions.height * 65;
+        const fontSize = isVertical ? box.dimensions.width * 90 : box.dimensions.height * 63;
 
         if ( box.angle_degrees < -70 )
             isVertical = true;
