@@ -198,7 +198,7 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
     }
 
     function importProgressReportHandler( event, progressReport: DictionaryImportProgress ) {
-        console.log( progressReport );
+        // console.log( progressReport );
         setImportProgress( progressReport );
         if ( progressReport.status === 'completed' )
             getDictionaries();

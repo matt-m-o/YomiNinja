@@ -12,12 +12,43 @@ export class BrowserExtensionsService {
 
     session: Electron.Session;
     extensionsApi: ElectronChromeExtensions;
-    installedExtensions: Electron.Extension[] = [];
+    installedExtensions: Map< string, Electron.Extension > = new Map();
     windows: Map< number, BrowserWindow > = new Map(); 
 
     onExtensionButtonClick: () => void = () => {};
 
-    constructor() {}
+    constructor() {
+        // Enable context menu
+        app.on('web-contents-created', ( event, webContents ) => {
+            webContents.on('context-menu', (e, params) => {
+
+                const extensionMenuItems = this.extensionsApi.getContextMenuItems(webContents, params);
+
+                // Refreshing every window on extension click
+                extensionMenuItems.forEach( item => {
+                    const { click } = item;
+                    item.click = () => {
+                        click();
+                        this.windows.forEach( window => {
+                            window.reload();
+                        });
+                    }
+                });
+
+                const menu = buildChromeContextMenu({
+                    params,
+                    webContents,
+                    extensionMenuItems,
+                    openLink: (url, disposition) => {
+                        webContents.loadURL(url);
+                    }
+                });
+            
+                menu.popup();                
+                this.getInstalledExtensions()
+            });
+        });
+    }
 
     init = async () => {
 
@@ -48,41 +79,11 @@ export class BrowserExtensionsService {
         
         // console.log({ EXTENSIONS_DIR });
 
-        this.installedExtensions = await this.loadExtensions(
-            this.session,
-            EXTENSIONS_DIR
-        );
+        // await this.loadExtensions();
+        // console.log('BrowserExtensionsService.installedExtensions:')
+        // console.log(this.installedExtensions)
 
-        // Enable context menu
-        app.on('web-contents-created', ( event, webContents ) => {
-            webContents.on('context-menu', (e, params) => {
-
-                const extensionMenuItems = this.extensionsApi.getContextMenuItems(webContents, params);
-
-                // Refreshing every window on extension click
-                extensionMenuItems.forEach( item => {
-                    const { click } = item;
-                    item.click = () => {
-                        click();
-                        this.windows.forEach( window => {
-                            window.reload();
-                        });
-                    }
-                });
-
-                const menu = buildChromeContextMenu({
-                    params,
-                    webContents,
-                    extensionMenuItems,
-                    openLink: (url, disposition) => {
-                        webContents.loadURL(url);
-                    }
-                });
-            
-                menu.popup();                
-                this.getInstalledExtensions()
-            });
-        });        
+        
 
         // console.log(
         //     this.installedExtensions[0].manifest.commands
@@ -102,10 +103,10 @@ export class BrowserExtensionsService {
 
         const extensions: BrowserExtension[] = [];
 
-        // console.log( this.installedExtensions );
+        // console.log( Array.from( this.installedExtensions.values() ) );
         // console.log( installedExtensions );
 
-        for ( const item of this.installedExtensions ) {
+        for ( const item of Array.from( this.installedExtensions.values() ) ) {
 
             const optionsUrl = item.url + item.manifest.options_ui?.page;
 
@@ -124,9 +125,14 @@ export class BrowserExtensionsService {
         return extensions;
     }
 
-    private loadExtensions = async ( session: Electron.Session, extensionsPath: string ) => {
+    loadExtensions = async () => {
 
-        const subDirectories = await fs.readdir( extensionsPath, {
+        this.installedExtensions.forEach( extension => {
+            this.session.removeExtension( extension.id );
+        });
+        this.installedExtensions.clear();
+
+        const subDirectories = await fs.readdir( EXTENSIONS_DIR, {
             withFileTypes: true,
         });
       
@@ -135,7 +141,7 @@ export class BrowserExtensionsService {
                 .filter( (dirEnt) => dirEnt.isDirectory() )
                 .map( async (dirEnt) => {
         
-                    const extPath = path.join(extensionsPath, dirEnt.name);
+                    const extPath = path.join( EXTENSIONS_DIR, dirEnt.name );
             
                     if ( await this.manifestExists(extPath) ) {
                         return extPath;
@@ -158,25 +164,21 @@ export class BrowserExtensionsService {
                 })
         );
       
-        const extensions = [];
-      
         for ( const extPath of extensionDirectories.filter(Boolean) ) {
-            console.log(`Loading extension from ${extPath}`);
+            // console.log(`Loading extension from ${extPath}`);
             
             if ( !extPath ) continue;
         
             try {
-                const extension = await session.loadExtension(
+                const extension = await this.session.loadExtension(
                     extPath,
                     { allowFileAccess: !isDev } // Required in production
                 );
-                extensions.push(extension);
+                this.installedExtensions.set( extension.id, extension );
             } catch ( error ) {
                 console.error( error );
             }
         }
-      
-        return extensions;
     }
 
     private manifestExists = async ( dirPath: string ): Promise< boolean > => {
@@ -210,7 +212,7 @@ export class BrowserExtensionsService {
 
     private getExtensionIcon = async ( extensionId: string ): Promise< string | undefined > => {
 
-        const extension = this.installedExtensions.find( item => item.id === extensionId );
+        const extension = this.installedExtensions.get( extensionId );
 
         if ( !extension ) return;
 
