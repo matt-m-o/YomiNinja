@@ -71,7 +71,7 @@ export default function OcrOverlay() {
         <OverlayFrame id='overlay-frame'
             sx={{
               borderColor: overlayFrameVisuals?.border_color || 'red',
-              borderWidth: overlayFrameVisuals?.border_width || '1px'
+              borderWidth: overlayFrameVisuals?.border_width || '0px'
             }}
           >
 

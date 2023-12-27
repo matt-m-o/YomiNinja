@@ -79,7 +79,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                 color: ocrItemBoxVisuals?.text.color || 'white',
             },
             borderColor: ocrItemBoxVisuals?.border_color || 'red',
-            borderWidth: ocrItemBoxVisuals?.border_width || '1px',
+            borderWidth: ocrItemBoxVisuals?.border_width || '0px',
             borderRadius: ocrItemBoxVisuals?.border_radius || '2rem',
             writingMode: isVertical ? 'vertical-rl' :'inherit',
             textOrientation: isVertical ? 'upright' :'inherit',
