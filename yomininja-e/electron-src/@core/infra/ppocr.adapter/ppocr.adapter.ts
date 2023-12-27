@@ -28,13 +28,8 @@ export class PpOcrAdapter implements OcrAdapter {
     private ppocrServiceProcess: ChildProcessWithoutNullStreams;
     private recognitionCallOnHold: OcrRecognitionInput | undefined;
 
-    constructor() {
-
-        this.startProcess();
-    }
 
     initialize( serviceAddress?: string ) {
-
         
         if ( !serviceAddress )
             return;
@@ -43,7 +38,7 @@ export class PpOcrAdapter implements OcrAdapter {
 
         this.ocrServiceClient = new ocrServiceProto.ocr_service.OCRService(
             serviceAddress,
-            grpc.credentials.createInsecure()
+            grpc.credentials.createInsecure(),
         );
 
         this.status = OcrAdapterStatus.Enabled;
@@ -129,7 +124,7 @@ export class PpOcrAdapter implements OcrAdapter {
         return clientResponse.language_codes;
     }
 
-    startProcess() {
+    startProcess( onInitialized?: ( input?: any ) => void ) {
 
         const platform = os.platform();
 
@@ -154,12 +149,10 @@ export class PpOcrAdapter implements OcrAdapter {
 
                 const jsonData = JSON.parse( data.toString().split('[INFO-JSON]:')[1] );
 
-                const timeout = process.platform !== 'linux' ? 0 : 1000;
-
                 if ( 'server_address' in jsonData ) {
-                    setTimeout( () => {
-                        this.initialize( jsonData.server_address );
-                    }, timeout );
+                    this.initialize( jsonData.server_address );
+                    if ( onInitialized )
+                        onInitialized();
                 }
             }
             
@@ -192,7 +185,7 @@ export class PpOcrAdapter implements OcrAdapter {
 
         while( this.status != OcrAdapterStatus.Enabled ) {
 
-            // Waiting for 1 second
+            // Waiting for 2 seconds
             await new Promise( (resolve) => setTimeout(resolve, 2000) );
             triesCounter++;
 
@@ -210,16 +203,27 @@ export class PpOcrAdapter implements OcrAdapter {
             max_image_width: input.max_image_width,
             cpu_threads: input.cpu_threads,
             inference_runtime: input.inference_runtime
-        };    
+        };
+
+        const ok = await this.ppocrServiceProcessStatusCheck();
+
+        if ( !ok ) return false;
         
-        const clientResponse = await new Promise< UpdateSettingsPresetResponse__Output | undefined >(
-            (resolve, reject) => this.ocrServiceClient?.UpdateSettingsPreset( requestInput, ( error, response ) => {
-                if (error) {
-                    return reject(error)
-                }
-                resolve(response);
-            })
-        );        
+        let clientResponse: UpdateSettingsPresetResponse__Output | undefined;
+        try {
+            clientResponse = await new Promise< UpdateSettingsPresetResponse__Output | undefined >(
+                (resolve, reject) => this.ocrServiceClient?.UpdateSettingsPreset( requestInput, ( error, response ) => {
+                    if (error) {
+                        return reject(error)
+                    }
+                    resolve(response);
+                })
+            );
+        } catch (error) {
+            console.error( error );
+            console.log("retrying: PpOcrAdapter.updateSettings");
+            return await this.updateSettings( input );
+        }
         
         return Boolean( clientResponse?.success );
     }
@@ -259,13 +263,14 @@ export class PpOcrAdapter implements OcrAdapter {
         this.restartProcess();
 
         const ok = await this.ppocrServiceProcessStatusCheck();
-
-        if (!ok) return;
-
-        console.log("PPOCR Adapter restarted successfully");
-
         callback();
 
+        if ( !ok ) {
+            console.log("PPOCR Adapter failed to restarted");
+            return;
+        }
+
+        console.log("PPOCR Adapter restarted successfully");
     };
 
     private restartProcess() {

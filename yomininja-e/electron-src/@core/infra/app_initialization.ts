@@ -58,17 +58,31 @@ export async function initializeApp() {
 
         await populateLanguagesRepository( languageRepo );
 
+        const ppocrAdapter = get_PpOcrAdapter();
+        await new Promise( resolve => ppocrAdapter.startProcess( resolve ) );
+        await ppocrAdapter.ppocrServiceProcessStatusCheck();
+
+        // console.log('Initializing settings...');
         let defaultSettingsPreset = await settingsPresetRepo.findOne({ name: SettingsPreset.default_name });
         if ( !defaultSettingsPreset ) {
-
+            
             // Creating default settings preset
-            await get_CreateSettingsPresetUseCase().execute();            
-
-            defaultSettingsPreset = await settingsPresetRepo.findOne({ name: SettingsPreset.default_name }) as SettingsPreset ;
+            await get_CreateSettingsPresetUseCase().execute();
+            
+            defaultSettingsPreset = await settingsPresetRepo.findOne({ name: SettingsPreset.default_name }) as SettingsPreset;
         }
-
+        else {
+            await get_UpdateSettingsPresetUseCase().execute({
+                ...defaultSettingsPreset.toJson(),
+                options: {
+                    restartOcrEngine: true
+                }
+            });
+        }
+        await ppocrAdapter.ppocrServiceProcessStatusCheck();
         
 
+        // console.log('Initializing languages...');
         let defaultLanguage = await languageRepo.findOne({ name: 'japanese' });
         if ( !defaultLanguage ) {
             
@@ -77,6 +91,7 @@ export async function initializeApp() {
             await languageRepo.insert( defaultLanguage );
         }
 
+        // console.log('Initializing profiles...');
         let defaultProfile = await profileRepo.findOne({ name: 'default' });
         if ( !defaultProfile ) {
 
@@ -93,8 +108,9 @@ export async function initializeApp() {
         windowManager = new WindowManager();
         await windowManager.init();
 
+        // console.log('Initialization completed!');
     } catch (error) {
-        console.error( error )
+        console.error( error );
     }
 }
 

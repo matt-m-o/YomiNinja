@@ -50,8 +50,10 @@ export class CreateSettingsPresetUseCase {
         if ( settingsPreset.name === SettingsPreset.default_name ) {
             const restart = await this.ocrAdapter.updateSettings( settingsPreset.ocr_engine );
 
-            if ( restart )
-                this.ocrAdapter.restart( () => {} );
+            if ( restart ) {
+                await new Promise( resolve => setTimeout( resolve, 500 ) );
+                await new Promise( resolve => this.ocrAdapter.restart( () => resolve(null) ) );
+            }
         }
     }
 }

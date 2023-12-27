@@ -19,7 +19,14 @@ import { createDebuggingWindow } from './util/debugging/debugging.util';
 
 let browserExtensions: BrowserExtensionsService;
 
+let startupTimer: NodeJS.Timeout;
+
 app.on('ready', async () => {
+
+  startupTimer = setTimeout( () => {
+    console.log('Initialization took too long. Closing the app.');
+    app.quit();
+  }, 10_000 );
   
   // Prepare the renderer once the app is ready
   await prepareNext('./renderer');
@@ -47,6 +54,10 @@ app.on('ready', async () => {
       dictionariesController.init({ mainWindow, overlayWindow });
 
       browserExtensions.addBrowserWindow( mainWindow );
+
+      if ( startupTimer ) {
+        clearTimeout( startupTimer );
+      }
     });
 });
 
