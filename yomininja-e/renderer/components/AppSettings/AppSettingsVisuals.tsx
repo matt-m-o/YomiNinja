@@ -101,19 +101,7 @@ export default function AppSettingsVisuals() {
 
                 <Container sx={{ mt: 0, mb: 2 }}>
 
-                    <TextField label="Background color" sx={textFieldBaseSx}                      
-                        size='small'
-                        type="color"
-                        inputProps={{ style: { textAlign: 'center' } }}                        
-                        value={ ocrItemBoxVisuals?.background_color || '' }
-                        onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
-                            updateOcrItemBoxVisuals({
-                                background_color: event.target.value
-                            });                            
-                        }}
-                    />
-
-                    <TextField label="Text color" sx={textFieldBaseSx}                      
+                    <TextField label="Text Color" sx={textFieldBaseSx}                      
                         size='small'
                         type="color"
                         inputProps={{ style: { textAlign: 'center' } }}
@@ -128,12 +116,11 @@ export default function AppSettingsVisuals() {
                         }}
                     />
 
-                    <TextField label="Font size (%)" sx={textFieldBaseSx}                      
+                    <TextField label="Font Size (%)" sx={textFieldBaseSx}                      
                         size='small'
                         type="number"
                         inputProps={{ style: { textAlign: 'center' } }}
-                        value={ 
-                            ocrItemBoxVisuals?.text.font_size_factor || 100 }
+                        value={ ocrItemBoxVisuals?.text.font_size_factor || 100 }
                         onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
                             updateOcrItemBoxVisuals({                                
                                 text: {
@@ -144,7 +131,38 @@ export default function AppSettingsVisuals() {
                         }}
                     />
 
-                    <TextField label="Border color" sx={textFieldBaseSx}                      
+                    <TextField label="Letter Spacing" sx={textFieldBaseSx}                      
+                        size='small'
+                        type="number"
+                        inputProps={{ style: { textAlign: 'center' } }}
+                        value={ ocrItemBoxVisuals?.text.letter_spacing || 0 }
+                        onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
+                            updateOcrItemBoxVisuals({                                
+                                text: {
+                                    ...ocrItemBoxVisuals?.text,
+                                    letter_spacing: Number( event.target.value )
+                                }
+                            });
+                        }}
+                    />
+                    
+                </Container>
+
+                <Container sx={{ mt: 0, mb: 2 }}>
+
+                    <TextField label="Background Color" sx={textFieldBaseSx}                      
+                        size='small'
+                        type="color"
+                        inputProps={{ style: { textAlign: 'center' } }}                        
+                        value={ ocrItemBoxVisuals?.background_color || '' }
+                        onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
+                            updateOcrItemBoxVisuals({
+                                background_color: event.target.value
+                            });                            
+                        }}
+                    />
+
+                    <TextField label="Border Color" sx={textFieldBaseSx}                      
                         size='small'
                         type="color"
                         inputProps={{ style: { textAlign: 'center' } }}                        
@@ -156,7 +174,7 @@ export default function AppSettingsVisuals() {
                         }}
                     />
 
-                    <TextField label="Border width" sx={textFieldBaseSx}                        
+                    <TextField label="Border Width" sx={textFieldBaseSx}                        
                         size='small'
                         type="number"
                         inputProps={{ style: { textAlign: 'center' } }}                        
@@ -179,7 +197,7 @@ export default function AppSettingsVisuals() {
                             });
                         }}
                     />
-                    
+
                 </Container>
 
                 
@@ -190,7 +208,7 @@ export default function AppSettingsVisuals() {
 
                 <Container sx={{ mt: 0, mb: 2 }}>
 
-                    <TextField label="Border color" sx={textFieldBaseSx}
+                    <TextField label="Border Color" sx={textFieldBaseSx}
                         size='small'
                         type="color"                        
                         inputProps={{ style: { textAlign: 'center' } }}                        
@@ -202,7 +220,7 @@ export default function AppSettingsVisuals() {
                         }}
                     />
 
-                    <TextField label="Border width" sx={textFieldBaseSx}                      
+                    <TextField label="Border Width" sx={textFieldBaseSx}                      
                         size='small'
                         type="number"
                         inputProps={{ style: { textAlign: 'center' } }}                        

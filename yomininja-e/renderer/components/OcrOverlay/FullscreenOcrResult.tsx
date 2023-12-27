@@ -15,7 +15,7 @@ const BaseOcrResultBox = styled('div')({
     paddingLeft: '0.25%',
     paddingRight: '0.25%',
     textAlign: 'center',
-    letterSpacing: '0.1rem',
+    // letterSpacing: '0.1rem',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -102,11 +102,12 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                 backgroundColor: ocrItemBoxVisuals?.background_color || 'black',
                 color: ocrItemBoxVisuals?.text.color || 'white',
                 fontSize: adjustedFontSize + 'px', // isVertical ? fontSize * 0.8 : fontSize * 0.85
-                lineHeight: adjustedFontSize + 'px'
+                lineHeight: adjustedFontSize + 'px',
+                letterSpacing: ocrItemBoxVisuals.text.letter_spacing || 'inherit'
             },
             borderColor: ocrItemBoxVisuals?.border_color || 'red',
             borderWidth: ocrItemBoxVisuals?.border_width || '0px',
-            borderRadius: ocrItemBoxVisuals?.border_radius || '2rem',
+            borderRadius: ocrItemBoxVisuals?.border_radius || '0rem',
             writingMode: isVertical ? 'vertical-rl' :'inherit',
             textOrientation: isVertical ? 'upright' :'inherit',
             fontSize: fontSize + 'px',
