@@ -1,4 +1,4 @@
-import { BrowserWindow, IpcMainInvokeEvent, clipboard, globalShortcut, ipcMain } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, app, clipboard, globalShortcut, ipcMain } from "electron";
 import { UiohookKey, uIOhook } from "uiohook-napi";
 import { CaptureSource, ExternalWindow } from "../ocr_recognition/common/types";
 import { TaskbarProperties } from "../../gyp_modules/window_management/window_manager";
@@ -20,6 +20,8 @@ import { appInfoController } from "../app_info/app_info.index";
 import { profileController } from "../profile/profile.index";
 import { dictionariesController } from "../dictionaries/dictionaries.index";
 import { ocrTemplatesController } from "../ocr_templates/ocr_templates.index";
+
+let startupTimer: NodeJS.Timeout;
 
 export class AppController {
 
@@ -55,6 +57,13 @@ export class AppController {
     }
 
     async init() {
+
+        if ( !isDev ) {
+            startupTimer = setTimeout( () => {
+                console.log('Initialization took too long. Closing the app.');
+                app.quit();
+            }, 15_000 );
+        }
 
         this.mainWindow = await mainController.init();
   
@@ -95,6 +104,10 @@ export class AppController {
                     browserExtensionsController.addBrowserWindow( this.mainWindow );
                     browserExtensionsController.loadExtensions();
                 }, 500 );
+
+                if ( startupTimer ) {
+                    clearTimeout( startupTimer );
+                }
             });
                 
 
