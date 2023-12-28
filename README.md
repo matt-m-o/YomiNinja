@@ -46,7 +46,7 @@ YomiNinja currently offers support for distros using the X11 window system. Wayl
   ```
 
 
-#### (optional) Install Yomichan:
+#### Install Yomichan (optional):
 1. Install [Yomichan](https://foosoft.net/projects/yomichan/) on your browser of preference.
 2. Go to the Yomichan settings.
 3. Find and enable the clipboard monitoring option.
