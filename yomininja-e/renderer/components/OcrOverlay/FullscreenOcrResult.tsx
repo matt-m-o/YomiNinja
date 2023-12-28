@@ -7,7 +7,8 @@ import { DictionaryContext } from "../../context/dictionary.provider";
 
 
 const BaseOcrResultBox = styled('div')({
-    border: 'solid',
+    // border: 'solid',
+    outline: 'solid',
     position: 'absolute',
     fontFamily: "arial",
     color: 'transparent',
@@ -103,10 +104,12 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                 color: ocrItemBoxVisuals?.text.color || 'white',
                 fontSize: adjustedFontSize + 'px', // isVertical ? fontSize * 0.8 : fontSize * 0.85
                 lineHeight: adjustedFontSize + 'px',
-                letterSpacing: ocrItemBoxVisuals.text.letter_spacing || 'inherit'
+                letterSpacing: ocrItemBoxVisuals.text.letter_spacing || 'inherit',
+                paddingLeft: isVertical ? 0 : '0.25%',
+                paddingRight: isVertical ? 0 : '0.25%'
             },
-            borderColor: ocrItemBoxVisuals?.border_color || 'red',
-            borderWidth: ocrItemBoxVisuals?.border_width || '0px',
+            outlineColor: ocrItemBoxVisuals?.border_color || 'red',
+            outlineWidth: ocrItemBoxVisuals?.border_width || '0px',
             borderRadius: ocrItemBoxVisuals?.border_radius || '0rem',
             writingMode: isVertical ? 'vertical-rl' :'inherit',
             textOrientation: isVertical ? 'upright' :'inherit',
@@ -121,13 +124,11 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         return (
             <Box className="extracted-text"
                 style={{
-                    left: box.position.left + '%',
+                    left: ( box.position.left - 0.25 ) + '%',
                     top: (box.position.top * 0.999) + '%',
                     transform: `rotate( ${box.angle_degrees}deg )`,
                     minWidth: minWidth + '%',
                     minHeight: box.dimensions.height + '%',
-                    paddingLeft: isVertical ? 0 : '0.25%',
-                    paddingRight: isVertical ? 0 : '0.25%'
                 }}                          
                 onMouseEnter={ () => handleBoxMouseEnter( ocrItem ) }
                 onMouseLeave={ () => handleBoxMouseLeave() }
