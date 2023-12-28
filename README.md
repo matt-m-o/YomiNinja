@@ -32,16 +32,18 @@ Please note that, at present, Yomichan is not installable and requires web brows
 
 #### Windows
 You need Windows 10 or 11 and [VCRedist](https://www.techpowerup.com/download/visual-c-redistributable-runtime-package-all-in-one/) installed. <br>
+If you are using the N or KN edition of Windows 10 or 11, please be aware that you will also need to install the [Media Feature Pack](https://support.microsoft.com/en-us/topic/media-feature-pack-list-for-windows-n-editions-c1c6fffa-d052-8338-7a79-a4bb980a700a). This is necessary to ensure that all the required DLLs are installed.
 
-[Download](https://github.com/matt-m-o/YomiNinja/releases) and install the latest release. <br>
+[Download](https://github.com/matt-m-o/YomiNinja/releases) and install the latest YomiNinja release. <br>
 
 #### Linux
 YomiNinja currently offers support for distros using the X11 window system. Wayland is not supported due to its limitations with global shortcuts and window positioning.
 1. Install [xdotool](https://github.com/jordansissel/xdotool?tab=readme-ov-file#installation).
 2. Download the YomiNinja package corresponding to your distribution.
 3. Install the package. For example, on Debian-based distributions:
-<br>
-``` sudo dpkg -i yomininja-e_x.x.x_amd64.deb ```
+  ```commandline
+   sudo dpkg -i yomininja-e_x.x.x_amd64.deb
+  ```
 
 
 #### (optional) Install Yomichan:
