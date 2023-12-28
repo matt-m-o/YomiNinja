@@ -21,7 +21,7 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                     text: {
                         color: "#ffffff", // White
                         font_size_factor: 100,
-                        letter_spacing: 0
+                        letter_spacing: 1
                     }
                 },
                 mouse: {
