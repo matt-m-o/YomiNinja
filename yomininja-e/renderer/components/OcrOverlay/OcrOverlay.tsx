@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect } from "react";
 import { OverlayOcrItemBoxVisuals, OverlayFrameVisuals, OverlayHotkeys, OverlayBehavior } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
 import { SettingsContext } from "../../context/settings.provider";
-import { styled } from "@mui/material";
+import { debounce, styled } from "@mui/material";
 import FullscreenOcrResult from "./FullscreenOcrResult";
 import { DictionaryContext } from "../../context/dictionary.provider";
 
@@ -33,13 +33,45 @@ export default function OcrOverlay() {
       const { enabled } = activeSettingsPreset.dictionary;
       toggleScanner( enabled );
 
-    }, [activeSettingsPreset] )    
+    }, [activeSettingsPreset] );
+
+    function handleClickThrough( event: MouseEvent ) {
+      
+      const element = document.elementFromPoint(
+        event.clientX,
+        event.clientY
+      );
+
+      let value = false;
+
+      if ( element.id === 'overlay-frame' )
+        value = true;
+      else
+        value = false;
+      
+      // console.log( currentElement );
+      // console.log( value );
+
+      global.ipcRenderer.invoke( 'overlay:set_ignore_mouse_events', value );
+    };
+
+
+    useEffect( () => {
+
+      document.addEventListener( 'mousemove', handleClickThrough );
+
+      return () => {
+        document.removeEventListener( 'mousemove', handleClickThrough );
+      };
+
+    }, [] );
+
 
     return (
-        <OverlayFrame
+        <OverlayFrame id='overlay-frame'
             sx={{
               borderColor: overlayFrameVisuals?.border_color || 'red',
-              borderWidth: overlayFrameVisuals?.border_width || '1px'
+              borderWidth: overlayFrameVisuals?.border_width || '0px'
             }}
           >
 

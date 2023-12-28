@@ -7,14 +7,16 @@ import { DictionaryTypeOrmSchema } from './dictionary/dictionary.schema';
 import { DictionaryTagTypeOrmSchema } from './dictionary/dictionary_tag/dictionary_tag.schema';
 import { DictionaryDefinitionTypeOrmSchema } from './dictionary/dictionary_definition/dictionary_definition.schema';
 import { DictionaryHeadwordTypeOrmSchema } from './dictionary/dictionary_headword/dictionary_headword.schema';
+import { USER_DATA_DIR } from '../../../../util/directories.util';
+
 
 // Mainly for application settings
 export const mainDataSourceOptions: DataSourceOptions = {
-    type: 'sqlite',    
+    type: 'sqlite',
     synchronize: true,
-    database: join( './data/main.db' ),
+    database: join( USER_DATA_DIR, './databases/main.db' ),
     logging: false,
-    entities: [        
+    entities: [
         SettingsPresetTypeOrmSchema,
         LanguageTypeOrmSchema,
         ProfileTypeOrmSchema
@@ -27,7 +29,7 @@ export const mainDataSourceOptions: DataSourceOptions = {
 export const dictionaryDataSourceOptions: DataSourceOptions = {
     type: 'sqlite',
     synchronize: true,
-    database: join( './data/dict.db' ), // :memory: | join( './data/dict.db' )
+    database: join( USER_DATA_DIR, './databases/dict.db' ), // :memory: | join( './data/dict.db' )
     logging: false,
     enableWAL: true,
     entities: [

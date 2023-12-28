@@ -30,7 +30,7 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
     async function getCaptureSources() {
         const result: CaptureSource[] = await global.ipcRenderer.invoke( 'ocr_recognition:get_capture_sources' );
 
-        // console.log( result );
+        console.log( result );
 
         setCaptureSources( result );
     }

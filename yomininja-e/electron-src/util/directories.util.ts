@@ -1,3 +1,4 @@
+import { app } from "electron";
 import isDev from "electron-is-dev";
 import { join } from "path";
 
@@ -15,10 +16,16 @@ export const EXTENSIONS_DIR = isDev ?
     join( __dirname, '../../../extensions' ) :
     join( process.resourcesPath, '/extensions' );
 
+export const USER_DATA_DIR = isDev ?
+    join( __dirname, '../../../data' ) :
+    app.getPath('userData');
+
+
 console.log({
     ROOT_DIR,
     PAGES_DIR,
     BIN_DIR,
-    EXTENSIONS_DIR
+    EXTENSIONS_DIR,
+    USER_DATA_DIR
 })
     

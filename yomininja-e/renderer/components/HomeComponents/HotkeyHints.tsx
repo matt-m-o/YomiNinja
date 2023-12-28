@@ -115,7 +115,7 @@ export default function HotkeyHints() {
                 m='auto' width='100%'
             >
                 { createHotkeyHint( 'OCR', ocrHotkeysStrings ) }
-                { createHotkeyHint( 'Copy text', [overlayHotkeys?.copy_text] ) }
+                {/* { createHotkeyHint( 'Copy text', [overlayHotkeys?.copy_text] ) } */}
                 { createHotkeyHint( 'Show overlay', [overlayHotkeys?.show] ) }
                 { createHotkeyHint( 'Clear overlay', [overlayHotkeys?.show_and_clear] ) }
                 

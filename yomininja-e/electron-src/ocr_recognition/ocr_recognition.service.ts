@@ -4,19 +4,21 @@ import { GetSupportedLanguagesUseCase } from "../@core/application/use_cases/get
 import { RecognizeImageUseCase } from "../@core/application/use_cases/recognize_image/recognize_image.use_case";
 import { OcrResultScalable } from "../@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { GetActiveSettingsPresetUseCase } from "../@core/application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
-import { getActiveProfile } from "../@core/infra/app_initialization";
+import { getActiveProfile, windowManager } from "../@core/infra/app_initialization";
 import { OcrAdapter } from "../@core/application/adapters/ocr.adapter";
 import { ChangeActiveOcrLanguageUseCase } from "../@core/application/use_cases/change_active_ocr_language/change_active_ocr_language.use_case";
 import { Language } from "../@core/domain/language/language";
 import { screen } from 'electron';
 import { CaptureSource, ExternalWindow } from "./common/types";
 import sharp from 'sharp';
+import { displayImage } from "../util/debugging/debugging.util";
 
 
 export const entireScreenAutoCaptureSource: CaptureSource = {
     id: '',
     name: 'Entire screen',
-    displayId: -1
+    displayId: -1,
+    type: 'screen',
 };
 
 export class OcrRecognitionService {
@@ -24,9 +26,7 @@ export class OcrRecognitionService {
     private recognizeImageUseCase: RecognizeImageUseCase;
     private getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
     private getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;    
-    private ocrAdapter: OcrAdapter;
-
-    private windowManager = new WindowManager();
+    private ocrAdapter: OcrAdapter;    
 
     constructor(
         input: {
@@ -48,6 +48,7 @@ export class OcrRecognitionService {
         display?: Electron.Display,
         window?: ExternalWindow,
     }): Promise< OcrResultScalable | null > {
+        console.log('ocrRecognitionService.recognize');
 
         let { imageBuffer, profileId, display, window } = input;
 
@@ -60,8 +61,15 @@ export class OcrRecognitionService {
             imageBuffer = await this.cropWindowFromImage( window, imageBuffer );
         }
 
+        // displayImage( imageBuffer as Buffer );
+
         if ( !imageBuffer )
             return null;
+
+        // const isValidImage = await this.isValidImage( imageBuffer );
+        // console.log({ isValidImage });
+
+        // if ( !isValidImage ) return null;
 
         return await this.recognizeImageUseCase.execute({
             imageBuffer,
@@ -181,7 +189,8 @@ export class OcrRecognitionService {
 
         if ( !windowCaptureSource ) return;
                 
-        const windowProps = this.windowManager.getWindow( Number( windowCaptureSource?.id.split(':')[1] ) );        
+        const windowProps = await windowManager.getWindow( Number( windowCaptureSource?.id.split(':')[1] ) );
+        if ( !windowProps ) return;
 
         const externalWindow: ExternalWindow = {
             id: Number(windowCaptureSource.id.split(':')[1]),
@@ -206,7 +215,8 @@ export class OcrRecognitionService {
         const results: CaptureSource[] = sources.map( source => ({
             id: source.id,
             displayId: Number(source.display_id),
-            name: source.name
+            name: source.name,
+            type: source.id.includes('window') ? 'window' : 'screen',
         }));
 
         const displaysSources = sources.filter( source => source.display_id );
@@ -220,7 +230,7 @@ export class OcrRecognitionService {
 
     getTaskbar(): TaskbarProperties {
 
-        return this.windowManager.getTaskbar();
+        return windowManager.getTaskbar();
     }
 
     async cropWindowFromImage( window: ExternalWindow, image: Buffer ): Promise<Buffer> {
@@ -242,5 +252,17 @@ export class OcrRecognitionService {
                 height: window.size.height,
             })
             .toBuffer();    
+    }
+
+    async isValidImage( data: Buffer | string ): Promise< boolean > {
+        try {
+
+            const metadata = await sharp(data).metadata();
+            console.log({ metadata });
+
+            return true;
+        } catch (error) {
+            return false;
+        }
     }
 }

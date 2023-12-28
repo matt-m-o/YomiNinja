@@ -1,4 +1,7 @@
-import bindings from 'bindings';
+import os from 'os';
+import { WindowManagerLinuxX11 } from './linux/window_manager_linux_x11';
+import { WindowManagerWin32 } from './win32/window_manager_win32';
+import { WindowManagerLinuxXDoTool } from './linux/window_manager_linux_xdotool';
 
 type Size = {
     width: number;
@@ -22,20 +25,33 @@ export type TaskbarProperties = {
     auto_hide: boolean;
 };
 
-interface WindowManagerCppInterface {
-    setForegroundWindow( windowHandle: number ): void; // Set window to front
-    getWindowProperties( windowHandle: number ): WindowProperties;
-    getAllWindows(): any;
+export interface WindowManagerNativeInterface {
+    init?: () => Promise< void >;
+    setForegroundWindow( windowHandle: number ): void | Promise< void >; // Set window to front
+    getWindowProperties( windowHandle: number ): WindowProperties | Promise< WindowProperties | undefined >;
+    getAllWindows(): WindowProperties[] | Promise< WindowProperties[] >;
+    searchWindowByTitle( title: string ): WindowProperties[] | Promise< WindowProperties[] >;
     getTaskBarProps(): TaskbarProperties;
 };
 
 export class WindowManager {
 
-    private windowManager: WindowManagerCppInterface;
+    private windowManager: WindowManagerNativeInterface;
 
     constructor() {
         // TODO: Check platform and import the compatible biding
-        this.windowManager = bindings('window_manager_win32') as WindowManagerCppInterface;
+
+        if ( os.platform() === 'win32' )
+            this.windowManager = new WindowManagerWin32();
+
+        else if ( os.platform() === 'linux' )
+            this.windowManager = new WindowManagerLinuxXDoTool();
+            // this.windowManager = new WindowManagerLinuxX11();
+    }
+
+    async init(): Promise< void > {
+        if ( this.windowManager.init )
+            await this.windowManager.init();
     }
 
     setForegroundWindow( windowHandle: number ): void {
@@ -43,30 +59,29 @@ export class WindowManager {
         this.windowManager.setForegroundWindow( windowHandle );
     }
     
-    getWindow( windowHandle: number  ): WindowProperties {        
+    async getWindow( windowHandle: number  ): Promise< WindowProperties | undefined > {
 
-        const result = this.windowManager.getWindowProperties( windowHandle );
-        this.fixTitle([result]);
+        const result = await this.windowManager.getWindowProperties( windowHandle );
+
+        if ( !result ) return;
 
         return result;
     }
 
-    getAllWindows(): WindowProperties[] {
+    async getAllWindows(): Promise< WindowProperties[] >{
 
-        const result = this.windowManager.getAllWindows();
-        this.fixTitle(result);
+        const result = await this.windowManager.getAllWindows();
 
         return result;
+    }
+
+    async searchWindow( title: string ): Promise< WindowProperties[] > {
+        return this.windowManager.searchWindowByTitle( title );
     }
 
     getTaskbar(): TaskbarProperties {
         return this.windowManager.getTaskBarProps();
     }
 
-    private fixTitle( items: WindowProperties[] ) {
-
-        items.forEach( (item: any) => {    
-            item.title = item.title.replace( '\x00', '' );            
-        });
-    }
+    
 }

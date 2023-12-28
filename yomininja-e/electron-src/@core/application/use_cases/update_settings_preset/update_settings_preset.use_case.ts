@@ -3,6 +3,9 @@ import { SettingsPresetRepository } from "../../../domain/settings_preset/settin
 import { OcrAdapter } from "../../adapters/ocr.adapter";
 
 export interface UpdateSettingsPreset_Input extends SettingsPresetJson {
+    options?: {
+        restartOcrEngine?: boolean;
+    };
 }
 
 export class UpdateSettingsPresetUseCase {
@@ -13,6 +16,8 @@ export class UpdateSettingsPresetUseCase {
     ) {}
 
     async execute( input: UpdateSettingsPreset_Input ): Promise< UpdateSettingsPreset_Output > {
+
+        const { options } = input;
 
         const output: UpdateSettingsPreset_Output = {
             restartOcrAdapter: false,
@@ -40,9 +45,14 @@ export class UpdateSettingsPresetUseCase {
         await this.settingsPresetRepo.update( settingsPreset );
 
 
-        if (output.restartOcrAdapter)
+        if ( output.restartOcrAdapter || options?.restartOcrEngine ) {
             output.restartOcrAdapter = await this.ocrAdapter.updateSettings( settingsPreset.ocr_engine );
-    
+        }
+        
+        if ( options?.restartOcrEngine ) {
+            await new Promise( resolve => setTimeout( resolve, 500 ) );
+            await new Promise( resolve => this.ocrAdapter.restart( () => resolve(null) ) );
+        }
 
         return output;
     }

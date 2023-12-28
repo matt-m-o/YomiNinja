@@ -10,12 +10,13 @@ import { join } from "path";
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { dialog } from 'electron';
 import isDev from 'electron-is-dev';
-import { BIN_DIR } from "../../../util/directories";
+import { BIN_DIR } from "../../../util/directories.util";
 import { OcrEngineSettings } from "../../domain/settings_preset/settings_preset";
 import { UpdateSettingsPresetResponse__Output } from "../../../../grpc/rpc/ocr_service/UpdateSettingsPresetResponse";
 import { UpdateSettingsPresetRequest } from "../../../../grpc/rpc/ocr_service/UpdateSettingsPresetRequest";
 import { applyCpuHotfix } from "./hotfix/hardware_compatibility_hotfix";
 import os from 'os';
+import { addExecutionPermissionToPPOCR } from "./ppocr_executable_permission";
 
 export class PpOcrAdapter implements OcrAdapter {
     
@@ -27,13 +28,8 @@ export class PpOcrAdapter implements OcrAdapter {
     private ppocrServiceProcess: ChildProcessWithoutNullStreams;
     private recognitionCallOnHold: OcrRecognitionInput | undefined;
 
-    constructor() {
-
-        this.startProcess();
-    }
 
     initialize( serviceAddress?: string ) {
-
         
         if ( !serviceAddress )
             return;
@@ -42,7 +38,7 @@ export class PpOcrAdapter implements OcrAdapter {
 
         this.ocrServiceClient = new ocrServiceProto.ocr_service.OCRService(
             serviceAddress,
-            grpc.credentials.createInsecure()
+            grpc.credentials.createInsecure(),
         );
 
         this.status = OcrAdapterStatus.Enabled;
@@ -74,6 +70,7 @@ export class PpOcrAdapter implements OcrAdapter {
         const clientResponse = await new Promise< RecognizeDefaultResponse__Output | undefined >(
             (resolve, reject) => this.ocrServiceClient?.RecognizeBytes( requestInput, ( error, response ) => {
                 if (error) {
+                    this.restart( () => {} );
                     return reject(error)
                 }
                 resolve(response);
@@ -112,6 +109,7 @@ export class PpOcrAdapter implements OcrAdapter {
         const clientResponse = await new Promise< GetSupportedLanguagesResponse__Output | undefined >(
             (resolve, reject) => this.ocrServiceClient?.GetSupportedLanguages( {}, ( error, response ) => {
                 if (error) {
+                    this.restart( () => {} );
                     return reject(error)
                 }
                 resolve(response);
@@ -126,16 +124,22 @@ export class PpOcrAdapter implements OcrAdapter {
         return clientResponse.language_codes;
     }
 
-    startProcess() {
+    startProcess( onInitialized?: ( input?: any ) => void ) {
+
+        const platform = os.platform();
 
         const cwd = isDev
-        ? join( BIN_DIR, `/${process.platform}/ppocr` )
-        : join( process.resourcesPath, '/bin/ppocr/' );
+            ? join( BIN_DIR, `/${platform}/ppocr` )
+            : join( process.resourcesPath, '/bin/ppocr/' );
 
-        // let cwd = join( __dirname, "../../../../../../bin/ppocr" );
-        const executable = join( cwd + "/ppocr_infer_service_grpc.exe" );
+        const executableName = platform === 'win32'
+            ? 'ppocr_infer_service_grpc.exe'
+            : 'start.sh';
+            
+        // addExecutionPermissionToPPOCR( cwd );
 
-        // Replace 'your_program.exe' with the actual .exe file path you want to run
+        const executable = join( cwd + `/${executableName}` );
+        
         this.ppocrServiceProcess = spawn( executable, [/* command line arguments */], { cwd } );
 
         // Handle stdout and stderr data
@@ -145,8 +149,11 @@ export class PpOcrAdapter implements OcrAdapter {
 
                 const jsonData = JSON.parse( data.toString().split('[INFO-JSON]:')[1] );
 
-                if ( 'server_address' in jsonData )
+                if ( 'server_address' in jsonData ) {
                     this.initialize( jsonData.server_address );
+                    if ( onInitialized )
+                        onInitialized();
+                }
             }
             
             console.log(`stdout: ${data}`);        
@@ -178,7 +185,7 @@ export class PpOcrAdapter implements OcrAdapter {
 
         while( this.status != OcrAdapterStatus.Enabled ) {
 
-            // Waiting for 1 second
+            // Waiting for 2 seconds
             await new Promise( (resolve) => setTimeout(resolve, 2000) );
             triesCounter++;
 
@@ -196,16 +203,27 @@ export class PpOcrAdapter implements OcrAdapter {
             max_image_width: input.max_image_width,
             cpu_threads: input.cpu_threads,
             inference_runtime: input.inference_runtime
-        };    
+        };
+
+        const ok = await this.ppocrServiceProcessStatusCheck();
+
+        if ( !ok ) return false;
         
-        const clientResponse = await new Promise< UpdateSettingsPresetResponse__Output | undefined >(
-            (resolve, reject) => this.ocrServiceClient?.UpdateSettingsPreset( requestInput, ( error, response ) => {
-                if (error) {
-                    return reject(error)
-                }
-                resolve(response);
-            })
-        );        
+        let clientResponse: UpdateSettingsPresetResponse__Output | undefined;
+        try {
+            clientResponse = await new Promise< UpdateSettingsPresetResponse__Output | undefined >(
+                (resolve, reject) => this.ocrServiceClient?.UpdateSettingsPreset( requestInput, ( error, response ) => {
+                    if (error) {
+                        return reject(error)
+                    }
+                    resolve(response);
+                })
+            );
+        } catch (error) {
+            console.error( error );
+            console.log("retrying: PpOcrAdapter.updateSettings");
+            return await this.updateSettings( input );
+        }
         
         return Boolean( clientResponse?.success );
     }
@@ -245,13 +263,14 @@ export class PpOcrAdapter implements OcrAdapter {
         this.restartProcess();
 
         const ok = await this.ppocrServiceProcessStatusCheck();
-
-        if (!ok) return;
-
-        console.log("PPOCR Adapter restarted successfully");
-
         callback();
 
+        if ( !ok ) {
+            console.log("PPOCR Adapter failed to restarted");
+            return;
+        }
+
+        console.log("PPOCR Adapter restarted successfully");
     };
 
     private restartProcess() {
