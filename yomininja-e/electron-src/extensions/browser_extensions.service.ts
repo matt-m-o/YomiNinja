@@ -35,6 +35,10 @@ export class BrowserExtensionsService {
                     const { click } = item;
                     item.click = () => {
                         click();
+
+                        if ( !item.label.includes('10ten') )
+                            return;
+
                         this.windows.forEach( window => {
                             window.reload();
                         });
@@ -73,6 +77,7 @@ export class BrowserExtensionsService {
                     }
                 });
 
+                // console.log(details)
                 if (details.url) {                    
                     extensionWindow.loadURL( details.url );                   
                 }
@@ -92,12 +97,19 @@ export class BrowserExtensionsService {
         // );
     }
 
-    addBrowserWindow = async ( window: BrowserWindow ) => {
+    addBrowserWindow = async ( window: BrowserWindow, selectWindow?: boolean ) => {
 
         if ( !this.windows.has( window.id ) )
             this.windows.set( window.id, window );
 
         this.extensionsApi.addTab( window.webContents, window );
+
+        if ( selectWindow )
+            this.selectWindow( window )
+    }
+
+    // Select tab
+    selectWindow = ( window: BrowserWindow ) => {
         this.extensionsApi.selectTab( window.webContents );
     }
 

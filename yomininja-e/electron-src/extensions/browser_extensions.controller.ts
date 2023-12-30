@@ -91,8 +91,8 @@ export class BrowserExtensionsController {
         );
     }
 
-    addBrowserWindow( window: BrowserWindow ) {
-        this.browserExtensionsService.addBrowserWindow( window );
+    addBrowserWindow( window: BrowserWindow, selectWindow?: boolean ) {
+        this.browserExtensionsService.addBrowserWindow( window, selectWindow );
     }
 
     async loadExtensions() {

@@ -79,7 +79,7 @@ export class AppController {
             .then( async () => {
             
                 this.overlayWindow = await overlayController.init( this.mainWindow );
-                browserExtensionsController.addBrowserWindow( this.overlayWindow );
+                browserExtensionsController.addBrowserWindow( this.overlayWindow, false );
                 
                 ocrRecognitionController.init({
                     mainWindow: this.mainWindow,
@@ -101,7 +101,7 @@ export class AppController {
                 await mainController.loadMainPage();
                 
                 setTimeout( () => {
-                    browserExtensionsController.addBrowserWindow( this.mainWindow );
+                    browserExtensionsController.addBrowserWindow( this.mainWindow, true );
                     browserExtensionsController.loadExtensions();
                 }, 500 );
 
