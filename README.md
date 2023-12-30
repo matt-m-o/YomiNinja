@@ -97,17 +97,19 @@ It supports dozens of languages, that will be integrated into this application i
     - Windows: `./bin/win32/ppocr`
     - Linux: `./bin/linux/ppocr`
 
-3. (optional) Download [10ten v1.15.1](https://github.com/birchill/10ten-ja-reader/releases/tag/v1.15.1) for Chrome, extract the contents, and place them into the `./yomininja-e/extensions/10ten` directory.
+3. (optional) Download [10ten v1.15.1](https://github.com/birchill/10ten-ja-reader/releases/tag/v1.15.1) for Chrome, extract the contents, and place them into the following directory:
+       
+       ./yomininja-e/extensions/10ten
 
-4. Install node modules. Note: `--force` is used due to outdated react-furi peerDependencies, but it should function normally.
+5. Install node modules. Note: `--force` is used due to outdated react-furi peerDependencies, but it should function normally.
     ```commandline
     cd yomininja-e && npm install --force
     ```
-5. Generate gRPC Protobuf types
+6. Generate gRPC Protobuf types
     ```commandline
     npm run grpc-types
     ```
-6. Build the distribution
+7. Build the distribution
     ```commandline
     npm run dist
     ```
