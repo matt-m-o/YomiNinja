@@ -23,20 +23,20 @@ YomiNinja is perfect for:
 - Anyone who values a distraction-free, efficient way to look up unfamiliar words.
 - Users looking for seamless text extraction and workflow improvement.
 
-### Dictionary Extensions
+## Dictionary Extensions
 YomiNinja supports web browser dictionary extensions, enabling convenient word lookup without external applications. <br>
 While not all extensions are currently installable, 10Ten (aka Rikaichamp) has been successfully tested and will be included as a pre-installed option for simplified installation. <br>
 Please note that, at present, Yomichan is not installable and requires web browsers to function.
 
-### Installation
+## Installation
 
-#### Windows
+### Windows
 You need Windows 10 or 11 and [VCRedist](https://www.techpowerup.com/download/visual-c-redistributable-runtime-package-all-in-one/) installed. <br>
 If you are using the N or KN edition of Windows 10 or 11, please be aware that you will also need to install the [Media Feature Pack](https://support.microsoft.com/en-us/topic/media-feature-pack-list-for-windows-n-editions-c1c6fffa-d052-8338-7a79-a4bb980a700a). This is necessary to ensure that all the required DLLs are installed.
 
 [Download](https://github.com/matt-m-o/YomiNinja/releases) and install the latest YomiNinja release. <br>
 
-#### Linux
+### Linux
 YomiNinja currently offers support for distros using the X11 window system. Wayland is not supported due to its limitations with global shortcuts and window positioning.
 1. Install [xdotool](https://github.com/jordansissel/xdotool?tab=readme-ov-file#installation).
 2. Download the YomiNinja package corresponding to your distribution.
@@ -47,7 +47,7 @@ YomiNinja currently offers support for distros using the X11 window system. Wayl
     ```
 
 
-#### Install Yomichan (optional):
+### Install Yomichan (optional):
 1. Install [Yomichan](https://foosoft.net/projects/yomichan/) on your browser of preference.
 2. Go to the Yomichan settings.
 3. Find and enable the clipboard monitoring option.
@@ -57,14 +57,14 @@ YomiNinja currently offers support for distros using the X11 window system. Wayl
 4. Go to the YomiNinja settings and enable ```Show Yomichan window on text copy```
 
 
-### Current features
+## Current features
 
 - Text extraction from the entire screen or specific window.
 - Built-in pop-up dictionaries.
 - WebSocket for Texthookers.
 
 
-### Planned Features
+## Planned Features
 
 - Text extraction from snip.
 - OCR Templates (predefined text areas, optimizing OCR efficiency).
@@ -75,7 +75,7 @@ YomiNinja currently offers support for distros using the X11 window system. Wayl
 - Support for more OCR engines.
 
 
-### Supported Languages
+## Supported Languages
 
 YomiNinja currently supports text extraction in:
 
@@ -84,10 +84,10 @@ YomiNinja currently supports text extraction in:
 - Chinese
 - Korean
 
-Currently, PaddleOCR is used for text extraction, which generally produces very good results in Asian languages such as Chinese or Japanese.
+Currently, PaddleOCR is used for text extraction, which generally produces very good results in languages such as Chinese or Japanese.
 It supports dozens of languages, that will be integrated into this application in the future. <br>
 
-### Building
+## Building
 1. Clone the git repository
     ```commandline
     git clone https://github.com/matt-m-o/YomiNinja.git && cd YomiNinja
@@ -97,27 +97,29 @@ It supports dozens of languages, that will be integrated into this application i
     - Windows: `./bin/win32/ppocr`
     - Linux: `./bin/linux/ppocr`
 
-3. (optional) Download [10ten v1.15.1](https://github.com/birchill/10ten-ja-reader/releases/tag/v1.15.1) for Chrome, extract the contents, and place them into the `./yomininja-e/extensions/10ten` directory.
+3. (optional) Download [10ten v1.15.1](https://github.com/birchill/10ten-ja-reader/releases/tag/v1.15.1) for Chrome, extract the contents, and place them into the following directory:
+       
+       ./yomininja-e/extensions/10ten
 
-4. Install node modules. Note: `--force` is used due to outdated react-furi peerDependencies, but it should function normally.
+5. Install node modules. Note: `--force` is used due to outdated react-furi peerDependencies, but it should function normally.
     ```commandline
     cd yomininja-e && npm install --force
     ```
-5. Generate gRPC Protobuf types
+6. Generate gRPC Protobuf types
     ```commandline
     npm run grpc-types
     ```
-6. Build the distribution
+7. Build the distribution
     ```commandline
     npm run dist
     ```
 
    
-### OCR Engines
+## OCR Engines
 
 - [PPOCR-Inference-Service](https://github.com/matt-m-o/PPOCR-Inference-Service)
 
-### Inspired by:
+## Inspired by:
 - [Yomichan](https://github.com/FooSoft/yomichan)
 - [Manga OCR](https://github.com/kha-white/manga-ocr)
 - [kanjitomo-ocr](https://github.com/sakarika/kanjitomo-ocr)
