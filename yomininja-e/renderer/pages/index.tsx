@@ -112,7 +112,8 @@ export default function IndexPage() {
     // });
   }, [] );
 
-  return (
+  return ( <>
+    <title>YomiNinja</title>
     <ProfileProvider>
       <AppInfoProvider>
         <SettingsProvider>
@@ -126,6 +127,6 @@ export default function IndexPage() {
         </SettingsProvider>
       </AppInfoProvider>
     </ProfileProvider>
-  );
+  </> );
 }
 

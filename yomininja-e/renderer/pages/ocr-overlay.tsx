@@ -20,7 +20,7 @@ export default function OcrOverlayPage() {
   
 
   return ( <>
-  
+    <title>OCR Overlay - YomiNinja</title>
     <SettingsProvider>
       <DictionaryProvider>
         <OcrResultProvider>
