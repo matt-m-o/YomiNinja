@@ -41,9 +41,10 @@ YomiNinja currently offers support for distros using the X11 window system. Wayl
 1. Install [xdotool](https://github.com/jordansissel/xdotool?tab=readme-ov-file#installation).
 2. Download the YomiNinja package corresponding to your distribution.
 3. Install the package. For example, on Debian-based distributions:
-  ```commandline
-   sudo dpkg -i yomininja-e_x.x.x_amd64.deb
-  ```
+
+    ```commandline
+     sudo dpkg -i yomininja-e_x.x.x_amd64.deb
+    ```
 
 
 #### Install Yomichan (optional):
@@ -87,23 +88,30 @@ Currently, PaddleOCR is used for text extraction, which generally produces very 
 It supports dozens of languages, that will be integrated into this application in the future. <br>
 
 ### Building
-1. Clone git repository
-```commandline
-git clone https://github.com/matt-m-o/YomiNinja.git && cd YomiNinja
-```
-2. Download and extract the latest build of [PPOCR-Inference-Service](https://github.com/matt-m-o/PPOCR-Inference-Service) inside the "./bin/ppocr" directory.
-3. Install node modules
-```commandline
-cd yomininja-e && npm install
-```
-4. Generate gRPC Protobuf types
-```commandline
-npm run grpc-types
-```
-5. Build distribution
-```commandline
-npm run dist
-```
+1. Clone the git repository
+    ```commandline
+    git clone https://github.com/matt-m-o/YomiNinja.git && cd YomiNinja
+    ```
+2. Based on your platform, download and extract the latest build of [PPOCR-Inference-Service](https://github.com/matt-m-o/PPOCR-Inference-Service/releases) into the appropriate directory:
+
+    - Windows: `./bin/win32/ppocr`
+    - Linux: `./bin/linux/ppocr`
+
+3. (optional) Download [10ten v1.15.1](https://github.com/birchill/10ten-ja-reader/releases/tag/v1.15.1) for Chrome, extract the contents, and place them into the `./yomininja-e/extensions/10ten` directory.
+
+4. Install node modules. Note: `--force` is used due to outdated react-furi peerDependencies, but it should function normally.
+    ```commandline
+    cd yomininja-e && npm install --force
+    ```
+5. Generate gRPC Protobuf types
+    ```commandline
+    npm run grpc-types
+    ```
+6. Build the distribution
+    ```commandline
+    npm run dist
+    ```
+
    
 ### OCR Engines
 
