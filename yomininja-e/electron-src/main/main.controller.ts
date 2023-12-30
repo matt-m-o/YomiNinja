@@ -125,6 +125,7 @@ export class MainController {
 
     refreshPage(): void {
         this.mainWindow.loadURL( this.mainWindowUrl );
+        this.mainWindow.setTitle('YomiNinja');
     }
 
     private createCaptureSourceSelectionWindow() {
