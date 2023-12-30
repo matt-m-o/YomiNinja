@@ -1,4 +1,4 @@
-import { CSSProperties, useContext, useEffect, useState } from "react";
+import { CSSProperties, useContext, useEffect, useRef, useState } from "react";
 import { OcrResultContext } from "../../context/ocr_result.provider";
 import { styled } from "@mui/material";
 import { OcrItemScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
@@ -11,7 +11,8 @@ const BaseOcrResultBox = styled('div')({
     outline: 'solid',
     position: 'absolute',
     fontFamily: "arial",
-    color: 'transparent',
+    // color: 'transparent',
+    contentVisibility: 'hidden',
     transformOrigin: 'top left',
     paddingLeft: '0.25%',
     paddingRight: '0.25%',
@@ -70,6 +71,36 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         }
     } ): JSX.Element {
 
+        const boxRef = useRef(null);
+
+        const [ alignItems, setAlignItems ] = useState('center');
+
+        useEffect( () => {
+
+            if ( !boxRef?.current ) return;
+            
+            const observer = new MutationObserver( ( mutations ) => {
+                mutations.forEach( ( mutation ) => {
+
+                    if ( mutation.type !== 'childList' ) 
+                        return;
+
+                    const addedNodes = Array.from( mutation.addedNodes );
+
+                    if ( !addedNodes.some( node => node.nodeName === 'RUBY' ) ) 
+                        return;
+
+                    console.log('A <ruby> child was added!');
+                    setAlignItems( 'flex-end' );                                        
+                });
+            });
+        
+            observer.observe( boxRef.current, { childList: true, subtree: true } );
+    
+            return () => observer.disconnect();
+        }, [] );
+        
+
         const { ocrItem, ocrRegionSize } = props;
 
         const { box } = ocrItem;
@@ -106,7 +137,9 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                 lineHeight: adjustedFontSize + 'px',
                 letterSpacing: ocrItemBoxVisuals.text.letter_spacing || 'inherit',
                 paddingLeft: isVertical ? 0 : '0.25%',
-                paddingRight: isVertical ? 0 : '0.25%'
+                paddingRight: isVertical ? 0 : '0.25%',
+                contentVisibility: 'visible',
+                zIndex: 10,
             },
             outlineColor: ocrItemBoxVisuals?.border_color || 'red',
             outlineWidth: ocrItemBoxVisuals?.border_width || '0px',
@@ -114,18 +147,23 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
             writingMode: isVertical ? 'vertical-rl' :'inherit',
             textOrientation: isVertical ? 'upright' :'inherit',
             fontSize: fontSize + 'px',
-            lineHeight: fontSize + 'px'
+            lineHeight: fontSize + 'px',
+            contentVisibility: 'hidden',
+            alignItems
         });
 
         const { width } = box.dimensions;
         const { left } = box.position;
         const minWidth = width + left > 100 ? 100 - left : width;
 
+        const bottom = 100 - box.position.top - box.dimensions.height;
+
         return (
-            <Box className="extracted-text"
+            <Box className="extracted-text" ref={boxRef}
                 style={{
                     left: ( box.position.left - 0.25 ) + '%',
-                    top: (box.position.top * 0.999) + '%',
+                    // top: (box.position.top * 0.999) + '%',
+                    bottom: bottom * 0.999 + '%',
                     transform: `rotate( ${box.angle_degrees}deg )`,
                     minWidth: minWidth + '%',
                     minHeight: box.dimensions.height + '%',
