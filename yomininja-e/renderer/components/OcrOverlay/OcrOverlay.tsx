@@ -3,7 +3,7 @@ import { OverlayOcrItemBoxVisuals, OverlayFrameVisuals, OverlayHotkeys, OverlayB
 import { SettingsContext } from "../../context/settings.provider";
 import { debounce } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import FullscreenOcrResult from "./FullscreenOcrResult";
+import FullscreenOcrResult from "./OcrResults";
 import { DictionaryContext } from "../../context/dictionary.provider";
 import CustomCursor from "./CustomCursor/CustomCursor";
 import { OcrResultContext } from "../../context/ocr_result.provider";

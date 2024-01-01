@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { OcrResultContext, OcrResultProvider } from '../context/ocr_result.provider';
-import FullscreenOcrResult from '../components/OcrOverlay/FullscreenOcrResult';
+import FullscreenOcrResult from '../components/OcrOverlay/OcrResults';
 import { SettingsContext, SettingsProvider } from '../context/settings.provider';
 import OcrOverlay from '../components/OcrOverlay/OcrOverlay';
 import { DictionaryProvider } from '../context/dictionary.provider';
