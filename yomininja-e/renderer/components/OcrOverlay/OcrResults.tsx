@@ -70,19 +70,22 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                     }}
                 >
                     {
-                        ocrRegion.results.map( ( item, resultIdx ) => (
-                            <OcrResultBox 
-                                key={resultIdx}
-                                ocrItem={item}
-                                ocrRegionSize={ocrRegion.size}
-                                ocrItemBoxVisuals={ocrItemBoxVisuals}
-                                overlayBehavior={overlayBehavior}
-                                overlayHotkeys={overlayHotkeys}
-                                onClick={ handleBoxClick }
-                                onMouseEnter={ handleBoxMouseEnter }
-                                onMouseLeave={ handleBoxMouseLeave }
-                            />
-                        ))
+                        ocrRegion.results.map( ( item, resultIdx ) => {
+                            if ( !item?.text ) return;
+                            return (
+                                <OcrResultBox 
+                                    key={resultIdx}
+                                    ocrItem={item}
+                                    ocrRegionSize={ocrRegion.size}
+                                    ocrItemBoxVisuals={ocrItemBoxVisuals}
+                                    overlayBehavior={overlayBehavior}
+                                    overlayHotkeys={overlayHotkeys}
+                                    onClick={ handleBoxClick }
+                                    onMouseEnter={ handleBoxMouseEnter }
+                                    onMouseLeave={ handleBoxMouseLeave }
+                                />
+                            )
+                        })
                     }
                 </div>
             )
