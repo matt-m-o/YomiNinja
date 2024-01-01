@@ -12,8 +12,8 @@ const BaseOcrResultBox = styled('div')({
     // color: 'transparent',
     contentVisibility: 'hidden',
     transformOrigin: 'top left',
-    paddingLeft: '0.25%',
-    paddingRight: '0.25%',
+    paddingLeft: '0%',
+    paddingRight: '0%',
     textAlign: 'center',
     // letterSpacing: '0.1rem',
     display: 'flex',
@@ -131,15 +131,18 @@ export default function OcrResultBox( props: {
     const bottom = 100 - box.position.top - box.dimensions.height;
 
 
+
     return (
         <Box className="extracted-text" ref={boxRef}
             style={{
-                left: ( box.position.left - 0.25 ) + '%',
+                left: ( isVertical ? left : left - 0.25 ) + '%',
                 // top: (box.position.top * 0.999) + '%',
                 bottom: bottom * 0.999 + '%',
                 transform: `rotate( ${box.angle_degrees}deg )`,
                 minWidth: minWidth + '%',
                 minHeight: box.dimensions.height + '%',
+                paddingLeft: ( isVertical ? 0 : 0.25 ) + '%',
+                paddingRight: ( isVertical ? 0 : 0.25 ) + '%',
             }}                          
             onMouseEnter={ () => props.onMouseEnter( ocrItem ) }
             onMouseLeave={ () => props.onMouseLeave() }
