@@ -4,6 +4,7 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { OverlayFrameVisuals, OverlayMouseVisuals, OverlayOcrItemBoxVisuals, OverlayVisualCustomizations } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
 import { throttle } from "lodash";
 import CustomCursor from "../OcrOverlay/CustomCursor/CustomCursor";
+import { ProfileContext } from "../../context/profile.provider";
 
 
 const OverlayFrame = styled('div')({
@@ -28,6 +29,7 @@ const OcrItemBox = styled('div')({
 export default function AppSettingsVisuals() {
 
     const { activeSettingsPreset, updateActivePresetVisuals } = useContext( SettingsContext );
+    const { profile } = useContext( ProfileContext );
 
 
     const ocrItemBoxVisuals: OverlayOcrItemBoxVisuals = activeSettingsPreset?.overlay?.visuals.ocr_item_box;
@@ -85,6 +87,14 @@ export default function AppSettingsVisuals() {
         m: 1,
     };    
     
+        
+
+    const overlayPreviewText = {
+        en: 'Extracted text',
+        ja: '抽出されたテキスト',
+        ch: '提取的文本',
+        ko: '추출된 텍스트',
+    }[ profile?.active_ocr_language.two_letter_code ];
 
     return (
         <Box sx={{ flexGrow: 1, margin: 1, }}>
@@ -309,14 +319,16 @@ export default function AppSettingsVisuals() {
                 >
                     <OcrItemBox
                         sx={{
-                            border: `solid ${ocrItemBoxVisuals?.border_width}px`,
-                            borderColor: ocrItemBoxVisuals?.border_color,
+                            outline: `solid ${ocrItemBoxVisuals?.border_width}px`,
+                            outlineColor: ocrItemBoxVisuals?.border_color,
                             backgroundColor: ocrItemBoxVisuals?.background_color,
                             color: ocrItemBoxVisuals?.text.color,
-                            borderRadius: ocrItemBoxVisuals?.border_radius
+                            borderRadius: ocrItemBoxVisuals?.border_radius,
+                            letterSpacing: ocrItemBoxVisuals?.text?.letter_spacing || 'inherit',
+                            fontSize: ocrItemBoxVisuals?.text?.font_size_factor + '%'
                         }}
                     >
-                        Extracted text
+                        {overlayPreviewText}
                     </OcrItemBox>
 
                 </OverlayFrame>
