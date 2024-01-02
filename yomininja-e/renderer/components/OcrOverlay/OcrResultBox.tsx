@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { CSSProperties, useEffect, useRef, useState } from "react";
 import { OcrItemScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { styled } from "@mui/material";
 import { OverlayBehavior, OverlayHotkeys, OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
-
 
 const BaseOcrResultBox = styled('div')({
     // border: 'solid',
@@ -31,9 +30,12 @@ export default function OcrResultBox( props: {
     ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
     overlayHotkeys: OverlayHotkeys;
     overlayBehavior: OverlayBehavior;
+    contentEditable: boolean;
     onMouseEnter?: ( item: OcrItemScalable ) => void;
     onMouseLeave?: () => void;
     onClick?: ( item: OcrItemScalable ) => void;
+    onDoubleClick?: () => void;
+    onBlur?: ( newText: string ) => void;
 } ): JSX.Element {
     
     const {
@@ -41,6 +43,7 @@ export default function OcrResultBox( props: {
         ocrRegionSize,
         ocrItemBoxVisuals,
         overlayBehavior,
+        contentEditable
     } = props;
     const { box } = ocrItem;
 
@@ -101,18 +104,21 @@ export default function OcrResultBox( props: {
 
     const adjustedFontSize = fontSize + fontSizeOffset; // px
 
+    const activeBoxCss: CSSProperties = {
+        backgroundColor: ocrItemBoxVisuals?.background_color || 'black',
+        color: ocrItemBoxVisuals?.text.color || 'white',
+        fontSize: adjustedFontSize + 'px', // isVertical ? fontSize * 0.8 : fontSize * 0.85
+        lineHeight: adjustedFontSize + 'px',
+        letterSpacing: ocrItemBoxVisuals.text.letter_spacing || 'inherit',
+        paddingLeft: isVertical ? 0 : '0.25%',
+        paddingRight: isVertical ? 0 : '0.25%',
+        contentVisibility: 'visible',
+        zIndex: 10,
+    };
+
     const Box = styled( BaseOcrResultBox )({            
-        ":hover": {
-            backgroundColor: ocrItemBoxVisuals?.background_color || 'black',
-            color: ocrItemBoxVisuals?.text.color || 'white',
-            fontSize: adjustedFontSize + 'px', // isVertical ? fontSize * 0.8 : fontSize * 0.85
-            lineHeight: adjustedFontSize + 'px',
-            letterSpacing: ocrItemBoxVisuals.text.letter_spacing || 'inherit',
-            paddingLeft: isVertical ? 0 : '0.25%',
-            paddingRight: isVertical ? 0 : '0.25%',
-            contentVisibility: 'visible',
-            zIndex: 10,
-        },
+        "&:hover": activeBoxCss,
+        "&.editable": activeBoxCss,
         outlineColor: ocrItemBoxVisuals?.border_color || 'red',
         outlineWidth: ocrItemBoxVisuals?.border_width || '0px',
         borderRadius: ocrItemBoxVisuals?.border_radius || '0rem',
@@ -131,9 +137,22 @@ export default function OcrResultBox( props: {
     const bottom = 100 - box.position.top - box.dimensions.height;
 
 
+    useEffect(() => {
+
+        if ( !boxRef?.current || !contentEditable )
+            return
+        
+        boxRef.current.focus();
+        
+    }, [contentEditable]);
+    
+    
+
 
     return (
-        <Box className="extracted-text" ref={boxRef}
+        <Box className={ `extracted-text ${contentEditable ? 'editable' : ''}` } ref={boxRef}
+            contentEditable={contentEditable}
+            role="textbox"
             style={{
                 left: ( isVertical ? left : left - 0.25 ) + '%',
                 // top: (box.position.top * 0.999) + '%',
@@ -143,12 +162,18 @@ export default function OcrResultBox( props: {
                 minHeight: box.dimensions.height + '%',
                 paddingLeft: ( isVertical ? 0 : 0.25 ) + '%',
                 paddingRight: ( isVertical ? 0 : 0.25 ) + '%',
-            }}                          
+            }}
             onMouseEnter={ () => props.onMouseEnter( ocrItem ) }
-            onMouseLeave={ () => props.onMouseLeave() }
+            onMouseLeave={ props.onMouseLeave }
             onClick={ () => props.onClick( ocrItem ) }
+            onDoubleClick={ props.onDoubleClick }
+            onBlur={ ( e ) => {
+                ocrItem.text = e.target.innerText;
+                props.onBlur( ocrItem.text );
+            }}
+            suppressContentEditableWarning
         >
-            { ocrItem.text }
+            {ocrItem.text}
         </Box>
     )
 }

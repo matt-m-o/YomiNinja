@@ -18,31 +18,31 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
     const { ocrItemBoxVisuals, overlayHotkeys, overlayBehavior } = props;
 
     const { ocrResult } = useContext( OcrResultContext );
-    const [ hoveredText, setHoveredText ] = useState< string >('');
+    
+    const [ editableBoxId, setEditableBoxId ] = useState< string | undefined >(undefined);
+    let hoveredText = '' ;
 
-    useEffect( () => {
+    const handleBoxMouseEnter = ( item: OcrItemScalable ) => {
+        if ( !overlayBehavior.copy_text_on_hover )
+            return;
 
-        // console.log({ hoveredText });
+        hoveredText = item.text;
+        sendHoveredText()
+    }
 
+    const handleBoxMouseLeave = () => {
+        if ( !overlayBehavior.copy_text_on_hover )
+            return;
+        sendHoveredText();
+    }
+
+    function sendHoveredText() {
         if ( 
             overlayBehavior?.copy_text_on_hover &&
             hoveredText
         ) {
             global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', hoveredText );
         }
-
-    }, [ hoveredText ] );
-
-    const handleBoxMouseEnter = ( item: OcrItemScalable ) => {
-        if ( !overlayBehavior.copy_text_on_hover )
-            return;
-        setHoveredText( item.text )
-    }
-
-    const handleBoxMouseLeave = () => {
-        if ( !overlayBehavior.copy_text_on_hover )
-            return;
-        setHoveredText( '' );
     }
 
 
@@ -53,6 +53,17 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
         // console.log( { text } );
         global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', item.text );
+    }
+
+    function handleBoxDoubleClick( id: string | undefined ) {
+        setEditableBoxId( id );
+        console.log({ id })
+    }
+
+    function handleBoxBlur( newText: string ) {
+        if ( !editableBoxId ) return;
+        setEditableBoxId( undefined );
+        // console.log({ newText });
     }
 
     return ( <>
@@ -72,8 +83,11 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                     {
                         ocrRegion.results.map( ( item, resultIdx ) => {
                             if ( !item?.text ) return;
+
+                            const id = `${regionIdx}/${resultIdx}`;
+
                             return (
-                                <OcrResultBox 
+                                <OcrResultBox
                                     key={resultIdx}
                                     ocrItem={item}
                                     ocrRegionSize={ocrRegion.size}
@@ -83,6 +97,9 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                                     onClick={ handleBoxClick }
                                     onMouseEnter={ handleBoxMouseEnter }
                                     onMouseLeave={ handleBoxMouseLeave }
+                                    onDoubleClick={ () => handleBoxDoubleClick( id ) }
+                                    onBlur={ handleBoxBlur }
+                                    contentEditable={ editableBoxId === id }
                                 />
                             )
                         })
