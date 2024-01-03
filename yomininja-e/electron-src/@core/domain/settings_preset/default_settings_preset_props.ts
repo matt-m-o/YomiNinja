@@ -47,6 +47,7 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                 },
                 always_forward_mouse_clicks: false,
                 show_window_without_focus: false,
+                hide_results_on_blur: false,
             }
         },
         ocr_engine: {

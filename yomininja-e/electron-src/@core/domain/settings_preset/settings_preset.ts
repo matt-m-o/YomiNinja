@@ -60,6 +60,7 @@ export type OverlayBehavior = {
     show_window_on_copy: ShowWindowOnCopy
     always_forward_mouse_clicks: boolean;
     show_window_without_focus: boolean;
+    hide_results_on_blur: boolean;
 };
 
 export type OverlayHotkeys = {
