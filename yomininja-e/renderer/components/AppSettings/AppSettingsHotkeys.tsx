@@ -16,34 +16,22 @@ export default function AppSettingsHotkeys() {
     
     const overlayHotkeys = activeSettingsPreset?.overlay.hotkeys;
     
-    const ocrKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.ocr );
+    const ocrKeys = stringToHotkeyCombination( overlayHotkeys?.ocr );
     // const copyTextKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.copy_text );
-    const toggleOverlayKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.toggle );
-    const showOverlayKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.show );
-    const clearOverlayKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.clear );
+    const toggleOverlayKeys = stringToHotkeyCombination( overlayHotkeys?.toggle );
+    const showOverlayKeys = stringToHotkeyCombination( overlayHotkeys?.show );
+    const clearOverlayKeys = stringToHotkeyCombination( overlayHotkeys?.clear );
     // const [ ocrOnPrintScreen, setOcrOnPrintScreen ] = useState< boolean >( Boolean(overlayHotkeys?.ocr_on_screen_shot) );
     const ocrOnPrintScreen = Boolean(overlayHotkeys?.ocr_on_screen_shot);
 
-    function stringToHotkeyCombination( hotkeyString: string ): HotkeyCombination {
-
-        if ( !hotkeyString ) return;
-
-        const keys = hotkeyString.split('+');
-        if ( hotkeyString.slice( hotkeyString.length - 1 ) === '+' )
-            keys[1] = '+';        
-
-        // If the string contains only one key code
-        if ( keys.length == 1 )
-            return { key: keys[0] };
-
-        return {
-            modifierKey: keys[0],
-            key: keys[1],
-        };
+    function stringToHotkeyCombination( hotkeyString: string ): string {
+        return hotkeyString.split('+').join( ' + ' );
     }
 
-    function hotkeyCombinationToString( hotkeyCombination: HotkeyCombination ) {
-        return hotkeyCombination.modifierKey + '+' + hotkeyCombination.key;
+    function hotkeyCombinationToString( keys: string[] ) {
+        const combination = keys.join('+');
+        console.log({ combination });
+        return combination;
     }
 
     
@@ -57,9 +45,9 @@ export default function AppSettingsHotkeys() {
 
             <HotkeyFields
                 title='OCR'
-                hotkeyCombinationState={ ocrKeys }
+                keyCombination={ ocrKeys }
                 // setStateAction={ setOcrKeys }
-                onChangeHandler={ ( input: HotkeyCombination ) => {
+                onChangeHandler={ ( input?: string[]  ) => {
                     if ( !input ) return;
                     updateActivePresetHotkeys({ ocr: hotkeyCombinationToString( input ) })
                 }}
@@ -83,8 +71,8 @@ export default function AppSettingsHotkeys() {
 
             <HotkeyFields
                 title='Toggle overlay'
-                hotkeyCombinationState={ toggleOverlayKeys }
-                onChangeHandler={ ( input: HotkeyCombination ) => {
+                keyCombination={ toggleOverlayKeys }
+                onChangeHandler={ ( input?: string[]  ) => {
                     if ( !input ) return;
                     updateActivePresetHotkeys({ toggle: hotkeyCombinationToString( input ) })
                 }}
@@ -92,8 +80,8 @@ export default function AppSettingsHotkeys() {
 
             <HotkeyFields
                 title='Show overlay'
-                hotkeyCombinationState={ showOverlayKeys }
-                onChangeHandler={ ( input: HotkeyCombination ) => {
+                keyCombination={ showOverlayKeys }
+                onChangeHandler={ ( input?: string[]  ) => {
                     if ( !input ) return;
                     updateActivePresetHotkeys({ show: hotkeyCombinationToString( input ) })
                 }}
@@ -101,8 +89,8 @@ export default function AppSettingsHotkeys() {
 
             <HotkeyFields
                 title='Hide overlay'
-                hotkeyCombinationState={ clearOverlayKeys }
-                onChangeHandler={ ( input: HotkeyCombination ) => {
+                keyCombination={ clearOverlayKeys }
+                onChangeHandler={ ( input?: string[]  ) => {
                     if ( !input ) return;
                     updateActivePresetHotkeys({ clear: hotkeyCombinationToString( input ) })
                 }}

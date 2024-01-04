@@ -1,5 +1,5 @@
 import { Box, Container, InputBaseComponentProps, SxProps, TextField, Theme, Typography } from "@mui/material";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, KeyboardEvent } from "react";
 import AddSharpIcon from '@mui/icons-material/AddSharp';
 
 const modifierKeys: string[] = [
@@ -17,6 +17,37 @@ function isModifierKey( key: string ): boolean {
     return modifierKeys.includes( key );
 }
 
+function capitalize( str: string ): string {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function getEventKeys( event: KeyboardEvent ): string[] {
+
+    const { key } = event;
+
+    const keys = [];
+
+    // if ( isModifierKey( key ) )
+    //     return keys;
+
+    if ( event.metaKey )
+        keys.push('Meta');
+
+    if ( event.ctrlKey )
+        keys.push('Ctrl');
+
+    if ( event.altKey )
+        keys.push('Alt');
+
+    if ( event.shiftKey )
+        keys.push('Shift');
+
+
+    if ( !isModifierKey( key ) )
+        keys.push( capitalize( key ) );
+
+    return keys;
+}
 
 export interface HotkeyCombination {
     modifierKey?: string;
@@ -26,8 +57,8 @@ export interface HotkeyCombination {
 
 export type HotkeyFieldsProps = {
     title: string;
-    hotkeyCombinationState: HotkeyCombination;
-    onChangeHandler: ( input?: HotkeyCombination ) => void; // Dispatch<SetStateAction<HotkeyCombination>>;
+    keyCombination: string;
+    onChangeHandler: ( input?: string[] ) => void; // Dispatch<SetStateAction<HotkeyCombination>>;
     sx?: SxProps<Theme>;
 };
 
@@ -35,36 +66,27 @@ export type HotkeyFieldsProps = {
 export default function HotkeyFields( props: HotkeyFieldsProps) {
 
     const {
-        hotkeyCombinationState,
+        keyCombination,
         onChangeHandler,
         title,
         sx
     } = props;
 
     function keyDownHandler(
-        { key }: React.KeyboardEvent,
-        type: 'modifierKey' | 'key',
+        event: KeyboardEvent
     ) {
 
-        if ( type != 'modifierKey' && isModifierKey(key) )
+        const keys = getEventKeys( event );
+
+        console.log( keys );
+
+        if ( keys.length === 0 )
             return;
 
-        if ( key.length == 1 )
-            key = key.toUpperCase();
-
+        onChangeHandler(keys);        
         
-        if ( type == 'modifierKey' && isModifierKey(key) ) 
-            onChangeHandler({ ...hotkeyCombinationState, modifierKey: key });        
-
-        else if ( type === 'key' )
-            onChangeHandler({ ...hotkeyCombinationState, key: key });
-        
-        console.log( hotkeyCombinationState );
+        // console.log( hotkeyCombinationState );
     }
-
-    const hotkeyInputProps: InputBaseComponentProps = {
-        style: { textAlign: 'center' }
-    };
 
     return (        
         <Container sx={{ mt: 2, mb: 2, ...sx }}>
@@ -74,34 +96,14 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
             </Typography>
 
             <Box sx={{ display: 'flex', direction: 'row', alignItems: 'center', ml: '14px' }}>
-                
-                { hotkeyCombinationState?.modifierKey != 'undefined' && <>
-                    
-                    <TextField sx={{ maxWidth: '124px', margin: 1 }}
-                        size='small'
-                        inputProps={hotkeyInputProps}
-                        required                    
-                        value={ hotkeyCombinationState?.modifierKey || '' }
-                        
-                        onKeyDown={ ( event ) => keyDownHandler(
-                            event, 'modifierKey'
-                        )}
-                    />
 
-                    <AddSharpIcon/>
-                    
-                </> }
-
-
-                <TextField sx={{ maxWidth: '124px', margin: 1 }}
+                <TextField sx={{ maxWidth: '248px', margin: 1 }}
                     size='small'
                     inputProps={{ style: { textAlign: 'center' } }}
                     required                    
-                    value={ hotkeyCombinationState?.key || '' }
+                    value={ keyCombination }
                     
-                    onKeyDown={ ( event ) => keyDownHandler(
-                        event, 'key'
-                    )}
+                    onKeyDown={ keyDownHandler }
                 />
                 
             </Box>
