@@ -210,7 +210,6 @@ export class AppController {
 
         globalShortcut.register( overlayHotkeys.ocr, async () => {
 
-            this.overlayWindow?.webContents.send( 'user_command:clear_overlay' );
             this.handleOcrCommand();
             // await this.ocrRecognitionController.recognize();
         });
@@ -397,6 +396,8 @@ export class AppController {
 
         console.log('AppController.handleOcrCommand');
 
+        this.overlayWindow?.webContents.send( 'user_command:toggle_results', false );
+        
         await this.handleCaptureSourceSelection();
 
         image = await this.appService.getCaptureSourceImage({

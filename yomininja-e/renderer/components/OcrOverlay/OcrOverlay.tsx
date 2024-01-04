@@ -26,7 +26,7 @@ export default function OcrOverlay() {
   const { activeOcrTemplate } = useContext( OcrTemplatesContext );
   
 
-  const { ocrResult } = useContext( OcrResultContext );
+  const { ocrResult, showResults } = useContext( OcrResultContext );
 
   const ocrItemBoxVisuals: OverlayOcrItemBoxVisuals = activeSettingsPreset?.overlay?.visuals.ocr_item_box;
   const overlayFrameVisuals: OverlayFrameVisuals = activeSettingsPreset?.overlay?.visuals.frame;
@@ -34,9 +34,7 @@ export default function OcrOverlay() {
   const overlayMouseVisuals: OverlayMouseVisuals = activeSettingsPreset?.overlay?.visuals.mouse;
   const overlayHotkeys: OverlayHotkeys = activeSettingsPreset?.overlay?.hotkeys;
   const overlayBehavior: OverlayBehavior = activeSettingsPreset?.overlay?.behavior;
-  
 
-  const showCustomCursor = true;
 
   useEffect( () => {
 
@@ -69,17 +67,6 @@ export default function OcrOverlay() {
     // console.log( value );
 
     global.ipcRenderer.invoke( 'overlay:set_ignore_mouse_events', value );
-
-    if ( showCustomCursor ) {
-      
-      const customCursor = document.getElementById('custom-cursor');
-      if ( !customCursor ) return;
-
-      if ( value === false)
-        customCursor.style.visibility = 'hidden';
-      else
-        customCursor.style.visibility = 'unset';
-    }
   };
 
   useEffect( () => {
@@ -97,16 +84,16 @@ export default function OcrOverlay() {
     const { position, size } = region;
     return (
         <OcrTargetRegionDiv className="ocr-region" key={ region.id }
-            style={{
-              border: 'solid',
-              borderColor: overlayFrameVisuals?.border_color || 'red',
-              borderWidth: overlayOcrRegionVisuals?.border_width + 'px',
-              top: toCssPercentage( position.top ),
-              left: toCssPercentage( position.left ),
-              width: toCssPercentage( size.width ),
-              height: toCssPercentage( size.height ),
-              zIndex: -10
-            }}
+          style={{
+            border: 'solid',
+            borderColor: overlayFrameVisuals?.border_color || 'red',
+            borderWidth: overlayOcrRegionVisuals?.border_width + 'px',
+            top: toCssPercentage( position.top ),
+            left: toCssPercentage( position.left ),
+            width: toCssPercentage( size.width ),
+            height: toCssPercentage( size.height ),
+            zIndex: -10
+          }}
         />
     );
   });
@@ -115,7 +102,8 @@ export default function OcrOverlay() {
     <OverlayFrame id='overlay-frame'
       sx={{
         borderColor: overlayFrameVisuals?.border_color || 'red',
-        borderWidth: overlayFrameVisuals?.border_width + 'px'
+        borderWidth: overlayFrameVisuals?.border_width + 'px',
+        contentVisibility: showResults ? 'visible' : 'hidden'
       }}
     >
       {templateRegions}

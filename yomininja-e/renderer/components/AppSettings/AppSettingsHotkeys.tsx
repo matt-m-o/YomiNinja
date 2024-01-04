@@ -90,7 +90,7 @@ export default function AppSettingsHotkeys() {
             />
 
             <HotkeyFields
-                title='Clear overlay'
+                title='Hide overlay boxes'
                 hotkeyCombinationState={ clearOverlayKeys }
                 onChangeHandler={ ( input: HotkeyCombination ) => {
                     if ( !input ) return;

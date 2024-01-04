@@ -26,6 +26,9 @@ export class OverlayController {
     };
     private alwaysForwardMouseClicks: boolean = false;
     private showWindowWithoutFocus: boolean = false;
+    private hideResultsOnBlur: boolean = false;
+
+    private showResults: boolean = false;
 
     private globalShortcutAccelerators: string[] = [];
 
@@ -41,19 +44,14 @@ export class OverlayController {
 
         const settingsJson = (await this.overlayService.getActiveSettingsPreset())
             ?.toJson()
-
-        if ( settingsJson ) {
-
-            this.overlayAlwaysOnTop = Boolean( settingsJson.overlay.behavior.always_on_top );
-            this.showWindowOnCopy = settingsJson.overlay.behavior.show_window_on_copy;
-            this.clickThroughMode = settingsJson.overlay.behavior.click_through_mode;
-            this.alwaysForwardMouseClicks = Boolean( settingsJson.overlay.behavior.always_forward_mouse_clicks );
-            this.showWindowWithoutFocus = Boolean( settingsJson.overlay.behavior.show_window_without_focus );
-        }
-
+            
         this.createOverlayWindow();
         this.registersIpcHandlers();
-        this.registerGlobalShortcuts();
+        // this.registerGlobalShortcuts();
+
+        if ( settingsJson ) {
+            await this.applySettingsPreset( settingsJson );
+        }
 
         this.overlayWindow.on( 'show', ( ) => {
             this.showOverlayWindow();
@@ -87,7 +85,14 @@ export class OverlayController {
 
         this.mainWindow?.on( 'closed', () => {
             this.overlayWindow.destroy();
-        });        
+        });
+
+        this.overlayWindow.on( 'blur', () => {
+            
+            if ( !this.hideResultsOnBlur ) return;
+
+            this.overlayWindow.webContents.send( 'user_command:toggle_results', false );
+        });
 
         const url = isDev
         ? 'http://localhost:8000/ocr-overlay'
@@ -192,14 +197,21 @@ export class OverlayController {
 
             this.showOverlayWindow();
             // this.overlayWindow.webContents.send( 'user_command:copy_to_clipboard' );
+
+            this.showResults = true;
+            this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
         });
         this.globalShortcutAccelerators.push( overlayHotkeys.show );
 
         // View overlay and clear
         globalShortcut.register( overlayHotkeys.show_and_clear, () => {
 
-            this.showOverlayWindow();
-            this.overlayWindow.webContents.send( 'user_command:clear_overlay' );
+            // this.showOverlayWindow();
+            this.showResults = false;
+            this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
+            
+            if ( this.overlayWindow.isFocused() )
+                this.overlayWindow.blur();
         });
         this.globalShortcutAccelerators.push( overlayHotkeys.show_and_clear );
 
@@ -297,6 +309,8 @@ export class OverlayController {
 
     private showOverlayWindow() {
         // console.log("OverlayController.showOverlayWindow");
+
+        this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
         
         const overlayWindowHandle = getBrowserWindowHandle( this.overlayWindow );
         
@@ -332,6 +346,7 @@ export class OverlayController {
         this.showWindowOnCopy = settingsPresetJson.overlay.behavior.show_window_on_copy;
         this.alwaysForwardMouseClicks = Boolean( settingsPresetJson.overlay.behavior.always_forward_mouse_clicks );
         this.showWindowWithoutFocus = Boolean( settingsPresetJson.overlay.behavior.show_window_without_focus );
+        this.hideResultsOnBlur = Boolean( settingsPresetJson.overlay.behavior.hide_results_on_blur );
 
         this.overlayWindow?.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );
         this.overlayWindow.setIgnoreMouseEvents( this.clickThroughMode !== 'disabled', {

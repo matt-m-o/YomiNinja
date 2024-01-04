@@ -4,6 +4,7 @@ import { OcrResultScalable } from "../../electron-src/@core/domain/ocr_result_sc
 
 export type OcrResultContextType = {    
     ocrResult: OcrResultScalable;
+    showResults: boolean;
 };
 
 export const OcrResultContext = createContext( {} as OcrResultContextType );
@@ -13,10 +14,11 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
 
     // const [ ocrResult, setOcrResult ] = useState< OcrResult >();
     const [ ocrResult, setOcrResult ] = useState< OcrResultScalable | null >( null );
+    const [ showResults, setShowResults ] = useState<boolean>();
   
   
     function ocrResultHandler ( _event, data: OcrResultScalable ) {
-        // console.log( data );        
+        // console.log( data );
         setOcrResult(data);
     }
     
@@ -24,13 +26,13 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
 
         global.ipcRenderer.on( 'ocr:result', ocrResultHandler );
         
-        global.ipcRenderer.on( 'user_command:clear_overlay', () => {
-            setOcrResult( null );
+        global.ipcRenderer.on( 'user_command:toggle_results', ( e, value ) => {
+            setShowResults( value );
         });
 
         return () => {
             global.ipcRenderer.removeAllListeners( 'ocr:result' );
-            global.ipcRenderer.removeAllListeners( 'user_command:clear_overlay' );
+            global.ipcRenderer.removeAllListeners( 'user_command:toggle_results' );
         }
 
     }, [ global.ipcRenderer ] );    
@@ -39,7 +41,8 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
     return (
         <OcrResultContext.Provider
             value={{
-                ocrResult,                
+                ocrResult,
+                showResults
             }}
         >
             {children}

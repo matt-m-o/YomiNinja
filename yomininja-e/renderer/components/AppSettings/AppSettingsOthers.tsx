@@ -97,6 +97,38 @@ export default function AppSettingsOthers() {
                         }
                     />
 
+                    <FormControlLabel label='Show overlay without stealing focus'
+                        sx={{
+                            ...switchFormControlLabelSx,
+                        }}
+                        control={
+                            <Switch
+                                checked={ Boolean( overlayBehavior?.show_window_without_focus ) }
+                                onChange={ ( event ) => {
+                                    updateActivePresetBehavior({
+                                        show_window_without_focus: event.target.checked
+                                    });
+                                }}
+                            /> 
+                        }
+                    />
+
+                    <FormControlLabel label='Hide boxes on focus loss'
+                        sx={{
+                            ...switchFormControlLabelSx,
+                        }}
+                        control={
+                            <Switch
+                                checked={ Boolean( overlayBehavior?.hide_results_on_blur ) }
+                                onChange={ ( event ) => {
+                                    updateActivePresetBehavior({
+                                        hide_results_on_blur: event.target.checked
+                                    });
+                                }}
+                            /> 
+                        }
+                    />
+
                     <FormControlLabel label='Copy text on click'
                         sx={ switchFormControlLabelSx }
                         control={
@@ -123,27 +155,12 @@ export default function AppSettingsOthers() {
                             /> 
                         }
                     />
-                    <FormControlLabel label='Show overlay without stealing focus'
-                        sx={{
-                            ...switchFormControlLabelSx,
-                            mb: 1
-                        }}
-                        control={
-                            <Switch
-                                checked={ Boolean( overlayBehavior?.show_window_without_focus ) }
-                                onChange={ ( event ) => {
-                                    updateActivePresetBehavior({
-                                        show_window_without_focus: event.target.checked
-                                    });
-                                }}
-                            /> 
-                        }
-                    />
 
                     <FormControlLabel label='Show window on text copy (e.g. Yomichan Search)'
                         title='Use this feature to show popup dictionaries like Yomichan or Yomitan'
                         sx={{
                             ...switchFormControlLabelSx,
+                            mt: 1,
                             mb: 0
                         }}
                         control={
