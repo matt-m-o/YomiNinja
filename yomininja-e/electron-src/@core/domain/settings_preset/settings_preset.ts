@@ -68,7 +68,7 @@ export type OverlayHotkeys = {
     ocr_on_screen_shot: boolean; // Perform ocr when pressing "PrintScreen"
     copy_text: string;
     show: string;
-    show_and_clear: string;
+    clear: string;
 };
 
 export type OverlaySettings = {

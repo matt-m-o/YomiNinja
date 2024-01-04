@@ -19,7 +19,7 @@ export default function AppSettingsHotkeys() {
     const ocrKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.ocr );
     // const copyTextKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.copy_text );
     const showOverlayKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.show );
-    const clearOverlayKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.show_and_clear );
+    const clearOverlayKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.clear );
     // const [ ocrOnPrintScreen, setOcrOnPrintScreen ] = useState< boolean >( Boolean(overlayHotkeys?.ocr_on_screen_shot) );
     const ocrOnPrintScreen = Boolean(overlayHotkeys?.ocr_on_screen_shot);
 
@@ -94,7 +94,7 @@ export default function AppSettingsHotkeys() {
                 hotkeyCombinationState={ clearOverlayKeys }
                 onChangeHandler={ ( input: HotkeyCombination ) => {
                     if ( !input ) return;
-                    updateActivePresetHotkeys({ show_and_clear: hotkeyCombinationToString( input ) })
+                    updateActivePresetHotkeys({ clear: hotkeyCombinationToString( input ) })
                 }}
             />
             

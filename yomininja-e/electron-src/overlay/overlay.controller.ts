@@ -204,7 +204,7 @@ export class OverlayController {
         this.globalShortcutAccelerators.push( overlayHotkeys.show );
 
         // View overlay and clear
-        globalShortcut.register( overlayHotkeys.show_and_clear, () => {
+        globalShortcut.register( overlayHotkeys.clear, () => {
 
             // this.showOverlayWindow();
             this.showResults = false;
@@ -213,7 +213,7 @@ export class OverlayController {
             if ( this.overlayWindow.isFocused() )
                 this.overlayWindow.blur();
         });
-        this.globalShortcutAccelerators.push( overlayHotkeys.show_and_clear );
+        this.globalShortcutAccelerators.push( overlayHotkeys.clear );
 
 
         uIOhook.on( 'mousemove', async ( e ) => {

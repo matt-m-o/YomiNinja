@@ -33,7 +33,7 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                 ocr: 'Alt+S',
                 copy_text: 'undefined+C',
                 show: 'Alt+C',
-                show_and_clear: 'Alt+V',
+                clear: 'Alt+V',
                 ocr_on_screen_shot: true,                
             },
             behavior: {
