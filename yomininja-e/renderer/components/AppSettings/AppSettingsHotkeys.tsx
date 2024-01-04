@@ -18,6 +18,7 @@ export default function AppSettingsHotkeys() {
     
     const ocrKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.ocr );
     // const copyTextKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.copy_text );
+    const toggleOverlayKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.toggle );
     const showOverlayKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.show );
     const clearOverlayKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.clear );
     // const [ ocrOnPrintScreen, setOcrOnPrintScreen ] = useState< boolean >( Boolean(overlayHotkeys?.ocr_on_screen_shot) );
@@ -81,6 +82,15 @@ export default function AppSettingsHotkeys() {
             </FormGroup>
 
             <HotkeyFields
+                title='Toggle overlay'
+                hotkeyCombinationState={ toggleOverlayKeys }
+                onChangeHandler={ ( input: HotkeyCombination ) => {
+                    if ( !input ) return;
+                    updateActivePresetHotkeys({ toggle: hotkeyCombinationToString( input ) })
+                }}
+            />
+
+            <HotkeyFields
                 title='Show overlay'
                 hotkeyCombinationState={ showOverlayKeys }
                 onChangeHandler={ ( input: HotkeyCombination ) => {
@@ -90,7 +100,7 @@ export default function AppSettingsHotkeys() {
             />
 
             <HotkeyFields
-                title='Hide overlay boxes'
+                title='Hide overlay'
                 hotkeyCombinationState={ clearOverlayKeys }
                 onChangeHandler={ ( input: HotkeyCombination ) => {
                     if ( !input ) return;

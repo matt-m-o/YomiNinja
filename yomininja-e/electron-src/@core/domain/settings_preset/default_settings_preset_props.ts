@@ -32,9 +32,10 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
             hotkeys: {
                 ocr: 'Alt+S',
                 copy_text: 'undefined+C',
-                show: 'Alt+C',
+                toggle: 'Alt+C',
+                show: 'Alt+B',
                 clear: 'Alt+V',
-                ocr_on_screen_shot: true,                
+                ocr_on_screen_shot: true,
             },
             behavior: {
                 copy_text_on_hover: false,

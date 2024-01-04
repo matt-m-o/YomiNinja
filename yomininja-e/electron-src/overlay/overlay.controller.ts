@@ -91,6 +91,7 @@ export class OverlayController {
             
             if ( !this.hideResultsOnBlur ) return;
 
+            this.showResults = false;
             this.overlayWindow.webContents.send( 'user_command:toggle_results', false );
         });
 
@@ -191,6 +192,20 @@ export class OverlayController {
         const overlayHotkeys = settingsPresetJson.overlay.hotkeys;
 
         this.unregisterGlobalShortcuts();
+
+         // View overlay and copy text clipboard
+         globalShortcut.register( overlayHotkeys.toggle, () => {
+
+            this.showResults = !this.showResults;
+            this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
+
+            if ( this.showResults )
+                this.showOverlayWindow();
+
+            else if ( this.overlayWindow.isFocused() ) 
+                this.overlayWindow.blur();
+        });
+        this.globalShortcutAccelerators.push( overlayHotkeys.toggle );
         
         // View overlay and copy text clipboard
         globalShortcut.register( overlayHotkeys.show, () => {
