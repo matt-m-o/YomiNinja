@@ -10,6 +10,7 @@ import { uIOhook } from "uiohook-napi";
 import { windowManager } from "../@core/infra/app_initialization";
 import { getBrowserWindowHandle } from "../util/browserWindow.util";
 import os from 'os';
+import { matchUiohookMouseEventButton } from "../common/mouse_helpers";
 
 export class OverlayController {
 
@@ -193,42 +194,51 @@ export class OverlayController {
 
         this.unregisterGlobalShortcuts();
 
-         // View overlay and copy text clipboard
-         globalShortcut.register( overlayHotkeys.toggle, () => {
 
-            this.showResults = !this.showResults;
-            this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
+        if ( !overlayHotkeys.toggle.includes('Mouse') ) {
+            // View overlay and copy text clipboard
+            globalShortcut.register( overlayHotkeys.toggle, this.toggleOverlayHotkeyHandler );
+            this.globalShortcutAccelerators.push( overlayHotkeys.toggle );
+        }
+        else {
+            uIOhook.on( 'mousedown', e => {
 
-            if ( this.showResults )
-                this.showOverlayWindow();
+                if ( !matchUiohookMouseEventButton( e, overlayHotkeys.toggle ) )
+                    return;
 
-            else if ( this.overlayWindow.isFocused() ) 
-                this.overlayWindow.blur();
-        });
-        this.globalShortcutAccelerators.push( overlayHotkeys.toggle );
+                this.toggleOverlayHotkeyHandler();
+            });
+        }
         
-        // View overlay and copy text clipboard
-        globalShortcut.register( overlayHotkeys.show, () => {
+        if ( !overlayHotkeys.show.includes('Mouse') ) {
+            // View overlay and copy text clipboard
+            globalShortcut.register( overlayHotkeys.show, this.showOverlayHotkeyHandler );
+            this.globalShortcutAccelerators.push( overlayHotkeys.show );
+        }
+        else {
+            uIOhook.on( 'mousedown', e => {
 
-            this.showOverlayWindow();
-            // this.overlayWindow.webContents.send( 'user_command:copy_to_clipboard' );
+                if ( !matchUiohookMouseEventButton( e, overlayHotkeys.show ) )
+                    return;
 
-            this.showResults = true;
-            this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
-        });
-        this.globalShortcutAccelerators.push( overlayHotkeys.show );
+                this.showOverlayHotkeyHandler();
+            });
+        }
 
-        // View overlay and clear
-        globalShortcut.register( overlayHotkeys.clear, () => {
+        if ( !overlayHotkeys.clear.includes('Mouse') ) {
+            // View overlay and clear
+            globalShortcut.register( overlayHotkeys.clear, this.hideOverlayHotkeyHandler );
+            this.globalShortcutAccelerators.push( overlayHotkeys.clear );
+        }
+        else {
+            uIOhook.on( 'mousedown', e => {
 
-            // this.showOverlayWindow();
-            this.showResults = false;
-            this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
-            
-            if ( this.overlayWindow.isFocused() )
-                this.overlayWindow.blur();
-        });
-        this.globalShortcutAccelerators.push( overlayHotkeys.clear );
+                if ( !matchUiohookMouseEventButton( e, overlayHotkeys.clear ) )
+                    return;
+
+                this.hideOverlayHotkeyHandler();
+            });
+        }
 
 
         uIOhook.on( 'mousemove', async ( e ) => {
@@ -371,5 +381,34 @@ export class OverlayController {
         this.registerGlobalShortcuts( settingsPresetJson );
 
         this.overlayWindow?.webContents.send( 'settings_preset:active_data', settingsPresetJson );
+    }
+
+    private toggleOverlayHotkeyHandler = () => {        
+
+        this.showResults = !this.showResults;
+        this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
+
+        if ( this.showResults )
+            this.showOverlayWindow();
+
+        else if ( this.overlayWindow.isFocused() ) 
+            this.overlayWindow.blur();
+    }
+
+    private showOverlayHotkeyHandler = () => {
+        this.showOverlayWindow();
+        // this.overlayWindow.webContents.send( 'user_command:copy_to_clipboard' );
+
+        this.showResults = true;
+        this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
+    }
+
+    private hideOverlayHotkeyHandler = () => {
+        // this.showOverlayWindow();
+        this.showResults = false;
+        this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
+        
+        if ( this.overlayWindow.isFocused() )
+            this.overlayWindow.blur();
     }
 }

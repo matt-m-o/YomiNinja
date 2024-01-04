@@ -20,6 +20,7 @@ import { appInfoController } from "../app_info/app_info.index";
 import { profileController } from "../profile/profile.index";
 import { dictionariesController } from "../dictionaries/dictionaries.index";
 import { ocrTemplatesController } from "../ocr_templates/ocr_templates.index";
+import { htmlMouseButtonToUiohook, matchUiohookMouseEventButton } from "../common/mouse_helpers";
 
 let startupTimer: NodeJS.Timeout;
 
@@ -208,12 +209,19 @@ export class AppController {
 
         this.unregisterGlobalShortcuts();
 
-        globalShortcut.register( overlayHotkeys.ocr, async () => {
+        if ( !overlayHotkeys.ocr.includes('Mouse') ) {
+            globalShortcut.register( overlayHotkeys.ocr, this.handleOcrCommand );
+            this.globalShortcutAccelerators.push( overlayHotkeys.ocr );
+        }
+        else {
+            uIOhook.on( 'mousedown', async ( e ) => {
 
-            this.handleOcrCommand();
-            // await this.ocrRecognitionController.recognize();
-        });
-        this.globalShortcutAccelerators.push( overlayHotkeys.ocr );
+                if ( !matchUiohookMouseEventButton( e, overlayHotkeys.ocr ) )
+                    return;
+
+                await this.handleOcrCommand();
+            });
+        }
         
         
         if ( overlayHotkeys.ocr_on_screen_shot ) {
@@ -392,7 +400,7 @@ export class AppController {
         return false
     }
 
-    private async handleOcrCommand( image?: Buffer, runFullScreenImageCheck?: boolean ) {
+    private handleOcrCommand = async ( image?: Buffer, runFullScreenImageCheck?: boolean ) => {
 
         console.log('AppController.handleOcrCommand');
 

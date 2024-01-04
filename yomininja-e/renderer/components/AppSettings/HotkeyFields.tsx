@@ -1,5 +1,5 @@
 import { Box, Container, InputBaseComponentProps, SxProps, TextField, Theme, Typography } from "@mui/material";
-import { Dispatch, SetStateAction, KeyboardEvent } from "react";
+import { Dispatch, SetStateAction, KeyboardEvent, MouseEvent } from "react";
 import AddSharpIcon from '@mui/icons-material/AddSharp';
 
 const modifierKeys: string[] = [
@@ -72,9 +72,7 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
         sx
     } = props;
 
-    function keyDownHandler(
-        event: KeyboardEvent
-    ) {
+    function keyDownHandler( event: KeyboardEvent ) {
 
         const keys = getEventKeys( event );
 
@@ -86,6 +84,17 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
         onChangeHandler(keys);        
         
         // console.log( hotkeyCombinationState );
+    }
+
+    function mouseDownHandler( event: MouseEvent ) {
+
+        const { button } = event;
+
+        // Ignoring Left and Right click
+        if ( [ 0, 2 ].includes( button ) )
+            return;
+        
+        onChangeHandler([ 'Mouse ' + button ]);
     }
 
     return (        
@@ -104,6 +113,7 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
                     value={ keyCombination }
                     
                     onKeyDown={ keyDownHandler }
+                    onMouseDown={ mouseDownHandler }
                 />
                 
             </Box>
