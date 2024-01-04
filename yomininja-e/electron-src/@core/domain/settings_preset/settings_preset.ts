@@ -7,7 +7,7 @@ export type DictionarySettings = {
 
 export type OcrEngineSettings = {
     ocr_adapter_name?: string;
-    image_scaling_factor: number; // from 0.1 to 1.0. Two decimal places shouldn't be allow.
+    image_scaling_factor: number; // from 0.1 to 2.0. Two decimal places shouldn't be allowed.
     max_image_width: number;
     cpu_threads: number;
     invert_colors: boolean;
@@ -220,8 +220,8 @@ export class SettingsPreset {
     private ocrEngineImageScalingFactorValidation( imageScalingFactor?: number ) {
         if ( imageScalingFactor != undefined ) {
 
-            // Minimum 0.1, Maximum 1
-            imageScalingFactor = Math.max( 0.1, Math.min(1, imageScalingFactor ));
+            // Minimum 0.1, Maximum 2
+            imageScalingFactor = Math.max( 0.1, Math.min(2, imageScalingFactor ));
 
             // Ensure 1 decimal place of precision
             imageScalingFactor = Math.round( imageScalingFactor * 100) / 100;

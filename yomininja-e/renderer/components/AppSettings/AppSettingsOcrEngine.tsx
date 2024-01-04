@@ -118,7 +118,7 @@ export default function AppSettingsOcrEngine() {
                     <Slider
                         marks
                         min={0.1}
-                        max={1}
+                        max={2}
                         step={0.05}
                         valueLabelDisplay="auto"
                         value={ imageScalingFactor }
