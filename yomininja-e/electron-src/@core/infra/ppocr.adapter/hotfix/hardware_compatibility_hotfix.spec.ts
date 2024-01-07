@@ -1,20 +1,17 @@
 import { cloneDeep } from 'lodash';
 import { OcrEngineSettings } from '../../../domain/settings_preset/settings_preset';
 import { applyCpuHotfix } from './hardware_compatibility_hotfix';
+import { PpOcrEngineSettings, getPpOcrDefaultSettings, ppOcrAdapterName } from '../ppocr_settings';
 
 describe( 'Hardware compatibility hotfix tests', () => {
 
-    let ocrEngineSettings: OcrEngineSettings;
+    let ocrEngineSettings: PpOcrEngineSettings;
     
 
     beforeEach( () => {
         
         ocrEngineSettings = {
-            image_scaling_factor: 1,
-            max_image_width: 1600,
-            cpu_threads: 8,
-            invert_colors: false,
-            inference_runtime: 'Open_VINO'
+            ...getPpOcrDefaultSettings()
         };
 
     });

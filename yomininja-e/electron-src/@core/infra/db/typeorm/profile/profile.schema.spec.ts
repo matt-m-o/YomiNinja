@@ -9,6 +9,7 @@ import { Language } from '../../../../domain/language/language';
 import { OcrTemplateTypeOrmSchema } from '../ocr_template/ocr_template.schema';
 import { OcrTemplate } from '../../../../domain/ocr_template/ocr_template';
 import { OcrTargetRegionTypeOrmSchema } from '../ocr_template/ocr_target_region/ocr_target_region.schema';
+import { getDefaultSettingsPresetProps } from '../../../../domain/settings_preset/default_settings_preset_props';
 
 describe( 'Profile Entity Schema tests', () => {
 
@@ -42,7 +43,7 @@ describe( 'Profile Entity Schema tests', () => {
 
         await dataSource.initialize();
         
-        settingsPreset = SettingsPreset.create();
+        settingsPreset = SettingsPreset.create( getDefaultSettingsPresetProps() );
         await dataSource.getRepository( SettingsPreset ).insert( settingsPreset );
         
         languageJa = Language.create({ name: 'japanese', two_letter_code: 'ja' });

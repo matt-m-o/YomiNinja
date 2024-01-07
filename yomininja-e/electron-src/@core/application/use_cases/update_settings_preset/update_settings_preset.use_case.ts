@@ -1,18 +1,21 @@
-import { SettingsPreset, SettingsPresetJson } from "../../../domain/settings_preset/settings_preset";
+import { settings } from "cluster";
+import { OcrEngineSettings, SettingsPreset, SettingsPresetJson } from "../../../domain/settings_preset/settings_preset";
 import { SettingsPresetRepository } from "../../../domain/settings_preset/settings_preset.repository";
 import { OcrAdapter } from "../../adapters/ocr.adapter";
 
-export interface UpdateSettingsPreset_Input extends SettingsPresetJson {
-    options?: {
-        restartOcrEngine?: boolean;
-    };
-}
+export type UpdateSettingsPreset_Input = {
+    options?: UpdateSettingsPresetOptions
+} & SettingsPresetJson;
 
-export class UpdateSettingsPresetUseCase {
+export type UpdateSettingsPresetOptions = {
+    restartOcrEngine?: boolean;
+};
+
+export class UpdateSettingsPresetUseCase< TOcrSettings extends OcrEngineSettings > {
 
     constructor(
         public settingsPresetRepo: SettingsPresetRepository,
-        public ocrAdapter: OcrAdapter,
+        public ocrAdapters: OcrAdapter< TOcrSettings >[],
     ) {}
 
     async execute( input: UpdateSettingsPreset_Input ): Promise< UpdateSettingsPreset_Output > {
@@ -28,33 +31,119 @@ export class UpdateSettingsPresetUseCase {
         if ( !settingsPreset )
             return output;
 
-        // Settings that directly impacts the ocr adapter
-        if ( 
-            settingsPreset.ocr_engine.cpu_threads != input.ocr_engine.cpu_threads ||
-            settingsPreset.ocr_engine.max_image_width != input.ocr_engine.max_image_width ||
-            settingsPreset.ocr_engine.inference_runtime != input.ocr_engine.inference_runtime
-        )
-            output.restartOcrAdapter = true;
 
         settingsPreset.name = input.name;
-        settingsPreset.updateOverlaySettings( input.overlay );
-        settingsPreset.updateOcrEngineSettings( input.ocr_engine );
-        settingsPreset.updateDictionarySettings( input.dictionary )
 
-        
-        await this.settingsPresetRepo.update( settingsPreset );
+        const ocrAdaptersToBeRestarted: string[] = [];
 
+        if ( input?.ocr_engines?.length ) {
 
-        if ( output.restartOcrAdapter || options?.restartOcrEngine ) {
-            output.restartOcrAdapter = await this.ocrAdapter.updateSettings( settingsPreset.ocr_engine );
+            console.log("Input:");
+            console.log(input);
+
+            if ( !Array.isArray( input.ocr_engines ) )
+                input.ocr_engines = [];
+
+            for ( const engineSettings of input.ocr_engines ) {
+
+                // console.log( engineSettings );
+
+                const restart = await this.handleOcrAdapterSettingsUpdate(
+                    engineSettings as TOcrSettings,
+                    settingsPreset,
+                );
+
+                if ( restart ) {
+                    ocrAdaptersToBeRestarted.push( engineSettings.ocr_adapter_name );
+                    output.restartOcrAdapter = true;
+                }
+            }
+        }
+
+        for( const adapter of this.ocrAdapters ) {
+
+            const existingSettings = settingsPreset.getOcrEngineSettings< TOcrSettings >( adapter.name );
+
+            let defaultSettings = adapter.getDefaultSettings();
+
+            if ( existingSettings ) {
+                defaultSettings = {
+                    ...adapter.getDefaultSettings(),
+                    ...existingSettings,
+                };
+            }
+
+            const restart = await this.handleOcrAdapterSettingsUpdate( defaultSettings, settingsPreset );
+
+            if ( restart ) {
+                ocrAdaptersToBeRestarted.push( adapter.name );
+                output.restartOcrAdapter = true;
+            }
         }
         
+
+        settingsPreset.updateOverlaySettings( input.overlay );
+        settingsPreset.updateDictionarySettings( input.dictionary );
+
+        // console.log( settingsPreset );
+
+        await this.settingsPresetRepo.update( settingsPreset );
+        
         if ( options?.restartOcrEngine ) {
+
             await new Promise( resolve => setTimeout( resolve, 500 ) );
-            await new Promise( resolve => this.ocrAdapter.restart( () => resolve(null) ) );
+
+            for ( const adapterName of ocrAdaptersToBeRestarted ) {
+
+                const ocrAdapter = this.getOcrAdapter( adapterName );
+
+                if ( !ocrAdapter ) continue;
+
+                await new Promise( resolve => ocrAdapter.restart( () => resolve(null) ) );
+            }
+
         }
 
         return output;
+    }
+
+    async handleOcrAdapterSettingsUpdate(
+        engineSettingsUpdate: TOcrSettings,
+        settingsPreset: SettingsPreset,
+    ): Promise< boolean > {
+
+        let restart = false;
+
+        const { ocr_adapter_name } = engineSettingsUpdate;
+
+        const ocrEngineAdapter = this.getOcrAdapter( ocr_adapter_name );
+
+        if ( !ocrEngineAdapter ) return false;
+
+        const currentOcrEngineSettings = settingsPreset.getOcrEngineSettings< TOcrSettings >( ocr_adapter_name );
+
+        if ( !currentOcrEngineSettings ) {
+            settingsPreset.ocr_engines.push( engineSettingsUpdate );
+            restart = true;
+        }
+        
+        const result = await ocrEngineAdapter.updateSettings(
+            engineSettingsUpdate,
+            currentOcrEngineSettings
+        );
+
+        restart = result.restart;
+
+        settingsPreset.updateOcrEngineSettings( result.settings );
+
+        return restart;
+    }
+
+
+    private getOcrAdapter( adapterName: string ): OcrAdapter< TOcrSettings > | undefined {
+        return this.ocrAdapters.find(
+            item => item.name === adapterName
+        );
     }
 }
 

@@ -20,11 +20,13 @@ import { UpdateOcrTemplateUseCase } from "../../application/use_cases/ocr_templa
 import { GetOcrTemplatesUseCase } from "../../application/use_cases/ocr_template/get_ocr_template/get_ocr_templates.use_case";
 import { DeleteOcrTemplateUseCase } from "../../application/use_cases/ocr_template/delete_ocr_template/delete_ocr_template.use_case";
 import { ChangeActiveOcrTemplateUseCase } from "../../application/use_cases/change_active_ocr_template/change_active_ocr_template.use_case";
+import { OcrEngineSettingsU } from "../types/entity_instance.types";
+import { CreateSettingsPresetUseCaseInstance, GetSupportedLanguagesUseCaseInstance, RecognizeImageUseCaseInstance, UpdateSettingsPresetUseCaseInstance } from "../types/use_case_instance.types";
 
 
-container_registry.bind( Registry.RecognizeImageUseCase )
+container_registry.bind( Registry.RecognizeImageUseCaseInstance )
     .toDynamicValue( (context) => {
-        return new RecognizeImageUseCase(
+        return new RecognizeImageUseCase< OcrEngineSettingsU >(
             [
                 context.container.get( Registry.PpOcrAdapter ),
             ],
@@ -34,9 +36,9 @@ container_registry.bind( Registry.RecognizeImageUseCase )
     })
     .inSingletonScope();
 
-container_registry.bind( Registry.GetSupportedLanguagesUseCase )
+container_registry.bind( Registry.GetSupportedLanguagesUseCaseInstance )
     .toDynamicValue( (context) => {
-        return new GetSupportedLanguagesUseCase(
+        return new GetSupportedLanguagesUseCase< OcrEngineSettingsU >(
             [ context.container.get( Registry.PpOcrAdapter ) ],
             context.container.get( Registry.LanguageTypeOrmRepository ),
         );
@@ -52,11 +54,13 @@ container_registry.bind( Registry.GetActiveSettingsPresetUseCase )
     })
     .inSingletonScope();
 
-container_registry.bind( Registry.UpdateSettingsPresetUseCase )
+container_registry.bind( Registry.UpdateSettingsPresetUseCaseInstance )
     .toDynamicValue( (context) => {
-        return new UpdateSettingsPresetUseCase(
+        return new UpdateSettingsPresetUseCase< OcrEngineSettingsU >(
             context.container.get( Registry.SettingsPresetTypeOrmRepository ),
-            context.container.get( Registry.PpOcrAdapter ),
+            [
+                context.container.get( Registry.PpOcrAdapter )
+            ],
         );
     })
     .inSingletonScope();
@@ -169,15 +173,17 @@ container_registry.bind( Registry.DeleteAllDictionariesUseCase )
         })
     });
 
-container_registry.bind( Registry.CreateSettingsPresetUseCase )
+container_registry.bind( Registry.CreateSettingsPresetUseCaseInstance )
     .toDynamicValue( (context) => {
-        return new CreateSettingsPresetUseCase({            
+        return new CreateSettingsPresetUseCase< OcrEngineSettingsU >({            
             settingsPresetRepo: context.container.get(
                 Registry.SettingsPresetTypeOrmRepository
             ),
-            ocrAdapter: context.container.get(
-                Registry.PpOcrAdapter
-            ),
+            ocrAdapters: [
+                context.container.get(
+                    Registry.PpOcrAdapter
+                ),
+            ]
         })
     });
 
@@ -236,20 +242,20 @@ container_registry.bind( Registry.ChangeActiveOcrTemplateUseCase )
     });
 
 
-export function get_RecognizeImageUseCase(): RecognizeImageUseCase {
-    return container_registry.get< RecognizeImageUseCase >( Registry.RecognizeImageUseCase )
+export function get_RecognizeImageUseCaseInstance(): RecognizeImageUseCaseInstance {
+    return container_registry.get< RecognizeImageUseCaseInstance >( Registry.RecognizeImageUseCaseInstance )
 }
 
-export function get_GetSupportedLanguagesUseCase(): GetSupportedLanguagesUseCase {    
-    return container_registry.get< GetSupportedLanguagesUseCase >( Registry.GetSupportedLanguagesUseCase );
+export function get_GetSupportedLanguagesUseCaseInstance(): GetSupportedLanguagesUseCaseInstance {    
+    return container_registry.get< GetSupportedLanguagesUseCaseInstance >( Registry.GetSupportedLanguagesUseCaseInstance );
 }
 
 export function get_GetActiveSettingsPresetUseCase(): GetActiveSettingsPresetUseCase {    
     return container_registry.get< GetActiveSettingsPresetUseCase >( Registry.GetActiveSettingsPresetUseCase );
 }
 
-export function get_UpdateSettingsPresetUseCase(): UpdateSettingsPresetUseCase {    
-    return container_registry.get< UpdateSettingsPresetUseCase >( Registry.UpdateSettingsPresetUseCase );
+export function get_UpdateSettingsPresetUseCaseInstance(): UpdateSettingsPresetUseCaseInstance {    
+    return container_registry.get< UpdateSettingsPresetUseCaseInstance >( Registry.UpdateSettingsPresetUseCaseInstance );
 }
 
 export function get_CheckForAppUpdatesUseCase(): CheckForAppUpdatesUseCase {    
@@ -291,8 +297,8 @@ export function get_DeleteAllDictionariesUseCase(): DeleteAllDictionariesUseCase
 }
 
 
-export function get_CreateSettingsPresetUseCase(): CreateSettingsPresetUseCase {    
-    return container_registry.get< CreateSettingsPresetUseCase >( Registry.CreateSettingsPresetUseCase );
+export function get_CreateSettingsPresetUseCaseInstance(): CreateSettingsPresetUseCaseInstance {    
+    return container_registry.get< CreateSettingsPresetUseCaseInstance >( Registry.CreateSettingsPresetUseCaseInstance );
 }
 
 

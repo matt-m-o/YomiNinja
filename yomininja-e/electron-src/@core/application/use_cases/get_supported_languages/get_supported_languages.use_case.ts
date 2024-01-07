@@ -1,12 +1,13 @@
 import { Language } from "../../../domain/language/language";
 import { LanguageRepository } from "../../../domain/language/language.repository";
+import { OcrEngineSettings } from "../../../domain/settings_preset/settings_preset";
 import { OcrAdapter } from "../../adapters/ocr.adapter";
 
 
-export class GetSupportedLanguagesUseCase {
+export class GetSupportedLanguagesUseCase< TOcrSettings extends OcrEngineSettings > {
 
     constructor(
-        public ocrAdapters: OcrAdapter[],
+        public ocrAdapters: OcrAdapter< TOcrSettings >[],
         public languagesRepo: LanguageRepository,
     ) {}
 

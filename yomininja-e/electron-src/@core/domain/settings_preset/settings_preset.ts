@@ -1,17 +1,16 @@
 import { randomUUID } from "crypto";
-import { getDefaultSettingsPresetProps } from "./default_settings_preset_props";
 
 export type DictionarySettings = {
     enabled: boolean;
 };
 
-export type OcrEngineSettings = {
-    ocr_adapter_name?: string;
+export interface OcrEngineSettings {
+    ocr_adapter_name: string;
     image_scaling_factor: number; // from 0.1 to 2.0. Two decimal places shouldn't be allowed.
-    max_image_width: number;
-    cpu_threads: number;
     invert_colors: boolean;
-    inference_runtime: string;
+    // max_image_width: number;
+    // cpu_threads: number;
+    // inference_runtime: string;
 };
 
 export type OverlayOcrRegionVisuals = {
@@ -25,7 +24,7 @@ export type OverlayOcrItemBoxVisuals = {
     background_color: string;
     text: {
         color: string;
-        font_size_factor: number; // 10% to 1000%
+        font_size_factor: number; // %
         letter_spacing: number;
     };
 };
@@ -78,35 +77,47 @@ export type OverlaySettings = {
     behavior: OverlayBehavior;
 };
 
-export interface SettingsPresetProps {
+
+
+export interface SettingsPresetProps < TOcrSettings extends OcrEngineSettings = OcrEngineSettings > {
     name: string;
     overlay: OverlaySettings;
-    ocr_engine: OcrEngineSettings;
+    ocr_engines: TOcrSettings[];
     dictionary: DictionarySettings;
     created_at: Date;
     updated_at: Date;
 };
 
 
-
-export interface SettingsPreset_CreationInput extends Partial< SettingsPresetProps > {
+export interface SettingsPreset_CreationInput extends SettingsPresetProps {
     name: string;    
 };
 
+
+
 // Stores general application settings
-export class SettingsPreset {
+export class SettingsPreset < TProps extends SettingsPresetProps = SettingsPresetProps > {
 
     static default_name = 'default';
 
     public id: string; // ID
-    private props: SettingsPresetProps = {
-        ...getDefaultSettingsPresetProps()
-    };
+    private props: TProps;
     
     
-    private constructor( input?: SettingsPreset_CreationInput, id?: string ) {
+    constructor( input?: Partial< TProps >, id?: string ) {
 
-        this.id = id || randomUUID();        
+        this.id = id || randomUUID();
+
+        this.props = {
+            name: SettingsPreset.default_name,
+            dictionary: {
+                enabled: false,
+            },
+            ocr_engines: [],
+            overlay: {},
+            created_at: new Date(),
+            updated_at: new Date(),
+        } as unknown as TProps;
 
         if (input) {
             this.props = {
@@ -114,16 +125,17 @@ export class SettingsPreset {
                 ...input,
             };
         }
-        
     }
 
-    static create( input?: SettingsPreset_CreationInput ): SettingsPreset {
-        return new SettingsPreset( input );
+    static create< TProps extends SettingsPresetProps >(
+        input?: Partial< TProps > & { name: string }
+    ): SettingsPreset< TProps > {
+        return new SettingsPreset<TProps>( input );
     }
     
     get name(){ return this.props.name; }    
     get overlay(){ return this.props.overlay; }
-    get ocr_engine() { return this.props.ocr_engine; }
+    get ocr_engines() { return this.props.ocr_engines; }
 
     get created_at(){ return this.props.created_at; }
     get updated_at(){ return this.props.updated_at; }
@@ -155,10 +167,26 @@ export class SettingsPreset {
         };
     }
 
-    protected set ocr_engine( data: OcrEngineSettings ){ this.props.ocr_engine = data; }
+    public set ocr_engines( data: OcrEngineSettings[] ) { this.props.ocr_engines = data; }
     
     protected set created_at( date: Date ){ this.props.created_at = date; }
     protected set updated_at( date: Date ){ this.props.updated_at = date; }
+
+    getOcrEngineSettings< T extends OcrEngineSettings >( adapterName: string ): T | undefined {
+        
+        const engineSettings = this.props.ocr_engines?.find(
+            item => item.ocr_adapter_name === adapterName
+        );
+
+        if ( !engineSettings ) return;
+
+        return engineSettings as T;
+    }
+
+    handleOldOcrSettings() {
+        if ( !Array.isArray( this.props.ocr_engines ) )
+            this.props.ocr_engines = [];
+    }
 
 
     updateOverlaySettings( overlayUpdate: Partial< OverlaySettings > ) {
@@ -193,20 +221,27 @@ export class SettingsPreset {
             this.overlay.behavior.click_through_mode = 'auto';
     }
 
-    updateOcrEngineSettings( update: Partial< OcrEngineSettings > ) {
+    updateOcrEngineSettings(
+        update: { ocr_adapter_name: string } & Partial< OcrEngineSettings >
+    ) {
 
-        let { image_scaling_factor, max_image_width } = update;
+        // let { image_scaling_factor, max_image_width } = update;
 
-        image_scaling_factor = this.ocrEngineImageScalingFactorValidation( image_scaling_factor );
+        // image_scaling_factor = this.ocrEngineImageScalingFactorValidation( image_scaling_factor );
 
-        max_image_width = this.ocrEngineMaxImageWidthValidation( max_image_width );
+        // max_image_width = this.ocrEngineMaxImageWidthValidation( max_image_width );
 
-        this.props.ocr_engine = {
-            ...this.props.ocr_engine,
-            ...update,
-            image_scaling_factor,
-            max_image_width
-        };
+        this.ocr_engines = this.ocr_engines.map( engineSettings => {
+
+            if ( engineSettings.ocr_adapter_name === update.ocr_adapter_name ) {
+                engineSettings = {
+                    ...engineSettings,
+                    ...update,
+                };
+            }
+
+            return engineSettings
+        });
     }
 
     updateDictionarySettings( update: Partial< DictionarySettings > ) {             
@@ -217,7 +252,8 @@ export class SettingsPreset {
         };
     }
 
-    private ocrEngineImageScalingFactorValidation( imageScalingFactor?: number ) {
+    // Move to another layer
+    /* private ocrEngineImageScalingFactorValidation( imageScalingFactor?: number ) {
         if ( imageScalingFactor != undefined ) {
 
             // Minimum 0.1, Maximum 2
@@ -231,9 +267,10 @@ export class SettingsPreset {
         }
 
         return imageScalingFactor;
-    }
+    } */
 
-    private ocrEngineMaxImageWidthValidation( maxImageWidth?: number ) {        
+    // Move to another layer
+    /* private ocrEngineMaxImageWidthValidation( maxImageWidth?: number ) {        
 
         if ( 
             !maxImageWidth ||
@@ -243,7 +280,7 @@ export class SettingsPreset {
             return this.ocr_engine.max_image_width;        
 
         return maxImageWidth;
-    }
+    } */
 
     toJson(): SettingsPresetJson {
         return {

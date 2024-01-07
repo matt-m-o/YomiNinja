@@ -1,4 +1,5 @@
-import { SettingsPreset, SettingsPresetProps } from "./settings_preset";
+import { SettingsPresetInstanceProps } from "../../infra/types/entity_instance.types";
+import { SettingsPreset, SettingsPresetProps,  } from "./settings_preset";
 
 export function getDefaultSettingsPresetProps(): SettingsPresetProps {
 
@@ -51,13 +52,7 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                 hide_results_on_blur: false,
             }
         },
-        ocr_engine: {
-            image_scaling_factor: 1,
-            max_image_width: 1600,
-            cpu_threads: 8,
-            invert_colors: false,
-            inference_runtime: 'Open_VINO'
-        },
+        ocr_engines: [],
         dictionary: {
             enabled: false,
         },

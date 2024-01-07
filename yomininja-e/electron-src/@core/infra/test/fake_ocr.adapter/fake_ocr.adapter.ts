@@ -1,6 +1,7 @@
 import { OcrItem, OcrResult, OcrResultContextResolution, OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
-import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput } from "../../../application/adapters/ocr.adapter";
+import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import { OcrEngineSettings } from "../../../domain/settings_preset/settings_preset";
+import { PpOcrEngineSettings, getPpOcrDefaultSettings } from "../../ppocr.adapter/ppocr_settings";
 
 const ocrTestAdapterResultProps: OcrResult_CreationInput = {
     id: 1,
@@ -22,7 +23,9 @@ const ocrTestAdapterResultProps: OcrResult_CreationInput = {
     ]
 };
 
-export class FakeOcrTestAdapter implements OcrAdapter {
+export type FakeOcrEngineSettings = PpOcrEngineSettings;
+
+export class FakeOcrTestAdapter implements OcrAdapter< FakeOcrEngineSettings > {
 
     static _name: string = "OcrTestAdapter";
     public readonly name: string = FakeOcrTestAdapter._name;
@@ -59,18 +62,32 @@ export class FakeOcrTestAdapter implements OcrAdapter {
         return this.supportedLanguages;
     }
 
-    async updateSettings( input: OcrEngineSettings ): Promise< boolean > {
-        return true;
+    async updateSettings(
+        settingsUpdate: FakeOcrEngineSettings,
+        oldSettings?: FakeOcrEngineSettings
+    ): Promise< UpdateOcrAdapterSettingsOutput< FakeOcrEngineSettings > > {
+
+        let restart = false;
+
+        if (
+            !oldSettings ||
+            oldSettings?.cpu_threads != settingsUpdate.cpu_threads ||
+            oldSettings?.max_image_width != settingsUpdate.max_image_width ||
+            oldSettings?.inference_runtime != settingsUpdate.inference_runtime
+        )
+            restart = true;
+
+        return {
+            settings: settingsUpdate,
+            restart
+        };
     }
 
-    getDefaultSettings(): OcrEngineSettings {
+    getDefaultSettings(): FakeOcrEngineSettings {
         return {
-            image_scaling_factor: 1,
-            max_image_width: 1600,
-            cpu_threads: 8,
-            invert_colors: false,
-            inference_runtime: 'ONNX_CPU'
-        }
+            ...getPpOcrDefaultSettings(),
+            ocr_adapter_name: FakeOcrTestAdapter._name
+        };
     }
 
     getSettingsOptions(): OcrEngineSettingsOptions {

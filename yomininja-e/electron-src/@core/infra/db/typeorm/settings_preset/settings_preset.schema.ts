@@ -1,10 +1,11 @@
 import { EntitySchema } from 'typeorm';
-import { SettingsPreset } from '../../../../domain/settings_preset/settings_preset';
+import { SettingsPreset, SettingsPresetProps } from '../../../../domain/settings_preset/settings_preset';
 import { generateIndexName } from '../common/schema_helpers';
+import { SettingsPresetInstance } from '../../../types/entity_instance.types';
 
 
 const name = 'settings_preset';
-export const SettingsPresetTypeOrmSchema = new EntitySchema< SettingsPreset >({
+export const SettingsPresetTypeOrmSchema = new EntitySchema< SettingsPresetInstance >({
 
     name,
     target: SettingsPreset,
@@ -26,7 +27,7 @@ export const SettingsPresetTypeOrmSchema = new EntitySchema< SettingsPreset >({
             type: 'json',
         },
 
-        ocr_engine: {
+        ocr_engines: {
             type: 'json',
         },
 

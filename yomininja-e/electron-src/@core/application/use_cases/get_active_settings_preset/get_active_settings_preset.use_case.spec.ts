@@ -1,5 +1,6 @@
 import { Language } from "../../../domain/language/language";
 import { Profile } from "../../../domain/profile/profile";
+import { getDefaultSettingsPresetProps } from "../../../domain/settings_preset/default_settings_preset_props";
 import { SettingsPreset } from "../../../domain/settings_preset/settings_preset";
 import { SettingsPresetInMemoryRepository } from "../../../infra/db/in_memory/settings_preset/settings_preset.in_memory.repository";
 import { LanguageTypeOrmSchema } from "../../../infra/db/typeorm/language/language.schema";
@@ -45,7 +46,7 @@ describe("GetActiveSettingsPresetUseCase tests", () => {
             profileRepo
         );
             
-        defaultPreset = SettingsPreset.create();
+        defaultPreset = SettingsPreset.create( getDefaultSettingsPresetProps() );
         await dataSource.getRepository( SettingsPreset ).insert( defaultPreset );
 
         const language = Language.create({ name: 'japanese', two_letter_code: 'ja' });

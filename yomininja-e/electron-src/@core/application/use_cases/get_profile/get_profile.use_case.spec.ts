@@ -11,6 +11,7 @@ import { DataSource } from 'typeorm';
 import { GetProfileUseCase, GetProfile_Input } from "./get_profile.use_case";
 import { OcrTemplateTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_template.schema";
 import { OcrTargetRegionTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.schema";
+import { getDefaultSettingsPresetProps } from "../../../domain/settings_preset/default_settings_preset_props";
 
 describe("GetProfileUseCase tests", () => {
                 
@@ -45,7 +46,7 @@ describe("GetProfileUseCase tests", () => {
             profileRepo
         );
             
-        defaultPreset = SettingsPreset.create();
+        defaultPreset = SettingsPreset.create( getDefaultSettingsPresetProps() );
         await dataSource.getRepository( SettingsPreset ).insert( defaultPreset );
 
         const language = Language.create({ name: 'japanese', two_letter_code: 'ja' });

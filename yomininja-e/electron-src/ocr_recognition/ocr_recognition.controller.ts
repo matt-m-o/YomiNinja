@@ -89,16 +89,19 @@ export class OcrRecognitionController {
             return;
     }
 
-    restartEngine() {
+    restartEngine( engineName: string ) {
 
         // Adding a time gap to make sure it has enough time to complete anything it might be doing
         setTimeout( () => {
-            this.ocrRecognitionService.restartOcrAdapter( () => {
+            this.ocrRecognitionService.restartOcrAdapter(
+                engineName,
+                () => {
 
-                if ( !this.mainWindow ) return;
+                    if ( !this.mainWindow ) return;
 
-                this.mainWindow.webContents.send( 'ocr_recognition:ocr_engine_restarted' );
-            });
+                    this.mainWindow.webContents.send( 'ocr_recognition:ocr_engine_restarted' );
+                }
+            );
         }, 3000 );
     }
 

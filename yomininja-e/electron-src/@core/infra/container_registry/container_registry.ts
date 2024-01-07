@@ -20,10 +20,10 @@ export const Registry = {
     JapaneseHelper: Symbol.for('JapaneseHelper'),
 
     // Use Cases
-    RecognizeImageUseCase: Symbol.for('RecognizeImageUseCase'),
-    GetSupportedLanguagesUseCase: Symbol.for('GetSupportedLanguagesUseCase'),
+    RecognizeImageUseCaseInstance: Symbol.for('RecognizeImageUseCaseInstance'),
+    GetSupportedLanguagesUseCaseInstance: Symbol.for('GetSupportedLanguagesUseCaseInstance'),
     GetActiveSettingsPresetUseCase: Symbol.for('GetActiveSettingsPresetUseCase'),
-    UpdateSettingsPresetUseCase: Symbol.for('UpdateSettingsPresetUseCase'),
+    UpdateSettingsPresetUseCaseInstance: Symbol.for('UpdateSettingsPresetUseCaseInstance'),
     CheckForAppUpdatesUseCase: Symbol.for('CheckForAppUpdatesUseCase'),
     ChangeActiveOcrLanguageUseCase: Symbol.for('ChangeActiveOcrLanguageUseCase'),
     GetProfileUseCase: Symbol.for('GetProfileUseCase'),
@@ -33,7 +33,7 @@ export const Registry = {
     ImportFuriganaDictionaryUseCase: Symbol.for('ImportFuriganaDictionaryUseCase'),
     GetDictionariesUseCase: Symbol.for('GetDictionariesUseCase'),
     DeleteAllDictionariesUseCase: Symbol.for('DeleteAllDictionariesUseCase'),
-    CreateSettingsPresetUseCase: Symbol.for('CreateSettingsPresetUseCase'),
+    CreateSettingsPresetUseCaseInstance: Symbol.for('CreateSettingsPresetUseCaseInstance'),
     CreateOcrTemplateUseCase: Symbol.for('CreateOcrTemplateUseCase'),
     UpdateOcrTemplateUseCase: Symbol.for('UpdateOcrTemplateUseCase'),
     GetOcrTemplatesUseCase: Symbol.for('GetOcrTemplatesUseCase'),

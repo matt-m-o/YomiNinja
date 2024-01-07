@@ -4,7 +4,7 @@ import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_resul
 import { OcrTemplate } from "../../../domain/ocr_template/ocr_template";
 import { Profile } from "../../../domain/profile/profile";
 import { ProfileRepository } from "../../../domain/profile/profile.repository";
-import { SettingsPreset } from "../../../domain/settings_preset/settings_preset";
+import { OcrEngineSettings, SettingsPreset } from "../../../domain/settings_preset/settings_preset";
 import { ImageProcessingAdapter } from "../../adapters/image_processing.adapter";
 import { OcrAdapter } from "../../adapters/ocr.adapter";
 
@@ -12,12 +12,13 @@ import { OcrAdapter } from "../../adapters/ocr.adapter";
 export type RecognizeImageInput = {    
     imageBuffer: Buffer;
     profileId: string;
+    ocrAdapterName: string;
 }
 
-export class RecognizeImageUseCase {
+export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
 
     constructor(
-        public ocrAdapters: OcrAdapter[],
+        public ocrAdapters: OcrAdapter< TOcrSettings >[],
         public imageProcessing: ImageProcessingAdapter,
         public profileRepo: ProfileRepository,
     ) {}
@@ -40,16 +41,20 @@ export class RecognizeImageUseCase {
             !activeSettingsPreset
         )
             return null;
-            
-        const ocrAdapter = this.getAdapter( activeSettingsPreset.ocr_engine.ocr_adapter_name );
+        
+        const ocrAdapter = this.getAdapter( input.ocrAdapterName );
 
         if ( !ocrAdapter )
             return null;
         
+        const ocrSettings = activeSettingsPreset.getOcrEngineSettings( input.ocrAdapterName );
+        
+        if ( !ocrSettings ) return null;
+        
         const {
             image_scaling_factor,
             invert_colors
-        } = activeSettingsPreset.ocr_engine;
+        } = ocrSettings;
 
         let imageBuffer: Buffer = input.imageBuffer;
 
@@ -90,7 +95,7 @@ export class RecognizeImageUseCase {
         input: {
             image: Buffer,
             template: OcrTemplate,
-            ocrAdapter: OcrAdapter,
+            ocrAdapter: OcrAdapter< TOcrSettings >,
             languageCode: string,
         }
     ): Promise< OcrResultScalable > {
@@ -149,9 +154,9 @@ export class RecognizeImageUseCase {
         return result;
     }
 
-    private getAdapter( adapterName?: string ): OcrAdapter | null {
+    private getAdapter( adapterName?: string ): OcrAdapter< TOcrSettings > | null {
 
-        let adapter: OcrAdapter | null = null;
+        let adapter: OcrAdapter< TOcrSettings > | null = null;
 
         if ( adapterName )
             adapter = this.ocrAdapters.find( adapter => adapter.name === adapterName ) || null;

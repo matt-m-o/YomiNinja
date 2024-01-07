@@ -1,5 +1,5 @@
 import { OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
-import { FakeOcrTestAdapter } from "../../../infra/test/fake_ocr.adapter/fake_ocr.adapter";
+import { FakeOcrEngineSettings, FakeOcrTestAdapter } from "../../../infra/test/fake_ocr.adapter/fake_ocr.adapter";
 import { FakeImageProcessingAdapter } from "../../../infra/test/fake_image_processing.adapter/fake_image_processing.adapter.adapter";
 import { RecognizeImageInput, RecognizeImageUseCase } from "./recognize_image.use_case";
 import { SettingsPreset } from "../../../domain/settings_preset/settings_preset";
@@ -14,6 +14,7 @@ import { OcrTemplate } from "../../../domain/ocr_template/ocr_template";
 import { OcrTargetRegion } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region";
 import { OcrTemplateTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_template.schema";
 import { OcrTargetRegionTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.schema";
+import { getDefaultSettingsPresetProps } from "../../../domain/settings_preset/default_settings_preset_props";
 
 describe("Recognize Image Use Case tests", () => {    
                 
@@ -51,7 +52,7 @@ describe("Recognize Image Use Case tests", () => {
     
 
     let ocrTestAdapter: FakeOcrTestAdapter;
-    let recognizeImageUseCase: RecognizeImageUseCase;
+    let recognizeImageUseCase: RecognizeImageUseCase< FakeOcrEngineSettings >;
 
     let profile: Profile;
 
@@ -74,8 +75,14 @@ describe("Recognize Image Use Case tests", () => {
         });
 
         await dataSource.initialize();
+
+        ocrTestAdapter = new FakeOcrTestAdapter( ocrTestAdapterResultProps, ocrTestAdapterSupportedLanguages );
+        ocrTestAdapter.initialize();
+
+        const defaultSettingsProps = getDefaultSettingsPresetProps();
+        defaultSettingsProps.ocr_engines.push( ocrTestAdapter.getDefaultSettings() );
         
-        const settingsPreset = SettingsPreset.create();
+        const settingsPreset = SettingsPreset.create( defaultSettingsProps );
         await dataSource.getRepository( SettingsPreset ).insert( settingsPreset );
 
         const language = Language.create({ name: 'japanese', two_letter_code: 'ja' });
@@ -90,8 +97,6 @@ describe("Recognize Image Use Case tests", () => {
 
         await profileRepo.insert( profile );
         
-        ocrTestAdapter = new FakeOcrTestAdapter( ocrTestAdapterResultProps, ocrTestAdapterSupportedLanguages );
-        ocrTestAdapter.initialize();
 
         const imageProcessingDummyAdapter = new FakeImageProcessingAdapter();
 
@@ -138,6 +143,7 @@ describe("Recognize Image Use Case tests", () => {
         const input: RecognizeImageInput = {
             imageBuffer: Buffer.from( testText ),            
             profileId: profile.id,
+            ocrAdapterName: FakeOcrTestAdapter._name
         };
 
         const result = await recognizeImageUseCase.execute( input );

@@ -13,14 +13,19 @@ export interface OcrEngineSettingsOptions {
     }[]
 }
 
-export interface OcrAdapter {     
+export type UpdateOcrAdapterSettingsOutput< TSettings extends OcrEngineSettings = OcrEngineSettings > = {
+    settings: TSettings;
+    restart: boolean;
+};
+
+export interface OcrAdapter< TSettings extends OcrEngineSettings = OcrEngineSettings > {     
     name: string;
     status: OcrAdapterStatus;
     initialize: ( serviceAddress?: string ) => void;
     recognize: ( input: OcrRecognitionInput ) => Promise< OcrResult | null >;
     getSupportedLanguages: () => Promise< string[] >; // Get this by calling the grpc stub or reading it's config files
-    updateSettings: ( input: OcrEngineSettings ) => Promise< boolean >;
-    getDefaultSettings: () => OcrEngineSettings;
+    updateSettings: ( settingsUpdate: TSettings, oldSettings?: TSettings ) => Promise< UpdateOcrAdapterSettingsOutput< TSettings > >;
+    getDefaultSettings: () => TSettings;
     getSettingsOptions: () => OcrEngineSettingsOptions;
     restart: ( callback: () => void ) => void;
 }

@@ -6,6 +6,7 @@ import { DataSource } from "typeorm";
 import { LanguageTypeOrmSchema } from "../../../infra/db/typeorm/language/language.schema";
 import { Language } from "../../../domain/language/language";
 import LanguageTypeOrmRepository from "../../../infra/db/typeorm/language/language.typeorm.repository";
+import { OcrEngineSettingsU } from "../../../infra/types/entity_instance.types";
 
 
 
@@ -36,7 +37,7 @@ describe("Get Supported Languages Use Case tests", () => {
 
     let ocrTestAdapter: FakeOcrTestAdapter;
     let languagesRepo: LanguageTypeOrmRepository;
-    let getSupportedLanguages: GetSupportedLanguagesUseCase;
+    let getSupportedLanguages: GetSupportedLanguagesUseCase< OcrEngineSettingsU >;
 
     beforeEach( async () => {
 
