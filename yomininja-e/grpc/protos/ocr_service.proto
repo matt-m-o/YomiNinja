@@ -3,10 +3,10 @@ syntax = "proto3";
 package ocr_service;
 
 service OCRService {
-  rpc RecognizeBytes (RecognizeBytesRequest) returns (RecognizeDefaultResponse) {}
-  rpc RecognizeBase64 (RecognizeBase64Request) returns (RecognizeDefaultResponse) {}
-  rpc GetSupportedLanguages (GetSupportedLanguagesRequest) returns (GetSupportedLanguagesResponse) {}
-  rpc UpdateSettingsPreset (UpdateSettingsPresetRequest) returns (UpdateSettingsPresetResponse) {}
+  rpc RecognizeBytes( RecognizeBytesRequest ) returns ( RecognizeDefaultResponse ) {}
+  rpc RecognizeBase64( RecognizeBase64Request ) returns ( RecognizeDefaultResponse ) {}
+  rpc GetSupportedLanguages( GetSupportedLanguagesRequest ) returns ( GetSupportedLanguagesResponse ) {}
+  rpc UpdatePpOcrSettings( UpdatePpOcrSettingsRequest ) returns ( UpdateSettingsResponse ) {}
 }
 
 message RecognizeBytesRequest {
@@ -47,7 +47,6 @@ message RecognizeDefaultResponse {
 }
 
 
-
 message GetSupportedLanguagesRequest {
 }
 message GetSupportedLanguagesResponse {
@@ -55,12 +54,17 @@ message GetSupportedLanguagesResponse {
 }
 
 
-message UpdateSettingsPresetRequest {
+message UpdatePpOcrSettingsRequest {
   int32 max_image_width = 1; // ppocr "max_side_length"
   int32 cpu_threads = 2;
   string inference_runtime = 3;
+  double det_db_thresh = 4;
+  double det_db_box_thresh = 5;
+  double det_db_unclip_ratio = 6;
+  string det_db_score_mode = 7;
+  bool use_dilation = 8;
+  double cls_thresh = 9;
 }
-
-message UpdateSettingsPresetResponse {
+message UpdateSettingsResponse {
   bool success = 1;
 }

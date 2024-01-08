@@ -222,9 +222,7 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
         };
 
         const requestInput: UpdatePpOcrSettingsRequest = {
-            max_image_width: settingsUpdate.max_image_width,
-            cpu_threads: settingsUpdate.cpu_threads,
-            inference_runtime: settingsUpdate.inference_runtime
+            ...settingsUpdate,
         };
 
         const ok = await this.ppocrServiceProcessStatusCheck();

@@ -9,6 +9,9 @@ import { OcrAdapter } from "../@core/application/adapters/ocr.adapter";
 import { Language } from "../@core/domain/language/language";
 import { CaptureSource, ExternalWindow } from "./common/types";
 import sharp from 'sharp';
+import { GetSupportedLanguagesUseCaseInstance, RecognizeImageUseCaseInstance } from "../@core/infra/types/use_case_instance.types";
+import { PpOcrAdapter } from "../@core/infra/ppocr.adapter/ppocr.adapter";
+import { OcrEngineSettingsU } from "../@core/infra/types/entity_instance.types";
 
 
 export const entireScreenAutoCaptureSource: CaptureSource = {
@@ -20,23 +23,23 @@ export const entireScreenAutoCaptureSource: CaptureSource = {
 
 export class OcrRecognitionService {
 
-    private recognizeImageUseCase: RecognizeImageUseCase;
-    private getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
+    private recognizeImageUseCase: RecognizeImageUseCaseInstance;
+    private getSupportedLanguagesUseCase: GetSupportedLanguagesUseCaseInstance;
     private getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;    
-    private ocrAdapter: OcrAdapter;    
+    private ocrAdapters: OcrAdapter< OcrEngineSettingsU >[];    
 
     constructor(
         input: {
-            recognizeImageUseCase: RecognizeImageUseCase;
-            getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
+            recognizeImageUseCase: RecognizeImageUseCaseInstance;
+            getSupportedLanguagesUseCase: GetSupportedLanguagesUseCaseInstance;
             getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;            
-            ocrAdapter: OcrAdapter;
+            ocrAdapters: OcrAdapter< OcrEngineSettingsU >[];
         }
     ){
         this.recognizeImageUseCase = input.recognizeImageUseCase;
         this.getSupportedLanguagesUseCase = input.getSupportedLanguagesUseCase;
         this.getActiveSettingsPresetUseCase = input.getActiveSettingsPresetUseCase;
-        this.ocrAdapter = input.ocrAdapter;
+        this.ocrAdapters = input.ocrAdapters;
     }
 
     async recognize( input: {
@@ -61,6 +64,7 @@ export class OcrRecognitionService {
         return await this.recognizeImageUseCase.execute({
             imageBuffer,
             profileId: profileId,
+            ocrAdapterName: PpOcrAdapter._name
         });
     }
 
@@ -70,9 +74,13 @@ export class OcrRecognitionService {
         });
     }
 
-    restartOcrAdapter( callback:() => void ) {
+    restartOcrAdapter( engineName: string, callback:() => void ) {
 
-        this.ocrAdapter.restart( callback );    
+        const engine = this.ocrAdapters.find( item => item.name === engineName );
+
+        if ( !engine ) return;
+
+        engine.restart( callback );
     }    
 
     async getSupportedLanguages( ): Promise<Language[]> {
