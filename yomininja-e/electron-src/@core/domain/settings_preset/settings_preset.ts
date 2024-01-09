@@ -8,9 +8,7 @@ export interface OcrEngineSettings {
     ocr_adapter_name: string;
     image_scaling_factor: number; // from 0.1 to 2.0. Two decimal places shouldn't be allowed.
     invert_colors: boolean;
-    // max_image_width: number;
-    // cpu_threads: number;
-    // inference_runtime: string;
+    hotkey: string;
 };
 
 export type OverlayOcrRegionVisuals = {

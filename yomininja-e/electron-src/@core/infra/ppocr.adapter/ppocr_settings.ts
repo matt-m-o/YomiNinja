@@ -21,6 +21,7 @@ export function getPpOcrDefaultSettings() {
     
     const defaultSettings: PpOcrEngineSettings = {
         ocr_adapter_name: ppOcrAdapterName,
+        hotkey: 'Alt+D',
         image_scaling_factor: 1,
         max_image_width: 1600,
         cpu_threads: os.cpus().length,
