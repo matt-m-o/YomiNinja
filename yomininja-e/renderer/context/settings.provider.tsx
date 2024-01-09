@@ -1,6 +1,7 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { DictionarySettings, OcrEngineSettings, OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
-import { debounce } from "@mui/material";
+import { Alert, Backdrop, CircularProgress, Snackbar, debounce } from "@mui/material";
+import { OcrEngineSettingsU } from "../../electron-src/@core/infra/types/entity_instance.types";
 
 export type SettingsContextType = {
     activeSettingsPreset: SettingsPresetJson;
@@ -9,8 +10,9 @@ export type SettingsContextType = {
     updateActivePresetHotkeys: ( newHotkeys: Partial<OverlayHotkeys> ) => void;
     updateActivePresetVisuals: ( input: Partial< OverlayVisualCustomizations > ) => void;
     updateActivePresetBehavior: ( input: Partial< OverlayBehavior > ) => void; 
-    updateActivePresetOcrEngine: ( input: Partial< OcrEngineSettings > ) => void; 
-    updateActivePresetDictionary: ( input: Partial< DictionarySettings > ) => void; 
+    updateActivePresetOcrEngine: ( input: Partial< OcrEngineSettingsU > ) => void; 
+    updateActivePresetDictionary: ( input: Partial< DictionarySettings > ) => void;
+    triggerOcrEngineRestart: ( engineName: string ) => void;
 };
 
 
@@ -38,12 +40,20 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         updateActivePreset( activeSettingsPreset );
     }
 
-    function updateActivePresetOcrEngine( newOcrEngine: Partial< OcrEngineSettings > ) {
+    function updateActivePresetOcrEngine( newEngineSettings: Partial< OcrEngineSettingsU > ) {
 
-        activeSettingsPreset.ocr_engine = {
-            ...activeSettingsPreset?.ocr_engine,
-            ...newOcrEngine,
-        };
+        console.log({ newEngineSettings })
+
+        activeSettingsPreset.ocr_engines = activeSettingsPreset.ocr_engines.map( item => {
+
+
+            if ( newEngineSettings.ocr_adapter_name === item.ocr_adapter_name )
+                return { ...item, ...newEngineSettings };
+
+            return item;
+        });
+
+        console.log( activeSettingsPreset );
         
         updateActivePreset( activeSettingsPreset );
     }
@@ -146,6 +156,48 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
             global.ipcRenderer.removeAllListeners( 'settings_preset:active_data' );
         }
     }, [ global.ipcRenderer ] );
+
+    const [ openBackdrop, setOpenBackdrop ] = useState(false);
+    const backdrop = (
+        <Backdrop
+            sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+            open={openBackdrop}            
+        >
+            <CircularProgress color="inherit" />
+        </Backdrop>
+    )
+    
+    const [ openSnackbar, setOpenSnackbar ] = useState(false);
+    const snackbar = (
+        <Snackbar open={openSnackbar} autoHideDuration={6000}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            onClose={ () => setOpenSnackbar(false) }
+            sx={{ minWidth: '300px' }}
+        >
+            <Alert severity="info" sx={{ width: '100%' }}
+                onClose={ () => setOpenSnackbar(false) }
+            >
+                OCR Engine restarted!
+            </Alert>
+        </Snackbar>
+    )
+
+    function triggerOcrEngineRestart( engineName: string ) {
+        global.ipcRenderer.invoke( 'ocr_recognition:restart_engine', engineName );
+        setOpenBackdrop( true );
+    }
+
+    useEffect( () => {
+
+        global.ipcRenderer.on( 'ocr_recognition:ocr_engine_restarted', ( ) => {
+            setOpenBackdrop( false );
+            setOpenSnackbar( true );
+        });
+        
+        return () => {
+            global.ipcRenderer.removeAllListeners( 'ocr_recognition:ocr_engine_restarted' );            
+        }
+    }, [ global.ipcRenderer ] );
     
     
     return (
@@ -158,10 +210,16 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
                 updateActivePresetVisuals,
                 updateActivePresetBehavior,
                 updateActivePresetOcrEngine,
-                updateActivePresetDictionary
+                updateActivePresetDictionary,
+                triggerOcrEngineRestart
             }}
         >
+
+            {backdrop}
+            {snackbar}
+
             {children}
+            
         </SettingsContext.Provider>
     );
 }

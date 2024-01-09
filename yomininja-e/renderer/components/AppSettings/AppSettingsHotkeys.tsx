@@ -25,7 +25,7 @@ export default function AppSettingsHotkeys() {
     const ocrOnPrintScreen = Boolean(overlayHotkeys?.ocr_on_screen_shot);
 
     function stringToHotkeyCombination( hotkeyString: string ): string {
-        return hotkeyString.split('+').join( ' + ' );
+        return hotkeyString?.split('+').join( ' + ' ) || '';
     }
 
     function hotkeyCombinationToString( keys: string[] ) {
