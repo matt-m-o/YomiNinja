@@ -33,8 +33,10 @@ message Box {
 }
 message Result {
   string text = 1;
-  float score = 2;
-  Box box = 3;
+  float recognition_score = 2;
+  float classification_score = 3;
+  int32 classification_label = 4; // Text direction
+  Box box = 5;
 }
 message ContextResolution {
   int32 width = 1;

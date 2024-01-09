@@ -81,6 +81,9 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
         );
         // console.timeEnd('PpOcrAdapter.recognize');
         this.status = OcrAdapterStatus.Enabled;
+
+        console.log(clientResponse?.results[0]);
+        console.log(clientResponse?.results[1]);
         
         // Throwing away current response an returning newest call result
         if ( this.recognitionCallOnHold ){

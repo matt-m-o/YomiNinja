@@ -12,7 +12,9 @@ describe("OCR Test Adapter tests", () => {
         results: [
             {
                 text: "recognized_text",
-                score: 0.99,
+                recognition_score: 0.99,
+                classification_score: 0.99,
+                classification_label: 1,
                 box: {
                     top_left: { x: 0, y: 0 },
                     top_right: { x: 10, y: 0 },
@@ -51,7 +53,7 @@ describe("OCR Test Adapter tests", () => {
 
         
         expect( result?.context_resolution ).toStrictEqual( ocrTestAdapterBaseProps.context_resolution );
-        expect( result?.results[0].score ).toStrictEqual( ocrTestAdapterBaseProps.results?.[0].score );
+        expect( result?.results[0].recognition_score ).toStrictEqual( ocrTestAdapterBaseProps.results?.[0].recognition_score );
         expect( result?.results[0].box ).toStrictEqual( ocrTestAdapterBaseProps.results?.[0].box );
         expect( result?.results[0].text ).toStrictEqual( testText );        
     });

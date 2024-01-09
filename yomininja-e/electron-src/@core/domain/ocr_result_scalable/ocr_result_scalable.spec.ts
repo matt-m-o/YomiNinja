@@ -20,7 +20,9 @@ describe( "OCRResultScalable tests", () => {
             results: [
                 { // Normal box
                     text: "normal text",
-                    score: 0.99,
+                    recognition_score: 0.99,
+                    classification_score: 0.99,
+                    classification_label: 1,
                     box: {
                         top_left: { x: 192, y: 108 },
                         top_right: { x: 384, y: 108 },
@@ -30,7 +32,9 @@ describe( "OCRResultScalable tests", () => {
                 },
                 { // Tilted box
                     text: "tilted_text",
-                    score: 0.99,
+                    recognition_score: 0.99,
+                    classification_score: 0.99,
+                    classification_label: 1,
                     box: {
                         top_left: { x: 0, y: 0 },
                         top_right: { x: 192, y: 54 },

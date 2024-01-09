@@ -22,7 +22,9 @@ export type OcrResultBoxScalable = {
 export interface OcrItemScalable {
     text: string;
     box: OcrResultBoxScalable;
-    score: number;
+    recognition_score: number,
+    classification_score: number,
+    classification_label: number,
 };
 
 export interface OcrRegion {
@@ -165,7 +167,9 @@ export class OcrResultScalable {
                     }
                 },
                 text: item.text,
-                score: item.score,
+                recognition_score: item.recognition_score,
+                classification_score: item.classification_score,
+                classification_label: item.classification_label
             });
 
         });

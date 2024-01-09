@@ -13,7 +13,9 @@ export type OcrItemBox = {
 
 export type OcrItem = {
     text: string;
-    score: number;
+    recognition_score: number; // Text confidence
+    classification_score: number; // Text direction confidence
+    classification_label: number; // Text direction
     box: OcrItemBox;
 };
 
