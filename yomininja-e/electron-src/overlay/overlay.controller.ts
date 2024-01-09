@@ -195,49 +195,49 @@ export class OverlayController {
         this.unregisterGlobalShortcuts();
 
 
-        if ( !overlayHotkeys.toggle.includes('Mouse') ) {
+        if ( overlayHotkeys.toggle.includes('Mouse') ) {
+            uIOhook.on( 'mousedown', e => {
+    
+                if ( !matchUiohookMouseEventButton( e, overlayHotkeys.toggle ) )
+                    return;
+    
+                this.toggleOverlayHotkeyHandler();
+            });
+        }
+        else if ( overlayHotkeys.toggle ) {
             // View overlay and copy text clipboard
             globalShortcut.register( overlayHotkeys.toggle, this.toggleOverlayHotkeyHandler );
             this.globalShortcutAccelerators.push( overlayHotkeys.toggle );
         }
-        else {
+        
+        if ( overlayHotkeys.show.includes('Mouse') ) {
             uIOhook.on( 'mousedown', e => {
-
-                if ( !matchUiohookMouseEventButton( e, overlayHotkeys.toggle ) )
+    
+                if ( !matchUiohookMouseEventButton( e, overlayHotkeys.show ) )
                     return;
-
-                this.toggleOverlayHotkeyHandler();
+    
+                this.showOverlayHotkeyHandler();
             });
         }
-        
-        if ( !overlayHotkeys.show.includes('Mouse') ) {
+        else if ( overlayHotkeys.show ) {
             // View overlay and copy text clipboard
             globalShortcut.register( overlayHotkeys.show, this.showOverlayHotkeyHandler );
             this.globalShortcutAccelerators.push( overlayHotkeys.show );
         }
-        else {
+
+        if ( overlayHotkeys.clear.includes('Mouse') ) {
             uIOhook.on( 'mousedown', e => {
-
-                if ( !matchUiohookMouseEventButton( e, overlayHotkeys.show ) )
+    
+                if ( !matchUiohookMouseEventButton( e, overlayHotkeys.clear ) )
                     return;
-
-                this.showOverlayHotkeyHandler();
+    
+                this.hideOverlayHotkeyHandler();
             });
         }
-
-        if ( !overlayHotkeys.clear.includes('Mouse') ) {
+        else if ( overlayHotkeys.clear ) {
             // View overlay and clear
             globalShortcut.register( overlayHotkeys.clear, this.hideOverlayHotkeyHandler );
             this.globalShortcutAccelerators.push( overlayHotkeys.clear );
-        }
-        else {
-            uIOhook.on( 'mousedown', e => {
-
-                if ( !matchUiohookMouseEventButton( e, overlayHotkeys.clear ) )
-                    return;
-
-                this.hideOverlayHotkeyHandler();
-            });
         }
 
 

@@ -209,18 +209,18 @@ export class AppController {
 
         this.unregisterGlobalShortcuts();
 
-        if ( !overlayHotkeys.ocr.includes('Mouse') ) {
-            globalShortcut.register( overlayHotkeys.ocr, this.handleOcrCommand );
-            this.globalShortcutAccelerators.push( overlayHotkeys.ocr );
-        }
-        else {
-            uIOhook.on( 'mousedown', async ( e ) => {
+        if ( overlayHotkeys.ocr.includes('Mouse') ) {
+            uIOhook.on( 'mousedown', async ( e ) => { // Also clear this listener
 
                 if ( !matchUiohookMouseEventButton( e, overlayHotkeys.ocr ) )
                     return;
 
                 await this.handleOcrCommand();
             });
+        }
+        else if ( overlayHotkeys.ocr ) {
+            globalShortcut.register( overlayHotkeys.ocr, this.handleOcrCommand );
+            this.globalShortcutAccelerators.push( overlayHotkeys.ocr );
         }
         
         

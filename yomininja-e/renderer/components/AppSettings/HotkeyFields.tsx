@@ -1,6 +1,9 @@
-import { Box, Container, InputBaseComponentProps, SxProps, TextField, Theme, Typography } from "@mui/material";
+import { Box, Button, Container, InputBaseComponentProps, SxProps, TextField, Theme, Typography } from "@mui/material";
 import { Dispatch, SetStateAction, KeyboardEvent, MouseEvent } from "react";
 import AddSharpIcon from '@mui/icons-material/AddSharp';
+import BackspaceRoundedIcon from '@mui/icons-material/BackspaceRounded';
+import IconButton from '@mui/material/IconButton';
+
 
 const modifierKeys: string[] = [
     'Command', 'Cmd',
@@ -116,6 +119,20 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
                     onMouseDown={ mouseDownHandler }
                 />
                 
+                <Button variant="text"
+                    onClick={ () => onChangeHandler([]) }
+                    style={{
+                        minWidth: '40px',
+                    }}
+                >
+                    <BackspaceRoundedIcon 
+                        style={{
+                            width: '25px',
+                            height: '25px'
+                        }}
+                    />
+                </Button>
+
             </Box>
 
         </Container>
