@@ -90,6 +90,11 @@ export default function HotkeyHints() {
 
     const overlayHotkeys = activeSettingsPreset?.overlay.hotkeys;
 
+    const ppOcrSettings = activeSettingsPreset.ocr_engines
+        .find( engineSettings => {
+            return engineSettings.ocr_adapter_name === 'PpOcrAdapter'
+        });
+
     function createHotkeyHint( label: string, keyCombinationsStr: string[] ): JSX.Element {
 
         if ( !label || !keyCombinationsStr ) return;
@@ -115,9 +120,12 @@ export default function HotkeyHints() {
                 m='auto' width='100%'
             >
                 { createHotkeyHint( 'OCR', ocrHotkeysStrings ) }
+                { createHotkeyHint( 'PaddleOCR', [ppOcrSettings.hotkey] ) }
+
                 {/* { createHotkeyHint( 'Copy text', [overlayHotkeys?.copy_text] ) } */}
+                { createHotkeyHint( 'Toggle overlay', [overlayHotkeys?.toggle] ) }
                 { createHotkeyHint( 'Show overlay', [overlayHotkeys?.show] ) }
-                { createHotkeyHint( 'Clear overlay', [overlayHotkeys?.clear] ) }
+                { createHotkeyHint( 'Hide overlay', [overlayHotkeys?.clear] ) }
                 
             </Box>
 
