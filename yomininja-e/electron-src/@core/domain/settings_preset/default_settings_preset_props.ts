@@ -32,7 +32,7 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
             },
             hotkeys: {
                 ocr: 'Alt+S',
-                copy_text: 'undefined+C',
+                copy_text: 'Alt+N',
                 toggle: 'Alt+C',
                 show: 'Alt+B',
                 clear: 'Alt+V',

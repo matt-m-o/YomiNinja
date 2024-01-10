@@ -12,7 +12,7 @@ import { OcrAdapter } from "../../adapters/ocr.adapter";
 export type RecognizeImageInput = {    
     imageBuffer: Buffer;
     profileId: string;
-    ocrAdapterName: string;
+    ocrAdapterName?: string;
 }
 
 export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
@@ -42,12 +42,15 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
         )
             return null;
         
-        const ocrAdapter = this.getAdapter( input.ocrAdapterName );
+        let ocrAdapter = this.getAdapter( input.ocrAdapterName ); 
+
+        if ( !ocrAdapter )
+            ocrAdapter = this.getAdapter( profile.selected_ocr_adapter_name );
 
         if ( !ocrAdapter )
             return null;
         
-        const ocrSettings = activeSettingsPreset.getOcrEngineSettings( input.ocrAdapterName );
+        const ocrSettings = activeSettingsPreset.getOcrEngineSettings( ocrAdapter.name );
         
         if ( !ocrSettings ) return null;
         

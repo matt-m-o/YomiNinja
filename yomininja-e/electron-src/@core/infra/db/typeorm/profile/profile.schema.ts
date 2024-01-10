@@ -20,7 +20,13 @@ export const ProfileTypeOrmSchema = new EntitySchema< Profile >({
         name: {
             type: String,
             length: 100,
-        },        
+        },
+
+        selected_ocr_adapter_name: {
+          type: String,
+          length: 100,
+          nullable: true,
+        },
 
         created_at: {
             type: 'datetime',

@@ -10,6 +10,7 @@ import { OcrTemplateTypeOrmSchema } from '../ocr_template/ocr_template.schema';
 import { OcrTemplate } from '../../../../domain/ocr_template/ocr_template';
 import { OcrTargetRegionTypeOrmSchema } from '../ocr_template/ocr_target_region/ocr_target_region.schema';
 import { getDefaultSettingsPresetProps } from '../../../../domain/settings_preset/default_settings_preset_props';
+import { ppOcrAdapterName } from '../../../ppocr.adapter/ppocr_settings';
 
 describe( 'Profile Entity Schema tests', () => {
 
@@ -68,7 +69,8 @@ describe( 'Profile Entity Schema tests', () => {
         const profile = Profile.create({
             active_settings_preset: settingsPreset,
             active_ocr_language: languageJa,
-            active_ocr_template: ocrTemplate
+            active_ocr_template: ocrTemplate,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
         
         
@@ -94,6 +96,7 @@ describe( 'Profile Entity Schema tests', () => {
             active_settings_preset: settingsPreset,
             active_ocr_language: languageJa,
             active_ocr_template: undefined,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
         const createdAt = profile.created_at;
         const updatedAt = profile.updated_at;

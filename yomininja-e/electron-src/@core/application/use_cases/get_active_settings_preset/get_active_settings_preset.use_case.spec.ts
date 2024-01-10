@@ -10,6 +10,7 @@ import { ProfileTypeOrmSchema } from "../../../infra/db/typeorm/profile/profile.
 import ProfileTypeOrmRepository from "../../../infra/db/typeorm/profile/profile.typeorm.repository";
 import { SettingsPresetTypeOrmSchema } from "../../../infra/db/typeorm/settings_preset/settings_preset.schema";
 import SettingsPresetTypeOrmRepository from "../../../infra/db/typeorm/settings_preset/settings_preset.typeorm.repository";
+import { ppOcrAdapterName } from "../../../infra/ppocr.adapter/ppocr_settings";
 import { GetActiveSettingsPresetUseCase, GetActiveSettingsPreset_Input } from "./get_active_settings_preset.use_case";
 import { DataSource } from 'typeorm';
 
@@ -55,6 +56,7 @@ describe("GetActiveSettingsPresetUseCase tests", () => {
         profile = Profile.create({
             active_ocr_language: language,
             active_settings_preset: defaultPreset,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
         await dataSource.getRepository( Profile ).insert( profile );
     });

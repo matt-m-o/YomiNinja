@@ -12,6 +12,7 @@ import { GetProfileUseCase, GetProfile_Input } from "./get_profile.use_case";
 import { OcrTemplateTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_template.schema";
 import { OcrTargetRegionTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.schema";
 import { getDefaultSettingsPresetProps } from "../../../domain/settings_preset/default_settings_preset_props";
+import { ppOcrAdapterName } from "../../../infra/ppocr.adapter/ppocr_settings";
 
 describe("GetProfileUseCase tests", () => {
                 
@@ -55,6 +56,7 @@ describe("GetProfileUseCase tests", () => {
         profile = Profile.create({
             active_ocr_language: language,
             active_settings_preset: defaultPreset,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
         await dataSource.getRepository( Profile ).insert( profile );
     });

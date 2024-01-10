@@ -43,12 +43,13 @@ export class OcrRecognitionService {
     }
 
     async recognize( input: {
-        imageBuffer?: Buffer,
-        profileId: string,
+        imageBuffer?: Buffer;
+        profileId: string;
+        engineName?: string;
     }): Promise< OcrResultScalable | null > {
         console.log('ocrRecognitionService.recognize');
 
-        let { imageBuffer, profileId } = input;
+        let { imageBuffer, profileId, engineName } = input;
 
 
         // displayImage( imageBuffer as Buffer );
@@ -64,7 +65,7 @@ export class OcrRecognitionService {
         return await this.recognizeImageUseCase.execute({
             imageBuffer,
             profileId: profileId,
-            ocrAdapterName: PpOcrAdapter._name
+            ocrAdapterName: engineName
         });
     }
 

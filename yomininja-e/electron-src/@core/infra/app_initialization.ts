@@ -10,6 +10,7 @@ import { applyCpuHotfix } from './ppocr.adapter/hotfix/hardware_compatibility_ho
 import { get_CreateSettingsPresetUseCaseInstance, get_GetActiveSettingsPresetUseCase, get_UpdateSettingsPresetUseCaseInstance } from './container_registry/use_cases_registry';
 import { get_PpOcrAdapter } from './container_registry/adapters_registry';
 import { WindowManager } from '../../../gyp_modules/window_management/window_manager';
+import { ppOcrAdapterName } from './ppocr.adapter/ppocr_settings';
 
 
 export let activeProfile: Profile;
@@ -99,8 +100,14 @@ export async function initializeApp() {
             defaultProfile = Profile.create({
                 active_ocr_language: defaultLanguage,
                 active_settings_preset: defaultSettingsPreset,
+                selected_ocr_adapter_name: ppOcrAdapterName
             });
             await profileRepo.insert(defaultProfile);
+        }
+        
+        if ( !defaultProfile?.selected_ocr_adapter_name ) {
+            defaultProfile.selected_ocr_adapter_name = ppOcrAdapterName;
+            await profileRepo.update( defaultProfile );
         }
 
         activeProfile = defaultProfile;

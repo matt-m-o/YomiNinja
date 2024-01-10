@@ -246,20 +246,28 @@ export class AppController {
                         // return this.ocrRecognitionController.recognize();
                     
                     if ( isWindowImage && this.userSelectedWindowId )
-                        return this.handleOcrCommand( clipboard.readImage().toPNG() );
+                        return this.handleOcrCommand({ image: clipboard.readImage().toPNG() });
                         // return this.ocrRecognitionController.recognize( clipboard.readImage().toPNG() );
 
                     else
-                        return this.handleOcrCommand( clipboard.readImage().toPNG(), runFullScreenImageCheck );
+                        return this.handleOcrCommand({
+                            image: clipboard.readImage().toPNG(),
+                            runFullScreenImageCheck
+                        });
                         // return this.ocrRecognitionController.recognize( clipboard.readImage().toPNG(), runFullScreenImageCheck );
                 }
                 else {
 
                     if ( this.userSelectedWindowId )
-                        return this.handleOcrCommand( clipboard.readImage().toPNG() );
+                        return this.handleOcrCommand({
+                            image: clipboard.readImage().toPNG()
+                        });
                         // return this.ocrRecognitionController.recognize( clipboard.readImage().toPNG() );
 
-                    return this.handleOcrCommand( clipboard.readImage().toPNG(), runFullScreenImageCheck );
+                    return this.handleOcrCommand({
+                        image: clipboard.readImage().toPNG(),
+                        runFullScreenImageCheck
+                    });
                     // return this.ocrRecognitionController.recognize( clipboard.readImage().toPNG(), runFullScreenImageCheck );
                 }
                 
@@ -400,9 +408,21 @@ export class AppController {
         return false
     }
 
-    private handleOcrCommand = async ( image?: Buffer, runFullScreenImageCheck?: boolean ) => {
+    private handleOcrCommand = async (
+        input: {
+            image?: Buffer;
+            runFullScreenImageCheck?: boolean;
+            engineName?: string;
+        } = {}
+    ) => {
 
         console.log('AppController.handleOcrCommand');
+
+        let {
+            image,
+            runFullScreenImageCheck,
+            engineName
+        } = input;
 
         this.overlayWindow?.webContents.send( 'user_command:toggle_results', false );
         
@@ -427,7 +447,10 @@ export class AppController {
             this.mainWindow.show();
         }
         else {
-            await ocrRecognitionController.recognize( image )
+            await ocrRecognitionController.recognize({
+                image,
+                engineName
+            })
                 .catch( console.error );
         }
 

@@ -52,17 +52,25 @@ export class OcrRecognitionController {
         );
     }
 
-    async recognize( entireScreenImage: Buffer ) {
+    async recognize(
+        input: {
+            image: Buffer,
+            engineName?: string;
+        }
+    ) {
         // console.log('');
         // console.time('controller.recognize');
+
+        const { image, engineName } = input;
 
         try {
             // console.log(activeProfile);
             // console.log('OcrRecognitionController.recognize')
 
             const ocrResultScalable = await this.ocrRecognitionService.recognize({
-                imageBuffer: entireScreenImage,
-                profileId: getActiveProfile().id
+                imageBuffer: image,
+                profileId: getActiveProfile().id,
+                engineName
             });
             // console.log({ ocrResultScalable });
 

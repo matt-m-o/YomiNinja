@@ -15,6 +15,7 @@ import { OcrTargetRegion } from "../../../domain/ocr_template/ocr_target_region/
 import { OcrTemplateTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_template.schema";
 import { OcrTargetRegionTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.schema";
 import { getDefaultSettingsPresetProps } from "../../../domain/settings_preset/default_settings_preset_props";
+import { ppOcrAdapterName } from "../../../infra/ppocr.adapter/ppocr_settings";
 
 describe("Recognize Image Use Case tests", () => {    
                 
@@ -97,6 +98,7 @@ describe("Recognize Image Use Case tests", () => {
         profile = Profile.create({
             active_ocr_language: language,
             active_settings_preset: settingsPreset,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
 
         await profileRepo.insert( profile );
