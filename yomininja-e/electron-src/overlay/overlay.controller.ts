@@ -195,7 +195,7 @@ export class OverlayController {
         this.unregisterGlobalShortcuts();
 
 
-        if ( overlayHotkeys.toggle.includes('Mouse') ) {
+        if ( overlayHotkeys.toggle?.includes('Mouse') ) {
             uIOhook.on( 'mousedown', e => {
     
                 if ( !matchUiohookMouseEventButton( e, overlayHotkeys.toggle ) )
@@ -210,7 +210,7 @@ export class OverlayController {
             this.globalShortcutAccelerators.push( overlayHotkeys.toggle );
         }
         
-        if ( overlayHotkeys.show.includes('Mouse') ) {
+        if ( overlayHotkeys.show?.includes('Mouse') ) {
             uIOhook.on( 'mousedown', e => {
     
                 if ( !matchUiohookMouseEventButton( e, overlayHotkeys.show ) )
@@ -225,7 +225,7 @@ export class OverlayController {
             this.globalShortcutAccelerators.push( overlayHotkeys.show );
         }
 
-        if ( overlayHotkeys.clear.includes('Mouse') ) {
+        if ( overlayHotkeys.clear?.includes('Mouse') ) {
             uIOhook.on( 'mousedown', e => {
     
                 if ( !matchUiohookMouseEventButton( e, overlayHotkeys.clear ) )

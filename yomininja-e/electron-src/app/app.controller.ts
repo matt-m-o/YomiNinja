@@ -210,7 +210,7 @@ export class AppController {
         this.unregisterGlobalShortcuts();
 
         // Selected OCR engine hotkey
-        if ( overlayHotkeys.ocr.includes('Mouse') ) {
+        if ( overlayHotkeys.ocr?.includes('Mouse') ) {
             uIOhook.on( 'mousedown', async ( e ) => {
 
                 if ( !matchUiohookMouseEventButton( e, overlayHotkeys.ocr ) )
@@ -230,7 +230,7 @@ export class AppController {
             const { hotkey } = engineSettings;
             const engineName = engineSettings.ocr_adapter_name;
 
-            if ( hotkey.includes('Mouse') ) {
+            if ( hotkey?.includes('Mouse') ) {
                 uIOhook.on( 'mousedown', async ( e ) => {
     
                     if ( !matchUiohookMouseEventButton( e, hotkey ) )

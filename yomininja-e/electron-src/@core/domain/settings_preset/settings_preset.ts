@@ -172,6 +172,9 @@ export class SettingsPreset < TProps extends SettingsPresetProps = SettingsPrese
 
     getOcrEngineSettings< T extends OcrEngineSettings >( adapterName: string ): T | undefined {
         
+        if ( !Array.isArray( this.props.ocr_engines ) )
+            this.props.ocr_engines = [];
+
         const engineSettings = this.props.ocr_engines?.find(
             item => item.ocr_adapter_name === adapterName
         );
