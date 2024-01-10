@@ -34,6 +34,7 @@
     "types-workaround": "node ./types/types_workaround.js"
   },
   "dependencies": {
+    "@google-cloud/vision": "^4.0.2",
     "@grpc/grpc-js": "^1.9.3",
     "@grpc/proto-loader": "^0.7.9",
     "axios": "^1.5.1",
@@ -149,7 +150,11 @@
           "filter": "**/*"
         }
       ],
-      "target": [ "deb", "rpm", "pacman" ]
+      "target": [
+        "deb",
+        "rpm",
+        "pacman"
+      ]
     }
   },
   "jest": {
