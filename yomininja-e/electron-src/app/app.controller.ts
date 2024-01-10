@@ -209,8 +209,9 @@ export class AppController {
 
         this.unregisterGlobalShortcuts();
 
+        // Selected OCR engine hotkey
         if ( overlayHotkeys.ocr.includes('Mouse') ) {
-            uIOhook.on( 'mousedown', async ( e ) => { // Also clear this listener
+            uIOhook.on( 'mousedown', async ( e ) => {
 
                 if ( !matchUiohookMouseEventButton( e, overlayHotkeys.ocr ) )
                     return;
@@ -223,6 +224,30 @@ export class AppController {
             this.globalShortcutAccelerators.push( overlayHotkeys.ocr );
         }
         
+        // OCR engine dedicated hotkeys
+        settingsPresetJson.ocr_engines.forEach( engineSettings => {
+
+            const { hotkey } = engineSettings;
+            const engineName = engineSettings.ocr_adapter_name;
+
+            if ( hotkey.includes('Mouse') ) {
+                uIOhook.on( 'mousedown', async ( e ) => {
+    
+                    if ( !matchUiohookMouseEventButton( e, hotkey ) )
+                        return;
+    
+                    await this.handleOcrCommand();
+                });
+            }
+            else if ( hotkey ) {
+                globalShortcut.register(
+                    hotkey,
+                    () => this.handleOcrCommand({ engineName })
+                );
+                this.globalShortcutAccelerators.push( hotkey );
+            }
+
+        });
         
         if ( overlayHotkeys.ocr_on_screen_shot ) {
             uIOhook.on( 'keyup', async ( e ) => {

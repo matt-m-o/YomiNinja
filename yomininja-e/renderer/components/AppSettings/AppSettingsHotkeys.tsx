@@ -2,17 +2,26 @@ import { Box, Divider, FormControlLabel, FormGroup, Switch, Typography } from "@
 import { SettingsContext } from "../../context/settings.provider";
 import { useContext, useEffect, useState } from "react";
 import HotkeyFields, { HotkeyCombination } from "./HotkeyFields";
+import { OcrEngineSettings } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
 
 
 // Settings section component
 export default function AppSettingsHotkeys() {
 
-    const { activeSettingsPreset, updateActivePresetHotkeys } = useContext( SettingsContext );
+    const {
+        activeSettingsPreset,
+        updateActivePresetHotkeys,
+        updateActivePresetOcrEngine
+    } = useContext( SettingsContext );
 
-    // const [ ocrKeys, setOcrKeys ] = useState< HotkeyCombination >();
+    const ppOcrSettings = activeSettingsPreset.ocr_engines
+        .find( engineSettings => {
+            return engineSettings.ocr_adapter_name === 'PpOcrAdapter'
+        });
+
+    
     // const [ copyTextKeys, setCopyTextKeys ] = useState< HotkeyCombination >();
-    // const [ showOverlayKeys, setShowOverlayKeys ] = useState< HotkeyCombination >();
-    // const [ clearOverlayKeys, setClearOverlayKeys ] = useState< HotkeyCombination >();
+    
     
     const overlayHotkeys = activeSettingsPreset?.overlay.hotkeys;
     
@@ -23,6 +32,8 @@ export default function AppSettingsHotkeys() {
     const clearOverlayKeys = stringToHotkeyCombination( overlayHotkeys?.clear );
     // const [ ocrOnPrintScreen, setOcrOnPrintScreen ] = useState< boolean >( Boolean(overlayHotkeys?.ocr_on_screen_shot) );
     const ocrOnPrintScreen = Boolean(overlayHotkeys?.ocr_on_screen_shot);
+
+    const paddleOcrKeys = stringToHotkeyCombination( ppOcrSettings.hotkey );
 
     function stringToHotkeyCombination( hotkeyString: string ): string {
         return hotkeyString?.split('+').join( ' + ' ) || '';
@@ -44,7 +55,7 @@ export default function AppSettingsHotkeys() {
             </Typography>
 
             <HotkeyFields
-                title='OCR'
+                title='OCR (Selected Engine)'
                 keyCombination={ ocrKeys }
                 // setStateAction={ setOcrKeys }
                 onChangeHandler={ ( input?: string[]  ) => {
@@ -68,6 +79,21 @@ export default function AppSettingsHotkeys() {
                     }
                 />
             </FormGroup>
+
+
+            <HotkeyFields
+                title='PaddleOCR'
+                keyCombination={ paddleOcrKeys }
+                // setStateAction={ setOcrKeys }
+                onChangeHandler={ ( input?: string[]  ) => {
+                    if ( !input ) return;
+                    updateActivePresetOcrEngine({
+                        ...ppOcrSettings,
+                        hotkey: hotkeyCombinationToString( input )
+                    });
+                }}
+                sx={{ mb: 0 }}
+            />
 
             <HotkeyFields
                 title='Toggle overlay'
