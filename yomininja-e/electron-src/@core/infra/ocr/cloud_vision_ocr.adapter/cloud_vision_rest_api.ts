@@ -6,17 +6,20 @@ export class CloudVisionRestAPI implements CloudVisionApi {
 
     public baseUrl: string;
     private httpClient: AxiosInstance;
-    private token: string;
-    private proxyUrl: string | undefined;
+    public token: string;
+    public proxyUrl: string | undefined;
 
     constructor(
-        input: {
+        input?: {
             token: string;
             proxyUrl?: string;
         }
     ) {
-        this.token = input.token;
-        this.proxyUrl = input.proxyUrl;
+        if ( input?.token )
+            this.token = input.token;
+
+        if ( input?.proxyUrl )
+            this.proxyUrl = input.proxyUrl;
 
         this.httpClient = axios.create({
             headers: {
