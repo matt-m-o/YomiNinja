@@ -1,5 +1,5 @@
 import { cloneDeep } from 'lodash';
-import { OcrEngineSettings } from '../../../domain/settings_preset/settings_preset';
+import { OcrEngineSettings } from '../../../../domain/settings_preset/settings_preset';
 import { applyCpuHotfix } from './hardware_compatibility_hotfix';
 import { PpOcrEngineSettings, getPpOcrDefaultSettings, ppOcrAdapterName } from '../ppocr_settings';
 

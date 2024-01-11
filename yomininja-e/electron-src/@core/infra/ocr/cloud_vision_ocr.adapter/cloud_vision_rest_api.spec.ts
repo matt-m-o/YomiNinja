@@ -1,5 +1,3 @@
-import axios, { AxiosInstance } from 'axios';
-import { google } from '@google-cloud/vision/build/protos/protos';
 import { CloudVisionRestAPI } from './cloud_vision_rest_api';
 import { base64Image } from './test/base64_image';
 import { cloudVisionToken, proxyUrl } from './test/test_data';
@@ -18,7 +16,7 @@ describe("Cloud Vision REST API tests", () => {
 
     it('should extract text from a base64 image', async () => {
 
-        const result = await cloudVisionAPI.detectText( base64Image );
+        const result = await cloudVisionAPI.textDetection( base64Image );
 
         let paragraphs: string[] = [];
 
@@ -26,7 +24,10 @@ describe("Cloud Vision REST API tests", () => {
             page.blocks?.forEach( block => {
 
                 block.paragraphs?.forEach( paragraph => {
-                    const flatParagraph = paragraph.words?.map(
+
+                    const { words } = paragraph
+
+                    const flatParagraph = words?.map(
                             word => word.symbols?.map( symbol => symbol.text ).join('') 
                         ).join('');
 
@@ -37,6 +38,7 @@ describe("Cloud Vision REST API tests", () => {
 
             });
         });
+
 
         expect( paragraphs ).toHaveLength( 2 );
         expect( paragraphs?.[0] ).toStrictEqual( '開かない…のは当たり前か。' );

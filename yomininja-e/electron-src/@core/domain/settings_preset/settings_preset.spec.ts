@@ -1,4 +1,4 @@
-import { PpOcrEngineSettings } from "../../infra/ppocr.adapter/ppocr_settings";
+import { PpOcrEngineSettings, getPpOcrDefaultSettings } from "../../infra/ocr/ppocr.adapter/ppocr_settings";
 import { getDefaultSettingsPresetProps } from "./default_settings_preset_props";
 import { SettingsPreset, SettingsPresetProps } from "./settings_preset";
 import { cloneDeep } from 'lodash';
@@ -6,7 +6,12 @@ import { cloneDeep } from 'lodash';
 
 describe( "SettingsPreset tests", () => {
 
-    const defaultSettings = getDefaultSettingsPresetProps();
+    const defaultSettings = {
+        ...getDefaultSettingsPresetProps(),
+        ocr_engines: [
+            getPpOcrDefaultSettings()
+        ]
+    };
 
     it( "should define a SettingsPreset with default props", () => {
 

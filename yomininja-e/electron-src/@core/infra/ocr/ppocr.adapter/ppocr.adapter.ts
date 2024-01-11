@@ -1,22 +1,22 @@
-import { OcrItem, OcrResult } from "../../domain/ocr_result/ocr_result";
-import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../application/adapters/ocr.adapter";
+import { OcrItem, OcrResult } from "../../../domain/ocr_result/ocr_result";
+import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import * as grpc from '@grpc/grpc-js';
-import { OCRServiceClient } from "../../../../grpc/rpc/ocr_service/OCRService";
-import { RecognizeDefaultResponse__Output } from "../../../../grpc/rpc/ocr_service/RecognizeDefaultResponse";
-import { GetSupportedLanguagesResponse__Output } from "../../../../grpc/rpc/ocr_service/GetSupportedLanguagesResponse";
-import { ocrServiceProto } from "../../../../grpc/grpc_protos";
-import { RecognizeBytesRequest } from "../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
+import { OCRServiceClient } from "../../../../../grpc/rpc/ocr_service/OCRService";
+import { RecognizeDefaultResponse__Output } from "../../../../../grpc/rpc/ocr_service/RecognizeDefaultResponse";
+import { GetSupportedLanguagesResponse__Output } from "../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesResponse";
+import { ocrServiceProto } from "../../../../../grpc/grpc_protos";
+import { RecognizeBytesRequest } from "../../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
 import { join } from "path";
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { dialog } from 'electron';
 import isDev from 'electron-is-dev';
-import { BIN_DIR } from "../../../util/directories.util";
-import { OcrEngineSettings } from "../../domain/settings_preset/settings_preset";
-import { UpdateSettingsPresetResponse__Output } from "../../../../grpc/rpc/ocr_service/UpdateSettingsPresetResponse";
+import { BIN_DIR } from "../../../../util/directories.util";
+import { OcrEngineSettings } from "../../../domain/settings_preset/settings_preset";
+import { UpdateSettingsPresetResponse__Output } from "../../../../../grpc/rpc/ocr_service/UpdateSettingsPresetResponse";
 import { applyCpuHotfix } from "./hotfix/hardware_compatibility_hotfix";
 import os from 'os';
 import { PpOcrEngineSettings, getPpOcrDefaultSettings, ppOcrAdapterName } from "./ppocr_settings";
-import { UpdatePpOcrSettingsRequest } from "../../../../grpc/rpc/ocr_service/UpdatePpOcrSettingsRequest";
+import { UpdatePpOcrSettingsRequest } from "../../../../../grpc/rpc/ocr_service/UpdatePpOcrSettingsRequest";
 
 export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
     

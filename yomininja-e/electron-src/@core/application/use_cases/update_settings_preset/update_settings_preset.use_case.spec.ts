@@ -6,7 +6,7 @@ import { UpdateSettingsPresetUseCase, UpdateSettingsPreset_Input } from "./updat
 import { FakeOcrEngineSettings, FakeOcrTestAdapter } from "../../../infra/test/fake_ocr.adapter/fake_ocr.adapter";
 import { cloneDeep } from "lodash";
 import { getDefaultSettingsPresetProps } from "../../../domain/settings_preset/default_settings_preset_props";
-import { PpOcrEngineSettings, ppOcrAdapterName } from "../../../infra/ppocr.adapter/ppocr_settings";
+import { PpOcrEngineSettings, ppOcrAdapterName } from "../../../infra/ocr/ppocr.adapter/ppocr_settings";
 import { SettingsPresetInstanceProps } from "../../../infra/types/entity_instance.types";
 
 

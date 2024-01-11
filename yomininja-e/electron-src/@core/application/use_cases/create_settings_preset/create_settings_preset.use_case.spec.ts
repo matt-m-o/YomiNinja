@@ -5,7 +5,7 @@ import { DataSource } from 'typeorm';
 
 import { FakeOcrEngineSettings, FakeOcrTestAdapter } from "../../../infra/test/fake_ocr.adapter/fake_ocr.adapter";
 import { CreateSettingsPresetUseCase, CreateSettingsPreset_Input } from "./create_settings_preset.use_case";
-import { PpOcrEngineSettings } from "../../../infra/ppocr.adapter/ppocr_settings";
+import { PpOcrEngineSettings } from "../../../infra/ocr/ppocr.adapter/ppocr_settings";
 import { getDefaultSettingsPresetProps } from "../../../domain/settings_preset/default_settings_preset_props";
 
 describe("CreateSettingsPresetUseCase tests", () => {    

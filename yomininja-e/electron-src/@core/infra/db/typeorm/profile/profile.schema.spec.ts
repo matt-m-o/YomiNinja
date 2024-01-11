@@ -10,7 +10,7 @@ import { OcrTemplateTypeOrmSchema } from '../ocr_template/ocr_template.schema';
 import { OcrTemplate } from '../../../../domain/ocr_template/ocr_template';
 import { OcrTargetRegionTypeOrmSchema } from '../ocr_template/ocr_target_region/ocr_target_region.schema';
 import { getDefaultSettingsPresetProps } from '../../../../domain/settings_preset/default_settings_preset_props';
-import { ppOcrAdapterName } from '../../../ppocr.adapter/ppocr_settings';
+import { ppOcrAdapterName } from '../../../ocr/ppocr.adapter/ppocr_settings';
 
 describe( 'Profile Entity Schema tests', () => {
 

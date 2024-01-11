@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { Registry, container_registry } from './container_registry';
-import { PpOcrAdapter } from '../ppocr.adapter/ppocr.adapter';
+import { PpOcrAdapter } from '../ocr/ppocr.adapter/ppocr.adapter';
 import { SharpImageProcessingAdapter } from "../sharp_image_process.adapter/sharp_image_process.adapter";
 import { GithubAppVersionProviderAdapter } from "../github_app_version_provider.adapter/github_app_version_provider.adapter";
 import { FakeAppVersionProviderAdapter } from "../test/fake_app_version_provider.adapter/fake_app_version_provider.adapter";

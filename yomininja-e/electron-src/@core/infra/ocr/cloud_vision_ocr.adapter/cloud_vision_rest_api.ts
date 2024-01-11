@@ -1,8 +1,8 @@
 import { google } from '@google-cloud/vision/build/protos/protos';
 import axios, { AxiosInstance } from 'axios';
+import { CloudVisionApi } from './cloud_vision_api';
 
-
-export class CloudVisionRestAPI {
+export class CloudVisionRestAPI implements CloudVisionApi {
 
     public baseUrl: string;
     private httpClient: AxiosInstance;
@@ -31,8 +31,15 @@ export class CloudVisionRestAPI {
         });
     }
 
-    async detectText( base64Image: string ): Promise< google.cloud.vision.v1.IAnnotateImageResponse | undefined > {
-        
+    async textDetection( image: Buffer | string ): Promise< google.cloud.vision.v1.IAnnotateImageResponse > {
+
+        let base64Image: string;
+
+        if ( typeof image !== 'string' )
+            base64Image = image.toString('base64');
+        else 
+            base64Image = image;
+
         const results = await this.annotate({
             base64Image,
             type: 'TEXT_DETECTION'

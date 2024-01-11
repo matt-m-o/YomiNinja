@@ -1,4 +1,4 @@
-import { OcrEngineSettings } from "../../domain/settings_preset/settings_preset";
+import { OcrEngineSettings } from "../../../domain/settings_preset/settings_preset";
 import { applyCpuHotfix } from "./hotfix/hardware_compatibility_hotfix";
 import os from 'os';
 

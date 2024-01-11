@@ -6,11 +6,11 @@ import { get_DictionaryDataSource, get_MainDataSource } from "./container_regist
 import { get_LanguageRepository, get_ProfileRepository, get_SettingsPresetRepository } from "./container_registry/repositories_registry";
 import os from 'os';
 import LanguageTypeOrmRepository from './db/typeorm/language/language.typeorm.repository';
-import { applyCpuHotfix } from './ppocr.adapter/hotfix/hardware_compatibility_hotfix';
+import { applyCpuHotfix } from './ocr/ppocr.adapter/hotfix/hardware_compatibility_hotfix';
 import { get_CreateSettingsPresetUseCaseInstance, get_GetActiveSettingsPresetUseCase, get_UpdateSettingsPresetUseCaseInstance } from './container_registry/use_cases_registry';
 import { get_PpOcrAdapter } from './container_registry/adapters_registry';
 import { WindowManager } from '../../../gyp_modules/window_management/window_manager';
-import { ppOcrAdapterName } from './ppocr.adapter/ppocr_settings';
+import { ppOcrAdapterName } from './ocr/ppocr.adapter/ppocr_settings';
 
 
 export let activeProfile: Profile;

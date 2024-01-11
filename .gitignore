@@ -4,4 +4,4 @@ copy_ppocr_build.bat
 yomininja-e/.vscode/c_cpp_properties.json
 yomininja-e/.vscode/settings.json
 yomininja-e/electron-src/@core/infra/cloud_vision_ocr.adapter/test_data.ts
-yomininja-e/electron-src/@core/infra/cloud_vision_ocr.adapter/**/test_data.ts
+yomininja-e/electron-src/@core/infra/ocr/cloud_vision_ocr.adapter/test/test_data.ts

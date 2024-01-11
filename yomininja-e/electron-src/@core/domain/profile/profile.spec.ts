@@ -2,7 +2,7 @@ import { cloneDeep } from 'lodash';
 import { Profile } from './profile';
 import { SettingsPreset } from '../settings_preset/settings_preset';
 import { Language } from '../language/language';
-import { ppOcrAdapterName } from '../../infra/ppocr.adapter/ppocr_settings';
+import { ppOcrAdapterName } from '../../infra/ocr/ppocr.adapter/ppocr_settings';
 
 describe( "Profile tests", () => {
 

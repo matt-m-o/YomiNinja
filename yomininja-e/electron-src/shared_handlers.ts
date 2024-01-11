@@ -5,7 +5,7 @@ import { ocrRecognitionController } from "./ocr_recognition/ocr_recognition.inde
 import { overlayController } from "./overlay/overlay.index";
 import { mainController } from "./main/main.index";
 import { uIOhook } from 'uiohook-napi'
-import { PpOcrAdapter } from "./@core/infra/ppocr.adapter/ppocr.adapter";
+import { PpOcrAdapter } from "./@core/infra/ocr/ppocr.adapter/ppocr.adapter";
 
 // Handlers used by multiple controllers
 

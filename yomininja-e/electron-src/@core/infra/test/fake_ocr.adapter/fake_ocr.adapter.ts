@@ -1,7 +1,7 @@
 import { OcrItem, OcrResult, OcrResultContextResolution, OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
 import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import { OcrEngineSettings } from "../../../domain/settings_preset/settings_preset";
-import { PpOcrEngineSettings, getPpOcrDefaultSettings } from "../../ppocr.adapter/ppocr_settings";
+import { PpOcrEngineSettings, getPpOcrDefaultSettings } from "../../ocr/ppocr.adapter/ppocr_settings";
 
 const ocrTestAdapterResultProps: OcrResult_CreationInput = {
     id: 1,
