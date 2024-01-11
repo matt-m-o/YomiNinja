@@ -18,7 +18,10 @@ export default function AppSettingsHotkeys() {
         .find( engineSettings => {
             return engineSettings.ocr_adapter_name === 'PpOcrAdapter'
         });
-
+    const cloudVisionSettings = activeSettingsPreset?.ocr_engines
+        .find( engineSettings => {
+            return engineSettings.ocr_adapter_name === 'CloudVisionOcrAdapter'
+        });
     
     // const [ copyTextKeys, setCopyTextKeys ] = useState< HotkeyCombination >();
     
@@ -34,6 +37,7 @@ export default function AppSettingsHotkeys() {
     const ocrOnPrintScreen = Boolean(overlayHotkeys?.ocr_on_screen_shot);
 
     const paddleOcrKeys = stringToHotkeyCombination( ppOcrSettings.hotkey );
+    const cloudVisionKeys = stringToHotkeyCombination( cloudVisionSettings.hotkey );
 
     function stringToHotkeyCombination( hotkeyString: string ): string {
         return hotkeyString?.split('+').join( ' + ' ) || '';
@@ -94,6 +98,21 @@ export default function AppSettingsHotkeys() {
                 }}
                 sx={{ mb: 0 }}
             />
+
+            <HotkeyFields
+                title='Cloud Vision'
+                keyCombination={ cloudVisionKeys }
+                // setStateAction={ setOcrKeys }
+                onChangeHandler={ ( input?: string[]  ) => {
+                    if ( !input ) return;
+                    updateActivePresetOcrEngine({
+                        ...cloudVisionSettings,
+                        hotkey: hotkeyCombinationToString( input )
+                    });
+                }}
+                sx={{ mb: 0 }}
+            />
+            
 
             <HotkeyFields
                 title='Toggle overlay'

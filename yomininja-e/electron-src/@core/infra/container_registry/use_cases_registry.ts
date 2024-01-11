@@ -29,6 +29,7 @@ container_registry.bind( Registry.RecognizeImageUseCaseInstance )
         return new RecognizeImageUseCase< OcrEngineSettingsU >(
             [
                 context.container.get( Registry.PpOcrAdapter ),
+                context.container.get( Registry.CloudVisionOcrAdapter ),
             ],
             context.container.get( Registry.SharpImageProcessingAdapter ),
             context.container.get( Registry.ProfileTypeOrmRepository ),
@@ -39,7 +40,10 @@ container_registry.bind( Registry.RecognizeImageUseCaseInstance )
 container_registry.bind( Registry.GetSupportedLanguagesUseCaseInstance )
     .toDynamicValue( (context) => {
         return new GetSupportedLanguagesUseCase< OcrEngineSettingsU >(
-            [ context.container.get( Registry.PpOcrAdapter ) ],
+            [ 
+                context.container.get( Registry.PpOcrAdapter ),
+                context.container.get( Registry.CloudVisionOcrAdapter ),
+            ],
             context.container.get( Registry.LanguageTypeOrmRepository ),
         );
     })
@@ -59,7 +63,8 @@ container_registry.bind( Registry.UpdateSettingsPresetUseCaseInstance )
         return new UpdateSettingsPresetUseCase< OcrEngineSettingsU >(
             context.container.get( Registry.SettingsPresetTypeOrmRepository ),
             [
-                context.container.get( Registry.PpOcrAdapter )
+                context.container.get( Registry.PpOcrAdapter ),
+                context.container.get( Registry.CloudVisionOcrAdapter )
             ],
         );
     })
@@ -180,9 +185,8 @@ container_registry.bind( Registry.CreateSettingsPresetUseCaseInstance )
                 Registry.SettingsPresetTypeOrmRepository
             ),
             ocrAdapters: [
-                context.container.get(
-                    Registry.PpOcrAdapter
-                ),
+                context.container.get( Registry.PpOcrAdapter ),
+                context.container.get( Registry.CloudVisionOcrAdapter ),
             ]
         })
     });

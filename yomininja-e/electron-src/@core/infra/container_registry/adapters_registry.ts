@@ -6,10 +6,21 @@ import { GithubAppVersionProviderAdapter } from "../github_app_version_provider.
 import { FakeAppVersionProviderAdapter } from "../test/fake_app_version_provider.adapter/fake_app_version_provider.adapter";
 import { KuromojiTermExtractor } from "../kuromoji_term_extractor.adapter/kuromoji_term_extractor.adapter";
 import { JapaneseHelper } from "../japanese_helper.adapter/japanese_helper.adapter";
+import { CloudVisionOcrAdapter } from "../ocr/cloud_vision_ocr.adapter/cloud_vision_ocr.adapter";
+import { CloudVisionRestAPI } from "../ocr/cloud_vision_ocr.adapter/cloud_vision_rest_api";
+import { cloudVisionToken, proxyUrl } from "../ocr/cloud_vision_ocr.adapter/test/test_data";
 
 
 container_registry.bind( Registry.PpOcrAdapter ).toDynamicValue( (context) => {
     return new PpOcrAdapter();
+}).inSingletonScope();
+
+container_registry.bind( Registry.CloudVisionOcrAdapter ).toDynamicValue( (context) => {
+    const cloudVisionRestApi = new CloudVisionRestAPI({
+        token: cloudVisionToken,
+        proxyUrl
+    });
+    return new CloudVisionOcrAdapter( cloudVisionRestApi );
 }).inSingletonScope();
 
 container_registry.bind( Registry.SharpImageProcessingAdapter ).toDynamicValue( (context) => {
@@ -35,6 +46,10 @@ container_registry.bind( Registry.JapaneseHelper ).toDynamicValue( (context) => 
 
 export function get_PpOcrAdapter(): PpOcrAdapter {
     return container_registry.get< PpOcrAdapter >( Registry.PpOcrAdapter )
+}
+
+export function get_CloudVisionOcrAdapter(): CloudVisionOcrAdapter {
+    return container_registry.get< CloudVisionOcrAdapter >( Registry.CloudVisionOcrAdapter )
 }
 
 export function get_SharpImageProcessingAdapter(): SharpImageProcessingAdapter {

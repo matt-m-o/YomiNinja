@@ -13,6 +13,7 @@ export const Registry = {
 
     // Adapters
     PpOcrAdapter: Symbol.for('PpOcrAdapter'),
+    CloudVisionOcrAdapter: Symbol.for('CloudVisionOcrAdapter'),
     SharpImageProcessingAdapter: Symbol.for('SharpImageProcessingAdapter'),
     GithubAppVersionProviderAdapter: Symbol.for('GithubAppVersionProviderAdapter'),
     FakeAppVersionProviderAdapter: Symbol.for('FakeAppVersionProviderAdapter'),

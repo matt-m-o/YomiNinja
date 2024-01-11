@@ -6,7 +6,6 @@ import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
 import RestartAltRoundedIcon from '@mui/icons-material/RestartAltRounded';
 import Button from '@mui/material/Button';
 import { OcrEngineSettingsU } from "../../../../electron-src/@core/infra/types/entity_instance.types";
-import { ppOcrAdapterName } from "../../../../electron-src/@core/infra/ppocr.adapter/ppocr_settings";
 import CommonOcrSettings, { SettingsOptionContainer } from "./CommonOcrSettings";
 import OcrSettingsSlider from "./OcrSettingsSlider";
 
