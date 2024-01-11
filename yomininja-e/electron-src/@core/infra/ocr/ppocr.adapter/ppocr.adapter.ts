@@ -99,10 +99,19 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
         )
             return null;
         
+        const ocrItems: OcrItem[] = clientResponse.results.map( ( item ) => {
+            return {
+                ...item,
+                text: [{
+                    content: item.text
+                }],
+            } as OcrItem
+        });
+
         return OcrResult.create({
             id: parseInt(clientResponse.id),
             context_resolution: clientResponse.context_resolution,
-            results: clientResponse.results as OcrItem[],
+            results: ocrItems,
         });        
     }
 

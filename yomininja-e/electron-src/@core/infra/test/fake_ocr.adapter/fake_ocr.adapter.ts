@@ -11,7 +11,7 @@ const ocrTestAdapterResultProps: OcrResult_CreationInput = {
     },
     results: [
         {
-            text: "recognized_text",
+            text: [{ content: "recognized_text" }],
             recognition_score: 0.99,
             classification_score: 0.99,
             classification_label: 1,
@@ -55,7 +55,9 @@ export class FakeOcrTestAdapter implements OcrAdapter< FakeOcrEngineSettings > {
             id: this.idCounter,
         });
 
-        result.results[0].text = input.imageBuffer.toString();
+        result.results[0].text =[
+            { content: input.imageBuffer.toString() }
+        ];
 
         return result;
     }

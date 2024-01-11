@@ -1,6 +1,6 @@
 import { google } from "@google-cloud/vision/build/protos/protos";
 import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
-import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrResult, OcrResultContextResolution } from "../../../domain/ocr_result/ocr_result";
+import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrResult, OcrResultContextResolution, OcrTextLine } from "../../../domain/ocr_result/ocr_result";
 import { CloudVisionApi } from "./cloud_vision_api";
 import { CloudVisionOcrEngineSettings, cloudVisionOcrAdapterName, getCloudVisionDefaultSettings } from "./cloud_vision_ocr_settings";
 
@@ -48,21 +48,60 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
 
                     const { words, boundingBox } = paragraph;
 
-                    const flatParagraph = words?.map(
-                            word => word.symbols?.map( symbol => symbol.text ).join('') 
-                        ).join('');
+                    const lines: OcrTextLine[] = [{
+                        content: ''
+                    }];
 
-                    if (
-                        !flatParagraph ||
-                        !boundingBox?.vertices
-                    ) return;
+                    let createNewLine = false;
+
+                    words?.forEach(
+                        word => word.symbols?.forEach( symbol => {
+
+                            if ( createNewLine )
+                                lines.push({ content: '' });
+
+                            const currentLine = lines[ lines.length - 1 ];
+
+                            const breakType = symbol.property?.detectedBreak?.type;
+
+                            let breakChar = '';
+
+                            if ( breakType == 'SPACE' )
+                                breakChar = " ";
+
+                            if ( breakType == 'SURE_SPACE' )
+                                breakChar + "　";
+
+                            if ( breakType == 'EOL_SURE_SPACE' )
+                                breakChar + "　";
+
+                            if ( breakType == 'HYPHEN' )
+                                breakChar + "-";
+
+                            if ( breakType == 'UNKNOWN' )
+                                breakChar + " ";
+
+                            
+                            if (
+                                breakType === 'LINE_BREAK' ||
+                                breakType === 'EOL_SURE_SPACE'
+                            )
+                                createNewLine = true;
+                            else 
+                                createNewLine = false;
+
+                            currentLine.content += symbol.text + breakChar;
+                        })
+                    );
+
+                    if ( !boundingBox?.vertices ) return;
 
                     ocrResultItems.push({
                         recognition_score: 1,
                         classification_score: 1,
                         classification_label: 0,
                         box: this.getOcrItemBox( boundingBox?.vertices ),
-                        text: flatParagraph
+                        text: lines
                     });
                 });
 

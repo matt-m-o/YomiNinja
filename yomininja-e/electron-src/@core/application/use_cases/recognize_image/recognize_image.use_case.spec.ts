@@ -27,7 +27,7 @@ describe("Recognize Image Use Case tests", () => {
         },
         results: [
             {
-                text: "recognized_text",
+                text: [{ content: "recognized_text" }],
                 recognition_score: 0.99,
                 classification_score: 0.99,
                 classification_label: 1,
@@ -39,7 +39,7 @@ describe("Recognize Image Use Case tests", () => {
                 }
             },
             {
-                text: "recognized_text",
+                text: [{ content: "recognized_text" }],
                 recognition_score: 0.99,
                 classification_score: 0.99,
                 classification_label: 1,
@@ -160,7 +160,7 @@ describe("Recognize Image Use Case tests", () => {
         const { ocr_regions } = result;
 
         expect( result?.context_resolution ).toStrictEqual( ocrTestAdapterResultProps.context_resolution );
-        expect( ocr_regions[0].results?.[0].text ).toStrictEqual( testText );
+        expect( ocr_regions[0].results?.[0].text[0].content ).toStrictEqual( testText );
     });
     
 });

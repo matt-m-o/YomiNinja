@@ -19,8 +19,13 @@ export type OcrResultBoxScalable = {
     angle_degrees?: number;
 };
 
+export type OcrTextLineScalable = {
+    content: string;
+    box?: OcrResultBoxScalable;
+};
+
 export interface OcrItemScalable {
-    text: string;
+    text: OcrTextLineScalable[];
     box: OcrResultBoxScalable;
     recognition_score: number,
     classification_score: number,
@@ -157,6 +162,13 @@ export class OcrResultScalable {
                 ocrResult.context_resolution,
             );
             
+            const text = item.text.map( line => {
+
+                // TODO: Calculate position and dimensions
+
+                return { content: line.content };
+            });
+
             results.push({
                 box: {
                     position: box_position,
@@ -166,7 +178,7 @@ export class OcrResultScalable {
                         height,
                     }
                 },
-                text: item.text,
+                text,
                 recognition_score: item.recognition_score,
                 classification_score: item.classification_score,
                 classification_label: item.classification_label

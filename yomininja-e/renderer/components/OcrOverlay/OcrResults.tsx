@@ -26,7 +26,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         if ( !overlayBehavior.copy_text_on_hover )
             return;
 
-        hoveredText = item.text;
+        hoveredText = item.text.map( line => line.content ).join(' ');
         sendHoveredText()
     }
 

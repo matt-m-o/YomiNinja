@@ -21,6 +21,11 @@ const BaseOcrResultBox = styled('div')({
     cursor: 'auto'
 });
 
+const Char = styled('span')({
+    whiteSpace: 'pre'
+});
+
+
 export default function OcrResultBox( props: {
     ocrItem: OcrItemScalable;
     ocrRegionSize: { // Pixels
@@ -48,8 +53,12 @@ export default function OcrResultBox( props: {
     const { box } = ocrItem;
 
     const boxRef = useRef(null);
+
+    const isMultiline = ocrItem.text.length > 1;
     
-    const [ alignItems, setAlignItems ] = useState('center');
+    const [ alignItems, setAlignItems ] = useState(
+        isMultiline ? 'flex-start' : 'center'
+    );
 
 
     useEffect( () => {
@@ -68,7 +77,7 @@ export default function OcrResultBox( props: {
                     return;
 
                 console.log('A <ruby> child was added!');
-                setAlignItems( 'flex-end' );                                        
+                setAlignItems( 'flex-start' );                                        
             });
         });
     
@@ -99,7 +108,7 @@ export default function OcrResultBox( props: {
     if ( box.angle_degrees < -70 )
         isVertical = true;
 
-    const adjustedFontSize = fontSize + fontSizeOffset; // px
+    const adjustedFontSize = ( fontSize + fontSizeOffset ) / ocrItem.text.length; // px
 
     const activeBoxCss: CSSProperties = {
         backgroundColor: ocrItemBoxVisuals?.background_color || 'black',
@@ -124,7 +133,9 @@ export default function OcrResultBox( props: {
         fontSize: fontSize + 'px',
         lineHeight: fontSize + 'px',
         contentVisibility: 'hidden',
-        alignItems
+        alignItems,
+        flexDirection: isVertical ? 'row' : 'column',
+        justifyContent: isMultiline ? 'space-between' : 'center',
     });
 
     const { width } = box.dimensions;
@@ -164,13 +175,17 @@ export default function OcrResultBox( props: {
             onMouseLeave={ props.onMouseLeave }
             onClick={ () => props.onClick( ocrItem ) }
             onDoubleClick={ props.onDoubleClick }
-            onBlur={ ( e ) => {
-                ocrItem.text = e.target.innerText;
-                props.onBlur( ocrItem.text );
-            }}
+            // onBlur={ ( e ) => {
+            //     ocrItem.text = e.target.innerText;
+            //     props.onBlur( ocrItem.text );
+            // }}
             suppressContentEditableWarning
         >
-            {ocrItem.text}
+            { ocrItem.text.map( line => {
+                return <>
+                    <span> { line.content } </span> <br hidden/>
+                </>
+            }) }
         </Box>
     )
 }
