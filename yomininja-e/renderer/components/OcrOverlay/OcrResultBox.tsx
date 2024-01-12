@@ -25,6 +25,10 @@ const Char = styled('span')({
     whiteSpace: 'pre'
 });
 
+const Line = styled('span')({
+    whiteSpace: 'pre',
+    width: 'max-content'
+});
 
 export default function OcrResultBox( props: {
     ocrItem: OcrItemScalable;
@@ -56,9 +60,16 @@ export default function OcrResultBox( props: {
 
     const isMultiline = ocrItem.text.length > 1;
     
-    const [ alignItems, setAlignItems ] = useState(
-        isMultiline ? 'flex-start' : 'center'
-    );
+    const [ alignItems, setAlignItems ] = useState( 'center' );
+
+    useEffect( () => {
+
+        if ( isMultiline )
+            setAlignItems( 'flex-start' );
+        else 
+            setAlignItems( 'center' );
+
+    }, [ ocrItem ] );
 
 
     useEffect( () => {
@@ -69,15 +80,17 @@ export default function OcrResultBox( props: {
             mutations.forEach( ( mutation ) => {
                 
                 if ( mutation.type !== 'childList' ) 
-                return;
+                    return;
 
-            const addedNodes = Array.from( mutation.addedNodes );
-            
-            if ( !addedNodes.some( node => node.nodeName === 'RUBY' ) ) 
+                const addedNodes = Array.from( mutation.addedNodes );
+                
+                if ( !addedNodes.some( node => node.nodeName === 'RUBY' ) ) 
                     return;
 
                 console.log('A <ruby> child was added!');
-                setAlignItems( 'flex-start' );                                        
+
+                if ( alignItems !== 'flex-start' )
+                    setAlignItems( 'flex-start' );                                        
             });
         });
     
@@ -108,7 +121,10 @@ export default function OcrResultBox( props: {
     if ( box.angle_degrees < -70 )
         isVertical = true;
 
-    const adjustedFontSize = ( fontSize + fontSizeOffset ) / ocrItem.text.length; // px
+    let adjustedFontSize = ( fontSize + fontSizeOffset ); // px
+
+    if ( ocrItem.text.length > 0 )
+        adjustedFontSize = ( adjustedFontSize / ocrItem.text.length );
 
     const activeBoxCss: CSSProperties = {
         backgroundColor: ocrItemBoxVisuals?.background_color || 'black',
@@ -133,7 +149,7 @@ export default function OcrResultBox( props: {
         fontSize: fontSize + 'px',
         lineHeight: fontSize + 'px',
         contentVisibility: 'hidden',
-        alignItems,
+        alignItems: alignItems,
         flexDirection: isVertical ? 'row' : 'column',
         justifyContent: isMultiline ? 'space-between' : 'center',
     });
@@ -183,7 +199,7 @@ export default function OcrResultBox( props: {
         >
             { ocrItem.text.map( line => {
                 return <>
-                    <span> { line.content } </span> <br hidden/>
+                    <Line> { line.content } </Line>
                 </>
             }) }
         </Box>

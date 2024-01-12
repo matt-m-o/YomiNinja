@@ -70,21 +70,22 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
                                 breakChar = " ";
 
                             if ( breakType == 'SURE_SPACE' )
-                                breakChar + "　";
+                                breakChar = "　";
 
                             if ( breakType == 'EOL_SURE_SPACE' )
-                                breakChar + "　";
+                                breakChar = " ";
 
                             if ( breakType == 'HYPHEN' )
-                                breakChar + "-";
+                                breakChar = "-";
 
                             if ( breakType == 'UNKNOWN' )
-                                breakChar + " ";
+                                breakChar = " ";
 
                             
                             if (
                                 breakType === 'LINE_BREAK' ||
-                                breakType === 'EOL_SURE_SPACE'
+                                breakType === 'EOL_SURE_SPACE' ||
+                                breakType === 'HYPHEN'
                             )
                                 createNewLine = true;
                             else 
