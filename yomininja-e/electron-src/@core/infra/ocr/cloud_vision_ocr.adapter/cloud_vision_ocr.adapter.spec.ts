@@ -28,7 +28,7 @@ describe('CloudVisionOcrAdapter tests', () => {
         });
 
         expect( result?.results ).toHaveLength( 2 );
-        expect( result?.results[0].text ).toStrictEqual( '開かない…のは当たり前か。' );
-        expect( result?.results[1].text ).toStrictEqual( 'ここは先頭車両で、こっちはその先頭の方だもんな。' );
+        expect( result?.results[0].text[0].content ).toStrictEqual( '開かない…のは当たり前か。' );
+        expect( result?.results[1].text[0].content ).toStrictEqual( 'ここは先頭車両で、こっちはその先頭の方だもんな。' );
     });
 })

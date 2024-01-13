@@ -62,11 +62,20 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     
             let left = ( symbol.box.position.left - box.position.left ) + 0.25;
             let top = symbol.box.position.top - box.position.top;
+
+            let letterSpacing: number 
+
+            if ( !box.isVertical ) 
+                letterSpacing = symbol.letter_spacing * regionWidthPx;
+            else { 
+                letterSpacing = 1;
+                if ( symbol.symbol == '「' )
+                    top = top - 2;
+            }
             
-            let leftPx = ( left / 100 ) * regionWidthPx;
-            let topPx = ( top / 100 ) * regionHeightPx;
-    
-            const letterSpacing = symbol.letter_spacing * regionWidthPx;
+            const leftPx = ( left / 100 ) * regionWidthPx;
+            const topPx = ( top / 100 ) * regionHeightPx;
+            
     
             return (
                 <Symbol key={sIdx}
@@ -80,6 +89,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                         letterSpacing: letterSpacing + 'px',
                         lineHeight: lineFontSize + 'px',
                         transform: `rotate( ${ symbol.box.angle_degrees }deg )`,
+                        border: 'none'
                     }}
                 >
                     { symbol.symbol }

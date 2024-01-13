@@ -93,13 +93,16 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
                                 createNewLine = false;
 
                             currentLine.content += symbol.text + breakChar;
+
+                            const symbolBox = this.getOcrItemBox(
+                                symbol?.boundingBox?.vertices || []
+                            );
                             
                             currentLine.symbols?.push({
                                 symbol: symbol.text || '',
-                                box: this.getOcrItemBox(
-                                        symbol?.boundingBox?.vertices || []
-                                    ),
-                            })
+                                box: symbolBox
+                            });
+
                         })
                     );
 

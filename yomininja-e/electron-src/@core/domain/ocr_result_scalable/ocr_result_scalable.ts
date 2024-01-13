@@ -17,6 +17,7 @@ export type OcrResultBoxScalable = {
     position: OcrResultBoxPositionPcts;
     dimensions?: OcrResultBoxDimensionsPcts;
     angle_degrees?: number;
+    isVertical: boolean;
 };
 
 export type OcrTextLineSymbolScalable = {
@@ -181,11 +182,16 @@ export class OcrResultScalable {
 
                     if ( nextSymbol ) {
                         letterSpacing = OcrResultScalable.calculateSymbolLetterSpacing(
-                            symbol, nextSymbol
+                            symbol, nextSymbol, box.isVertical
                         );
                         
-                        if ( itemBox.dimensions )
-                            letterSpacing = letterSpacing / context_resolution.width;
+                        if ( itemBox.dimensions ) {
+
+                            if ( !box.isVertical )
+                                letterSpacing = letterSpacing / context_resolution.width;
+                            else
+                                letterSpacing = letterSpacing / context_resolution.height;
+                        }
                     }
                     
                     lineScalable.symbols?.push({
@@ -346,13 +352,19 @@ export class OcrResultScalable {
             contextResolution,
         );
 
+        const boxWidthPx = contextResolution.width * ( width / 100 );
+        const boxHeightPx = contextResolution.height * ( height / 100 );
+
+        const isVertical = boxHeightPx > ( boxWidthPx * 1.40 ) || angle_degrees < -70;
+
         return {
             position,
             angle_degrees,
             dimensions: {
                 width,
                 height
-            }
+            },
+            isVertical
         }
     }
 
@@ -366,12 +378,25 @@ export class OcrResultScalable {
         return distance;
     }
     
-    static calculateSymbolLetterSpacing( symbol: OcrTextLineSymbol, nextSymbol?: OcrTextLineSymbol ): number {
+    static calculateSymbolLetterSpacing(
+        symbol: OcrTextLineSymbol,
+        nextSymbol?: OcrTextLineSymbol,
+        isVertical?: boolean
+    ): number {
 
         if ( !nextSymbol ) return 0;
 
-        const vertexA = symbol.box.top_right;
-        const vertexB = nextSymbol.box.top_left;
+        let vertexA: OcrItemBoxVertex;
+        let vertexB: OcrItemBoxVertex;
+
+        if ( !isVertical ) {
+            vertexA = symbol.box.top_right;
+            vertexB = nextSymbol.box.top_left;
+        }
+        else {
+            vertexA = symbol.box.bottom_left;
+            vertexB = nextSymbol.box.top_left;
+        }
 
         return OcrResultScalable.calculateEuclideanDistance( vertexA, vertexB );
     }

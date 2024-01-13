@@ -100,7 +100,7 @@ export default function OcrResultBox( props: {
     const boxWidthPx = regionWidthPx * ( box.dimensions.width / 100 );
     const boxHeightPx = regionHeightPx * ( box.dimensions.height / 100 );
     
-    let isVertical = boxHeightPx > ( boxWidthPx * 1.40 );
+    let { isVertical } = box;
 
     const fontSize = isVertical ? boxWidthPx * 0.7 : boxHeightPx * 0.75; // Pixels
 
@@ -111,8 +111,8 @@ export default function OcrResultBox( props: {
 
     const fontSizeOffset =  ( fontSize * ( font_size_factor / 100 ) ) - fontSize;
 
-    if ( box.angle_degrees < -70 )
-        isVertical = true;
+    // if ( box.angle_degrees < -70 )
+    //     isVertical = true;
 
     let adjustedFontSize = ( fontSize + fontSizeOffset ); // px
 
