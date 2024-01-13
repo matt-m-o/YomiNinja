@@ -18,14 +18,14 @@ const SymbolsContainer = styled('span')({
 const Symbol = styled('span')({
     transformOrigin: 'top left',
     whiteSpace: 'pre',
-    textAlign: 'left',
+    textAlign: 'center',
 });
 
 export type OcrResultLineProps = {
     line: OcrTextLineScalable;
     box: OcrResultBoxScalable;
-    regionHeightPx: number;
     regionWidthPx: number;
+    regionHeightPx: number;
 };
 
 export default function OcrResultLine( props: OcrResultLineProps ) {
@@ -33,8 +33,8 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     const {
         line,
         box,
-        regionHeightPx,
-        regionWidthPx
+        regionWidthPx,
+        regionHeightPx
     } = props;
 
     let lineFontSize = 0;
@@ -66,13 +66,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             let leftPx = ( left / 100 ) * regionWidthPx;
             let topPx = ( top / 100 ) * regionHeightPx;
     
-            let letterSpacing = 0;
-    
-            if ( nextSymbol ) {
-                const nextSymbolLeft = nextSymbol.box.position.left - box.position.left + 0.25;
-                const nextSymbolLeftPx = ( nextSymbolLeft / 100 ) * regionWidthPx;
-                letterSpacing = ( nextSymbolLeftPx - leftPx ) - symbolBoxWidthPx;
-            }
+            const letterSpacing = symbol.letter_spacing * regionWidthPx;
     
             return (
                 <Symbol key={sIdx}

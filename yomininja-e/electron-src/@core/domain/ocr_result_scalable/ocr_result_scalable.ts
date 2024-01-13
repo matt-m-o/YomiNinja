@@ -1,4 +1,4 @@
-import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrResult, OcrResultContextResolution } from "../ocr_result/ocr_result";
+import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrResult, OcrResultContextResolution, OcrTextLineSymbol } from "../ocr_result/ocr_result";
 
 // Position percentages
 export type OcrResultBoxPositionPcts = {
@@ -22,6 +22,7 @@ export type OcrResultBoxScalable = {
 export type OcrTextLineSymbolScalable = {
     symbol: string;
     box: OcrResultBoxScalable;
+    letter_spacing: number;
 };
 
 export type OcrTextLineScalable = {
@@ -145,6 +146,8 @@ export class OcrResultScalable {
 
         ocrResult.results.forEach( item => {
 
+            const { context_resolution } = ocrResult;
+
             const itemBox = OcrResultScalable.getBoxScalable(
                 item.box,
                 ocrResult.context_resolution
@@ -160,16 +163,35 @@ export class OcrResultScalable {
                 // TODO: Calculate position and dimensions
 
                 // Symbols
-                line?.symbols?.forEach( symbol => {
+                line?.symbols?.forEach( ( symbol, sIdx ) => {
+
+                    if ( !line?.symbols ) return;
+
+                    let nextSymbol: OcrTextLineSymbol | undefined;
+            
+                    if ( line?.symbols.length-1 >= sIdx+1 )
+                        nextSymbol = line.symbols[ sIdx+1 ];
                     
                     const box = OcrResultScalable.getBoxScalable(
                         symbol.box,
-                        ocrResult.context_resolution
+                        context_resolution
                     );
+
+                    let letterSpacing = 0;
+
+                    if ( nextSymbol ) {
+                        letterSpacing = OcrResultScalable.calculateSymbolLetterSpacing(
+                            symbol, nextSymbol
+                        );
+                        
+                        if ( itemBox.dimensions )
+                            letterSpacing = letterSpacing / context_resolution.width;
+                    }
                     
                     lineScalable.symbols?.push({
                         symbol: symbol.symbol,
                         box,
+                        letter_spacing: letterSpacing
                     });
 
                 })
@@ -332,5 +354,25 @@ export class OcrResultScalable {
                 height
             }
         }
+    }
+
+    static calculateEuclideanDistance( vertexA: OcrItemBoxVertex, vertexB: OcrItemBoxVertex ): number {
+
+        const deltaX = vertexB.x - vertexA.x;
+        const deltaY = vertexB.y - vertexA.y;
+    
+        const distance = Math.sqrt( deltaX ** 2 + deltaY ** 2) ;
+        
+        return distance;
+    }
+    
+    static calculateSymbolLetterSpacing( symbol: OcrTextLineSymbol, nextSymbol?: OcrTextLineSymbol ): number {
+
+        if ( !nextSymbol ) return 0;
+
+        const vertexA = symbol.box.top_right;
+        const vertexB = nextSymbol.box.top_left;
+
+        return OcrResultScalable.calculateEuclideanDistance( vertexA, vertexB );
     }
 }
