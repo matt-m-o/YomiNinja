@@ -11,9 +11,15 @@ export type OcrItemBox = {
     top_right: OcrItemBoxVertex;
 };
 
+export type OcrTextLineSymbol = {
+    symbol: string;
+    box: OcrItemBox;
+};
+
 export type OcrTextLine = {
     content: string;
     box?: OcrItemBox;
+    symbols?: OcrTextLineSymbol[];
 };
 
 export type OcrItem = {

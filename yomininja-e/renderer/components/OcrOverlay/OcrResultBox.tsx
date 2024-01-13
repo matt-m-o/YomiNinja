@@ -1,7 +1,8 @@
 import { CSSProperties, useEffect, useRef, useState } from "react";
-import { OcrItemScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
+import { OcrItemScalable, OcrTextLineSymbolScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { styled } from "@mui/material";
 import { OverlayBehavior, OverlayHotkeys, OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import OcrResultLine from "./OcrResultLine";
 
 const BaseOcrResultBox = styled('div')({
     // border: 'solid',
@@ -21,14 +22,6 @@ const BaseOcrResultBox = styled('div')({
     cursor: 'auto'
 });
 
-const Char = styled('span')({
-    whiteSpace: 'pre'
-});
-
-const Line = styled('span')({
-    whiteSpace: 'pre',
-    width: 'max-content'
-});
 
 export default function OcrResultBox( props: {
     ocrItem: OcrItemScalable;
@@ -197,10 +190,25 @@ export default function OcrResultBox( props: {
             // }}
             suppressContentEditableWarning
         >
-            { ocrItem.text.map( line => {
-                return <>
-                    <Line> { line.content } </Line>
-                </>
+            { ocrItem.text.map( ( line, lIdx ) => {
+
+                let lineFontSize = 0;
+
+                line?.symbols.map( symbol => {
+                    const charBoxHeightPx = regionHeightPx * ( symbol.box.dimensions.height / 100 );
+                    if ( charBoxHeightPx > lineFontSize )
+                        lineFontSize = charBoxHeightPx;
+                });
+
+                return (
+                    <OcrResultLine
+                        box={box}
+                        line={line}
+                        regionWidthPx={regionWidthPx}
+                        regionHeightPx={regionHeightPx}
+                        key={lIdx}
+                    />
+                )
             }) }
         </Box>
     )

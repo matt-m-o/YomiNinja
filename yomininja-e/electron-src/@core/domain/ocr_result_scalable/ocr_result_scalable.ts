@@ -1,4 +1,4 @@
-import { OcrItem, OcrItemBox, OcrResult, OcrResultContextResolution } from "../ocr_result/ocr_result";
+import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrResult, OcrResultContextResolution } from "../ocr_result/ocr_result";
 
 // Position percentages
 export type OcrResultBoxPositionPcts = {
@@ -19,9 +19,15 @@ export type OcrResultBoxScalable = {
     angle_degrees?: number;
 };
 
+export type OcrTextLineSymbolScalable = {
+    symbol: string;
+    box: OcrResultBoxScalable;
+};
+
 export type OcrTextLineScalable = {
     content: string;
     box?: OcrResultBoxScalable;
+    symbols?: OcrTextLineSymbolScalable[];
 };
 
 export interface OcrItemScalable {
@@ -139,45 +145,40 @@ export class OcrResultScalable {
 
         ocrResult.results.forEach( item => {
 
-            const verticalDistance = item.box.top_right.y - item.box.top_left.y;
-            const horizontalDistance = item.box.top_right.x - item.box.top_left.x;
-
-            const box_position = OcrResultScalable.calculateBoxPosition(
-                item, ocrResult.context_resolution
-            );
-
-            const angle_degrees = OcrResultScalable.calculateBoxAngle(
-                verticalDistance,
-                horizontalDistance
-            );
-
-            const width = OcrResultScalable.calculateBoxWidth(
-                verticalDistance,
-                horizontalDistance,
-                ocrResult.context_resolution
-            );
-
-            const height = OcrResultScalable.calculateBoxHeight(
+            const itemBox = OcrResultScalable.getBoxScalable(
                 item.box,
-                ocrResult.context_resolution,
+                ocrResult.context_resolution
             );
             
             const text = item.text.map( line => {
 
+                const lineScalable: OcrTextLineScalable = {
+                    content: line.content,
+                    symbols: []
+                };
+                
                 // TODO: Calculate position and dimensions
 
-                return { content: line.content };
+                // Symbols
+                line?.symbols?.forEach( symbol => {
+                    
+                    const box = OcrResultScalable.getBoxScalable(
+                        symbol.box,
+                        ocrResult.context_resolution
+                    );
+                    
+                    lineScalable.symbols?.push({
+                        symbol: symbol.symbol,
+                        box,
+                    });
+
+                })
+
+                return lineScalable;
             });
 
             results.push({
-                box: {
-                    position: box_position,
-                    angle_degrees,
-                    dimensions: {
-                        width,
-                        height,
-                    }
-                },
+                box: itemBox,
                 text,
                 recognition_score: item.recognition_score,
                 classification_score: item.classification_score,
@@ -209,14 +210,14 @@ export class OcrResultScalable {
     }
 
     
-    private static calculateBoxPosition( ocrResultItem: OcrItem, contextResolution: OcrResultContextResolution ): OcrResultBoxPositionPcts {
+    private static calculateBoxPosition( box: OcrItemBox, contextResolution: OcrResultContextResolution ): OcrResultBoxPositionPcts {
 
         const { width, height } = contextResolution;
 
-        const topLeftXPixels = ocrResultItem.box.top_left.x;
+        const topLeftXPixels = box.top_left.x;
         const position_left = ( 1 - ( ( width - topLeftXPixels ) / width ) ) * 100;
 
-        const topLeftYPixels = ocrResultItem.box.top_left.y;
+        const topLeftYPixels = box.top_left.y;
         const position_top = ( 1 - ( ( height - topLeftYPixels ) / height ) ) * 100;
         
         return {
@@ -250,6 +251,19 @@ export class OcrResultScalable {
         return degrees;
     }
 
+    static calculateAngleBetweenVertices( vA: OcrItemBoxVertex, vB: OcrItemBoxVertex ) {
+        
+        const deltaX = vB.x - vA.x;
+        const deltaY = vB.y - vA.y;
+
+        const angleInRadians = Math.atan2( deltaY, deltaX );
+        const angleInDegrees = angleInRadians * (180 / Math.PI);
+
+        // Ensure the angle is positive (between 0 and 360 degrees)
+        const positiveAngle = ( angleInDegrees + 360 ) % 360;
+
+        return positiveAngle;
+    }
     
     private static calculateBoxWidth(
         verticalDistance: number,
@@ -272,12 +286,51 @@ export class OcrResultScalable {
 
         const { top_left, bottom_left } = box;
 
-        const topToBottomVerticalDistance = Math.abs(top_left.y - bottom_left.y);        
+        const topToBottomVerticalDistance = Math.abs( top_left.y - bottom_left.y );
 
-        const topToBottomHorizontalDistance = Math.abs(top_left.x - bottom_left.x);    
+        const topToBottomHorizontalDistance = Math.abs( top_left.x - bottom_left.x );
 
         const topToBottomHypot = Math.hypot( topToBottomVerticalDistance, topToBottomHorizontalDistance ); // Diagonal distance        
 
         return ( topToBottomHypot / contextResolution.height ) * 100;
+    }
+
+    private static getBoxScalable(
+        box: OcrItemBox,
+        contextResolution: OcrResultContextResolution
+    ): OcrResultBoxScalable {
+
+        const verticalDistance = box.top_right.y - box.top_left.y;
+        const horizontalDistance = box.top_right.x - box.top_left.x;
+
+        const position = OcrResultScalable.calculateBoxPosition(
+            box, contextResolution
+        );
+
+
+        const angle_degrees = OcrResultScalable.calculateAngleBetweenVertices(
+            box.bottom_left, // box.top_left,
+            box.bottom_right // box.top_right
+        );
+
+        const width = OcrResultScalable.calculateBoxWidth(
+            verticalDistance,
+            horizontalDistance,
+            contextResolution
+        );
+
+        const height = OcrResultScalable.calculateBoxHeight(
+            box,
+            contextResolution,
+        );
+
+        return {
+            position,
+            angle_degrees,
+            dimensions: {
+                width,
+                height
+            }
+        }
     }
 }

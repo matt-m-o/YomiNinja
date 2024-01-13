@@ -49,7 +49,8 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
                     const { words, boundingBox } = paragraph;
 
                     const lines: OcrTextLine[] = [{
-                        content: ''
+                        content: '',
+                        symbols: []
                     }];
 
                     let createNewLine = false;
@@ -58,7 +59,7 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
                         word => word.symbols?.forEach( symbol => {
 
                             if ( createNewLine )
-                                lines.push({ content: '' });
+                                lines.push({ content: '', symbols: [] });
 
                             const currentLine = lines[ lines.length - 1 ];
 
@@ -92,6 +93,13 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
                                 createNewLine = false;
 
                             currentLine.content += symbol.text + breakChar;
+                            
+                            currentLine.symbols?.push({
+                                symbol: symbol.text || '',
+                                box: this.getOcrItemBox(
+                                        symbol?.boundingBox?.vertices || []
+                                    ),
+                            })
                         })
                     );
 
