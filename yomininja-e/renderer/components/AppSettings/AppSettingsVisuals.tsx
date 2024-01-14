@@ -109,6 +109,25 @@ export default function AppSettingsVisuals() {
                     Extracted text boxes
                 </Typography>
 
+                <Container sx={{ ml: 1.5,  mt: 0, mb: 2 }}>
+                     <FormControlLabel label='Individual character position (not supported by all OCR engines)'
+                        title="Currently only supported by Cloud Vision"
+                        control={
+                            <Switch
+                                checked={ Boolean( ocrItemBoxVisuals.text.character_positioning ) }
+                                onChange={ ( event ) => {
+                                    updateOcrItemBoxVisuals({
+                                        text: {
+                                            ...ocrItemBoxVisuals.text,
+                                            character_positioning: event.target.checked
+                                        }
+                                    });
+                                }}
+                            /> 
+                        }
+                    />
+                </Container>
+
                 <Container sx={{ mt: 0, mb: 2 }}>
 
                     <TextField label="Text Color" sx={textFieldBaseSx}                      
@@ -209,7 +228,6 @@ export default function AppSettingsVisuals() {
                     />
 
                 </Container>
-
                 
 
                 <Typography gutterBottom component="div" mb={1} fontSize='1.1rem'>

@@ -173,7 +173,7 @@ export default function OcrResultBox( props: {
             style={{
                 left: ( isVertical ? left : left - 0.25 ) + '%',
                 // top: (box.position.top * 0.999) + '%',
-                bottom: bottom * 0.999 + '%',
+                bottom: bottom + '%',
                 transform: `rotate( ${box.angle_degrees}deg )`,
                 minWidth: minWidth + '%',
                 minHeight: box.dimensions.height + '%',
@@ -207,6 +207,7 @@ export default function OcrResultBox( props: {
                         regionWidthPx={regionWidthPx}
                         regionHeightPx={regionHeightPx}
                         key={lIdx}
+                        symbolPositioning={ ocrItemBoxVisuals.text.character_positioning }
                     />
                 )
             }) }

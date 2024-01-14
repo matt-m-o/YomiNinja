@@ -26,6 +26,7 @@ export type OcrResultLineProps = {
     box: OcrResultBoxScalable;
     regionWidthPx: number;
     regionHeightPx: number;
+    symbolPositioning: boolean;
 };
 
 export default function OcrResultLine( props: OcrResultLineProps ) {
@@ -34,7 +35,8 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         line,
         box,
         regionWidthPx,
-        regionHeightPx
+        regionHeightPx,
+        symbolPositioning
     } = props;
 
     let lineFontSize = 0;
@@ -48,7 +50,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
 
     let symbols: JSX.Element[];
 
-    if ( line.symbols.length ) {
+    if ( symbolPositioning && line.symbols.length ) {
 
         symbols = line?.symbols.map( ( symbol, sIdx ) => {
 
@@ -63,18 +65,19 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             let left = ( symbol.box.position.left - box.position.left ) + 0.25;
             let top = symbol.box.position.top - box.position.top;
 
-            let letterSpacing: number 
+            let letterSpacing = 0;
+            let topOffset = 0;
 
             if ( !box.isVertical ) 
                 letterSpacing = symbol.letter_spacing * regionWidthPx;
             else { 
                 letterSpacing = 1;
                 if ( symbol.symbol == '「' )
-                    top = top - 2;
+                    topOffset = -lineFontSize * 0.5;
             }
             
             const leftPx = ( left / 100 ) * regionWidthPx;
-            const topPx = ( top / 100 ) * regionHeightPx;
+            const topPx = topOffset + ( ( top / 100 ) * regionHeightPx );
             
     
             return (
@@ -104,7 +107,8 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     const symbolsContainer = symbols ? ( 
         <SymbolsContainer
             style={{
-                transform: `rotate( ${symbolsContainerRotation}deg )`
+                transform: `rotate( ${symbolsContainerRotation}deg )`,
+                fontSize: lineFontSize
             }}
         >
             {symbols}
@@ -112,7 +116,11 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     ) : undefined;
     
     return (
-        <Line>
+        <Line 
+            sx={{
+                fontSize: lineFontSize ? lineFontSize+'px' : 'inherit'
+            }}
+        >
             {
                 symbolsContainer ||
                 line.content

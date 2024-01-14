@@ -24,6 +24,7 @@ export type OverlayOcrItemBoxVisuals = {
         color: string;
         font_size_factor: number; // %
         letter_spacing: number;
+        character_positioning: boolean; // Individual character positioning
     };
 };
 
