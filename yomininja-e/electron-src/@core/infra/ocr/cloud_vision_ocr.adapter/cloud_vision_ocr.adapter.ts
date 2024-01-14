@@ -3,6 +3,7 @@ import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionI
 import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrResult, OcrResultContextResolution, OcrTextLine } from "../../../domain/ocr_result/ocr_result";
 import { CloudVisionApi } from "./cloud_vision_api";
 import { CloudVisionOcrEngineSettings, cloudVisionOcrAdapterName, getCloudVisionDefaultSettings } from "./cloud_vision_ocr_settings";
+import { OcrEngineSettingsU } from "../../types/entity_instance.types";
 
 export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSettings > {
 
@@ -132,11 +133,14 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
     }
 
     async updateSettings(
-        settingsUpdate: CloudVisionOcrEngineSettings,
-        oldSettings?: CloudVisionOcrEngineSettings | undefined
+        settingsUpdate: OcrEngineSettingsU,
+        oldSettings?: OcrEngineSettingsU | undefined
     ): Promise< UpdateOcrAdapterSettingsOutput< CloudVisionOcrEngineSettings > > {
 
         // TODO: Settings validation
+
+        settingsUpdate = settingsUpdate as CloudVisionOcrEngineSettings;
+        oldSettings = settingsUpdate as CloudVisionOcrEngineSettings;
 
         return {
             restart: false,

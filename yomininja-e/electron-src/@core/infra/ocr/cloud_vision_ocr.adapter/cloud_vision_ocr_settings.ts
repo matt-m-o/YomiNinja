@@ -6,7 +6,10 @@ export const cloudVisionOcrAdapterName = 'CloudVisionOcrAdapter';
 export interface CloudVisionOcrEngineSettings extends OcrEngineSettings {
     api_key?: string;
     token?: string;
-    monthly_request_limit: number;
+    monthly_request_limit: number; //
+    monthly_request_count: number;
+    monthly_reset_day: number; // 1 - 30
+    last_reset_date: Date;
 };
 
 export function getCloudVisionDefaultSettings(): CloudVisionOcrEngineSettings {
@@ -14,9 +17,12 @@ export function getCloudVisionDefaultSettings(): CloudVisionOcrEngineSettings {
     const defaultSettings: CloudVisionOcrEngineSettings = {
         ocr_adapter_name: cloudVisionOcrAdapterName,
         hotkey: 'Alt+G',
-        monthly_request_limit: 900,
+        invert_colors: false,
         image_scaling_factor: 1,
-        invert_colors: false
+        monthly_request_limit: 500,
+        monthly_request_count: 0,
+        monthly_reset_day: 1,
+        last_reset_date: new Date()
     }
 
     return defaultSettings;

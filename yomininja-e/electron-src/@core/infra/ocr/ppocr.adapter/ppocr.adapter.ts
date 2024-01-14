@@ -17,6 +17,7 @@ import { applyCpuHotfix } from "./hotfix/hardware_compatibility_hotfix";
 import os from 'os';
 import { PpOcrEngineSettings, getPpOcrDefaultSettings, ppOcrAdapterName } from "./ppocr_settings";
 import { UpdatePpOcrSettingsRequest } from "../../../../../grpc/rpc/ocr_service/UpdatePpOcrSettingsRequest";
+import { OcrEngineSettingsU } from "../../types/entity_instance.types";
 
 export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
     
@@ -211,11 +212,14 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
     }
 
     async updateSettings(
-        settingsUpdate: PpOcrEngineSettings,
-        oldSettings?: PpOcrEngineSettings
+        settingsUpdate: OcrEngineSettingsU,
+        oldSettings?: OcrEngineSettingsU
     ): Promise< UpdateOcrAdapterSettingsOutput< PpOcrEngineSettings > > {
 
         let restart = false;
+
+        settingsUpdate = settingsUpdate as PpOcrEngineSettings;
+        oldSettings = oldSettings as PpOcrEngineSettings;
 
         if (
             !oldSettings ||

@@ -11,17 +11,18 @@ import { CaptureSource, ExternalWindow } from "./common/types";
 import { TaskbarProperties } from "../../gyp_modules/window_management/window_manager";
 import sharp from "sharp";
 import os from 'os';
+import { OcrEngineSettingsU } from "../@core/infra/types/entity_instance.types";
 
 export class OcrRecognitionController {
     
-    private ocrRecognitionService: OcrRecognitionService;
+    private ocrRecognitionService: OcrRecognitionService<OcrEngineSettingsU>;
     
     private mainWindow: BrowserWindow;
     private overlayWindow: BrowserWindow;
 
 
     constructor( input: {        
-        ocrRecognitionService: OcrRecognitionService;        
+        ocrRecognitionService: OcrRecognitionService< OcrEngineSettingsU >;        
     }) {
         this.ocrRecognitionService = input.ocrRecognitionService;
     }

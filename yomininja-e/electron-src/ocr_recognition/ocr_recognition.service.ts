@@ -12,6 +12,7 @@ import sharp from 'sharp';
 import { GetSupportedLanguagesUseCaseInstance, RecognizeImageUseCaseInstance } from "../@core/infra/types/use_case_instance.types";
 import { PpOcrAdapter } from "../@core/infra/ocr/ppocr.adapter/ppocr.adapter";
 import { OcrEngineSettingsU } from "../@core/infra/types/entity_instance.types";
+import { OcrEngineSettings } from "../@core/domain/settings_preset/settings_preset";
 
 
 export const entireScreenAutoCaptureSource: CaptureSource = {
@@ -21,19 +22,19 @@ export const entireScreenAutoCaptureSource: CaptureSource = {
     type: 'screen',
 };
 
-export class OcrRecognitionService {
+export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = OcrEngineSettings > {
 
     private recognizeImageUseCase: RecognizeImageUseCaseInstance;
     private getSupportedLanguagesUseCase: GetSupportedLanguagesUseCaseInstance;
     private getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;    
-    private ocrAdapters: OcrAdapter< OcrEngineSettingsU >[];    
+    private ocrAdapters: OcrAdapter< TOcrSettings >[];    
 
     constructor(
         input: {
             recognizeImageUseCase: RecognizeImageUseCaseInstance;
             getSupportedLanguagesUseCase: GetSupportedLanguagesUseCaseInstance;
             getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;            
-            ocrAdapters: OcrAdapter< OcrEngineSettingsU >[];
+            ocrAdapters: OcrAdapter< TOcrSettings >[];
         }
     ){
         this.recognizeImageUseCase = input.recognizeImageUseCase;

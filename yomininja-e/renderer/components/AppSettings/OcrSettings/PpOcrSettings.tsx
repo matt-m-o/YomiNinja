@@ -8,6 +8,7 @@ import Button from '@mui/material/Button';
 import { OcrEngineSettingsU } from "../../../../electron-src/@core/infra/types/entity_instance.types";
 import CommonOcrSettings, { SettingsOptionContainer } from "./CommonOcrSettings";
 import OcrSettingsSlider from "./OcrSettingsSlider";
+import { PpOcrEngineSettings } from "../../../../electron-src/@core/infra/ocr/ppocr.adapter/ppocr_settings";
 
 const OptionsGroupCard = styled(Card)({
     display: 'flex',
@@ -19,7 +20,7 @@ const OptionsGroupCard = styled(Card)({
 
 
 type PpOcrSettingsProps = {
-    ocrEngineSettings: OcrEngineSettingsU;    
+    ocrEngineSettings: PpOcrEngineSettings;    
 }
 
 // Settings section component
