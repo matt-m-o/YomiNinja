@@ -58,12 +58,12 @@ export class OcrRecognitionController {
             engineName?: string;
         }
     ) {
-        // console.log('');
-        // console.time('controller.recognize');
-
         const { image, engineName } = input;
-
+        
+        
         try {
+            console.log('');
+            // console.time('controller.recognize');
             // console.log(activeProfile);
             // console.log('OcrRecognitionController.recognize')
 
