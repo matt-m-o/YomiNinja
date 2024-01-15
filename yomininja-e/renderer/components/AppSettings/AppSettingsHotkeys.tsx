@@ -1,4 +1,4 @@
-import { Box, Divider, FormControlLabel, FormGroup, Switch, Typography } from "@mui/material";
+import { Box, Container, Divider, FormControlLabel, FormGroup, Switch, Typography } from "@mui/material";
 import { SettingsContext } from "../../context/settings.provider";
 import { useContext, useEffect, useState } from "react";
 import HotkeyFields, { HotkeyCombination } from "./HotkeyFields";
@@ -58,8 +58,10 @@ export default function AppSettingsHotkeys() {
                 Overlay Hotkeys
             </Typography>
 
+
             <HotkeyFields
-                title='OCR (Selected Engine)'
+                label='OCR'
+                title='Triggers the currently selected OCR engine'
                 keyCombination={ ocrKeys }
                 // setStateAction={ setOcrKeys }
                 onChangeHandler={ ( input?: string[]  ) => {
@@ -69,7 +71,7 @@ export default function AppSettingsHotkeys() {
                 sx={{ mb: 0 }}
             />
 
-            <FormGroup>
+            <FormGroup sx={{ marginLeft: 25 }}>
                 <FormControlLabel label='Auto OCR on PrintScreen key press (fastest)' sx={{ ml: '40px' }}
                     control={
                         <Switch
@@ -86,7 +88,7 @@ export default function AppSettingsHotkeys() {
 
 
             <HotkeyFields
-                title='PaddleOCR'
+                label='PaddleOCR'
                 keyCombination={ paddleOcrKeys }
                 // setStateAction={ setOcrKeys }
                 onChangeHandler={ ( input?: string[]  ) => {
@@ -100,7 +102,7 @@ export default function AppSettingsHotkeys() {
             />
 
             <HotkeyFields
-                title='Cloud Vision'
+                label='Cloud Vision'
                 keyCombination={ cloudVisionKeys }
                 // setStateAction={ setOcrKeys }
                 onChangeHandler={ ( input?: string[]  ) => {
@@ -115,7 +117,7 @@ export default function AppSettingsHotkeys() {
             
 
             <HotkeyFields
-                title='Toggle overlay'
+                label='Toggle overlay'
                 keyCombination={ toggleOverlayKeys }
                 onChangeHandler={ ( input?: string[]  ) => {
                     if ( !input ) return;
@@ -124,7 +126,7 @@ export default function AppSettingsHotkeys() {
             />
 
             <HotkeyFields
-                title='Show overlay'
+                label='Show overlay'
                 keyCombination={ showOverlayKeys }
                 onChangeHandler={ ( input?: string[]  ) => {
                     if ( !input ) return;
@@ -133,7 +135,7 @@ export default function AppSettingsHotkeys() {
             />
 
             <HotkeyFields
-                title='Hide overlay'
+                label='Hide overlay'
                 keyCombination={ clearOverlayKeys }
                 onChangeHandler={ ( input?: string[]  ) => {
                     if ( !input ) return;
@@ -142,14 +144,14 @@ export default function AppSettingsHotkeys() {
             />
 
             <HotkeyFields
-                title='Copy text'
+                label='Copy text'
                 keyCombination={ copyTextKeys }
                 onChangeHandler={ ( input?: string[]  ) => {
                     if ( !input ) return;
                     updateActivePresetHotkeys({ copy_text: hotkeyCombinationToString( input ) })
                 }}
             />
-            
+
         </Box>
     )
 }

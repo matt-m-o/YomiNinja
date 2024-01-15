@@ -128,10 +128,11 @@ export default function HotkeyHints() {
                 { createHotkeyHint( 'PaddleOCR', [ppOcrSettings?.hotkey] ) }
                 { createHotkeyHint( 'Cloud Vision', [cloudVisionSettings?.hotkey] ) }
 
-                {/* { createHotkeyHint( 'Copy text', [overlayHotkeys?.copy_text] ) } */}
                 { createHotkeyHint( 'Toggle overlay', [overlayHotkeys?.toggle] ) }
                 { createHotkeyHint( 'Show overlay', [overlayHotkeys?.show] ) }
                 { createHotkeyHint( 'Hide overlay', [overlayHotkeys?.clear] ) }
+
+                { createHotkeyHint( 'Copy text', [overlayHotkeys?.copy_text] ) }
                 
             </Box>
 

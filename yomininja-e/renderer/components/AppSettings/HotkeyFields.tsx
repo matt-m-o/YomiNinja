@@ -59,7 +59,8 @@ export interface HotkeyCombination {
 
 
 export type HotkeyFieldsProps = {
-    title: string;
+    label: string;
+    title?: string;
     keyCombination: string;
     onChangeHandler: ( input?: string[] ) => void; // Dispatch<SetStateAction<HotkeyCombination>>;
     sx?: SxProps<Theme>;
@@ -71,6 +72,7 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
     const {
         keyCombination,
         onChangeHandler,
+        label,
         title,
         sx
     } = props;
@@ -101,24 +103,51 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
     }
 
     return (        
-        <Container sx={{ mt: 2, mb: 2, ...sx }}>
+        <Container title={title}
+            sx={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'row',
+                mt: 2,
+                mb: 2,
+                ...sx
+            }}>
 
-            <Typography gutterBottom component="div" margin={0} ml={0}>
-                { title }
+            <Typography
+                gutterBottom
+                component="div"
+                margin={0}
+                ml={0}
+                width='200px'
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center'
+                }}
+            >
+                { label }
             </Typography>
-
+            
             <Box sx={{ display: 'flex', direction: 'row', alignItems: 'center', ml: '14px' }}>
 
-                <TextField sx={{ maxWidth: '248px', margin: 1 }}
+                <TextField 
+                    // label={title}
                     size='small'
-                    inputProps={{ style: { textAlign: 'center' } }}
-                    required                    
+                    inputProps={{
+                        style: { textAlign: 'center' },
+                    }}
                     value={ keyCombination }
                     
                     onKeyDown={ keyDownHandler }
                     onMouseDown={ mouseDownHandler }
+
+                    sx={{
+                        width: '100%',
+                        minWidth: '350px',
+                        margin: 1
+                    }}
                 />
-                
+
                 <Button variant="text"
                     onClick={ () => onChangeHandler([]) }
                     style={{
@@ -134,6 +163,7 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
                 </Button>
 
             </Box>
+            
 
         </Container>
     )
