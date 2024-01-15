@@ -65,18 +65,20 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             let left = ( symbol.box.position.left - box.position.left ) + 0.25;
             let top = symbol.box.position.top - box.position.top;
 
-            let letterSpacing = 0;
+            let letterSpacing = 1;
             let topOffset = 0;
+            let leftOffset = 0;
 
-            if ( !box.isVertical ) 
-                letterSpacing = symbol.letter_spacing * regionWidthPx;
-            else { 
-                letterSpacing = 1;
-                if ( symbol.symbol == '「' )
+            // Handle some special characters
+            if ( [ '『', '「' ].includes( symbol.symbol ) ) {
+
+                if ( !box.isVertical )
+                    leftOffset = -lineFontSize * 0.5;
+                else
                     topOffset = -lineFontSize * 0.5;
             }
             
-            const leftPx = ( left / 100 ) * regionWidthPx;
+            const leftPx = leftOffset + ( ( left / 100 ) * regionWidthPx );
             const topPx = topOffset + ( ( top / 100 ) * regionHeightPx );
             
     

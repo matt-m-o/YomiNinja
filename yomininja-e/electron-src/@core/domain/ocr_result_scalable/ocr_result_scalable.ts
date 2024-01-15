@@ -182,7 +182,7 @@ export class OcrResultScalable {
 
                     if ( nextSymbol ) {
                         letterSpacing = OcrResultScalable.calculateSymbolLetterSpacing(
-                            symbol, nextSymbol, box.isVertical
+                            symbol, nextSymbol, box.isVertical, context_resolution
                         );
                         
                         if ( itemBox.dimensions ) {
@@ -380,8 +380,9 @@ export class OcrResultScalable {
     
     static calculateSymbolLetterSpacing(
         symbol: OcrTextLineSymbol,
-        nextSymbol?: OcrTextLineSymbol,
-        isVertical?: boolean
+        nextSymbol: OcrTextLineSymbol,
+        isVertical: boolean,
+        contextResolution: OcrResultContextResolution
     ): number {
 
         if ( !nextSymbol ) return 0;
@@ -389,15 +390,29 @@ export class OcrResultScalable {
         let vertexA: OcrItemBoxVertex;
         let vertexB: OcrItemBoxVertex;
 
+        let symbolLength = 0;
+
         if ( !isVertical ) {
+
+            const verticalDistance = nextSymbol.box.top_right.y - nextSymbol.box.top_left.y;
+            const horizontalDistance = nextSymbol.box.top_right.x - nextSymbol.box.top_left.x;
+
             vertexA = symbol.box.top_right;
-            vertexB = nextSymbol.box.top_left;
+            vertexB = nextSymbol.box.top_right;
+
+            symbolLength = OcrResultScalable.calculateBoxWidth(
+                verticalDistance,
+                horizontalDistance,
+                contextResolution
+            );
         }
         else {
             vertexA = symbol.box.bottom_left;
-            vertexB = nextSymbol.box.top_left;
+            vertexB = nextSymbol.box.bottom_left;
         }
 
-        return OcrResultScalable.calculateEuclideanDistance( vertexA, vertexB );
+        let distance = OcrResultScalable.calculateEuclideanDistance( vertexA, vertexB );
+
+        return distance - symbolLength;
     }
 }
