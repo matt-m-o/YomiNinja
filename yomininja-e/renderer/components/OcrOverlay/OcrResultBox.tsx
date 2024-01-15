@@ -37,7 +37,7 @@ export default function OcrResultBox( props: {
     onMouseLeave?: () => void;
     onClick?: ( item: OcrItemScalable ) => void;
     onDoubleClick?: () => void;
-    onBlur?: ( newText: string ) => void;
+    onBlur?: () => void;
 } ): JSX.Element {
     
     const {
@@ -168,7 +168,6 @@ export default function OcrResultBox( props: {
 
     return (
         <Box className={ `extracted-text ${contentEditable ? 'editable' : ''}` } ref={boxRef}
-            contentEditable={contentEditable}
             role="textbox"
             style={{
                 left: ( isVertical ? left : left - 0.25 ) + '%',
@@ -185,8 +184,8 @@ export default function OcrResultBox( props: {
             onClick={ () => props.onClick( ocrItem ) }
             onDoubleClick={ props.onDoubleClick }
             // onBlur={ ( e ) => {
-            //     ocrItem.text = e.target.innerText;
-            //     props.onBlur( ocrItem.text );
+            //     // ocrItem.text = e.target.innerText;
+            //     props.onBlur();
             // }}
             suppressContentEditableWarning
         >
@@ -202,12 +201,14 @@ export default function OcrResultBox( props: {
 
                 return (
                     <OcrResultLine
+                        contentEditable={contentEditable}
                         box={box}
                         line={line}
                         regionWidthPx={regionWidthPx}
                         regionHeightPx={regionHeightPx}
                         key={lIdx}
                         symbolPositioning={ ocrItemBoxVisuals.text.character_positioning }
+                        onBlur={props.onBlur}
                     />
                 )
             }) }

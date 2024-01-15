@@ -61,10 +61,9 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         console.log({ id })
     }
 
-    function handleBoxBlur( newText: string ) {
-        if ( !editableBoxId ) return;
+    function handleBoxBlur() {
+        // if ( !editableBoxId ) return;
         setEditableBoxId( undefined );
-        // console.log({ newText });
     }
 
     return ( <>

@@ -27,6 +27,8 @@ export type OcrResultLineProps = {
     regionWidthPx: number;
     regionHeightPx: number;
     symbolPositioning: boolean;
+    contentEditable: boolean;
+    onBlur?: () => void;
 };
 
 export default function OcrResultLine( props: OcrResultLineProps ) {
@@ -36,7 +38,8 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         box,
         regionWidthPx,
         regionHeightPx,
-        symbolPositioning
+        symbolPositioning,
+        contentEditable
     } = props;
 
     let lineFontSize = 0;
@@ -118,7 +121,12 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     ) : undefined;
     
     return (
-        <Line 
+        <Line
+            contentEditable={contentEditable}
+            onBlur={ ( e ) => {
+                line.content = e.target.textContent;
+                props?.onBlur();
+            }}
             sx={{
                 fontSize: lineFontSize ? lineFontSize+'px' : 'inherit'
             }}
