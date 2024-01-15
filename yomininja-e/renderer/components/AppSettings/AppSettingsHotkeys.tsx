@@ -29,7 +29,7 @@ export default function AppSettingsHotkeys() {
     const overlayHotkeys = activeSettingsPreset?.overlay.hotkeys;
     
     const ocrKeys = stringToHotkeyCombination( overlayHotkeys?.ocr );
-    // const copyTextKeys: HotkeyCombination = stringToHotkeyCombination( overlayHotkeys?.copy_text );
+    const copyTextKeys = stringToHotkeyCombination( overlayHotkeys?.copy_text );
     const toggleOverlayKeys = stringToHotkeyCombination( overlayHotkeys?.toggle );
     const showOverlayKeys = stringToHotkeyCombination( overlayHotkeys?.show );
     const clearOverlayKeys = stringToHotkeyCombination( overlayHotkeys?.clear );
@@ -138,6 +138,15 @@ export default function AppSettingsHotkeys() {
                 onChangeHandler={ ( input?: string[]  ) => {
                     if ( !input ) return;
                     updateActivePresetHotkeys({ clear: hotkeyCombinationToString( input ) })
+                }}
+            />
+
+            <HotkeyFields
+                title='Copy text'
+                keyCombination={ copyTextKeys }
+                onChangeHandler={ ( input?: string[]  ) => {
+                    if ( !input ) return;
+                    updateActivePresetHotkeys({ copy_text: hotkeyCombinationToString( input ) })
                 }}
             />
             

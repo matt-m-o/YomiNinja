@@ -20,29 +20,34 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
     const { ocrResult } = useContext( OcrResultContext );
     
     const [ editableBoxId, setEditableBoxId ] = useState< string | undefined >(undefined);
-    let hoveredText = '' ;
+
 
     const handleBoxMouseEnter = ( item: OcrItemScalable ) => {
-        if ( !overlayBehavior.copy_text_on_hover )
-            return;
+        
+        const hoveredText = item.text.map( line => line.content ).join(' ');
+        console.log({ hoveredText });
 
-        hoveredText = item.text.map( line => line.content ).join(' ');
-        sendHoveredText()
+        sendHoveredText( hoveredText );
+
+        if (
+            !overlayBehavior?.copy_text_on_hover ||
+            !hoveredText
+        )
+            return;
+        
+        copyText( hoveredText );
     }
 
     const handleBoxMouseLeave = () => {
-        if ( !overlayBehavior.copy_text_on_hover )
-            return;
-        sendHoveredText();
+        sendHoveredText( '' );
     }
 
-    function sendHoveredText() {
-        if ( 
-            overlayBehavior?.copy_text_on_hover &&
-            hoveredText
-        ) {
-            global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', hoveredText );
-        }
+    const sendHoveredText = ( hoveredText: string ) => {
+        global.ipcRenderer.invoke( 'overlay:set_hovered_text', hoveredText );
+    }
+
+    const copyText = ( text: string ) => {
+        global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', text );
     }
 
 
@@ -53,7 +58,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
         const text = item.text.map( line => line.content ).join(' ');
 
-        global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', text );
+        copyText( text );;
     }
 
     function handleBoxDoubleClick( id: string | undefined ) {

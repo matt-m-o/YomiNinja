@@ -33,6 +33,8 @@ export class OverlayController {
 
     private globalShortcutAccelerators: string[] = [];
 
+    private hoveredText: string = '';
+
     constructor( input: {
         overlayService: OverlayService
     }) {
@@ -130,38 +132,12 @@ export class OverlayController {
 
     private registersIpcHandlers() {
 
+        ipcMain.handle( 'overlay:set_hovered_text', async ( event: IpcMainInvokeEvent, message: string ) => {
+            this.hoveredText = message;
+        });
+
         ipcMain.handle( 'user_command:copy_to_clipboard', async ( event: IpcMainInvokeEvent, message: string ) => {
-
-            try {
-
-                if ( !message || message.length === 0 ) return;
-
-                clipboard.writeText( message );
-                this.overlayService.sendOcrTextTroughWS( message );
-                // console.log({ text_to_copy: message });
-                
-                if ( 
-                    !this.showWindowOnCopy.enabled ||
-                    !this.showWindowOnCopy.title
-                )
-                    return;
-
-                const windows = await windowManager.searchWindow(
-                    this.showWindowOnCopy.title
-                );
-            
-                if ( windows.length === 0 ) 
-                    return;
-            
-                const windowToShow = windows[0];
-                
-                windowManager.setForegroundWindow( windowToShow.handle );
-
-            } catch (error) {
-                console.error( error );
-            }
-            
-          
+            this.copyText( message );
         });
 
         ipcMain.handle( 'overlay:set_ignore_mouse_events', ( event: IpcMainInvokeEvent, value: boolean ) => {
@@ -238,6 +214,21 @@ export class OverlayController {
             // View overlay and clear
             globalShortcut.register( overlayHotkeys.clear, this.hideOverlayHotkeyHandler );
             this.globalShortcutAccelerators.push( overlayHotkeys.clear );
+        }
+
+        if ( overlayHotkeys.copy_text?.includes('Mouse') ) {
+            uIOhook.on( 'mousedown', e => {
+    
+                if ( !matchUiohookMouseEventButton( e, overlayHotkeys.copy_text ) )
+                    return;
+    
+                this.copyHoveredText();
+            });
+        }
+        else if ( overlayHotkeys.copy_text ) {
+            // View overlay and clear
+            globalShortcut.register( overlayHotkeys.copy_text, this.copyHoveredText );
+            this.globalShortcutAccelerators.push( overlayHotkeys.copy_text );
         }
 
 
@@ -410,5 +401,40 @@ export class OverlayController {
         
         if ( this.overlayWindow.isFocused() )
             this.overlayWindow.blur();
+    }
+
+    private async copyText( text: string ) {
+        try {
+
+            if ( !text || text.length === 0 ) return;
+
+            clipboard.writeText( text );
+            this.overlayService.sendOcrTextTroughWS( text );
+            // console.log({ text_to_copy: message });
+            
+            if ( 
+                !this.showWindowOnCopy.enabled ||
+                !this.showWindowOnCopy.title
+            )
+                return;
+
+            const windows = await windowManager.searchWindow(
+                this.showWindowOnCopy.title
+            );
+        
+            if ( windows.length === 0 ) 
+                return;
+        
+            const windowToShow = windows[0];
+            
+            windowManager.setForegroundWindow( windowToShow.handle );
+
+        } catch (error) {
+            console.error( error );
+        }
+    }
+
+    private copyHoveredText = () => {
+        this.copyText( this.hoveredText );
     }
 }
