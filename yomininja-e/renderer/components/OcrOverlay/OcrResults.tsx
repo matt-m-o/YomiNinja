@@ -51,8 +51,9 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         if ( !overlayBehavior.copy_text_on_click || !item?.text )
             return;
 
-        // console.log( { text } );
-        global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', item.text );
+        const text = item.text.map( line => line.content ).join(' ');
+
+        global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', text );
     }
 
     function handleBoxDoubleClick( id: string | undefined ) {

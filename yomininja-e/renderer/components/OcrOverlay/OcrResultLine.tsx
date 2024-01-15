@@ -54,10 +54,10 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
 
         symbols = line?.symbols.map( ( symbol, sIdx ) => {
 
-            let nextSymbol: OcrTextLineSymbolScalable;
+            // let nextSymbol: OcrTextLineSymbolScalable;
             
-            if ( line?.symbols.length-1 >= sIdx+1 )
-                nextSymbol = line?.symbols[ sIdx+1 ];
+            // if ( line?.symbols.length-1 >= sIdx+1 )
+            //     nextSymbol = line?.symbols[ sIdx+1 ];
     
             const symbolBoxWidthPx = regionWidthPx * ( symbol.box.dimensions.width / 100 );
             const symbolBoxHeightPx = regionHeightPx * ( symbol.box.dimensions.height / 100 );
