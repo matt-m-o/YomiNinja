@@ -1,13 +1,14 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
-import { DictionarySettings, OcrEngineSettings, OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
+import { DictionarySettings, OcrEngineSettings, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
 import { Alert, Backdrop, CircularProgress, Snackbar, debounce } from "@mui/material";
 import { OcrEngineSettingsU } from "../../electron-src/@core/infra/types/entity_instance.types";
+import { OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations } from "../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 
 export type SettingsContextType = {
     activeSettingsPreset: SettingsPresetJson;
     allSettingsPresets: SettingsPresetJson[];
     updateActivePreset: ( input: Partial<SettingsPresetJson> ) => void;
-    updateActivePresetHotkeys: ( newHotkeys: Partial<OverlayHotkeys> ) => void;
+    updateActivePresetHotkeys: ( newHotkeys: Partial< OverlayHotkeys > ) => void;
     updateActivePresetVisuals: ( input: Partial< OverlayVisualCustomizations > ) => void;
     updateActivePresetBehavior: ( input: Partial< OverlayBehavior > ) => void; 
     updateActivePresetOcrEngine: ( input: Partial< OcrEngineSettingsU > ) => void; 
@@ -44,7 +45,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
 
         console.log({ newEngineSettings })
 
-        activeSettingsPreset.ocr_engines = activeSettingsPreset.ocr_engines.map( item => {
+        activeSettingsPreset.ocr_engines = activeSettingsPreset?.ocr_engines.map( item => {
 
 
             if ( newEngineSettings.ocr_adapter_name === item.ocr_adapter_name )

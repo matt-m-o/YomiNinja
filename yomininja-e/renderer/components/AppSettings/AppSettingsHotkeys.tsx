@@ -14,7 +14,7 @@ export default function AppSettingsHotkeys() {
         updateActivePresetOcrEngine
     } = useContext( SettingsContext );
 
-    const ppOcrSettings = activeSettingsPreset.ocr_engines
+    const ppOcrSettings = activeSettingsPreset?.ocr_engines
         .find( engineSettings => {
             return engineSettings.ocr_adapter_name === 'PpOcrAdapter'
         });

@@ -131,16 +131,13 @@ export default function AppSettingsVisuals() {
 
                 <Container sx={{ mt: 0, mb: 2 }}>
 
-                    <TextField label="Text Color" sx={textFieldBaseSx}                      
-                        size='small'
-                        type="color"
-                        inputProps={{ style: { textAlign: 'center' } }}
+                    <ColorPicker label="Text Color" sx={textFieldBaseSx}
                         value={ ocrItemBoxVisuals?.text.color || '' }
-                        onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
+                        onChangeComplete={ (color) => {
                             updateOcrItemBoxVisuals({                                
                                 text: {
                                     ...ocrItemBoxVisuals?.text,
-                                    color: event.target.value
+                                    color
                                 }
                             });
                         }}
@@ -195,26 +192,20 @@ export default function AppSettingsVisuals() {
                         }}
                     />
 
-                    <TextField label="Active BG" sx={textFieldBaseSx}                      
-                        size='small'
-                        type="color"
-                        inputProps={{ style: { textAlign: 'center' } }}                        
+                    <ColorPicker label="Active BG" sx={textFieldBaseSx}
                         value={ ocrItemBoxVisuals?.background_color || '' }
-                        onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
+                        onChangeComplete={ ( color: string ) => {
                             updateOcrItemBoxVisuals({
-                                background_color: event.target.value
-                            });                            
+                                background_color: color
+                            });
                         }}
                     />
 
-                    <TextField label="Border Color" sx={textFieldBaseSx}                      
-                        size='small'
-                        type="color"
-                        inputProps={{ style: { textAlign: 'center' } }}                        
+                    <ColorPicker label="Border Color" sx={textFieldBaseSx}
                         value={ ocrItemBoxVisuals?.border_color || '' }
-                        onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
+                        onChangeComplete={ ( color: string ) => {
                             updateOcrItemBoxVisuals({                                
-                                border_color: event.target.value
+                                border_color: color
                             });
                         }}
                     />
@@ -252,14 +243,11 @@ export default function AppSettingsVisuals() {
 
                 <Container sx={{ mt: 0, mb: 2 }}>
 
-                    <TextField label="Border Color" sx={textFieldBaseSx}
-                        size='small'
-                        type="color"                        
-                        inputProps={{ style: { textAlign: 'center' } }}                        
-                        value={ overlayFrameVisuals?.border_color || 0 }
-                        onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
+                    <ColorPicker label="Border Color" sx={textFieldBaseSx}
+                        value={ overlayFrameVisuals?.border_color || '' }
+                        onChangeComplete={ ( color: string ) => {
                             updateOverlayFrameVisuals({                                
-                                border_color: event.target.value
+                                border_color: color
                             });
                         }}
                     />
