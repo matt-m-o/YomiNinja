@@ -12,7 +12,10 @@ export type OverlayOcrItemBoxVisuals = {
     text: {
         color: string;
         font_size_factor: number; // %
+        font_weight: number;
         letter_spacing: number;
+        outline_width: number; // pixels
+        outline_color: string
         character_positioning: boolean; // Individual character positioning
     };
 };

@@ -6,14 +6,15 @@ import { throttle } from "lodash";
 import CustomCursor from "../OcrOverlay/CustomCursor/CustomCursor";
 import { ProfileContext } from "../../context/profile.provider";
 import ColorPicker from "../common/ColorPicker";
+import OcrResultBoxVisualSettings from "./VisualSettings/OcrResultBoxVisuals";
 
 
 const OverlayFrame = styled('div')({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '320px',
-    height: '180px',
+    width: '400px',
+    height: '225px',
     padding: '10px',
 });
 
@@ -49,15 +50,6 @@ export default function AppSettingsVisuals() {
 
     }, [ overlayMouseVisuals ] )
 
-    const updateOcrItemBoxVisuals = debounce( ( update: Partial<OverlayOcrItemBoxVisuals> ) => {    
-        updateActivePresetVisuals({
-            ocr_item_box: {
-                ...activeSettingsPreset.overlay.visuals.ocr_item_box,
-                ...update
-            }
-        });
-    }, 100 );
-
     const updateOverlayFrameVisuals = debounce( ( update: Partial<OverlayFrameVisuals> ) => {
         updateActivePresetVisuals({
             frame: {
@@ -86,7 +78,7 @@ export default function AppSettingsVisuals() {
         minWidth: '100px', 
         maxWidth: '110px',
         m: 1,
-    };    
+    };
     
         
 
@@ -109,133 +101,8 @@ export default function AppSettingsVisuals() {
                 <Typography gutterBottom component="div" mb={1} fontSize='1.1rem'>
                     Extracted text boxes
                 </Typography>
-
-                <Container sx={{ ml: 1.5,  mt: 0, mb: 2 }}>
-                     <FormControlLabel label='Individual character position (not supported by all OCR engines)'
-                        title="Currently only supported by Cloud Vision"
-                        control={
-                            <Switch
-                                checked={ Boolean( ocrItemBoxVisuals.text.character_positioning ) }
-                                onChange={ ( event ) => {
-                                    updateOcrItemBoxVisuals({
-                                        text: {
-                                            ...ocrItemBoxVisuals.text,
-                                            character_positioning: event.target.checked
-                                        }
-                                    });
-                                }}
-                            /> 
-                        }
-                    />
-                </Container>
-
-                <Container sx={{ mt: 0, mb: 2 }}>
-
-                    <ColorPicker label="Text Color" sx={textFieldBaseSx}
-                        value={ ocrItemBoxVisuals?.text.color || '' }
-                        onChangeComplete={ (color) => {
-                            updateOcrItemBoxVisuals({                                
-                                text: {
-                                    ...ocrItemBoxVisuals?.text,
-                                    color
-                                }
-                            });
-                        }}
-                    />
-
-                    <TextField label="Font Size (%)" sx={textFieldBaseSx}                      
-                        size='small'
-                        type="number"
-                        inputProps={{ style: { textAlign: 'center' } }}
-                        value={ ocrItemBoxVisuals?.text.font_size_factor || 100 }
-                        onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
-                            updateOcrItemBoxVisuals({                                
-                                text: {
-                                    ...ocrItemBoxVisuals?.text,
-                                    font_size_factor: Number( event.target.value )
-                                }
-                            });
-                        }}
-                    />
-
-                    <TextField label="Letter Spacing" sx={textFieldBaseSx}                      
-                        size='small'
-                        type="number"
-                        inputProps={{ style: { textAlign: 'center' } }}
-                        value={ ocrItemBoxVisuals?.text.letter_spacing || 0 }
-                        onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
-                            updateOcrItemBoxVisuals({                                
-                                text: {
-                                    ...ocrItemBoxVisuals?.text,
-                                    letter_spacing: Number( event.target.value )
-                                }
-                            });
-                        }}
-                    />
-                    
-                </Container>
-
-                <Container
-                    sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        mt: 0,
-                        mb: 2,
-                    }}>
-
-                    <ColorPicker label="Inactive BG" sx={ textFieldBaseSx }
-                        value={ ocrItemBoxVisuals?.background_color_inactive || '' }
-                        onChangeComplete={ ( color: string ) => {
-                            updateOcrItemBoxVisuals({
-                                background_color_inactive: color
-                            });
-                        }}
-                    />
-
-                    <ColorPicker label="Active BG" sx={textFieldBaseSx}
-                        value={ ocrItemBoxVisuals?.background_color || '' }
-                        onChangeComplete={ ( color: string ) => {
-                            updateOcrItemBoxVisuals({
-                                background_color: color
-                            });
-                        }}
-                    />
-
-                    <ColorPicker label="Border Color" sx={textFieldBaseSx}
-                        value={ ocrItemBoxVisuals?.border_color || '' }
-                        onChangeComplete={ ( color: string ) => {
-                            updateOcrItemBoxVisuals({                                
-                                border_color: color
-                            });
-                        }}
-                    />
-
-                    <TextField label="Border Width" sx={textFieldBaseSx}                        
-                        size='small'
-                        type="number"
-                        inputProps={{ style: { textAlign: 'center' } }}                        
-                        value={ ocrItemBoxVisuals?.border_width || '' }
-                        onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
-                            updateOcrItemBoxVisuals({                                
-                                border_width: Number(event.target.value)
-                            });
-                        }}
-                    />
-
-                    <TextField label="Border Radius" sx={textFieldBaseSx}                      
-                        size='small'
-                        type="number"                        
-                        inputProps={{ style: { textAlign: 'center' } }}                        
-                        value={ ocrItemBoxVisuals?.border_radius || '' }
-                        onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
-                            updateOcrItemBoxVisuals({                                
-                                border_radius: Number(event.target.value)
-                            });
-                        }}
-                    />
-
-                </Container>
                 
+                <OcrResultBoxVisualSettings textFieldSx={ textFieldBaseSx } />
 
                 <Typography gutterBottom component="div" mb={1} fontSize='1.1rem'>
                     Overlay frame
@@ -347,7 +214,13 @@ export default function AppSettingsVisuals() {
                             color: ocrItemBoxVisuals?.text.color,
                             borderRadius: ocrItemBoxVisuals?.border_radius,
                             letterSpacing: ocrItemBoxVisuals?.text?.letter_spacing || 'inherit',
-                            fontSize: ocrItemBoxVisuals?.text?.font_size_factor + '%'
+                            fontSize: ocrItemBoxVisuals?.text?.font_size_factor + '%',
+                            fontWeight: ocrItemBoxVisuals?.text?.font_weight
+                        }}
+                        style={{
+                            //@ts-expect-error
+                            '-webkit-text-stroke-width': ocrItemBoxVisuals?.text?.outline_width,
+                            '-webkit-text-stroke-color': ocrItemBoxVisuals?.text?.outline_color,
                         }}
                     >
                         {overlayPreviewText}

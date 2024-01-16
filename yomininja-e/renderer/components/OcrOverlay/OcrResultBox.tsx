@@ -44,7 +44,6 @@ export default function OcrResultBox( props: {
         ocrItem,
         ocrRegionSize,
         ocrItemBoxVisuals,
-        overlayBehavior,
         contentEditable
     } = props;
     const { box } = ocrItem;
@@ -124,11 +123,15 @@ export default function OcrResultBox( props: {
         color: ocrItemBoxVisuals?.text.color || 'white',
         fontSize: adjustedFontSize + 'px', // isVertical ? fontSize * 0.8 : fontSize * 0.85
         lineHeight: adjustedFontSize + 'px',
+        fontWeight: ocrItemBoxVisuals?.text?.font_weight,
         letterSpacing: ocrItemBoxVisuals.text.letter_spacing || 'inherit',
         paddingLeft: isVertical ? 0 : '0.25%',
         paddingRight: isVertical ? 0 : '0.25%',
         contentVisibility: 'visible',
         zIndex: 10,
+        // @ts-expect-error
+        '-webkit-text-stroke-width': ocrItemBoxVisuals?.text?.outline_width,
+        '-webkit-text-stroke-color': ocrItemBoxVisuals?.text?.outline_color,
     };
 
     const Box = styled( BaseOcrResultBox )({            

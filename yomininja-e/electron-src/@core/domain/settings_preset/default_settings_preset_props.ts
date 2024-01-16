@@ -16,14 +16,17 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                 },
                 ocr_item_box: {
                     background_color: '#000000', // Black
-                    background_color_inactive: '#5b7eff00',
+                    background_color_inactive: '#5b7eff00', // transparent
                     border_color: "#e21212", // Red
                     border_radius: 10,
                     border_width: 1,
                     text: {
                         color: "#ffffff", // White
                         font_size_factor: 100,
+                        font_weight: 500,
                         letter_spacing: 1,
+                        outline_width: 0,
+                        outline_color: '#000000',
                         character_positioning: true,
                     }
                 },
