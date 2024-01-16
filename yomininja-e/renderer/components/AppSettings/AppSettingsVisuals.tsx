@@ -5,6 +5,7 @@ import { OverlayFrameVisuals, OverlayMouseVisuals, OverlayOcrItemBoxVisuals, Ove
 import { throttle } from "lodash";
 import CustomCursor from "../OcrOverlay/CustomCursor/CustomCursor";
 import { ProfileContext } from "../../context/profile.provider";
+import ColorPicker from "../common/ColorPicker";
 
 
 const OverlayFrame = styled('div')({
@@ -177,16 +178,19 @@ export default function AppSettingsVisuals() {
                     
                 </Container>
 
-                <Container sx={{ mt: 0, mb: 2 }}>
+                <Container
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        mt: 0,
+                        mb: 2,
+                    }}>
 
-                    <TextField label="Inactive BG" sx={textFieldBaseSx}                      
-                        size='small'
-                        type="color"
-                        inputProps={{ style: { textAlign: 'center' } }}                        
+                    <ColorPicker label="Inactive BG" sx={ textFieldBaseSx }
                         value={ ocrItemBoxVisuals?.background_color_inactive || '' }
-                        onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
+                        onChangeComplete={ ( color: string ) => {
                             updateOcrItemBoxVisuals({
-                                background_color_inactive: event.target.value
+                                background_color_inactive: color
                             });
                         }}
                     />
