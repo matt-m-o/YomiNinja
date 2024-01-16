@@ -1,6 +1,6 @@
 import { Box, Container, Divider, FormControlLabel, FormGroup, Slider, Stack, Switch, SxProps, TextField, Theme, Typography, debounce, styled } from "@mui/material";
 import { SettingsContext } from "../../context/settings.provider";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { CSSProperties, useCallback, useContext, useEffect, useState } from "react";
 import { OverlayFrameVisuals, OverlayMouseVisuals, OverlayOcrItemBoxVisuals, OverlayVisualCustomizations } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import { throttle } from "lodash";
 import CustomCursor from "../OcrOverlay/CustomCursor/CustomCursor";
@@ -11,6 +11,7 @@ import OcrResultBoxVisualSettings from "./VisualSettings/OcrResultBoxVisuals";
 
 const OverlayFrame = styled('div')({
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     width: '400px',
@@ -18,13 +19,14 @@ const OverlayFrame = styled('div')({
     padding: '10px',
 });
 
-const OcrItemBox = styled('div')({
+const BaseOcrResultBox = styled('div')({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     width: 'fit-content',
     height: '40px',
-    padding: '10px',    
+    padding: '10px',
+    color: 'transparent',
 });
 
 // Settings section component
@@ -89,6 +91,23 @@ export default function AppSettingsVisuals() {
         ko: '추출된 텍스트',
     }[ profile?.active_ocr_language.two_letter_code ];
 
+    const OcrItemBox = styled( BaseOcrResultBox )({
+        outline: `solid ${ocrItemBoxVisuals?.border_width}px`,
+        outlineColor: ocrItemBoxVisuals?.border_color,
+        borderRadius: ocrItemBoxVisuals?.border_radius,
+        backgroundColor: ocrItemBoxVisuals?.background_color_inactive,
+        "&:hover": {
+            contentVisibility: 'visible',
+            backgroundColor: ocrItemBoxVisuals?.background_color,
+            color: ocrItemBoxVisuals?.text.color,
+            letterSpacing: ocrItemBoxVisuals?.text?.letter_spacing || 'inherit',
+            fontSize: ocrItemBoxVisuals?.text?.font_size_factor + '%',
+            fontWeight: ocrItemBoxVisuals?.text?.font_weight,
+            '-webkit-text-stroke-width': ocrItemBoxVisuals?.text?.outline_width,
+            '-webkit-text-stroke-color': ocrItemBoxVisuals?.text?.outline_color,
+        }
+    });
+
     return (
         <Box sx={{ flexGrow: 1, margin: 1, }}>
 
@@ -98,9 +117,7 @@ export default function AppSettingsVisuals() {
             
             <Container sx={{ mt: 2, mb: 2 }}>
 
-                <Typography gutterBottom component="div" mb={1} fontSize='1.1rem'>
-                    Extracted text boxes
-                </Typography>
+                
                 
                 <OcrResultBoxVisualSettings textFieldSx={ textFieldBaseSx } />
 
@@ -195,34 +212,20 @@ export default function AppSettingsVisuals() {
                     </Stack>
                 </Container>
 
-                <Typography gutterBottom component="div" margin={0} mb={2} mt={5}>
+                <Typography gutterBottom component="div" margin={0} mb={2} mt={5} fontSize='1.1rem'>
                     Overlay preview
                 </Typography>
                 
                 <OverlayFrame
                     sx={{
+                        display: 'flex',
                         ml: '35px',
                         border: `solid ${overlayFrameVisuals?.border_width}px`,
                         borderColor: overlayFrameVisuals?.border_color
                     }}
                 >
-                    <OcrItemBox
-                        sx={{
-                            outline: `solid ${ocrItemBoxVisuals?.border_width}px`,
-                            outlineColor: ocrItemBoxVisuals?.border_color,
-                            backgroundColor: ocrItemBoxVisuals?.background_color,
-                            color: ocrItemBoxVisuals?.text.color,
-                            borderRadius: ocrItemBoxVisuals?.border_radius,
-                            letterSpacing: ocrItemBoxVisuals?.text?.letter_spacing || 'inherit',
-                            fontSize: ocrItemBoxVisuals?.text?.font_size_factor + '%',
-                            fontWeight: ocrItemBoxVisuals?.text?.font_weight
-                        }}
-                        style={{
-                            //@ts-expect-error
-                            '-webkit-text-stroke-width': ocrItemBoxVisuals?.text?.outline_width,
-                            '-webkit-text-stroke-color': ocrItemBoxVisuals?.text?.outline_color,
-                        }}
-                    >
+
+                    <OcrItemBox>
                         {overlayPreviewText}
                     </OcrItemBox>
 

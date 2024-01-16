@@ -1,4 +1,4 @@
-import { Container, FormControlLabel, Switch, SxProps, TextField, Theme, debounce } from "@mui/material";
+import { Container, FormControlLabel, Switch, SxProps, TextField, Theme, Typography, debounce } from "@mui/material";
 import { useContext } from "react";
 import { SettingsContext } from "../../../context/settings.provider";
 import { OverlayOcrItemBoxVisuals } from "../../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
@@ -28,6 +28,10 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
 
 
     return ( <>
+        <Typography gutterBottom component="div" mb={1} fontSize='1.1rem'>
+            Extracted text
+        </Typography>
+
         <Container sx={{ ml: 1.5,  mt: 0, mb: 2 }}>
             <FormControlLabel label='Individual character positioning (not supported by all OCR engines)'
                 title="Currently only supported by Cloud Vision"
@@ -136,6 +140,11 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
             />
             
         </Container>
+            
+
+        <Typography gutterBottom component="div" mb={1} fontSize='1.1rem'>
+            Bounding box
+        </Typography>
 
         <Container
             sx={{

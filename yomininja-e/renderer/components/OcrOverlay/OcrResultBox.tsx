@@ -134,7 +134,7 @@ export default function OcrResultBox( props: {
         '-webkit-text-stroke-color': ocrItemBoxVisuals?.text?.outline_color,
     };
 
-    const Box = styled( BaseOcrResultBox )({            
+    const Box = styled( BaseOcrResultBox )({
         "&:hover": activeBoxCss,
         "&.editable": activeBoxCss,
         backgroundColor: ocrItemBoxVisuals.background_color_inactive,
