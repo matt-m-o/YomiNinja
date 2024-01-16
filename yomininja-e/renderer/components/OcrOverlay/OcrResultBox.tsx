@@ -1,7 +1,7 @@
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { OcrItemScalable, OcrTextLineSymbolScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { styled } from "@mui/material";
-import { OverlayBehavior, OverlayHotkeys, OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import { OverlayBehavior, OverlayHotkeys, OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import OcrResultLine from "./OcrResultLine";
 
 const BaseOcrResultBox = styled('div')({
@@ -134,6 +134,7 @@ export default function OcrResultBox( props: {
     const Box = styled( BaseOcrResultBox )({            
         "&:hover": activeBoxCss,
         "&.editable": activeBoxCss,
+        backgroundColor: ocrItemBoxVisuals.background_color_inactive,
         outlineColor: ocrItemBoxVisuals?.border_color || 'red',
         outlineWidth: ocrItemBoxVisuals?.border_width || '0px',
         borderRadius: ocrItemBoxVisuals?.border_radius || '0rem',

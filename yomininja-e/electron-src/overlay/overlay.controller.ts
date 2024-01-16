@@ -5,12 +5,13 @@ import isDev from 'electron-is-dev';
 import { format } from "url";
 import { PAGES_DIR } from "../util/directories.util";
 import { WindowManager } from "../../gyp_modules/window_management/window_manager";
-import { ClickThroughMode, SettingsPresetJson, ShowWindowOnCopy } from "../@core/domain/settings_preset/settings_preset";
+import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 import { uIOhook } from "uiohook-napi";
 import { windowManager } from "../@core/infra/app_initialization";
 import { getBrowserWindowHandle } from "../util/browserWindow.util";
 import os from 'os';
 import { matchUiohookMouseEventButton } from "../common/mouse_helpers";
+import { ClickThroughMode, ShowWindowOnCopy } from "../@core/domain/settings_preset/settings_preset_overlay";
 
 export class OverlayController {
 

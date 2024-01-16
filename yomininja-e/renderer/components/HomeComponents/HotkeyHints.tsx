@@ -1,7 +1,7 @@
 import { Box, Container, Grid, Paper, Typography, styled } from "@mui/material";
 import { useContext, useEffect } from "react";
 import { SettingsContext } from "../../context/settings.provider";
-import { OverlayHotkeys } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import { OverlayHotkeys } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 
 const KeyActionText = styled( Typography )({
     width: '65%',

@@ -1,0 +1,66 @@
+export type OverlayOcrRegionVisuals = {
+    border_width: number;
+};
+
+
+export type OverlayOcrItemBoxVisuals = {
+    border_color: string;
+    border_width: number; // pixels
+    border_radius: number; // pixels
+    background_color: string;
+    background_color_inactive: string;
+    text: {
+        color: string;
+        font_size_factor: number; // %
+        letter_spacing: number;
+        character_positioning: boolean; // Individual character positioning
+    };
+};
+
+export type OverlayMouseVisuals = {
+    show_custom_cursor: boolean;
+    custom_cursor_size: number;
+};
+
+export type OverlayFrameVisuals = {
+    border_color: string;
+    border_width: number; // pixels
+};
+
+export type OverlayVisualCustomizations = {
+    ocr_item_box: OverlayOcrItemBoxVisuals;
+    frame: OverlayFrameVisuals;
+    ocr_region: OverlayOcrRegionVisuals;
+    mouse: OverlayMouseVisuals;
+};
+
+export type ClickThroughMode = 'auto' | 'enabled' | 'disabled';
+export type ShowWindowOnCopy = {
+    enabled: boolean;
+    title: string;
+};
+export type OverlayBehavior = {
+    copy_text_on_hover: boolean;
+    copy_text_on_click: boolean;
+    always_on_top: boolean;
+    click_through_mode: ClickThroughMode;
+    show_window_on_copy: ShowWindowOnCopy
+    always_forward_mouse_clicks: boolean;
+    show_window_without_focus: boolean;
+    hide_results_on_blur: boolean;
+};
+
+export type OverlayHotkeys = {
+    ocr: string; // For the selected ocr adapter
+    ocr_on_screen_shot: boolean; // Perform ocr when pressing "PrintScreen"
+    copy_text: string;
+    show: string;
+    clear: string;
+    toggle: string;
+};
+
+export type OverlaySettings = {
+    visuals: OverlayVisualCustomizations;
+    hotkeys: OverlayHotkeys;
+    behavior: OverlayBehavior;
+};

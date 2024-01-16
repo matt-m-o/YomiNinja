@@ -2,7 +2,7 @@ import { CSSProperties, useContext, useEffect, useRef, useState } from "react";
 import { OcrResultContext } from "../../context/ocr_result.provider";
 import { styled } from "@mui/material";
 import { OcrItemScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
-import { OverlayBehavior, OverlayHotkeys, OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import { OverlayBehavior, OverlayHotkeys, OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import { DictionaryContext } from "../../context/dictionary.provider";
 import OcrResultBox from "./OcrResultBox";
 

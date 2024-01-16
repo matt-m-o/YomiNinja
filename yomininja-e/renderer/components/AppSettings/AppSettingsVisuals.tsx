@@ -1,7 +1,7 @@
 import { Box, Container, Divider, FormControlLabel, FormGroup, Slider, Stack, Switch, SxProps, TextField, Theme, Typography, debounce, styled } from "@mui/material";
 import { SettingsContext } from "../../context/settings.provider";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { OverlayFrameVisuals, OverlayMouseVisuals, OverlayOcrItemBoxVisuals, OverlayVisualCustomizations } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import { OverlayFrameVisuals, OverlayMouseVisuals, OverlayOcrItemBoxVisuals, OverlayVisualCustomizations } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import { throttle } from "lodash";
 import CustomCursor from "../OcrOverlay/CustomCursor/CustomCursor";
 import { ProfileContext } from "../../context/profile.provider";
@@ -179,7 +179,19 @@ export default function AppSettingsVisuals() {
 
                 <Container sx={{ mt: 0, mb: 2 }}>
 
-                    <TextField label="Background Color" sx={textFieldBaseSx}                      
+                    <TextField label="Inactive BG" sx={textFieldBaseSx}                      
+                        size='small'
+                        type="color"
+                        inputProps={{ style: { textAlign: 'center' } }}                        
+                        value={ ocrItemBoxVisuals?.background_color_inactive || '' }
+                        onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
+                            updateOcrItemBoxVisuals({
+                                background_color_inactive: event.target.value
+                            });
+                        }}
+                    />
+
+                    <TextField label="Active BG" sx={textFieldBaseSx}                      
                         size='small'
                         type="color"
                         inputProps={{ style: { textAlign: 'center' } }}                        
