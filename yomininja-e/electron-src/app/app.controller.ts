@@ -21,6 +21,7 @@ import { profileController } from "../profile/profile.index";
 import { dictionariesController } from "../dictionaries/dictionaries.index";
 import { ocrTemplatesController } from "../ocr_templates/ocr_templates.index";
 import { htmlMouseButtonToUiohook, matchUiohookMouseEventButton } from "../common/mouse_helpers";
+import { debounce } from "lodash";
 
 let startupTimer: NodeJS.Timeout;
 
@@ -433,12 +434,16 @@ export class AppController {
         return false
     }
 
-    private handleOcrCommand = async (
-        input: {
-            image?: Buffer;
-            runFullScreenImageCheck?: boolean;
-            engineName?: string;
-        } = {}
+    handleOcrCommand = async ( input: OcrCommandInput = {} ) => {
+        await this.debouncedOcrCmdHandler( input );
+    }
+
+    debouncedOcrCmdHandler = debounce( async ( input: OcrCommandInput = {} ) => {
+        await this._handleOcrCommand( input );
+    }, 50 );
+
+    _handleOcrCommand = async (
+        input: OcrCommandInput = {}
     ) => {
 
         console.log('AppController.handleOcrCommand');
@@ -486,5 +491,11 @@ export class AppController {
 
         this.setOverlayBounds( isFullScreenImage ? 'fullscreen' :  'maximized' );
         this.showOverlayWindow();
-    }
+    };
+}
+
+type OcrCommandInput = {
+    image?: Buffer;
+    runFullScreenImageCheck?: boolean;
+    engineName?: string;
 }
