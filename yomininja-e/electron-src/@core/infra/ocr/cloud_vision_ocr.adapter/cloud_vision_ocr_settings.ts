@@ -6,6 +6,8 @@ export const cloudVisionOcrAdapterName = 'CloudVisionOcrAdapter';
 export interface CloudVisionOcrEngineSettings extends OcrEngineSettings {
     api_key?: string;
     token?: string;
+    private_key?: string;
+    client_email?: string;
     monthly_request_limit: number; //
     monthly_request_count: number;
     monthly_reset_day: number; // 1 - 30
