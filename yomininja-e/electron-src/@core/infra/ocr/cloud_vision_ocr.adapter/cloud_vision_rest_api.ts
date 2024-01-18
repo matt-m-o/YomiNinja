@@ -1,6 +1,6 @@
 import { google } from '@google-cloud/vision/build/protos/protos';
 import axios, { AxiosInstance } from 'axios';
-import { CloudVisionApi } from './cloud_vision_api';
+import { CloudVisionAPICredentials, CloudVisionApi } from './cloud_vision_api';
 
 export class CloudVisionRestAPI implements CloudVisionApi {
 
@@ -103,5 +103,10 @@ export class CloudVisionRestAPI implements CloudVisionApi {
         return []
     }
     
+    updateCredentials( credentials: CloudVisionAPICredentials ) {
 
+        if ( !credentials.token ) return;
+
+        this.token = credentials.token;
+    }
 }

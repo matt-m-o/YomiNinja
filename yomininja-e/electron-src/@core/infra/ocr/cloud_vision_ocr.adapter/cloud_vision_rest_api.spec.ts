@@ -46,4 +46,14 @@ describe("Cloud Vision REST API tests", () => {
     });
 
 
+    it('should update the credentials', async () => {
+
+        cloudVisionAPI.token = '';
+
+        cloudVisionAPI.updateCredentials( { token: cloudVisionToken } );
+
+        const result = await cloudVisionAPI.textDetection( base64Image );
+
+        expect( result?.fullTextAnnotation?.pages ).toHaveLength( 1 );
+    });
 });

@@ -142,6 +142,13 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
         settingsUpdate = settingsUpdate as CloudVisionOcrEngineSettings;
         oldSettings = settingsUpdate as CloudVisionOcrEngineSettings;
 
+
+        this.api.updateCredentials({
+            clientEmail: settingsUpdate.client_email,
+            privateKey: settingsUpdate.private_key,
+            token: settingsUpdate.token,
+        });
+
         return {
             restart: false,
             settings: settingsUpdate
