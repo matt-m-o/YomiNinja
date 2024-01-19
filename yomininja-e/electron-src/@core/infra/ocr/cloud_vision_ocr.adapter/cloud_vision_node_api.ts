@@ -18,7 +18,7 @@ export class CloudVisionNodeAPI implements CloudVisionApi {
     initialize( input: CloudVisionAPICredentials ) {
         this.client = new ImageAnnotatorClient({
             credentials: {
-                private_key: input.privateKey,
+                private_key: input.privateKey?.replaceAll( '\\n', '\n' ),
                 client_email: input.clientEmail,
             }
         });

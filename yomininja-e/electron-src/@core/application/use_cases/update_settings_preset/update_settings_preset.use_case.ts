@@ -38,8 +38,8 @@ export class UpdateSettingsPresetUseCase< TOcrSettings extends OcrEngineSettings
 
         if ( input?.ocr_engines?.length ) {
 
-            console.log("Input:");
-            console.log(input);
+            // console.log("Input:");
+            // console.log(input);
 
             if ( !Array.isArray( input.ocr_engines ) )
                 input.ocr_engines = [];

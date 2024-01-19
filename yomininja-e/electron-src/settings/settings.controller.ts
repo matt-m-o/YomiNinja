@@ -1,9 +1,10 @@
-import { BrowserWindow, IpcMainInvokeEvent } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, dialog } from "electron";
 import { SettingsService } from "./settings.service";
 import { activeProfile } from "../@core/infra/app_initialization";
 import { ipcMain } from 'electron';
 import { SettingsPreset, SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
-
+import path from "path";
+import fs from 'fs';
 
 
 
@@ -35,6 +36,13 @@ export class SettingsController {
 
             return settingsPresetJson;
         });
+
+        ipcMain.handle( 'settings_preset:load_cloud_vision_cred_file', async ( event: IpcMainInvokeEvent ) => {
+
+            await this.loadCloudVisionCredentialsFile( activeProfile.id );
+
+            return true;
+        });
         
     }
     
@@ -52,5 +60,41 @@ export class SettingsController {
     async updateSettingsPreset( settingsPresetJson: SettingsPresetJson ) {
 
         return await this.settingsService.updateSettingsPreset( settingsPresetJson );
+    }
+
+    async loadCloudVisionCredentialsFile( profileId: string ) {
+
+        const filters: Electron.FileFilter[] = [{
+            name: 'JSON',
+            extensions: [ 'json', 'JSON' ]
+        }];
+
+        const { filePaths } = await dialog.showOpenDialog(
+            this.mainWindow,
+            {
+                properties: [ 'openFile' ],
+                filters,
+            }
+        );
+        
+        if ( !filePaths[0] ) return;
+
+        const fileContent = fs.readFileSync( filePaths[0], 'utf8' );
+
+        const json = JSON.parse( fileContent );
+
+        if (
+            'client_email' in json &&
+            'private_key' in json
+        ) {
+            
+            await this.settingsService.updateCloudVisionCredentials(
+                profileId,
+                {
+                    clientEmail: json.client_email,
+                    privateKey: json.private_key
+                }
+            )
+        }
     }
 }

@@ -36,7 +36,6 @@ export class SettingsPreset < TProps extends SettingsPresetProps = SettingsPrese
     public id: string; // ID
     private props: TProps;
     
-    
     constructor( input?: Partial< TProps >, id?: string ) {
 
         this.id = id || randomUUID();
@@ -157,8 +156,8 @@ export class SettingsPreset < TProps extends SettingsPresetProps = SettingsPrese
             this.overlay.behavior.click_through_mode = 'auto';
     }
 
-    updateOcrEngineSettings(
-        update: { ocr_adapter_name: string } & Partial< OcrEngineSettings >
+    updateOcrEngineSettings< TOcrSettings extends OcrEngineSettings = OcrEngineSettings >(
+        update: { ocr_adapter_name: string } & Partial< TOcrSettings >
     ) {
 
         // let { image_scaling_factor, max_image_width } = update;

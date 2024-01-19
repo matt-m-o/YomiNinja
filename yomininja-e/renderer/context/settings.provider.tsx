@@ -14,6 +14,7 @@ export type SettingsContextType = {
     updateActivePresetOcrEngine: ( input: Partial< OcrEngineSettingsU > ) => void; 
     updateActivePresetDictionary: ( input: Partial< DictionarySettings > ) => void;
     triggerOcrEngineRestart: ( engineName: string ) => void;
+    loadCloudVisionCredentialsFile: () => Promise< void >;
 };
 
 
@@ -141,6 +142,21 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         setActiveSettingsPreset( data );
     }
 
+    async function loadCloudVisionCredentialsFile() {
+        await global.ipcRenderer.invoke( 'settings_preset:load_cloud_vision_cred_file' );
+
+        setTimeout( getActiveSettingsPreset, 1000 );
+    }
+
+    async function getActiveSettingsPreset(): Promise< SettingsPresetJson > {
+
+        const settings = await global.ipcRenderer.invoke( 'settings_preset:get_active' ) as SettingsPresetJson;
+
+        activeSettingsPresetHandler( settings );
+
+        return settings;
+    }
+
     
     useEffect( () => {
 
@@ -148,10 +164,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
             activeSettingsPresetHandler( data );
         });
 
-        global.ipcRenderer.invoke( 'settings_preset:get_active' )
-            .then( ( result: SettingsPresetJson ) => {
-                activeSettingsPresetHandler(result);
-            });
+        getActiveSettingsPreset();
 
         return () => {
             global.ipcRenderer.removeAllListeners( 'settings_preset:active_data' );
@@ -212,7 +225,8 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
                 updateActivePresetBehavior,
                 updateActivePresetOcrEngine,
                 updateActivePresetDictionary,
-                triggerOcrEngineRestart
+                triggerOcrEngineRestart,
+                loadCloudVisionCredentialsFile
             }}
         >
 

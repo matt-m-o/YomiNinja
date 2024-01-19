@@ -17,7 +17,10 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
 
     const { ocrEngineSettings } = props;
 
-    const { updateActivePresetOcrEngine } = useContext( SettingsContext );
+    const {
+        updateActivePresetOcrEngine,
+        loadCloudVisionCredentialsFile
+    } = useContext( SettingsContext );
 
 
     return (
@@ -43,6 +46,20 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
                 }}
             >
 
+                <Button variant="contained"
+                    startIcon={ <InsertDriveFileOutlinedIcon/> }
+                    sx={{
+                        m: '10px'
+                    }}
+                    onClick={ loadCloudVisionCredentialsFile }
+                >
+                    Load credentials from file
+                </Button>
+
+                <Divider sx={{ width: '100%', m: '10px' }}>
+                    or
+                </Divider>
+
                 <PasswordField
                     label="Private key"
                     value={ ocrEngineSettings.private_key }
@@ -50,7 +67,7 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
                         // console.log(event.target.value);
                         updateActivePresetOcrEngine({
                             ...ocrEngineSettings,
-                            private_key: event.target.value.replaceAll( '\\n', '\n' )
+                            private_key: event.target.value
                         });
                     } }
                 />
@@ -66,16 +83,6 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
                         });
                     } }
                 />
-
-                <Divider sx={{ width: '100%', m: '10px' }}>
-                    or
-                </Divider>
-
-                <Button variant="contained"
-                    startIcon={ <InsertDriveFileOutlinedIcon/> }
-                >
-                    Import credentials from JSON
-                </Button>
 
             </Container>
     
