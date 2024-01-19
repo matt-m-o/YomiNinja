@@ -17,7 +17,6 @@ container_registry.bind( Registry.PpOcrAdapter ).toDynamicValue( (context) => {
 }).inSingletonScope();
 
 container_registry.bind( Registry.CloudVisionOcrAdapter ).toDynamicValue( (context) => {
-
     // const cloudVisionRestApi = new CloudVisionRestAPI({
     //     token: cloudVisionToken,
     //     proxyUrl

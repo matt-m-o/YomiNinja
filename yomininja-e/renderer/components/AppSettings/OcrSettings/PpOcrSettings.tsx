@@ -1,7 +1,6 @@
 import { Alert, Backdrop, Box, Card, CardContent, CircularProgress, Container, Divider, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Popover, Select, Slider, Snackbar, Stack, Switch, SxProps, TextField, Theme, Typography, debounce, styled } from "@mui/material";
 import { SettingsContext } from "../../../context/settings.provider";
 import { useContext, useEffect, useState } from "react";
-import { OcrEngineSettings, OverlayBehavior } from "../../../../electron-src/@core/domain/settings_preset/settings_preset";
 import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
 import RestartAltRoundedIcon from '@mui/icons-material/RestartAltRounded';
 import Button from '@mui/material/Button';
@@ -285,7 +284,7 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
                 }}
             >
 
-                <Button variant="contained"
+                <Button variant="contained" fullWidth
                     startIcon={<RestartAltRoundedIcon />}
                     onClick={ () => {
                         triggerOcrEngineRestart( ocrEngineSettings.ocr_adapter_name );

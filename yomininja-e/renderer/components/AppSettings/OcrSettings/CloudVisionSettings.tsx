@@ -1,10 +1,12 @@
-import { Alert, Backdrop, Box, Card, CardContent, CircularProgress, Container, Divider, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Popover, Select, Slider, Snackbar, Stack, Switch, SxProps, TextField, Theme, Typography, debounce, styled } from "@mui/material";
+import { Alert, Backdrop, Box, Button, Card, CardContent, CircularProgress, Container, Divider, FilledInput, FormControl, FormControlLabel, FormGroup, IconButton, InputAdornment, InputLabel, MenuItem, OutlinedInput, Popover, Select, Slider, Snackbar, Stack, Switch, SxProps, TextField, Theme, Typography, debounce, styled } from "@mui/material";
 import { SettingsContext } from "../../../context/settings.provider";
-import { useContext, useEffect, useState } from "react";
+import { ChangeEvent, useContext, useEffect, useState } from "react";
 import { OcrEngineSettingsU } from "../../../../electron-src/@core/infra/types/entity_instance.types";
 import CommonOcrSettings, { SettingsOptionContainer } from "./CommonOcrSettings";
 import { CloudVisionOcrEngineSettings } from "../../../../electron-src/@core/infra/ocr/cloud_vision_ocr.adapter/cloud_vision_ocr_settings";
-
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import PasswordField from "../../common/PasswordField";
+import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
 
 type CloudVisionSettingsProps = {
     ocrEngineSettings: CloudVisionOcrEngineSettings;    
@@ -15,7 +17,7 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
 
     const { ocrEngineSettings } = props;
 
-    const { updateActivePresetOcrEngine } = useContext( SettingsContext );    
+    const { updateActivePresetOcrEngine } = useContext( SettingsContext );
 
 
     return (
@@ -27,6 +29,56 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
 
             <CommonOcrSettings ocrEngineSettings={ocrEngineSettings} />
 
+            
+            
+            
+            <Typography gutterBottom component="div" mb={1} fontSize='1.1rem' ml={2}>
+                Credentials
+            </Typography>
+
+            <Container
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}
+            >
+
+                <PasswordField
+                    label="Private key"
+                    value={ ocrEngineSettings.private_key }
+                    onChange={ ( event: ChangeEvent< HTMLInputElement > ) => {
+                        // console.log(event.target.value);
+                        updateActivePresetOcrEngine({
+                            ...ocrEngineSettings,
+                            private_key: event.target.value.replaceAll( '\\n', '\n' )
+                        });
+                    } }
+                />
+
+                <PasswordField
+                    label="Client email"
+                    value={ ocrEngineSettings.client_email }
+                    onChange={ ( event: ChangeEvent< HTMLInputElement > ) => {
+                        console.log(event.target.value);
+                        updateActivePresetOcrEngine({
+                            ...ocrEngineSettings,
+                            client_email: event.target.value
+                        });
+                    } }
+                />
+
+                <Divider sx={{ width: '100%', m: '10px' }}>
+                    or
+                </Divider>
+
+                <Button variant="contained"
+                    startIcon={ <InsertDriveFileOutlinedIcon/> }
+                >
+                    Import credentials from JSON
+                </Button>
+
+            </Container>
+    
         </Box>
     )
 }

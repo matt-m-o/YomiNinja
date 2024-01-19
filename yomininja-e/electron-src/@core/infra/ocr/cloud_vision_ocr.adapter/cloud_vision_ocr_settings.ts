@@ -24,7 +24,9 @@ export function getCloudVisionDefaultSettings(): CloudVisionOcrEngineSettings {
         monthly_request_limit: 500,
         monthly_request_count: 0,
         monthly_reset_day: 1,
-        last_reset_date: new Date()
+        last_reset_date: new Date(),
+        client_email: '',
+        private_key: '',
     }
 
     return defaultSettings;

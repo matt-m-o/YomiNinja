@@ -1,7 +1,7 @@
 import { Box, Container, Divider, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Select, Switch, SxProps, TextField, Theme, Typography, styled } from "@mui/material";
 import { SettingsContext } from "../../context/settings.provider";
 import { ChangeEvent, useContext, useEffect, useState } from "react";
-import { ClickThroughMode, OverlayBehavior } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import { ClickThroughMode, OverlayBehavior } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 
 
 // Settings section component

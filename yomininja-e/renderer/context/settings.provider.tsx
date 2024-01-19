@@ -43,7 +43,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
 
     function updateActivePresetOcrEngine( newEngineSettings: Partial< OcrEngineSettingsU > ) {
 
-        console.log({ newEngineSettings })
+        // console.log({ newEngineSettings })
 
         activeSettingsPreset.ocr_engines = activeSettingsPreset?.ocr_engines.map( item => {
 
@@ -54,7 +54,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
             return item;
         });
 
-        console.log( activeSettingsPreset );
+        // console.log( activeSettingsPreset );
         
         updateActivePreset( activeSettingsPreset );
     }
