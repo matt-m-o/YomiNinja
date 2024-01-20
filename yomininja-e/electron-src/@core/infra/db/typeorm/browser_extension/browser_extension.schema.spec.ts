@@ -43,9 +43,10 @@ describe( 'BrowserExtension Entity Schema tests', () => {
         
 
         expect( foundExtension ).toBeDefined();
-        expect( foundExtension?.id ).toStrictEqual( extension.id );
         expect( foundExtension ).toStrictEqual( extension );
+        expect( foundExtension?.id ).toStrictEqual( extension.id );
         expect( foundExtension?.icon?.toString() ).toStrictEqual( 'zxcv' );
+        expect( foundExtension?.enabled ).toStrictEqual( true );
     });
 
 });

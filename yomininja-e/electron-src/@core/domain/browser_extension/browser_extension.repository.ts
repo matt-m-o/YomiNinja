@@ -14,5 +14,7 @@ export interface BrowserExtensionRepository {
 
     getAll(): Promise< BrowserExtension[] >;
 
+    update( extension: BrowserExtension ): Promise< void >;
+
     delete( id: BrowserExtensionId ): Promise< void >; 
 }

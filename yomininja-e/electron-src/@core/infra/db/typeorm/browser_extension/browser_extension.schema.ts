@@ -43,6 +43,10 @@ export const BrowserExtensionTypeOrmSchema = new EntitySchema< BrowserExtension 
             type: String,
             length: 200,
             nullable: true,
+        },
+
+        enabled: {
+            type: Boolean,
         }
 
     }

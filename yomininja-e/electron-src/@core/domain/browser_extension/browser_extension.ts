@@ -5,16 +5,18 @@ export type BrowserExtensionId = string;
 export interface BrowserExtensionConstructorProps {
     id: BrowserExtensionId;
     name: string;
-    description?: string;
+    description: string;
     version: string;
     icon?: Buffer; //  Base64 encode image
     optionsUrl?: string;
+    enabled: boolean;
 };
 
-export interface BrowserExtension_CreationInput extends BrowserExtensionConstructorProps {
+export interface BrowserExtension_CreationInput extends Partial< BrowserExtensionConstructorProps > {
     id: BrowserExtensionId;
     name: string;
-    version: string
+    version: string;
+    enabled?: boolean;
 };
 
 // Entity for more control over browser extensions
@@ -26,6 +28,7 @@ export class BrowserExtension {
     version: string;
     icon?: Buffer; //  Base64 encode image
     optionsUrl?: string;
+    enabled: boolean;
     
     
     private constructor( props: BrowserExtensionConstructorProps ) {
@@ -34,14 +37,24 @@ export class BrowserExtension {
 
         this.id = props.id;
         this.name = props.name;
-        this.description = props.description || '';
+        this.description = props.description;
         this.version = props.version;
         this.icon = props.icon;
         this.optionsUrl = props.optionsUrl;
+        this.enabled = props.enabled;
     }
 
     static create( input: BrowserExtension_CreationInput ): BrowserExtension {
-        return new BrowserExtension( input );
+
+        const enabled = typeof input.enabled === 'boolean' ?
+            input.enabled :
+            true;
+
+        return new BrowserExtension({
+            ...input,
+            enabled,
+            description: ''
+        });
     }
 
     toJson(): BrowserExtensionJson {
@@ -52,7 +65,8 @@ export class BrowserExtension {
             version: this.version,
             icon: this.icon,
             icon_base64: this.icon?.toString('base64'),
-            optionsUrl: this.optionsUrl
+            optionsUrl: this.optionsUrl,
+            enabled: this.enabled
         }
     }
 }

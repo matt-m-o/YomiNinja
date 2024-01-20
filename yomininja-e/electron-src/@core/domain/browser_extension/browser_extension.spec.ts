@@ -24,6 +24,7 @@ describe( "BrowserExtension tests", () => {
         expect( extension.version ).toStrictEqual( props.version );
         expect( extension.icon ).toStrictEqual( props.icon );
         expect( extension.optionsUrl ).toStrictEqual( props.optionsUrl );
+        expect( extension.enabled ).toStrictEqual( true );
     });
     
 });

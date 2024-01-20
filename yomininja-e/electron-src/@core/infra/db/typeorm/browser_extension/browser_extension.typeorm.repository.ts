@@ -22,6 +22,10 @@ export default class BrowserExtensionTypeOrmRepository implements BrowserExtensi
         return this.ormRepo.find();
     }
 
+    async update( extension: BrowserExtension ): Promise< void > {
+        await this.ormRepo.save( extension );
+    }
+
     async delete( id: BrowserExtensionId ) {
         await this.ormRepo.delete({
             id

@@ -91,5 +91,27 @@ describe( "BrowserExtension TypeOrm Repository tests", () => {
         expect( foundExtensions ).toContainEqual( extension1 );
         expect( foundExtensions ).toContainEqual( extension2 );
     });
+
+    it('should update', async () => {
+
+        const extension = BrowserExtension.create({
+            id: 'asdf',
+            name: 'x',
+            version: '1.0.1'
+        });
+        await ormRepo.insert( extension );
+
+        const updatedExtension = BrowserExtension.create({
+            ...extension.toJson(),
+            description: 'qwer'
+        });
+
+        await repo.update(updatedExtension)
+
+        const foundExtension = await ormRepo.findOneBy({ id: extension.id });
+
+        expect( foundExtension ).toStrictEqual( updatedExtension );
+        expect( updatedExtension.description ).toStrictEqual( 'qwer' );
+    });
     
 })
