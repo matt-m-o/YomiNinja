@@ -7,11 +7,12 @@ export type PasswordFieldProps = {
     value: string;
     onChange: ( event: ChangeEvent< HTMLInputElement > ) => void;
     sx?: SxProps<Theme>;
+    required?: boolean;
 }
 
 export default function PasswordField( props: PasswordFieldProps ) {
 
-    const { label, value, sx } = props;
+    const { label, value, sx, required } = props;
 
     const [ showPassword, setShowPassword ] = useState(false);
 
@@ -24,11 +25,14 @@ export default function PasswordField( props: PasswordFieldProps ) {
 
     return (
         <FormControl sx={{ m: 1, width: '100%' }} >
-            <InputLabel htmlFor="filled-adornment-password">{ label }</InputLabel>
+            <InputLabel htmlFor="filled-adornment-password" required={required}>
+                { label }
+            </InputLabel>
             <OutlinedInput
                 label={ label }
                 id="filled-adornment-password"
                 type={ showPassword ? 'text' : 'password' }
+                required={required}
                 value={ value }
                 endAdornment={
                     <InputAdornment position="end">

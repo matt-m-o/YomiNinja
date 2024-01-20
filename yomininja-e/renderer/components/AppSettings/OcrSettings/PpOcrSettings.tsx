@@ -64,10 +64,6 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
     return (
         <Box sx={{ flexGrow: 1, margin: 1, }}>
 
-            <Typography gutterBottom variant="h6" component="div" margin={2} ml={0}>
-                PaddleOCR
-            </Typography>
-
             <CommonOcrSettings ocrEngineSettings={ocrEngineSettings} />
 
             <SettingsOptionContainer>

@@ -26,14 +26,7 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
     return (
         <Box sx={{ flexGrow: 1, margin: 1, }}>
 
-            <Typography gutterBottom variant="h6" component="div" margin={2} ml={0}>
-                Cloud Vision (Google)
-            </Typography>
-
             <CommonOcrSettings ocrEngineSettings={ocrEngineSettings} />
-
-            
-            
             
             <Typography gutterBottom component="div" mb={1} fontSize='1.1rem' ml={2}>
                 Credentials
@@ -62,6 +55,7 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
 
                 <PasswordField
                     label="Private key"
+                    required
                     value={ ocrEngineSettings.private_key }
                     onChange={ ( event: ChangeEvent< HTMLInputElement > ) => {
                         // console.log(event.target.value);
@@ -74,6 +68,7 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
 
                 <PasswordField
                     label="Client email"
+                    required
                     value={ ocrEngineSettings.client_email }
                     onChange={ ( event: ChangeEvent< HTMLInputElement > ) => {
                         console.log(event.target.value);
