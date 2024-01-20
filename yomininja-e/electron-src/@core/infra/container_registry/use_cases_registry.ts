@@ -25,6 +25,7 @@ import { CreateSettingsPresetUseCaseInstance, GetSupportedLanguagesUseCaseInstan
 import { ChangeSelectedOcrEngineUseCase } from "../../application/use_cases/change_selected_ocr_engine/change_selected_ocr_engine.use_case";
 import { CreateBrowserExtensionUseCase } from "../../application/use_cases/browser_extension/create_browser_extension/create_browser_extension.use_case";
 import { UpdateBrowserExtensionUseCase } from "../../application/use_cases/browser_extension/update_browser_extension/update_browser_extension.use_case";
+import { GetBrowserExtensionsUseCase } from "../../application/use_cases/browser_extension/get_browser_extensions/get_browser_extensions.use_case";
 
 
 container_registry.bind( Registry.RecognizeImageUseCaseInstance )
@@ -261,7 +262,7 @@ container_registry.bind( Registry.CreateBrowserExtensionUseCase )
     .toDynamicValue( (context) => {
         return new CreateBrowserExtensionUseCase({
             extensionsRepo: context.container.get(
-                Registry.CreateBrowserExtensionUseCase
+                Registry.BrowserExtensionTypeOrmRepository
             ),
         });
     });
@@ -270,10 +271,22 @@ container_registry.bind( Registry.UpdateBrowserExtensionUseCase )
     .toDynamicValue( (context) => {
         return new UpdateBrowserExtensionUseCase({
             extensionsRepo: context.container.get(
-                Registry.UpdateBrowserExtensionUseCase
+                Registry.BrowserExtensionTypeOrmRepository
             ),
         });
     });
+
+container_registry.bind( Registry.GetBrowserExtensionsUseCase )
+    .toDynamicValue( (context) => {
+        return new GetBrowserExtensionsUseCase({
+            extensionsRepo: context.container.get(
+                Registry.BrowserExtensionTypeOrmRepository
+            ),
+        });
+    });
+
+
+
 
 export function get_RecognizeImageUseCaseInstance(): RecognizeImageUseCaseInstance {
     return container_registry.get< RecognizeImageUseCaseInstance >( Registry.RecognizeImageUseCaseInstance )
@@ -365,4 +378,8 @@ export function get_CreateBrowserExtensionUseCase(): CreateBrowserExtensionUseCa
 
 export function get_UpdateBrowserExtensionUseCase(): UpdateBrowserExtensionUseCase {    
     return container_registry.get< UpdateBrowserExtensionUseCase >( Registry.UpdateBrowserExtensionUseCase );
+}
+
+export function get_GetBrowserExtensionsUseCase(): GetBrowserExtensionsUseCase {    
+    return container_registry.get< GetBrowserExtensionsUseCase >( Registry.GetBrowserExtensionsUseCase );
 }

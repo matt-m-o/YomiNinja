@@ -43,6 +43,7 @@ export const Registry = {
     ChangeSelectedOcrEngineUseCase: Symbol.for('ChangeSelectedOcrEngineUseCase'),
     CreateBrowserExtensionUseCase: Symbol.for('CreateBrowserExtensionUseCase'),
     UpdateBrowserExtensionUseCase: Symbol.for('UpdateBrowserExtensionUseCase'),
+    GetBrowserExtensionsUseCase: Symbol.for('GetBrowserExtensionsUseCase'),
 
     // Repositories
     SettingsPresetInMemoryRepository: Symbol.for('SettingsPresetInMemoryRepository'),
