@@ -33,9 +33,10 @@ export const ProfileProvider = ( { children }: PropsWithChildren ) => {
             selected_ocr_adapter_name: ocrEngineAdapterName
         });
 
-        await global.ipcRenderer.invoke( 'profile:change_selected_ocr_engine', {
+        await global.ipcRenderer.invoke(
+            'profile:change_selected_ocr_engine',
             ocrEngineAdapterName
-        });
+        );
     }
 
     function getActiveProfile() {

@@ -25,7 +25,7 @@ export class GetSupportedLanguagesUseCase< TOcrSettings extends OcrEngineSetting
 
                 const languageInRepo = await this.languagesRepo.findOne({ two_letter_code: languageCode });
 
-                if ( !languageInRepo ) continue;                
+                if ( !languageInRepo ) continue;
 
                 supportedLanguages.push( languageInRepo );
             }

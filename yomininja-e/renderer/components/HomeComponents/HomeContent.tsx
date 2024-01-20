@@ -1,6 +1,6 @@
 import { useContext, useEffect } from "react"
 import { LanguagesContext } from "../../context/languages.provider";
-import { Autocomplete, Box, Button, Card, CardContent, Container, FormControlLabel, Grid, SxProps, TextField, TextFieldProps, Theme, Typography } from "@mui/material";
+import { Autocomplete, Box, Button, Card, CardContent, Container, FormControl, FormControlLabel, Grid, InputAdornment, InputLabel, OutlinedInput, SxProps, TextField, TextFieldProps, Theme, Typography, styled } from "@mui/material";
 import { ProfileContext } from "../../context/profile.provider";
 import { CaptureSourceContext, CaptureSourceProvider } from "../../context/capture_source.provider";
 import HotkeyHints from "./HotkeyHints";
@@ -8,8 +8,17 @@ import { ScreenshotMonitorRounded } from "@mui/icons-material";
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import OcrTemplateSelector from "./OcrTemplateSelector";
 import CustomTextField from "./CustomTextField";
+import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
+import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 
-
+const ButtonInput = styled(TextField)({
+    minWidth: '500px',
+    '& input': {
+        cursor: 'pointer',
+        textAlign: 'start',
+        paddingLeft: '15px'
+    }
+});
 
 function capitalize( text: string ) {
     return text?.charAt(0).toUpperCase() + text?.slice(1);
@@ -18,14 +27,29 @@ function capitalize( text: string ) {
 export default function HomeContent() {
 
     const { languages } = useContext( LanguagesContext );
-    const { profile, changeActiveOcrLanguage } = useContext( ProfileContext );
+    const {
+        profile,
+        changeActiveOcrLanguage,
+        changeSelectedOcrEngine
+    } = useContext( ProfileContext );
 
     const { activeCaptureSource } = useContext( CaptureSourceContext );
 
-
-    const activeOcrLanguage: string = capitalize(profile?.active_ocr_language.name);
-    
+    const activeOcrLanguage: string = capitalize( profile?.active_ocr_language.name ) || '';
     const languageOptions: string[] = languages?.map( language => capitalize(language.name) );
+
+    // Adapter name : Engine name
+    const ocrEnginesDict = {
+        'PpOcrAdapter': 'PaddleOCR',
+        'CloudVisionOcrAdapter': 'Google Cloud Vision'
+        // 'PaddleOCR': 'PpOcrAdapter',
+        // 'Google Cloud Vision': 'CloudVisionOcrAdapter'
+    };
+    
+    const ocrEngineOptions: string[] = Object.values( ocrEnginesDict );
+
+    let selectedOcrEngine: string = ocrEnginesDict[ profile?.selected_ocr_adapter_name ] || '';
+
 
     function handleLanguageSelectChange( languageName: string ) {
 
@@ -38,10 +62,40 @@ export default function HomeContent() {
         changeActiveOcrLanguage( language );
     }
 
-
     function openCaptureSourceSelectionWindow() {
         global.ipcRenderer.invoke('main:show_capture_source_selection');
     }
+
+    function handleOcrEngineSelection( selectedEngineName: string ) {
+        
+        Object.entries( ocrEnginesDict )
+            .forEach( ([ adapterName, engineName ]) => {
+
+                if ( engineName !== selectedEngineName )
+                    return;
+
+                changeSelectedOcrEngine( adapterName );
+            });
+    }
+
+    const CaptureSourceButton = (
+        <ButtonInput
+            type='button'
+            label="Capture Source"
+            title='Click to change the Capture Source'
+            value={ activeCaptureSource?.name || '' }
+            onClick={ openCaptureSourceSelectionWindow }
+            // fullWidth
+            InputProps={{
+                startAdornment: <ScreenshotMonitorRounded/>,
+                endAdornment: <MoreVertRoundedIcon/>,
+                style: {
+                    cursor: 'pointer'
+                }
+            }}
+            sx={{ mb: '25px' }}
+        />
+    );
 
     return (
         
@@ -59,52 +113,85 @@ export default function HomeContent() {
                         Select a capture source and the language that matches its content
                     </Typography>
 
-                    <Grid container justifyContent="center" spacing={{ xs: 2, md: 2 }} columns={{ xs: 1, sm: 4, md: 12 }} sx={{ flexGrow: 1  }} >
+                    <Container
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            maxWidth: 'max-content'
+                        }}
+                    >
+
+                        {CaptureSourceButton}
+
+                        <Autocomplete autoHighlight
+                            fullWidth
+                            renderInput={ (params) => {
+                                return <TextField {...params}
+                                    label='Primary OCR Engine'
+                                    fullWidth
+                                    InputProps={{
+                                        ...params.InputProps,
+                                        startAdornment: (
+                                            <AutoAwesomeOutlinedIcon sx={{ mr: '10px' }} />
+                                        ),
+                                        style: {
+                                            paddingLeft: '14px'
+                                        }
+                                    }}
+                                />
+                            }}
+                            value={ selectedOcrEngine || '' }
+                            onChange={( event: any, newValue: string | null ) => {
+                                handleOcrEngineSelection( newValue );
+                            }}
+                            options={ ocrEngineOptions || [] }
+                            sx={{
+                                minWidth: '450px',
+                                mb: '25px',
+                            }}
+                        />
+
+                        <Autocomplete autoHighlight
+                            fullWidth
+                            renderInput={ (params) => {
+                                return <TextField {...params}
+                                    label='OCR Language'
+                                    fullWidth
+                                    InputProps={{
+                                        ...params.InputProps,
+                                        startAdornment: <LanguageOutlinedIcon sx={{ mr: '10px' }}/>,
+                                        style: {
+                                            paddingLeft: '14px'
+                                        }
+                                    }}
+                                />
+                            }}
+                            value={ activeOcrLanguage || '' }
+                            onChange={( event: any, newValue: string | null ) => {
+                                handleLanguageSelectChange( newValue );
+                            }}
+                            options={ languageOptions || [] }
+                            sx={{ mb: '25px' }}
+                        />
+
+                        <OcrTemplateSelector/>
+                        
+                    </Container>
+
+                    <Grid container justifyContent="center" spacing={{ xs: 2, md: 2 }} columns={{ xs: 1, sm: 4, md: 12 }} >
                     
-                        <Grid item>
-                            <FormControlLabel label={'Capture source'}
-                                sx={{
-                                    alignItems: 'start',
-                                }}
-                                labelPlacement="top"
-                                control={
-                                    <Button variant="outlined" size="large"
-                                        startIcon={<ScreenshotMonitorRounded/>}
-                                        endIcon={ <MoreVertRoundedIcon/> }
-                                        onClick={ openCaptureSourceSelectionWindow }
-                                        sx={{
-                                            width: 'max-content',
-                                            height: '56px',
-                                            textTransform: 'none'                  
-                                        }}
-                                    >                
-                                        <Typography color='#90caf9'>
-                                            {activeCaptureSource?.name}
-                                        </Typography>
-                                    </Button>
-                                }
-                            />
+                        <Grid item columns={12}>
                         </Grid>
                         
                         <Grid item>
-                            <Autocomplete autoHighlight
-                                renderInput={ (params) => {
-                                    return <CustomTextField {...params}
-                                        label='OCR language'
-                                        sx={{ width: '177px' }}
-                                    />
-                                }}
-                                value={ activeOcrLanguage || '' }
-                                onChange={( event: any, newValue: string | null ) => {
-                                    handleLanguageSelectChange( newValue );
-                                }}
-                                options={ languageOptions || [] }
-                            />
+                            
                         </Grid>
                             
                         
                         <Grid item>
-                            <OcrTemplateSelector/>
+                            
                         </Grid>
 
                     </Grid>                    

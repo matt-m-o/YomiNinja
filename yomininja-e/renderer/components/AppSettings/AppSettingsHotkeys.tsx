@@ -60,7 +60,7 @@ export default function AppSettingsHotkeys() {
 
 
             <HotkeyFields
-                label='OCR'
+                label='Primary OCR'
                 title='Triggers the currently selected OCR engine'
                 keyCombination={ ocrKeys }
                 // setStateAction={ setOcrKeys }

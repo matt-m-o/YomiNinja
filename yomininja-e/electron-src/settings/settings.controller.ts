@@ -1,4 +1,4 @@
-import { BrowserWindow, IpcMainInvokeEvent, dialog } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, dialog, session } from "electron";
 import { SettingsService } from "./settings.service";
 import { activeProfile } from "../@core/infra/app_initialization";
 import { ipcMain } from 'electron';
@@ -44,6 +44,12 @@ export class SettingsController {
             return true;
         });
         
+        session.defaultSession.webRequest.onBeforeRequest( (details, callback) => {
+            if ( details.url.includes( 'vision.googleapis' ) ) {
+                console.log( details.url );
+            }
+            callback({});
+        });
     }
     
     
@@ -97,4 +103,6 @@ export class SettingsController {
             )
         }
     }
+
+
 }

@@ -42,7 +42,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
         )
             return null;
         
-        let ocrAdapter = this.getAdapter( input.ocrAdapterName ); 
+        let ocrAdapter = this.getAdapter( input.ocrAdapterName );
 
         if ( !ocrAdapter )
             ocrAdapter = this.getAdapter( profile.selected_ocr_adapter_name );
@@ -164,8 +164,8 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
         if ( adapterName )
             adapter = this.ocrAdapters.find( adapter => adapter.name === adapterName ) || null;
 
-        if ( !adapter )
-            adapter = this.ocrAdapters?.[0] || null;
+        // if ( !adapter )
+        //     adapter = this.ocrAdapters?.[0] || null;
 
         return adapter;
     }

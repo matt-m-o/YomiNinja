@@ -47,10 +47,10 @@ export class ProfileService {
             ocrEngineAdapterName: string;
         }
     ) {
-        await this.changeSelectedOcrEngine({
+        await this.changeSelectedOcrEngineUseCase.execute({
             profileId: input.profileId,
             ocrEngineAdapterName: input.ocrEngineAdapterName
-        })
+        });
     }
 
 }
