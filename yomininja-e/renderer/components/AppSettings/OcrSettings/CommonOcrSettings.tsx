@@ -34,7 +34,7 @@ export default function CommonOcrSettings( props: CommonOcrSettingsProps ) {
 
     return ( <>
         
-        <SettingsOptionContainer>
+        <SettingsOptionContainer sx={{ mt: 1 }}>
 
             <FormControlLabel label='Invert image colors'
                 control={

@@ -89,6 +89,82 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
                 />
             </SettingsOptionContainer>
 
+            <SettingsOptionContainer>
+                <OcrSettingsSlider
+                    label="Text area expansion factor"
+                    title='det_db_unclip_ratio'
+                    icon={requiresRestartIcon}
+                    min={0.01} max={ 10 } step={0.01}
+                    value={ detDbUnclipRatio }
+                    onChange={ ( event, newValue ) => {
+                        if (typeof newValue === 'number') {
+                            setDetDbUnclipRatio( newValue );
+                        }
+                    }}
+                    onChangeCommitted={ () => {
+                        updateActivePresetOcrEngine({
+                            ...ocrEngineSettings,
+                            det_db_unclip_ratio: detDbUnclipRatio
+                        });
+                    }}
+                />
+            </SettingsOptionContainer>
+
+            <SettingsOptionContainer sx={{ display: 'flex', mt: 2, mb: 2 }}>
+                <FormControlLabel
+                    label='Inflate the segmentation results to obtain better detection results'
+                    title="use_dilation"
+                    control={
+                        <Switch
+                            checked={ useDilation }
+                            onChange={ ( event ) => {
+                                setUseDilation( event.target.checked );
+                                updateActivePresetOcrEngine({
+                                    ...ocrEngineSettings,
+                                    use_dilation: event.target.checked
+                                });
+                            }}
+                        /> 
+                    }
+                    sx={{ mr: 0.5 }}
+                />
+                {requiresRestartIcon}
+            </SettingsOptionContainer>
+
+            <SettingsOptionContainer sx={{ mt: 4 }}>
+                <FormControl fullWidth 
+                    sx={{
+                        display:'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        width: 300
+                    }}>
+                    
+                    <Select
+                        value={ detDbScoreMode || '' }
+                        label="Detection score mode"
+                        title="det_db_score_mode"
+                        onChange={ ( event ) => {
+                            const value = event.target.value as 'slow' | 'fast';
+                            if (typeof value === 'string') {
+                                setDetDbScoreMode( value );
+                                updateActivePresetOcrEngine({
+                                    ...ocrEngineSettings,
+                                    det_db_score_mode: value
+                                });
+                            }
+                        }}
+                        sx={{ minWidth: 150 }}
+                    >
+                        <MenuItem value='slow'>Slow</MenuItem>
+                        <MenuItem value='fast'>Fast</MenuItem>
+                    </Select>
+
+                    <InputLabel>Detection score mode</InputLabel>{requiresRestartIcon}
+
+                </FormControl>
+            </SettingsOptionContainer>
+
 
             <SettingsOptionContainer>
                 <OcrSettingsSlider
@@ -131,7 +207,11 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
                             }
                         }}
                     >
-                        <MenuItem value='Open_VINO'>OpenVino CPU (fastest)</MenuItem>
+                        <MenuItem value='Open_VINO'
+                            title="Can crash on some AMD CPUs (Windows)"
+                        >
+                            OpenVINO CPU (fastest)
+                        </MenuItem>
                         <MenuItem value='ONNX_CPU'>ONNX CPU</MenuItem>
                     </Select>
                     <InputLabel>Inference Runtime</InputLabel>{requiresRestartIcon}
@@ -190,82 +270,6 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
                                 });
                             }}
                         />
-                    </SettingsOptionContainer>
-
-                    <SettingsOptionContainer>
-                        <OcrSettingsSlider
-                            label="Text area expansion factor"
-                            title='det_db_unclip_ratio'
-                            icon={requiresRestartIcon}
-                            min={0.01} max={ 10 } step={0.01}
-                            value={ detDbUnclipRatio }
-                            onChange={ ( event, newValue ) => {
-                                if (typeof newValue === 'number') {
-                                    setDetDbUnclipRatio( newValue );
-                                }
-                            }}
-                            onChangeCommitted={ () => {
-                                updateActivePresetOcrEngine({
-                                    ...ocrEngineSettings,
-                                    det_db_unclip_ratio: detDbUnclipRatio
-                                });
-                            }}
-                        />
-                    </SettingsOptionContainer>
-
-                    <SettingsOptionContainer sx={{ mt: 4 }}>
-                        <FormControl fullWidth 
-                            sx={{
-                                display:'flex',
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                width: 300
-                            }}>
-                            
-                            <Select
-                                value={ detDbScoreMode || '' }
-                                label="Detection score mode"
-                                title="det_db_score_mode"
-                                onChange={ ( event ) => {
-                                    const value = event.target.value as 'slow' | 'fast';
-                                    if (typeof value === 'string') {
-                                        setDetDbScoreMode( value );
-                                        updateActivePresetOcrEngine({
-                                            ...ocrEngineSettings,
-                                            det_db_score_mode: value
-                                        });
-                                    }
-                                }}
-                                sx={{ minWidth: 150 }}
-                            >
-                                <MenuItem value='slow'>Slow</MenuItem>
-                                <MenuItem value='fast'>Fast</MenuItem>
-                            </Select>
-
-                            <InputLabel>Detection score mode</InputLabel>{requiresRestartIcon}
-
-                        </FormControl>
-                    </SettingsOptionContainer>
-
-                    <SettingsOptionContainer sx={{ display: 'flex', mt: 2, mb: 2 }}>
-                        <FormControlLabel
-                            label='Inflate the segmentation results to obtain better detection results'
-                            title="use_dilation"
-                            control={
-                                <Switch
-                                    checked={ useDilation }
-                                    onChange={ ( event ) => {
-                                        setUseDilation( event.target.checked );
-                                        updateActivePresetOcrEngine({
-                                            ...ocrEngineSettings,
-                                            use_dilation: event.target.checked
-                                        });
-                                    }}
-                                /> 
-                            }
-                            sx={{ mr: 0.5 }}
-                        />
-                        {requiresRestartIcon}
                     </SettingsOptionContainer>
                 
                 {/* </CardContent>
