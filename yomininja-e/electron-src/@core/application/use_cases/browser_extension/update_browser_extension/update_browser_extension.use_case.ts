@@ -1,5 +1,5 @@
-import { BrowserExtension, BrowserExtensionJson } from "../../../domain/browser_extension/browser_extension";
-import { BrowserExtensionRepository } from "../../../domain/browser_extension/browser_extension.repository";
+import { BrowserExtension, BrowserExtensionJson } from "../../../../domain/browser_extension/browser_extension";
+import { BrowserExtensionRepository } from "../../../../domain/browser_extension/browser_extension.repository";
 
 
 

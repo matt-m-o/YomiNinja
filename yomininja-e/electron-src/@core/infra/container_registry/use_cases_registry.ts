@@ -23,8 +23,8 @@ import { ChangeActiveOcrTemplateUseCase } from "../../application/use_cases/chan
 import { OcrEngineSettingsU } from "../types/entity_instance.types";
 import { CreateSettingsPresetUseCaseInstance, GetSupportedLanguagesUseCaseInstance, RecognizeImageUseCaseInstance, UpdateSettingsPresetUseCaseInstance } from "../types/use_case_instance.types";
 import { ChangeSelectedOcrEngineUseCase } from "../../application/use_cases/change_selected_ocr_engine/change_selected_ocr_engine.use_case";
-import { CreateBrowserExtensionUseCase } from "../../application/use_cases/create_browser_extension/create_browser_extension.use_case";
-import { UpdateBrowserExtensionUseCase } from "../../application/use_cases/update_browser_extension/update_browser_extension.use_case";
+import { CreateBrowserExtensionUseCase } from "../../application/use_cases/browser_extension/create_browser_extension/create_browser_extension.use_case";
+import { UpdateBrowserExtensionUseCase } from "../../application/use_cases/browser_extension/update_browser_extension/update_browser_extension.use_case";
 
 
 container_registry.bind( Registry.RecognizeImageUseCaseInstance )

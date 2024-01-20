@@ -8,8 +8,8 @@ import { EXTENSIONS_DIR } from "../util/directories.util";
 import isDev from "electron-is-dev";
 import { BrowserExtensionManager } from "./browser_extension_manager/browser_extension_manager";
 import { BrowserExtension, BrowserExtensionJson } from "../@core/domain/browser_extension/browser_extension";
-import { UpdateBrowserExtensionUseCase } from "../@core/application/use_cases/update_browser_extension/update_browser_extension.use_case";
-import { CreateBrowserExtensionUseCase } from "../@core/application/use_cases/create_browser_extension/create_browser_extension.use_case";
+import { UpdateBrowserExtensionUseCase } from "../@core/application/use_cases/browser_extension/update_browser_extension/update_browser_extension.use_case";
+import { CreateBrowserExtensionUseCase } from "../@core/application/use_cases/browser_extension/create_browser_extension/create_browser_extension.use_case";
 
 
 export class BrowserExtensionsService {

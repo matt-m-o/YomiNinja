@@ -1,15 +1,17 @@
 import { DataSource } from 'typeorm';
-import { BrowserExtensionTypeOrmSchema } from '../../../infra/db/typeorm/browser_extension/browser_extension.schema';
-import { CreateBrowserExtensionUseCase, CreateBrowserExtension_Input } from './create_browser_extension.use_case';
-import BrowserExtensionTypeOrmRepository from '../../../infra/db/typeorm/browser_extension/browser_extension.typeorm.repository';
-import { BrowserExtension } from '../../../domain/browser_extension/browser_extension';
+import { BrowserExtensionTypeOrmSchema } from '../../../../infra/db/typeorm/browser_extension/browser_extension.schema';
+import { UpdateBrowserExtensionUseCase, UpdateBrowserExtension_Input } from './update_browser_extension.use_case';
+import BrowserExtensionTypeOrmRepository from '../../../../infra/db/typeorm/browser_extension/browser_extension.typeorm.repository';
+import { BrowserExtension } from '../../../../domain/browser_extension/browser_extension';
 
 
-describe("BrowserExtensionUseCase tests", () => {    
+describe("BrowserExtensionUseCase tests", () => {
         
-    let useCase: CreateBrowserExtensionUseCase;
+    let useCase: UpdateBrowserExtensionUseCase;
 
     let extensionsRepo: BrowserExtensionTypeOrmRepository;
+
+    let extension: BrowserExtension;
 
     beforeEach( async () => {
 
@@ -30,7 +32,17 @@ describe("BrowserExtensionUseCase tests", () => {
             dataSource.getRepository( BrowserExtension )
         );
 
-        useCase = new CreateBrowserExtensionUseCase({
+        extension = BrowserExtension.create({
+            id: 'asdf',
+            name: 'x',
+            description: 'qwer',
+            version: '1.0.0',
+            enabled: true
+        });
+        await extensionsRepo.insert( extension );
+
+
+        useCase = new UpdateBrowserExtensionUseCase({
             extensionsRepo
         });
         
@@ -38,12 +50,12 @@ describe("BrowserExtensionUseCase tests", () => {
 
     it("should create a browser extension", async () => {        
 
-        const input: CreateBrowserExtension_Input = {
+        const input: UpdateBrowserExtension_Input = {
             id: 'asdf',
             name: 'x',
+            description: 'uipo',
             version: '1.0.0',
-            enabled: true,
-            description: ''
+            enabled: false
         };
 
         const output = await useCase.execute(input);
@@ -56,7 +68,9 @@ describe("BrowserExtensionUseCase tests", () => {
 
         expect( foundExtension?.id ).toStrictEqual( input.id );
         expect( foundExtension?.name ).toStrictEqual( input.name );
+        expect( foundExtension?.description ).toStrictEqual( input.description );
         expect( foundExtension?.version ).toStrictEqual( input.version );
+        expect( foundExtension?.enabled ).toStrictEqual( input.enabled );
 
     });
     
