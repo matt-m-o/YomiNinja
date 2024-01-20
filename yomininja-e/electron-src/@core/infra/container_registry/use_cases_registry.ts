@@ -22,6 +22,7 @@ import { DeleteOcrTemplateUseCase } from "../../application/use_cases/ocr_templa
 import { ChangeActiveOcrTemplateUseCase } from "../../application/use_cases/change_active_ocr_template/change_active_ocr_template.use_case";
 import { OcrEngineSettingsU } from "../types/entity_instance.types";
 import { CreateSettingsPresetUseCaseInstance, GetSupportedLanguagesUseCaseInstance, RecognizeImageUseCaseInstance, UpdateSettingsPresetUseCaseInstance } from "../types/use_case_instance.types";
+import { ChangeSelectedOcrEngineUseCase } from "../../application/use_cases/change_selected_ocr_engine/change_selected_ocr_engine.use_case";
 
 
 container_registry.bind( Registry.RecognizeImageUseCaseInstance )
@@ -245,6 +246,14 @@ container_registry.bind( Registry.ChangeActiveOcrTemplateUseCase )
         });
     });
 
+container_registry.bind( Registry.ChangeSelectedOcrEngineUseCase )
+    .toDynamicValue( (context) => {
+        return new ChangeSelectedOcrEngineUseCase({
+            profilesRepo: context.container.get(
+                Registry.ProfileTypeOrmRepository
+            ),
+        });
+    });
 
 export function get_RecognizeImageUseCaseInstance(): RecognizeImageUseCaseInstance {
     return container_registry.get< RecognizeImageUseCaseInstance >( Registry.RecognizeImageUseCaseInstance )
@@ -324,4 +333,8 @@ export function get_DeleteOcrTemplateUseCase(): DeleteOcrTemplateUseCase {
 
 export function get_ChangeActiveOcrTemplateUseCase(): ChangeActiveOcrTemplateUseCase {    
     return container_registry.get< ChangeActiveOcrTemplateUseCase >( Registry.ChangeActiveOcrTemplateUseCase );
+}
+
+export function get_ChangeSelectedOcrEngineUseCase(): ChangeSelectedOcrEngineUseCase {    
+    return container_registry.get< ChangeSelectedOcrEngineUseCase >( Registry.ChangeSelectedOcrEngineUseCase );
 }
