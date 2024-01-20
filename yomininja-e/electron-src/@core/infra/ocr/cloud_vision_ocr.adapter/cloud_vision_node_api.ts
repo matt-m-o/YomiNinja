@@ -7,6 +7,7 @@ import { CloudVisionAPICredentials, CloudVisionApi } from "./cloud_vision_api";
 export class CloudVisionNodeAPI implements CloudVisionApi {
 
     private client: ImageAnnotatorClient;
+    hasCredentials: boolean = false;
 
     constructor( input?: CloudVisionAPICredentials ) {
 
@@ -16,12 +17,15 @@ export class CloudVisionNodeAPI implements CloudVisionApi {
     }
 
     initialize( input: CloudVisionAPICredentials ) {
+
         this.client = new ImageAnnotatorClient({
             credentials: {
                 private_key: input.privateKey?.replaceAll( '\\n', '\n' ),
                 client_email: input.clientEmail,
             }
         });
+
+        this.hasCredentials = Boolean( input?.privateKey && input?.clientEmail );
     }
     
     async textDetection(

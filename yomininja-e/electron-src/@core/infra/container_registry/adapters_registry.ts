@@ -8,7 +8,6 @@ import { KuromojiTermExtractor } from "../kuromoji_term_extractor.adapter/kuromo
 import { JapaneseHelper } from "../japanese_helper.adapter/japanese_helper.adapter";
 import { CloudVisionOcrAdapter } from "../ocr/cloud_vision_ocr.adapter/cloud_vision_ocr.adapter";
 import { CloudVisionRestAPI } from "../ocr/cloud_vision_ocr.adapter/cloud_vision_rest_api";
-import { cloudVisionToken, proxyUrl } from "../ocr/cloud_vision_ocr.adapter/test/test_data";
 import { CloudVisionNodeAPI } from "../ocr/cloud_vision_ocr.adapter/cloud_vision_node_api";
 
 
@@ -17,13 +16,17 @@ container_registry.bind( Registry.PpOcrAdapter ).toDynamicValue( (context) => {
 }).inSingletonScope();
 
 container_registry.bind( Registry.CloudVisionOcrAdapter ).toDynamicValue( (context) => {
-    // const cloudVisionRestApi = new CloudVisionRestAPI({
-    //     token: cloudVisionToken,
-    //     proxyUrl
-    // });
+
+    const cloudVisionRestApi = new CloudVisionRestAPI({
+        proxyUrl: 'https://cxl-services.appspot.com/proxy' // Google's proxy
+    });
 
     const cloudVisionNodeApi = new CloudVisionNodeAPI();
-    return new CloudVisionOcrAdapter( cloudVisionNodeApi );
+
+    return new CloudVisionOcrAdapter(
+        cloudVisionNodeApi,
+        cloudVisionRestApi
+    );
     
 }).inSingletonScope();
 

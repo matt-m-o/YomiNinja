@@ -13,9 +13,17 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
     private idCounter: number = 0;
 
     private api: CloudVisionApi;
+    private testApi: CloudVisionApi;
 
-    constructor( api: CloudVisionApi ) {
+    constructor(
+        api: CloudVisionApi,
+        testApi?: CloudVisionApi
+    ) {
+
         this.api = api;
+
+        if ( testApi )
+            this.testApi = testApi;
     }
 
     initialize( serviceAddress?: string | undefined ) {}
@@ -24,7 +32,21 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
 
         const { imageBuffer, languageCode } = input;
 
-        const result = await this.api.textDetection( imageBuffer );
+        let api: CloudVisionApi;
+        
+        if ( this.testApi?.hasCredentials ) {
+            api = this.testApi;
+            console.log('Using Cloud Vision test API');
+        }
+        else if ( this.api?.hasCredentials ) {
+            api = this.api;
+            console.log('Using Cloud Vision API');
+        }
+        else {
+            return null;
+        }
+
+        const result = await api.textDetection( imageBuffer );
 
         const ocrResultItems: OcrItem[] = [];
 
@@ -142,12 +164,8 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
         settingsUpdate = settingsUpdate as CloudVisionOcrEngineSettings;
         oldSettings = settingsUpdate as CloudVisionOcrEngineSettings;
 
-
-        this.api.updateCredentials({
-            clientEmail: settingsUpdate.client_email,
-            privateKey: settingsUpdate.private_key,
-            token: settingsUpdate.token,
-        });
+        this.api.updateCredentials( settingsUpdate );
+        this.testApi.updateCredentials( settingsUpdate );
 
         return {
             restart: false,

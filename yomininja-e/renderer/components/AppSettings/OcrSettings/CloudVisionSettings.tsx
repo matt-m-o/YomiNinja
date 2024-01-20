@@ -19,16 +19,28 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
 
     const {
         updateActivePresetOcrEngine,
-        loadCloudVisionCredentialsFile
+        loadCloudVisionCredentialsFile,
+        openCloudVisionPage
     } = useContext( SettingsContext );
 
+
+    const divider = (
+        <Divider
+            sx={{
+                width: '100%',
+                mt: '20px',
+                mb: '20px'
+            }}>
+            or
+        </Divider>
+    );
 
     return (
         <Box sx={{ flexGrow: 1, margin: 1, }}>
 
             <CommonOcrSettings ocrEngineSettings={ocrEngineSettings} />
             
-            <Typography gutterBottom component="div" mb={1} fontSize='1.1rem' ml={2}>
+            <Typography gutterBottom component="div" fontSize='1.1rem' ml={2} mb={2}>
                 Credentials
             </Typography>
 
@@ -41,17 +53,17 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
 
                 <Button variant="contained"
                     startIcon={ <InsertDriveFileOutlinedIcon/> }
-                    sx={{
-                        m: '10px'
-                    }}
                     onClick={ loadCloudVisionCredentialsFile }
+                    style={{
+                        width: '100%',
+                        margin: '8px',
+                        marginLeft: '10px',
+                    }}
                 >
-                    Load credentials from file
+                    Load from file
                 </Button>
-
-                <Divider sx={{ width: '100%', m: '10px' }}>
-                    or
-                </Divider>
+                
+                { divider }
 
                 <PasswordField
                     label="Private key"
@@ -78,6 +90,19 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
                         });
                     } }
                 />
+
+                { divider }
+            
+                <Button variant="contained"
+                    onClick={ openCloudVisionPage }
+                    style={{
+                        width: '100%',
+                        margin: '8px',
+                        marginLeft: '10px',
+                    }}
+                >
+                    Load from Cloud Vision demo page (for a few tests)
+                </Button>
 
             </Container>
     

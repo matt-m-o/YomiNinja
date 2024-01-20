@@ -13,6 +13,8 @@ export class SettingsController {
     private mainWindow: BrowserWindow;
     private settingsService: SettingsService;
 
+    private cloudVisionWindow: BrowserWindow;
+
     constructor( input: {
         settingsService: SettingsService,
         mainWindow?: BrowserWindow,
@@ -43,10 +45,29 @@ export class SettingsController {
 
             return true;
         });
+
+        ipcMain.handle( 'settings_preset:open_cloud_vision_page', async ( event: IpcMainInvokeEvent ) => {
+            this.openCloudVisionTryItPage()
+        });
+
         
-        session.defaultSession.webRequest.onBeforeRequest( (details, callback) => {
+
+        session.defaultSession.setUserAgent(
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        );
+        
+        session.defaultSession.webRequest.onBeforeRequest( ( details, callback ) => {
             if ( details.url.includes( 'vision.googleapis' ) ) {
-                console.log( details.url );
+
+                const token = details.url.split('&token=')[1];
+
+                if ( token ) {
+                    this.settingsService.updateCloudVisionCredentials(
+                        activeProfile.id,
+                        { token }
+                    );
+                    this.cloudVisionWindow?.close();
+                }
             }
             callback({});
         });
@@ -104,5 +125,22 @@ export class SettingsController {
         }
     }
 
+    openCloudVisionTryItPage() {
 
+        this.cloudVisionWindow = new BrowserWindow({
+            height: 720,
+            autoHideMenuBar: true,
+            webPreferences: {
+                nodeIntegration: false,
+                contextIsolation: false,
+            },
+        });
+
+        this.cloudVisionWindow.loadURL('https://cloud.google.com/vision/docs/drag-and-drop');
+        this.cloudVisionWindow.show();
+        // this.cloudVisionWindow.maximize();
+
+        this.cloudVisionWindow.webContents.executeJavaScript(`window.scrollTo(0, 520)`);
+        
+    }
 }

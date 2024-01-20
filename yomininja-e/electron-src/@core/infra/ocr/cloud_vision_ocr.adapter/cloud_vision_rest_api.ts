@@ -8,15 +8,16 @@ export class CloudVisionRestAPI implements CloudVisionApi {
     private httpClient: AxiosInstance;
     public token: string;
     public proxyUrl: string | undefined;
+    hasCredentials: boolean = false;
 
     constructor(
         input?: {
-            token: string;
+            token?: string;
             proxyUrl?: string;
         }
     ) {
         if ( input?.token )
-            this.token = input.token;
+            this.updateCredentials({ token: input.token });
 
         if ( input?.proxyUrl )
             this.proxyUrl = input.proxyUrl;
@@ -82,7 +83,8 @@ export class CloudVisionRestAPI implements CloudVisionApi {
                         features: [				
                             {
                                 maxResults: 50,
-                                type: type
+                                type: type,
+                                model: 'builtin/latest'
                             }
                         ],
                         image: {
@@ -98,6 +100,7 @@ export class CloudVisionRestAPI implements CloudVisionApi {
 
         } catch ( error ) {
             console.log( error );
+            this.hasCredentials = false;
         }
         
         return []
@@ -105,8 +108,10 @@ export class CloudVisionRestAPI implements CloudVisionApi {
     
     updateCredentials( credentials: CloudVisionAPICredentials ) {
 
-        if ( !credentials.token ) return;
-
-        this.token = credentials.token;
+        this.hasCredentials = Boolean( credentials.token );
+        
+        this.token = credentials.token || '';
     }
+
+
 }

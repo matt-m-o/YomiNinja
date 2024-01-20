@@ -41,10 +41,16 @@ export class SettingsService {
 
         if ( !activeSettings ) return;
 
+        const cloudVisionSettings = activeSettings
+            .getOcrEngineSettings<CloudVisionOcrEngineSettings>(cloudVisionOcrAdapterName);
+
+        if ( !cloudVisionSettings ) return;
+
         activeSettings?.updateOcrEngineSettings<CloudVisionOcrEngineSettings>({
             ocr_adapter_name: cloudVisionOcrAdapterName,
             private_key: input.privateKey,
             client_email: input.clientEmail,
+            token: input.token
         });
 
         console.log( activeSettings.toJson().ocr_engines );

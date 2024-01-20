@@ -7,6 +7,7 @@ export type CloudVisionAPICredentials = {
 };
 
 export interface CloudVisionApi {
+    hasCredentials: boolean;
     textDetection: ( input: string | Buffer ) => Promise< google.cloud.vision.v1.IAnnotateImageResponse | undefined >;
     updateCredentials: ( credentials: CloudVisionAPICredentials ) => void;
 };
