@@ -1,7 +1,7 @@
 import { BrowserWindow, IpcMainInvokeEvent, dialog, ipcMain } from "electron";
 import { BrowserExtensionsService } from "./browser_extensions.service";
-import { BrowserExtension } from "./browser_extension";
 import { InAppNotification } from "../common/types/in_app_notification";
+import { BrowserExtensionJson } from "../@core/domain/browser_extension/browser_extension";
 
 
 
@@ -67,13 +67,13 @@ export class BrowserExtensionsController {
         );
         
         ipcMain.handle( 'extensions:get_all_extensions', 
-            async ( event: IpcMainInvokeEvent ): Promise< BrowserExtension[] > => {
+            async ( event: IpcMainInvokeEvent ): Promise< BrowserExtensionJson[] > => {
                 return await this.browserExtensionsService.getInstalledExtensions();
             }
         );
 
         ipcMain.handle( 'extensions:open_extension_options', 
-            async ( event: IpcMainInvokeEvent, extension: BrowserExtension ): Promise< void > => {
+            async ( event: IpcMainInvokeEvent, extension: BrowserExtensionJson ): Promise< void > => {
                 return await this.browserExtensionsService.openExtensionOptionsPage( extension.id );
             }
         );
@@ -85,7 +85,7 @@ export class BrowserExtensionsController {
         );
 
         ipcMain.handle( 'extensions:uninstall_extension', 
-            async ( event: IpcMainInvokeEvent, extension: BrowserExtension ): Promise< void > => {
+            async ( event: IpcMainInvokeEvent, extension: BrowserExtensionJson ): Promise< void > => {
                 return await this.browserExtensionsService.uninstallExtension( extension );
             }
         );

@@ -1,3 +1,4 @@
+import { get_CreateBrowserExtensionUseCase, get_UpdateBrowserExtensionUseCase } from "../@core/infra/container_registry/use_cases_registry";
 import { EXTENSIONS_DIR } from "../util/directories.util";
 import { BrowserExtensionManager } from "./browser_extension_manager/browser_extension_manager";
 import { BrowserExtensionsController } from "./browser_extensions.controller";
@@ -8,7 +9,9 @@ const browserExtensionManager = new BrowserExtensionManager({
 });
 
 const browserExtensionsService = new BrowserExtensionsService({
-    browserExtensionManager
+    browserExtensionManager,
+    createBrowserExtensionUseCase: get_CreateBrowserExtensionUseCase(),
+    updateBrowserExtensionUseCase: get_UpdateBrowserExtensionUseCase()
 });
 
 export const browserExtensionsController = new BrowserExtensionsController({

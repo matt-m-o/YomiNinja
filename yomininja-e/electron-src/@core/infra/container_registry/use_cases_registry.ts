@@ -23,6 +23,8 @@ import { ChangeActiveOcrTemplateUseCase } from "../../application/use_cases/chan
 import { OcrEngineSettingsU } from "../types/entity_instance.types";
 import { CreateSettingsPresetUseCaseInstance, GetSupportedLanguagesUseCaseInstance, RecognizeImageUseCaseInstance, UpdateSettingsPresetUseCaseInstance } from "../types/use_case_instance.types";
 import { ChangeSelectedOcrEngineUseCase } from "../../application/use_cases/change_selected_ocr_engine/change_selected_ocr_engine.use_case";
+import { CreateBrowserExtensionUseCase } from "../../application/use_cases/create_browser_extension/create_browser_extension.use_case";
+import { UpdateBrowserExtensionUseCase } from "../../application/use_cases/update_browser_extension/update_browser_extension.use_case";
 
 
 container_registry.bind( Registry.RecognizeImageUseCaseInstance )
@@ -255,6 +257,24 @@ container_registry.bind( Registry.ChangeSelectedOcrEngineUseCase )
         });
     });
 
+container_registry.bind( Registry.CreateBrowserExtensionUseCase )
+    .toDynamicValue( (context) => {
+        return new CreateBrowserExtensionUseCase({
+            extensionsRepo: context.container.get(
+                Registry.CreateBrowserExtensionUseCase
+            ),
+        });
+    });
+
+container_registry.bind( Registry.UpdateBrowserExtensionUseCase )
+    .toDynamicValue( (context) => {
+        return new UpdateBrowserExtensionUseCase({
+            extensionsRepo: context.container.get(
+                Registry.UpdateBrowserExtensionUseCase
+            ),
+        });
+    });
+
 export function get_RecognizeImageUseCaseInstance(): RecognizeImageUseCaseInstance {
     return container_registry.get< RecognizeImageUseCaseInstance >( Registry.RecognizeImageUseCaseInstance )
 }
@@ -337,4 +357,12 @@ export function get_ChangeActiveOcrTemplateUseCase(): ChangeActiveOcrTemplateUse
 
 export function get_ChangeSelectedOcrEngineUseCase(): ChangeSelectedOcrEngineUseCase {    
     return container_registry.get< ChangeSelectedOcrEngineUseCase >( Registry.ChangeSelectedOcrEngineUseCase );
+}
+
+export function get_CreateBrowserExtensionUseCase(): CreateBrowserExtensionUseCase {    
+    return container_registry.get< CreateBrowserExtensionUseCase >( Registry.CreateBrowserExtensionUseCase );
+}
+
+export function get_UpdateBrowserExtensionUseCase(): UpdateBrowserExtensionUseCase {    
+    return container_registry.get< UpdateBrowserExtensionUseCase >( Registry.UpdateBrowserExtensionUseCase );
 }

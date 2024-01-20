@@ -3,11 +3,13 @@ import buildChromeContextMenu from "electron-chrome-context-menu";
 import { ElectronChromeExtensions } from "electron-chrome-extensions";
 import path, { join } from "path";
 import fs from 'fs/promises';
-import { BrowserExtension } from "./browser_extension";
 import sharp from 'sharp';
 import { EXTENSIONS_DIR } from "../util/directories.util";
 import isDev from "electron-is-dev";
 import { BrowserExtensionManager } from "./browser_extension_manager/browser_extension_manager";
+import { BrowserExtension, BrowserExtensionJson } from "../@core/domain/browser_extension/browser_extension";
+import { UpdateBrowserExtensionUseCase } from "../@core/application/use_cases/update_browser_extension/update_browser_extension.use_case";
+import { CreateBrowserExtensionUseCase } from "../@core/application/use_cases/create_browser_extension/create_browser_extension.use_case";
 
 
 export class BrowserExtensionsService {
@@ -17,12 +19,22 @@ export class BrowserExtensionsService {
     installedExtensions: Map< string, Electron.Extension > = new Map();
     windows: Map< number, BrowserWindow > = new Map();
     browserExtensionManager: BrowserExtensionManager;
+    createBrowserExtensionUseCase: CreateBrowserExtensionUseCase
+    updateBrowserExtensionUseCase: UpdateBrowserExtensionUseCase;
 
     onExtensionButtonClick: () => void = () => {};
 
-    constructor( input: { browserExtensionManager: BrowserExtensionManager } ) {
+    constructor(
+        input: {
+            browserExtensionManager: BrowserExtensionManager,
+            createBrowserExtensionUseCase: CreateBrowserExtensionUseCase,
+            updateBrowserExtensionUseCase: UpdateBrowserExtensionUseCase
+        }
+    ) {
 
         this.browserExtensionManager = input.browserExtensionManager;
+        this.createBrowserExtensionUseCase = input.createBrowserExtensionUseCase;
+        this.updateBrowserExtensionUseCase = input.updateBrowserExtensionUseCase;
 
         // Enable context menu
         app.on('web-contents-created', ( event, webContents ) => {
@@ -119,13 +131,15 @@ export class BrowserExtensionsService {
         });
     }
 
-    getInstalledExtensions = async (): Promise< BrowserExtension[] > => {
+    getInstalledExtensions = async (): Promise< BrowserExtensionJson[] > => {
 
 
-        const extensions: BrowserExtension[] = [];
+        const extensions: BrowserExtensionJson[] = [];
 
         // console.log( this.installedExtensions );
         // console.log( installedExtensions );
+
+        // const extensionsInDb = this.
 
         for ( const item of Array.from( this.installedExtensions.values() ) ) {
 
@@ -138,13 +152,17 @@ export class BrowserExtensionsService {
 
             // console.log( item.manifest )
 
-            const extension: BrowserExtension = {
+            const icon = await this.getExtensionIcon( item.id );
+
+            const extension: BrowserExtensionJson = {
                 id: item.id,
                 name: item.name,
                 description: item.manifest.description,
                 version: item.manifest.version,
                 optionsUrl,
-                icon: await this.getExtensionIcon( item.id ) || ''
+                icon: icon?.icon,
+                icon_base64: icon?.icon_base64,
+                enabled: true // Get from use case
             };
 
             extensions.push( extension );
@@ -239,7 +257,10 @@ export class BrowserExtensionsService {
         return defaultSession;
     }
 
-    private getExtensionIcon = async ( extensionId: string ): Promise< string | undefined > => {
+    private getExtensionIcon = async ( extensionId: string ): Promise< {
+        icon: Buffer;
+        icon_base64: string;
+    } | undefined > => {
 
         const extension = this.installedExtensions.get( extensionId );
 
@@ -258,7 +279,10 @@ export class BrowserExtensionsService {
         const imageBuffer = await sharp( iconPath ).toBuffer();
         const imageBase64 = imageBuffer.toString( 'base64' );        
 
-        return imageBase64;        
+        return {
+            icon: imageBuffer,
+            icon_base64: imageBase64
+        };        
     }
 
 
@@ -296,7 +320,7 @@ export class BrowserExtensionsService {
         this.reloadWindows();
     }
 
-    uninstallExtension = async ( extension: BrowserExtension ) => {
+    uninstallExtension = async ( extension: BrowserExtensionJson ) => {
 
         const installedExtension = this.installedExtensions.get( extension.id );
 
