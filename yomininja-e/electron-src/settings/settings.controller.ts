@@ -49,12 +49,6 @@ export class SettingsController {
         ipcMain.handle( 'settings_preset:open_cloud_vision_page', async ( event: IpcMainInvokeEvent ) => {
             this.openCloudVisionTryItPage()
         });
-
-        
-
-        session.defaultSession.setUserAgent(
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        );
         
         session.defaultSession.webRequest.onBeforeRequest( ( details, callback ) => {
             if ( details.url.includes( 'vision.googleapis' ) ) {

@@ -42,6 +42,14 @@ export class BrowserExtensionsService {
 
         // Enable context menu
         app.on('web-contents-created', ( event, webContents ) => {
+
+            webContents.setWindowOpenHandler( details => {
+
+                this.createExtensionWindow( details.url );
+
+                return { action: 'deny' };
+            });
+
             webContents.on('context-menu', (e, params) => {
 
                 const extensionMenuItems = this.extensionsApi.getContextMenuItems(webContents, params);
@@ -50,6 +58,7 @@ export class BrowserExtensionsService {
                 extensionMenuItems.forEach( item => {
                     const { click } = item;
                     item.click = () => {
+                        
                         click();
 
                         if ( !item.label.includes('10ten') )
@@ -66,7 +75,7 @@ export class BrowserExtensionsService {
                     webContents,
                     extensionMenuItems,
                     openLink: (url, disposition) => {
-                        webContents.loadURL(url);
+                        this.createExtensionWindow( url );
                     }
                 });
 
@@ -83,25 +92,15 @@ export class BrowserExtensionsService {
         this.extensionsApi = new ElectronChromeExtensions({
             session: this.session,
             createTab: async ( details ) => {
-                
-                const extensionWindow = new BrowserWindow({
-                    autoHideMenuBar: true,
-                    webPreferences: {
-                      sandbox: true,
-                      nodeIntegration: false,
-                      contextIsolation: true,
-                    }
-                });
 
-                // console.log(details)
-                if (details.url) {                    
-                    extensionWindow.loadURL( details.url );                   
-                }
+                console.log("details")// chrome-extension://mgdeokilehajjpebpficpflibgfpgccn/settings_page/settings.html
+                // console.log(details) // chrome-extension://mgdeokilehajjpebpficpflibgfpgccn/settings_page/settings.html
 
-                extensionWindow.show();
+                const extensionWindow = this.createExtensionWindow( details.url );
 
-                return [ extensionWindow.webContents, extensionWindow];
-            }
+                return [ extensionWindow.webContents, extensionWindow ];
+            },
+
         });
         
         // console.log({ EXTENSIONS_DIR });
@@ -237,12 +236,14 @@ export class BrowserExtensionsService {
 
         const { defaultSession } = session;
           
-        const userAgent = defaultSession
-          .getUserAgent()
-          .replace(/\sElectron\/\S+/, '')
-          .replace(new RegExp(`\\s${app.getName()}/\\S+`), '');
+        // const userAgent = defaultSession
+        //   .getUserAgent()
+        //   .replace(/\sElectron\/\S+/, '')
+        //   .replace(new RegExp(`\\s${app.getName()}/\\S+`), '');
     
-        defaultSession.setUserAgent(userAgent);
+        defaultSession.setUserAgent(
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        );
 
         // const browserPreload = path.join( __dirname, '../preload.js' )
         // defaultSession.setPreloads([ browserPreload ]);
@@ -288,7 +289,14 @@ export class BrowserExtensionsService {
         if ( !extension || !extension?.optionsUrl )
             return;
 
+        this.createExtensionWindow( extension.optionsUrl );
+    }
+
+    createExtensionWindow( url: string ): BrowserWindow {
+
         const extensionWindow = new BrowserWindow({
+            width: 1200,
+            height: 700,
             autoHideMenuBar: true,
             webPreferences: {
               sandbox: true,
@@ -299,7 +307,10 @@ export class BrowserExtensionsService {
 
         extensionWindow.show();
 
-        extensionWindow.loadURL( extension.optionsUrl );
+        if ( url )
+            extensionWindow.loadURL( url );
+
+        return extensionWindow;
     }
 
     installExtension = async ( input: { zipFilePath: string } ) => {
