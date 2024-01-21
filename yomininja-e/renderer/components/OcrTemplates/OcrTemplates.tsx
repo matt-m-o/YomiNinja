@@ -12,7 +12,7 @@ import EditOcrTemplateModal from "./EditOcrTemplateModal";
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import OcrTemplateList from "./OcrTemplateList";
 import { SettingsContext } from "../../context/settings.provider";
-import { OverlayBehavior, OverlayOcrRegionVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import { OverlayBehavior, OverlayOcrRegionVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 
 
 const TemplateActionBtn = styled( Button )({

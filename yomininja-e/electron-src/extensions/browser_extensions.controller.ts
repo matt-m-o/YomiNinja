@@ -89,6 +89,12 @@ export class BrowserExtensionsController {
                 return await this.browserExtensionsService.uninstallExtension( extension );
             }
         );
+
+        ipcMain.handle( 'extensions:toggle_extension', 
+            async ( event: IpcMainInvokeEvent, extension: BrowserExtensionJson ): Promise< void > => {
+                return await this.browserExtensionsService.toggleExtension( extension );
+            }
+        );
     }
 
     addBrowserWindow( window: BrowserWindow, selectWindow?: boolean ) {

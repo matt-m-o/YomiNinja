@@ -6,20 +6,20 @@ import { DictionaryFormats, ImportDictionaryDto } from '../../electron-src/dicti
 import { LanguageJson } from "../../electron-src/@core/domain/language/language";
 import { DictionaryImportProgress } from "../../electron-src/dictionaries/common/dictionary_import_progress";
 import { Dictionary } from "../../electron-src/@core/domain/dictionary/dictionary";
-import { BrowserExtension } from "../../electron-src/extensions/browser_extension";
+import { BrowserExtensionJson } from "../../electron-src/@core/domain/browser_extension/browser_extension";
 
 
 
 export type DictionaryContextType = {
     installedDictionaries: Dictionary[];
-    installedExtensions: BrowserExtension[];
+    installedExtensions: BrowserExtensionJson[];
     headwords: DictionaryHeadword[];
     isScannerEnabled: boolean;
     search: ( text: string ) => void;
     toggleScanner: ( enable: boolean ) => void;
     importDictionary: ( input: ImportDictionaryDto ) => Promise<string>;
     deleteAllDictionaries: ( ) => Promise<void>;
-    openExtensionOptions: ( input: BrowserExtension ) => Promise<void>
+    openExtensionOptions: ( input: BrowserExtensionJson ) => Promise<void>
     importProgress: DictionaryImportProgress;
 };
 
@@ -34,7 +34,7 @@ export const DictionaryContext = createContext( {} as DictionaryContextType );
 export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
         
     const [ installedDictionaries, setInstalledDictionaries ] = useState< Dictionary[] >();
-    const [ installedExtensions, setInstalledExtensions ] = useState< BrowserExtension[] >();
+    const [ installedExtensions, setInstalledExtensions ] = useState< BrowserExtensionJson[] >();
     const [ headwords, setHeadwords ] = useState< DictionaryHeadword[] >( [] );
     const [ enableScanner, setEnableScanner ] = useState< boolean >( false );
     const [ popupPosition, setPopupPosition ] = useState< PopupPosition >({ x: 0, y: 0  });
@@ -220,7 +220,7 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
         getDictionaries();
     }
 
-    async function openExtensionOptions( browserExtension: BrowserExtension ): Promise< void > {
+    async function openExtensionOptions( browserExtension: BrowserExtensionJson ): Promise< void > {
         await global.ipcRenderer.invoke( 'extensions:open_extension_options', browserExtension );
     }
     

@@ -22,7 +22,7 @@ export class CreateBrowserExtensionUseCase {
         });
 
         if ( foundExtension )
-            throw new Error('extension-already-exists');
+            return foundExtension;
 
         const extension = BrowserExtension.create({
             ...input,

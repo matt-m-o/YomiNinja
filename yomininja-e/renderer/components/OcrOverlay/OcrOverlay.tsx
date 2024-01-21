@@ -1,5 +1,12 @@
 import { useContext, useState, useEffect } from "react";
-import { OverlayOcrItemBoxVisuals, OverlayFrameVisuals, OverlayHotkeys, OverlayBehavior, OverlayMouseVisuals, OverlayOcrRegionVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import {
+  OverlayOcrItemBoxVisuals,
+  OverlayFrameVisuals,
+  OverlayHotkeys,
+  OverlayBehavior,
+  OverlayMouseVisuals,
+  OverlayOcrRegionVisuals
+} from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import { SettingsContext } from "../../context/settings.provider";
 import { debounce } from "@mui/material";
 import { styled } from "@mui/material/styles";

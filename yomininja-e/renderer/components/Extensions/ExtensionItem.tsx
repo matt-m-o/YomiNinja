@@ -1,19 +1,31 @@
-import { Box, Button, Card, CardActions, Container, Typography } from "@mui/material";
+import { Box, Button, Card, CardActions, Container, Switch, Typography } from "@mui/material";
 import Image  from 'next/image';
-import { BrowserExtension } from "../../../electron-src/extensions/browser_extension";
 import { CardContent } from "@mui/material";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { BrowserExtensionJson } from "../../../electron-src/@core/domain/browser_extension/browser_extension";
+import { SimpleConsoleLogger } from "typeorm";
 
 
 export type ExtensionItemProps = {
-    extension: BrowserExtension;
+    extension: BrowserExtensionJson;
     openOptions: () => void;
     uninstall: () => void;
+    onToggle: ( extension: BrowserExtensionJson ) => void;
 }
 
 export default function ExtensionItem( props: ExtensionItemProps ) {
 
-    const { extension, openOptions, uninstall } = props;
+    const { extension, openOptions, uninstall, onToggle } = props;
+
+    const [ enabled, setEnabled ] = useState(true);
+
+    useEffect( () => {
+
+        if ( !extension ) return;
+
+        setEnabled( extension.enabled )
+
+    }, [ extension ] );
 
     return (
 
@@ -40,7 +52,7 @@ export default function ExtensionItem( props: ExtensionItemProps ) {
                 <Box display='flex' mb={4}>
 
                     <Image
-                        src={'data:image/png;base64,'+extension.icon}
+                        src={'data:image/png;base64,'+extension.icon_base64}
                         alt={extension.name}
                         height={60}
                         width={60}
@@ -75,26 +87,45 @@ export default function ExtensionItem( props: ExtensionItemProps ) {
 
                 </Box>
                 
-                <div>
-                    <Button
-                        variant="outlined"
-                        onClick={ openOptions }
-                        // color="info"
-                        sx={{ textTransform: 'capitalize', mr: '10px' }}
-                        disabled={ !extension?.optionsUrl }
-                    >
-                        Options
-                    </Button>
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'space-between'
+                    }}
+                >
 
-                    <Button
-                        variant="outlined"
-                        onClick={ uninstall }
-                        // color="error"
-                        sx={{ textTransform: 'capitalize' }}
-                    >
-                        Uninstall
-                    </Button>
+                    <div>
+                        <Button
+                            variant="outlined"
+                            onClick={ openOptions }
+                            // color="info"
+                            sx={{ textTransform: 'capitalize', mr: '10px' }}
+                            disabled={ !extension?.optionsUrl }
+                        >
+                            Options
+                        </Button>
+
+                        <Button
+                            variant="outlined"
+                            onClick={ uninstall }
+                            // color="error"
+                            sx={{ textTransform: 'capitalize' }}
+                        >
+                            Uninstall
+                        </Button>
+                    </div>
+
+                    <Switch 
+                        checked={ enabled }
+                        onChange={ ( event ) => {
+                            setEnabled( event.target.checked );
+                            onToggle( extension );
+                        }}
+                    />
+
                 </div>
+                
+
 
             </CardContent>
         </Card>        

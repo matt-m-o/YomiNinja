@@ -10,6 +10,7 @@ import { BrowserExtensionManager } from "./browser_extension_manager/browser_ext
 import { BrowserExtension, BrowserExtensionJson } from "../@core/domain/browser_extension/browser_extension";
 import { UpdateBrowserExtensionUseCase } from "../@core/application/use_cases/browser_extension/update_browser_extension/update_browser_extension.use_case";
 import { CreateBrowserExtensionUseCase } from "../@core/application/use_cases/browser_extension/create_browser_extension/create_browser_extension.use_case";
+import { GetBrowserExtensionsUseCase } from "../@core/application/use_cases/browser_extension/get_browser_extensions/get_browser_extensions.use_case";
 
 
 export class BrowserExtensionsService {
@@ -19,8 +20,9 @@ export class BrowserExtensionsService {
     installedExtensions: Map< string, Electron.Extension > = new Map();
     windows: Map< number, BrowserWindow > = new Map();
     browserExtensionManager: BrowserExtensionManager;
-    createBrowserExtensionUseCase: CreateBrowserExtensionUseCase
+    createBrowserExtensionUseCase: CreateBrowserExtensionUseCase;
     updateBrowserExtensionUseCase: UpdateBrowserExtensionUseCase;
+    getBrowserExtensionsUseCase: GetBrowserExtensionsUseCase;
 
     onExtensionButtonClick: () => void = () => {};
 
@@ -28,13 +30,15 @@ export class BrowserExtensionsService {
         input: {
             browserExtensionManager: BrowserExtensionManager,
             createBrowserExtensionUseCase: CreateBrowserExtensionUseCase,
-            updateBrowserExtensionUseCase: UpdateBrowserExtensionUseCase
+            updateBrowserExtensionUseCase: UpdateBrowserExtensionUseCase,
+            getBrowserExtensionsUseCase: GetBrowserExtensionsUseCase,
         }
     ) {
 
         this.browserExtensionManager = input.browserExtensionManager;
         this.createBrowserExtensionUseCase = input.createBrowserExtensionUseCase;
         this.updateBrowserExtensionUseCase = input.updateBrowserExtensionUseCase;
+        this.getBrowserExtensionsUseCase = input.getBrowserExtensionsUseCase;
 
         // Enable context menu
         app.on('web-contents-created', ( event, webContents ) => {
@@ -139,34 +143,14 @@ export class BrowserExtensionsService {
         // console.log( this.installedExtensions );
         // console.log( installedExtensions );
 
-        // const extensionsInDb = this.
-
         for ( const item of Array.from( this.installedExtensions.values() ) ) {
 
-            const optionsUiPage = item.manifest?.options_ui?.page;
+            const extension = await this.electronExtensionToExtensionJson( item );
 
-            let optionsUrl: string | undefined;
-
-            if ( optionsUiPage )
-                optionsUrl = item.url + item.manifest?.options_ui?.page;
-
-            // console.log( item.manifest )
-
-            const icon = await this.getExtensionIcon( item.id );
-
-            const extension: BrowserExtensionJson = {
-                id: item.id,
-                name: item.name,
-                description: item.manifest.description,
-                version: item.manifest.version,
-                optionsUrl,
-                icon: icon?.icon,
-                icon_base64: icon?.icon_base64,
-                enabled: true // Get from use case
-            };
+            extension.enabled = await this.isExtensionEnabled( extension.id );
 
             extensions.push( extension );
-        }        
+        }
 
         return extensions;
     }
@@ -216,16 +200,25 @@ export class BrowserExtensionsService {
             if ( !extPath ) continue;
         
             try {
+
                 const extension = await this.session.loadExtension(
                     extPath,
                     { allowFileAccess: !isDev } // Required in production
                 );
 
                 this.installedExtensions.set( extension.id, extension );
+
+                const enabled = await this.isExtensionEnabled( extension.id );
+
+                if ( !enabled )
+                    this.session.removeExtension( extension.id );
+
             } catch ( error ) {
                 console.error( error );
             }
         }
+
+        await this.syncExtensionsRegistry();
     }
 
     private manifestExists = async ( dirPath: string ): Promise< boolean > => {
@@ -339,5 +332,79 @@ export class BrowserExtensionsService {
         this.windows.forEach( window => {
             window.reload();
         });
+    }
+
+    syncExtensionsRegistry = async () => {
+
+        const installedExtensions = await this.getInstalledExtensions();
+        const extensionsInDb = await this.getBrowserExtensionsUseCase.execute();
+
+        for ( const item of installedExtensions ) {
+
+            const extensionIsRegistered = extensionsInDb.some(
+                extensionInDb => extensionInDb.id === item.id
+            );
+
+            if ( !extensionIsRegistered )
+                await this.createBrowserExtensionUseCase.execute( item );
+            else
+                await this.updateBrowserExtensionUseCase.execute( item );
+        }
+    }
+
+    isExtensionEnabled = async ( extensionId: string ): Promise< boolean > => {
+
+        const extensionsInDb = await this.getBrowserExtensionsUseCase.execute();
+
+        const extension = extensionsInDb.find(
+            extension => extension.id === extensionId
+        );
+
+        if ( !extension ) return true;
+
+        return extension.enabled;
+    }
+
+    electronExtensionToExtensionJson = async (
+        electronExtension: Electron.Extension
+    ) => {
+        const optionsUiPage = electronExtension.manifest?.options_ui?.page;
+
+        let optionsUrl: string | undefined;
+
+        if ( optionsUiPage )
+            optionsUrl = electronExtension.url + electronExtension.manifest?.options_ui?.page;
+
+        // console.log( item.manifest )
+
+        const icon = await this.getExtensionIcon( electronExtension.id );
+
+        const extension: BrowserExtensionJson = {
+            id: electronExtension.id,
+            name: electronExtension.name,
+            description: electronExtension.manifest.description,
+            version: electronExtension.manifest.version,
+            optionsUrl,
+            icon: icon?.icon,
+            icon_base64: icon?.icon_base64,
+            enabled: true
+        };
+
+        return extension;
+    }
+
+    toggleExtension = async ( extension: BrowserExtensionJson ) => {
+
+        const enabled = !extension.enabled;
+
+        await this.updateBrowserExtensionUseCase.execute({
+            ...extension,
+            enabled: !extension.enabled
+        });
+
+        if ( !enabled )
+            this.session.removeExtension( extension.id );
+        else
+            await this.loadExtensions();
     }
 }

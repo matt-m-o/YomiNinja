@@ -6,7 +6,7 @@ import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ExtensionItem from "./ExtensionItem";
 import AlertDialog from "../common/AlertDialog";
-import { BrowserExtension } from "../../../electron-src/extensions/browser_extension";
+import { BrowserExtensionJson } from "../../../electron-src/@core/domain/browser_extension/browser_extension";
 
 
 const SectionDivider = styled( Divider )({
@@ -22,10 +22,11 @@ export default function Extensions() {
         installExtension,
         uninstallExtension,
         openExtensionOptions,
+        toggleExtension
     } = useContext( ExtensionsContext );
 
     const [ openUninstallDialog, setOpenUninstallDialog ] = useState< boolean >( false );
-    const [ itemToUninstall, setItemToUninstall ] = useState< BrowserExtension | null >();
+    const [ itemToUninstall, setItemToUninstall ] = useState< BrowserExtensionJson | null >();
 
     function handleConfirmation() {
         uninstallExtension( itemToUninstall );
@@ -42,6 +43,7 @@ export default function Extensions() {
                             setItemToUninstall( item );
                             setOpenUninstallDialog( true );
                         }}
+                        onToggle={ toggleExtension }
                     />
                 </Grid>
             )
