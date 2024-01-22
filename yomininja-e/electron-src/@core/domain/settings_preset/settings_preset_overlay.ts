@@ -18,6 +18,10 @@ export type OverlayOcrItemBoxVisuals = {
         outline_color: string
         character_positioning: boolean; // Individual character positioning
     };
+    selected_text: {
+        color: string;
+        background_color: string;
+    }
 };
 
 export type OverlayMouseVisuals = {

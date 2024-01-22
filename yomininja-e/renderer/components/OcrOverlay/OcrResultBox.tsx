@@ -211,8 +211,8 @@ export default function OcrResultBox( props: {
                         regionWidthPx={regionWidthPx}
                         regionHeightPx={regionHeightPx}
                         key={lIdx}
-                        symbolPositioning={ ocrItemBoxVisuals.text.character_positioning }
                         onBlur={props.onBlur}
+                        ocrItemBoxVisuals={ocrItemBoxVisuals}
                     />
                 )
             }) }

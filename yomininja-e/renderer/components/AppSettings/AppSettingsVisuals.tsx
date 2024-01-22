@@ -105,6 +105,10 @@ export default function AppSettingsVisuals() {
             fontWeight: ocrItemBoxVisuals?.text?.font_weight,
             '-webkit-text-stroke-width': ocrItemBoxVisuals?.text?.outline_width,
             '-webkit-text-stroke-color': ocrItemBoxVisuals?.text?.outline_color,
+        },
+        '&::selection': {
+            backgroundColor: ocrItemBoxVisuals?.selected_text.background_color,
+            color: ocrItemBoxVisuals?.selected_text.color,
         }
     });
 

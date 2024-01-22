@@ -36,8 +36,8 @@ export default function AppSettingsHotkeys() {
     // const [ ocrOnPrintScreen, setOcrOnPrintScreen ] = useState< boolean >( Boolean(overlayHotkeys?.ocr_on_screen_shot) );
     const ocrOnPrintScreen = Boolean(overlayHotkeys?.ocr_on_screen_shot);
 
-    const paddleOcrKeys = stringToHotkeyCombination( ppOcrSettings.hotkey );
-    const cloudVisionKeys = stringToHotkeyCombination( cloudVisionSettings.hotkey );
+    const paddleOcrKeys = stringToHotkeyCombination( ppOcrSettings?.hotkey );
+    const cloudVisionKeys = stringToHotkeyCombination( cloudVisionSettings?.hotkey );
 
     function stringToHotkeyCombination( hotkeyString: string ): string {
         return hotkeyString?.split('+').join( ' + ' ) || '';

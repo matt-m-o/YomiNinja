@@ -34,10 +34,10 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
 
         <Container sx={{ ml: 1.5,  mt: 0, mb: 2 }}>
             <FormControlLabel label='Individual character positioning (not supported by all OCR engines)'
-                title="Currently only supported by Cloud Vision"
+                title="Currently only supported by Google Cloud Vision"
                 control={
                     <Switch
-                        checked={ Boolean( ocrItemBoxVisuals.text.character_positioning ) }
+                        checked={ Boolean( ocrItemBoxVisuals?.text.character_positioning ) }
                         onChange={ ( event ) => {
                             updateOcrItemBoxVisuals({
                                 text: {
@@ -65,7 +65,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                 }}
             />
 
-            <ColorPicker label="Text Outline" sx={textFieldSx}
+            <ColorPicker label="Outline Color" sx={textFieldSx}
                 value={ ocrItemBoxVisuals?.text.outline_color || '' }
                 onChangeComplete={ (color) => {
                     updateOcrItemBoxVisuals({                                
@@ -140,7 +140,40 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
             />
             
         </Container>
-            
+
+        <Typography gutterBottom component="div" mb={1} fontSize='1.1rem'
+            title='Some extensions might override this settings'
+        >
+            Highlighted text
+        </Typography>
+
+        <Container sx={{ mt: 0, mb: 2 }}>
+
+            <ColorPicker label="Text Color" sx={textFieldSx}
+                value={ ocrItemBoxVisuals?.selected_text?.color || '' }
+                onChangeComplete={ (color) => {
+                    updateOcrItemBoxVisuals({                                
+                        selected_text: {
+                            ...ocrItemBoxVisuals?.selected_text,
+                            color
+                        }
+                    });
+                }}
+            />
+
+            <ColorPicker label="Highlight" sx={textFieldSx}
+                value={ ocrItemBoxVisuals?.selected_text?.background_color || '' }
+                onChangeComplete={ (color) => {
+                    updateOcrItemBoxVisuals({                                
+                        selected_text: {
+                            ...ocrItemBoxVisuals?.selected_text,
+                            background_color: color
+                        }
+                    });
+                }}
+            />
+
+        </Container>
 
         <Typography gutterBottom component="div" mb={1} fontSize='1.1rem'>
             Bounding box

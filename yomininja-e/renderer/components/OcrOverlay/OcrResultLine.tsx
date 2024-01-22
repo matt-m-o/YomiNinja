@@ -1,17 +1,11 @@
 import { styled } from "@mui/material";
 import { OcrResultBoxScalable, OcrTextLineScalable, OcrTextLineSymbolScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
+import { OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
+import { CSSProperties } from "react";
 
 
 
-const Line = styled('span')({
-    transformOrigin: 'top left',
-    whiteSpace: 'pre',
-    width: 'max-content',
-    // '&::selection': {
-    //     backgroundColor: 'red',
-    //     color: 'black'
-    // }
-});
+
 
 const SymbolsContainer = styled('span')({
     position: 'absolute',
@@ -19,24 +13,16 @@ const SymbolsContainer = styled('span')({
     top: '0px'
 });
 
-const Symbol = styled('span')({
-    transformOrigin: 'top left',
-    whiteSpace: 'pre',
-    textAlign: 'center',
-    // '&::selection': {
-    //     backgroundColor: 'red',
-    //     color: 'black'
-    // }
-});
 
 export type OcrResultLineProps = {
     line: OcrTextLineScalable;
     box: OcrResultBoxScalable;
     regionWidthPx: number;
     regionHeightPx: number;
-    symbolPositioning: boolean;
+    ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
+    // symbolPositioning: boolean;
     contentEditable: boolean;
-    fontSizeFactor: number;
+    // fontSizeFactor: number;
     onBlur?: () => void;
 };
 
@@ -47,9 +33,28 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         box,
         regionWidthPx,
         regionHeightPx,
-        symbolPositioning,
+        ocrItemBoxVisuals,
         contentEditable,
     } = props;
+
+    const textSelectionStyle: CSSProperties = {
+        backgroundColor: ocrItemBoxVisuals.selected_text.background_color,
+        color: ocrItemBoxVisuals.selected_text.color,
+    };
+
+    const Line = styled('span')({
+        transformOrigin: 'top left',
+        whiteSpace: 'pre',
+        width: 'max-content',
+        '&::selection': textSelectionStyle,
+    });
+
+    const Symbol = styled('span')({
+        transformOrigin: 'top left',
+        whiteSpace: 'pre',
+        textAlign: 'center',
+        '&::selection': textSelectionStyle,
+    });
 
     let lineFontSize = 0;
 
@@ -63,9 +68,12 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
 
     let symbols: JSX.Element[];
 
-    if ( symbolPositioning && line.symbols.length ) {
+    if ( ocrItemBoxVisuals.text.character_positioning && line.symbols.length ) {
 
-        const fontSizeFactor = props?.fontSizeFactor ? props.fontSizeFactor / 100 : 1;
+        let fontSizeFactor = ocrItemBoxVisuals.text.font_size_factor;
+
+        fontSizeFactor = fontSizeFactor ? fontSizeFactor / 100 : 1;
+
         lineFontSize = lineFontSize * fontSizeFactor;
 
         symbols = line?.symbols.map( ( symbol, sIdx ) => {

@@ -28,6 +28,10 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                         outline_width: 0,
                         outline_color: '#000000',
                         character_positioning: true,
+                    },
+                    selected_text: {
+                        color: '#ffffff',
+                        background_color: '#c50b0b' // Red
                     }
                 },
                 mouse: {
