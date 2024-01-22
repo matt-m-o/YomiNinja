@@ -125,8 +125,6 @@ export default function OcrResultBox( props: {
         lineHeight: adjustedFontSize + 'px',
         fontWeight: ocrItemBoxVisuals?.text?.font_weight,
         letterSpacing: ocrItemBoxVisuals.text.letter_spacing || 'inherit',
-        paddingLeft: isVertical ? 0 : '0.25%',
-        paddingRight: isVertical ? 0 : '0.25%',
         contentVisibility: 'visible',
         zIndex: 10,
         // @ts-expect-error
@@ -147,7 +145,7 @@ export default function OcrResultBox( props: {
         lineHeight: fontSize + 'px',
         contentVisibility: 'hidden',
         alignItems: alignItems,
-        flexDirection: isVertical ? 'row' : 'column',
+        flexDirection: isVertical ? 'column' : 'column', // why booth column?
         justifyContent: isMultiline ? 'space-between' : 'center',
     });
 
@@ -156,6 +154,16 @@ export default function OcrResultBox( props: {
     const minWidth = width + left > 100 ? 100 - left : width;
 
     const bottom = 100 - box.position.top - box.dimensions.height;
+
+    const sizeExpansionFactor = 0.4; // ! Add to settings menu
+    const sizeExpansionPx = isVertical ?
+        boxWidthPx * sizeExpansionFactor :
+        boxHeightPx * sizeExpansionFactor;
+
+    const sizeExpansionWidthPct = ( sizeExpansionPx / regionWidthPx ) * 100;
+    const sizeExpansionHeightPct = ( sizeExpansionPx / regionHeightPx ) * 100;
+    const sizeExpansionLeftPct =  sizeExpansionWidthPct / 2;
+    const sizeExpansionBottomPct =  sizeExpansionHeightPct / 2;
 
 
     useEffect(() => {
@@ -174,14 +182,12 @@ export default function OcrResultBox( props: {
         <Box className={ `extracted-text ${contentEditable ? 'editable' : ''}` } ref={boxRef}
             role="textbox"
             style={{
-                left: ( isVertical ? left : left - 0.25 ) + '%',
+                left: left - sizeExpansionLeftPct + '%',
                 // top: (box.position.top * 0.999) + '%',
-                bottom: bottom + '%',
+                bottom: ( bottom - sizeExpansionBottomPct ) + '%',
                 transform: `rotate( ${box.angle_degrees}deg )`,
-                minWidth: minWidth + '%',
-                minHeight: box.dimensions.height + '%',
-                paddingLeft: ( isVertical ? 0 : 0.25 ) + '%',
-                paddingRight: ( isVertical ? 0 : 0.25 ) + '%',
+                minWidth: ( minWidth + sizeExpansionWidthPct ) + '%',
+                minHeight: ( box.dimensions.height + sizeExpansionHeightPct ) + '%',
             }}
             onMouseEnter={ () => props.onMouseEnter( ocrItem ) }
             onMouseLeave={ props.onMouseLeave }
@@ -213,6 +219,7 @@ export default function OcrResultBox( props: {
                         key={lIdx}
                         onBlur={props.onBlur}
                         ocrItemBoxVisuals={ocrItemBoxVisuals}
+                        sizeExpansionPx={sizeExpansionPx}
                     />
                 )
             }) }

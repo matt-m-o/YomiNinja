@@ -19,10 +19,9 @@ export type OcrResultLineProps = {
     box: OcrResultBoxScalable;
     regionWidthPx: number;
     regionHeightPx: number;
+    sizeExpansionPx: number;
     ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
-    // symbolPositioning: boolean;
     contentEditable: boolean;
-    // fontSizeFactor: number;
     onBlur?: () => void;
 };
 
@@ -35,6 +34,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         regionHeightPx,
         ocrItemBoxVisuals,
         contentEditable,
+        sizeExpansionPx
     } = props;
 
     const textSelectionStyle: CSSProperties = {
@@ -86,7 +86,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             const symbolBoxWidthPx = regionWidthPx * ( symbol.box.dimensions.width / 100 );
             const symbolBoxHeightPx = regionHeightPx * ( symbol.box.dimensions.height / 100 );
     
-            let left = ( symbol.box.position.left - box.position.left ) + 0.25;
+            let left = symbol.box.position.left - box.position.left;
             let top = symbol.box.position.top - box.position.top;
 
             let letterSpacing = 1;
@@ -102,10 +102,10 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                     topOffset = -lineFontSize * 0.5;
             }
             
-            const leftPx = leftOffset + ( ( left / 100 ) * regionWidthPx );
-            const topPx = topOffset + ( ( top / 100 ) * regionHeightPx );
+            const leftPx = leftOffset + ( ( left / 100 ) * regionWidthPx ) + ( sizeExpansionPx / 2 );
+            const topPx = topOffset + ( ( top / 100 ) * regionHeightPx ) + ( sizeExpansionPx / 2 );
                         
-            
+            const lineHeight: string = box.isVertical ? 'unset' : lineFontSize * 1.13 + 'px';
     
             return (
                 <Symbol key={sIdx}
@@ -117,7 +117,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                         top: topPx + 'px',
                         fontSize: lineFontSize + 'px',
                         letterSpacing: letterSpacing + 'px',
-                        lineHeight: lineFontSize * 1.10 + 'px',
+                        lineHeight: lineHeight,
                         transform: `rotate( ${ symbol.box.angle_degrees }deg )`,
                         border: 'none'
                     }}
@@ -150,6 +150,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                 props?.onBlur();
             }}
             sx={{
+                m: props.sizeExpansionPx / 2 + 'px',
                 fontSize: lineFontSize ? lineFontSize+'px' : 'inherit'
             }}
         >
