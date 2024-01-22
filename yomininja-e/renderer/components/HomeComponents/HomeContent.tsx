@@ -7,9 +7,8 @@ import HotkeyHints from "./HotkeyHints";
 import { ScreenshotMonitorRounded } from "@mui/icons-material";
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import OcrTemplateSelector from "./OcrTemplateSelector";
-import CustomTextField from "./CustomTextField";
-import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
+import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined';
 
 const ButtonInput = styled(TextField)({
     minWidth: '500px',
@@ -161,7 +160,7 @@ export default function HomeContent() {
                                     fullWidth
                                     InputProps={{
                                         ...params.InputProps,
-                                        startAdornment: <LanguageOutlinedIcon sx={{ mr: '10px' }}/>,
+                                        startAdornment: <TranslateOutlinedIcon sx={{ mr: '10px' }}/>,
                                         style: {
                                             paddingLeft: '14px'
                                         }
