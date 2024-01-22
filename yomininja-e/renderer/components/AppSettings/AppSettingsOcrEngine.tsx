@@ -46,14 +46,11 @@ export default function AppSettingsOcrEngine() {
             <TabContext value={tab}>
                 <Box 
                     sx={{
-                        borderBottom: 1,
-                        // borderColor: 'divider',
-                        // backgroundColor: 'gray',
+                        borderBottom: '1px solid #313131',
+                        borderRadius: '10px 10px 0px 0px',
+                        backgroundColor: '#181818'
                     }}>
-                    <TabList 
-                        aria-label="lab API tabs example"
-                        onChange={tabHandleChange}
-                    >
+                    <TabList onChange={tabHandleChange} >
                         <TabItem label="PaddleOCR" value="1"/>
                         <TabItem label="Google Cloud Vision" value="2"/>
                     </TabList>
