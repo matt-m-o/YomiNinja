@@ -7,18 +7,26 @@ const Line = styled('span')({
     transformOrigin: 'top left',
     whiteSpace: 'pre',
     width: 'max-content',
+    // '&::selection': {
+    //     backgroundColor: 'red',
+    //     color: 'black'
+    // }
 });
 
 const SymbolsContainer = styled('span')({
     position: 'absolute',
     left: '0px',
-    top: '0px',
+    top: '0px'
 });
 
 const Symbol = styled('span')({
     transformOrigin: 'top left',
     whiteSpace: 'pre',
     textAlign: 'center',
+    // '&::selection': {
+    //     backgroundColor: 'red',
+    //     color: 'black'
+    // }
 });
 
 export type OcrResultLineProps = {
@@ -28,6 +36,7 @@ export type OcrResultLineProps = {
     regionHeightPx: number;
     symbolPositioning: boolean;
     contentEditable: boolean;
+    fontSizeFactor: number;
     onBlur?: () => void;
 };
 
@@ -39,13 +48,14 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         regionWidthPx,
         regionHeightPx,
         symbolPositioning,
-        contentEditable
+        contentEditable,
     } = props;
 
     let lineFontSize = 0;
 
     line?.symbols.map( symbol => {
-        const charBoxHeightPx = regionHeightPx * ( symbol.box.dimensions.height / 100 );
+
+        const charBoxHeightPx = ( regionHeightPx * ( symbol.box.dimensions.height / 100 ) );
         if ( charBoxHeightPx > lineFontSize )
             lineFontSize = charBoxHeightPx;
     });
@@ -54,6 +64,9 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     let symbols: JSX.Element[];
 
     if ( symbolPositioning && line.symbols.length ) {
+
+        const fontSizeFactor = props?.fontSizeFactor ? props.fontSizeFactor / 100 : 1;
+        lineFontSize = lineFontSize * fontSizeFactor;
 
         symbols = line?.symbols.map( ( symbol, sIdx ) => {
 
@@ -73,7 +86,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             let leftOffset = 0;
 
             // Handle some special characters
-            if ( [ '『', '「' ].includes( symbol.symbol ) ) {
+            if ( [ '【', '『', '「' ].includes( symbol.symbol ) ) {
 
                 if ( !box.isVertical )
                     leftOffset = -lineFontSize * 0.5;
@@ -83,6 +96,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             
             const leftPx = leftOffset + ( ( left / 100 ) * regionWidthPx );
             const topPx = topOffset + ( ( top / 100 ) * regionHeightPx );
+                        
             
     
             return (
@@ -95,7 +109,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                         top: topPx + 'px',
                         fontSize: lineFontSize + 'px',
                         letterSpacing: letterSpacing + 'px',
-                        lineHeight: lineFontSize + 'px',
+                        lineHeight: lineFontSize * 1.10 + 'px',
                         transform: `rotate( ${ symbol.box.angle_degrees }deg )`,
                         border: 'none'
                     }}
