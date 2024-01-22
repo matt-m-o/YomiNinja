@@ -5,11 +5,15 @@ import { ChromePicker, ColorResult, RGBColor  } from 'react-color'
 const Container = styled('div')({
     position: 'relative',
     display: 'inline-block',
+    '& .chrome-picker': {
+        position: 'absolute',
+        zIndex: 99999
+    }
 });
 
 const Popover = styled('div')({
     position: 'absolute',
-    zIndex: '9999999999',
+    zIndex: 9999,
     '& input': {
         backgroundColor: 'white'
     }
@@ -74,7 +78,7 @@ export default function ColorPicker( props: ColorPickerProps ) {
     }
 
     const input = (
-        <Container>
+        <Container id='container'>
             <TextField label={label} sx={sx}                      
                 size='small'
                 type="color"
@@ -86,7 +90,7 @@ export default function ColorPicker( props: ColorPickerProps ) {
                 }}
             />
             { visible && 
-                <Popover>
+                <Popover id='popover'>
                     <div style={ cover } onClick={ handleClose }/>
                     <ChromePicker
                         color={ color }
