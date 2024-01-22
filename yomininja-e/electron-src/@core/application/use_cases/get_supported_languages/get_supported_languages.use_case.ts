@@ -15,10 +15,10 @@ export class GetSupportedLanguagesUseCase< TOcrSettings extends OcrEngineSetting
 
         const result: GetSupportedLanguagesOutput[] = [];
 
-        const supportedLanguages: Language[] = [];
-
         for ( const adapter of this.ocrAdapters ) {
-
+            
+            const supportedLanguages: Language[] = [];
+            
             const languageCodes = await adapter.getSupportedLanguages();
 
             for ( const languageCode of languageCodes ) {

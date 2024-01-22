@@ -87,9 +87,17 @@ export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = Oc
 
     async getSupportedLanguages( ): Promise<Language[]> {
 
-        const results = await this.getSupportedLanguagesUseCase.execute();       
+        const results = await this.getSupportedLanguagesUseCase.execute();
 
-        return results.map( result => result.languages ).flat(1);
+        const languages: Map< string, Language > = new Map();
+
+        results.map( result => result.languages )
+            .flat(1)
+            .forEach(
+                language => languages.set( language.name, language )
+            );
+
+        return Array.from( languages.values() );
     }
 
 
