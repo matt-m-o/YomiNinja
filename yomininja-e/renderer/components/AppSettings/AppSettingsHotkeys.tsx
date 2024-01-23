@@ -72,7 +72,7 @@ export default function AppSettingsHotkeys() {
             />
 
             <FormGroup sx={{ marginLeft: 25 }}>
-                <FormControlLabel label='Auto OCR on PrintScreen key press (fastest)' sx={{ ml: '40px' }}
+                <FormControlLabel label='Trigger OCR on PrintScreen key press (fastest)' sx={{ ml: '40px' }}
                     control={
                         <Switch
                             checked={ocrOnPrintScreen}
