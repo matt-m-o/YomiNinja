@@ -36,7 +36,7 @@ export default function ExtensionItem( props: ExtensionItemProps ) {
                 backgroundColor: '#202124',
                 borderRadius: '8px',
                 width: '465px',
-                height: '100%'
+                minHeight: '200px'
             }}
         >
             <CardContent
