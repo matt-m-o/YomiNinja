@@ -165,7 +165,7 @@ export default function AppSettingsOthers() {
                         }}
                         control={
                             <Switch
-                                checked={ Boolean( overlayBehavior?.show_window_on_copy.enabled ) }
+                                checked={ Boolean( overlayBehavior?.show_window_on_copy?.enabled ) }
                                 onChange={ ( event ) => {
                                     updateActivePresetBehavior({
                                         show_window_on_copy: {
@@ -181,7 +181,7 @@ export default function AppSettingsOthers() {
                     <TextField type="text"
                         label="Window title"
                         size="small"
-                        value={ overlayBehavior?.show_window_on_copy.title }
+                        value={ overlayBehavior?.show_window_on_copy?.title }
                         onChange={ (event: ChangeEvent< HTMLInputElement >) => {
                             updateActivePresetBehavior({
                                 show_window_on_copy: {

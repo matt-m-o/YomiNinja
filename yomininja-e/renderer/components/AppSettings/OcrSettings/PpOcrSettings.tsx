@@ -1,4 +1,4 @@
-import { Alert, Backdrop, Box, Card, CardContent, CircularProgress, Container, Divider, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Popover, Select, Slider, Snackbar, Stack, Switch, SxProps, TextField, Theme, Typography, debounce, styled } from "@mui/material";
+import { Accordion, AccordionDetails, Alert, Backdrop, Box, Card, CardContent, CircularProgress, Container, Divider, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Popover, Select, Slider, Snackbar, Stack, Switch, SxProps, TextField, Theme, Typography, debounce, styled } from "@mui/material";
 import { SettingsContext } from "../../../context/settings.provider";
 import { useContext, useEffect, useState } from "react";
 import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
@@ -8,6 +8,9 @@ import { OcrEngineSettingsU } from "../../../../electron-src/@core/infra/types/e
 import CommonOcrSettings, { SettingsOptionContainer } from "./CommonOcrSettings";
 import OcrSettingsSlider from "./OcrSettingsSlider";
 import { PpOcrEngineSettings } from "../../../../electron-src/@core/infra/ocr/ppocr.adapter/ppocr_settings";
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import AccordionSummary from '@mui/material/AccordionSummary';
+
 
 const OptionsGroupCard = styled(Card)({
     display: 'flex',
@@ -219,61 +222,64 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
 
             </SettingsOptionContainer>
             
+            <Container>
+                <Accordion>
+                    <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
+                        <Typography fontSize={'1.1rem'}>
+                            Subtle adjustments
+                        </Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
 
-            {/* <OptionsGroupCard variant="outlined">
-                <CardContent> */}
-
-                    {/* <Typography component="div" fontSize={'1.2rem'} fontWeight={600}>
-                        Text detection
-                    </Typography> */}
-
-                    <SettingsOptionContainer>
-                        <OcrSettingsSlider
-                            label="Text pixel detection threshold"
-                            title='det_db_thresh'
-                            icon={requiresRestartIcon}
-                            marks
-                            min={0.01} max={ 1 } step={0.01}
-                            value={ detDbThresh }
-                            onChange={ ( event, newValue ) => {
-                                if (typeof newValue === 'number') {
-                                    setDetDbThresh( newValue );
-                                }
-                            }}
-                            onChangeCommitted={ () => {
-                                updateActivePresetOcrEngine({
-                                    ...ocrEngineSettings,
-                                    det_db_thresh: detDbThresh
-                                });
-                            }}
-                        />
-                    </SettingsOptionContainer>
-            
-
-                    <SettingsOptionContainer>
-                        <OcrSettingsSlider
-                            label="Text area detection threshold"
-                            title='det_db_box_thresh'
-                            icon={requiresRestartIcon}
-                            marks
-                            min={0.01} max={ 1 } step={0.01}
-                            value={ detDbBoxThresh }
-                            onChange={ ( event, newValue ) => {
-                                if (typeof newValue === 'number') {
-                                    setDetDbBoxThresh( newValue );
-                                }
-                            }}
-                            onChangeCommitted={ () => {
-                                updateActivePresetOcrEngine({
-                                    ...ocrEngineSettings,
-                                    det_db_box_thresh: detDbBoxThresh
-                                });
-                            }}
-                        />
-                    </SettingsOptionContainer>
+                        <SettingsOptionContainer sx={{mt:0}}>
+                            <OcrSettingsSlider
+                                label="Text pixel detection threshold"
+                                title='det_db_thresh'
+                                icon={requiresRestartIcon}
+                                marks
+                                min={0.01} max={ 1 } step={0.01}
+                                value={ detDbThresh }
+                                onChange={ ( event, newValue ) => {
+                                    if (typeof newValue === 'number') {
+                                        setDetDbThresh( newValue );
+                                    }
+                                }}
+                                onChangeCommitted={ () => {
+                                    updateActivePresetOcrEngine({
+                                        ...ocrEngineSettings,
+                                        det_db_thresh: detDbThresh
+                                    });
+                                }}
+                            />
+                        </SettingsOptionContainer>
                 
-                {/* </CardContent>
-            </OptionsGroupCard> */}
+
+                        <SettingsOptionContainer>
+                            <OcrSettingsSlider
+                                label="Text area detection threshold"
+                                title='det_db_box_thresh'
+                                icon={requiresRestartIcon}
+                                marks
+                                min={0.01} max={ 1 } step={0.01}
+                                value={ detDbBoxThresh }
+                                onChange={ ( event, newValue ) => {
+                                    if (typeof newValue === 'number') {
+                                        setDetDbBoxThresh( newValue );
+                                    }
+                                }}
+                                onChangeCommitted={ () => {
+                                    updateActivePresetOcrEngine({
+                                        ...ocrEngineSettings,
+                                        det_db_box_thresh: detDbBoxThresh
+                                    });
+                                }}
+                            />
+                        </SettingsOptionContainer>
+
+                    </AccordionDetails>
+                </Accordion>
+            </Container>
+            
 
             <Container 
                 sx={{
