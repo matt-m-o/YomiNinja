@@ -91,16 +91,12 @@ export class BrowserExtensionsService {
         
         this.extensionsApi = new ElectronChromeExtensions({
             session: this.session,
-            createTab: async ( details ) => {
+            createTab: async ( details ): Promise< [Electron.WebContents, Electron.BrowserWindow] > => {
 
-                console.log("details")// chrome-extension://mgdeokilehajjpebpficpflibgfpgccn/settings_page/settings.html
-                // console.log(details) // chrome-extension://mgdeokilehajjpebpficpflibgfpgccn/settings_page/settings.html
-
-                const extensionWindow = this.createExtensionWindow( details.url );
+                const extensionWindow = this.createExtensionWindow( details.url || '' );
 
                 return [ extensionWindow.webContents, extensionWindow ];
             },
-
         });
         
         // console.log({ EXTENSIONS_DIR });
