@@ -77,7 +77,7 @@ export default function AppSettingsVisuals() {
     }, 100 );
     
     const textFieldBaseSx: SxProps<Theme> = {
-        minWidth: '100px', 
+        minWidth: '100px',
         maxWidth: '110px',
         m: 1,
     };

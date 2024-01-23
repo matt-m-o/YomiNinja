@@ -20,6 +20,7 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                     border_color: "#e21212", // Red
                     border_radius: 10,
                     border_width: 1,
+                    size_factor: 35,
                     text: {
                         color: "#ffffff", // White
                         font_size_factor: 100,

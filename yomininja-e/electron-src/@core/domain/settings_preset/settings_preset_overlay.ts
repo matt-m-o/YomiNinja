@@ -9,6 +9,7 @@ export type OverlayOcrItemBoxVisuals = {
     border_radius: number; // pixels
     background_color: string;
     background_color_inactive: string;
+    size_factor: number; // % 0 .. 100
     text: {
         color: string;
         font_size_factor: number; // %

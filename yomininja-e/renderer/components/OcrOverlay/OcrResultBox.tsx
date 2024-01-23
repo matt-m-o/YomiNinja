@@ -50,7 +50,8 @@ export default function OcrResultBox( props: {
 
     const boxRef = useRef(null);
 
-    const isMultiline = ocrItem.text.length > 1;
+    const lineCount = ocrItem.text.length;
+    const isMultiline = lineCount > 1;
     
     const [ alignItems, setAlignItems ] = useState( 'center' );
 
@@ -155,10 +156,10 @@ export default function OcrResultBox( props: {
 
     const bottom = 100 - box.position.top - box.dimensions.height;
 
-    const sizeExpansionFactor = 0.4; // ! Add to settings menu
+    const sizeExpansionFactor = ocrItemBoxVisuals.size_factor / 100; // ! Add to settings menu
     const sizeExpansionPx = isVertical ?
-        boxWidthPx * sizeExpansionFactor :
-        boxHeightPx * sizeExpansionFactor;
+        (boxWidthPx * sizeExpansionFactor) / lineCount:
+        (boxHeightPx * sizeExpansionFactor) / lineCount;
 
     const sizeExpansionWidthPct = ( sizeExpansionPx / regionWidthPx ) * 100;
     const sizeExpansionHeightPct = ( sizeExpansionPx / regionHeightPx ) * 100;
