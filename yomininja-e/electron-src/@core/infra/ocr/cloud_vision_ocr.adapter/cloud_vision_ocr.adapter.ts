@@ -1,8 +1,8 @@
 import { google } from "@google-cloud/vision/build/protos/protos";
 import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrResult, OcrResultContextResolution, OcrTextLine } from "../../../domain/ocr_result/ocr_result";
-import { CloudVisionApi } from "./cloud_vision_api";
-import { CloudVisionOcrEngineSettings, cloudVisionOcrAdapterName, getCloudVisionDefaultSettings } from "./cloud_vision_ocr_settings";
+import { CloudVisionAPICredentials, CloudVisionApi } from "./cloud_vision_api";
+import { CloudVisionAPIMode, CloudVisionOcrEngineSettings, cloudVisionOcrAdapterName, getCloudVisionDefaultSettings } from "./cloud_vision_ocr_settings";
 import { OcrEngineSettingsU } from "../../types/entity_instance.types";
 
 export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSettings > {
@@ -14,6 +14,7 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
 
     private api: CloudVisionApi;
     private testApi: CloudVisionApi;
+    private apiMode: CloudVisionAPIMode;
 
     constructor(
         api: CloudVisionApi,
@@ -34,19 +35,22 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
 
         let api: CloudVisionApi;
         
-        if ( this.testApi?.hasCredentials ) {
+
+        if ( this.apiMode === 'demo' ) {
             api = this.testApi;
-            console.log('Using Cloud Vision test API');
+            console.log('Using Cloud Vision Demo API');
         }
-        else if ( this.api?.hasCredentials ) {
+        else if ( this.apiMode === 'main' ) {
             api = this.api;
-            console.log('Using Cloud Vision API');
+            console.log('Using Cloud Vision Main API');
         }
         else {
             return null;
         }
 
         const result = await api.textDetection( imageBuffer );
+
+        if ( !result ) return null;
 
         const ocrResultItems: OcrItem[] = [];
 
@@ -164,8 +168,15 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
         settingsUpdate = settingsUpdate as CloudVisionOcrEngineSettings;
         oldSettings = settingsUpdate as CloudVisionOcrEngineSettings;
 
-        this.api.updateCredentials( settingsUpdate );
-        this.testApi.updateCredentials( settingsUpdate );
+        const credentials: CloudVisionAPICredentials = {
+            clientEmail: settingsUpdate?.client_email,
+            privateKey: settingsUpdate?.private_key,
+            token: settingsUpdate?.token
+        };
+
+        this.api.updateCredentials( credentials );
+        this.testApi.updateCredentials( credentials );
+        this.apiMode = settingsUpdate.active_api;
 
         return {
             restart: false,

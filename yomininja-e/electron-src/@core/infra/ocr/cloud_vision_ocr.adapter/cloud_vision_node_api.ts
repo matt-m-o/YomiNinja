@@ -32,9 +32,17 @@ export class CloudVisionNodeAPI implements CloudVisionApi {
         input: string | Buffer
     ): Promise< google.cloud.vision.v1.IAnnotateImageResponse | undefined > {
         
-        const [ result ] = await this.client.textDetection( input );
-    
-        return result;
+        try {
+
+            const [ result ] = await this.client.textDetection( input );
+
+            this.hasCredentials = true;
+            
+            return result;
+
+        } catch (error) {
+            this.hasCredentials = false;
+        }
     }
 
     updateCredentials( credentials: CloudVisionAPICredentials ) {

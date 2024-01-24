@@ -96,6 +96,8 @@ export class CloudVisionRestAPI implements CloudVisionApi {
 
             const response = await this.httpClient.post( url, data );
 
+            this.hasCredentials = true;
+
             return response.data.responses as google.cloud.vision.v1.IAnnotateImageResponse[];
 
         } catch ( error ) {

@@ -3,6 +3,8 @@ import { OcrEngineSettings } from "../../../domain/settings_preset/settings_pres
 // This for preventing import 'electron-is-dev' issues when testing with jest
 export const cloudVisionOcrAdapterName = 'CloudVisionOcrAdapter';
 
+export type CloudVisionAPIMode = 'main' | 'demo';
+
 export interface CloudVisionOcrEngineSettings extends OcrEngineSettings {
     api_key?: string;
     token?: string;
@@ -12,6 +14,7 @@ export interface CloudVisionOcrEngineSettings extends OcrEngineSettings {
     monthly_request_count: number;
     monthly_reset_day: number; // 1 - 30
     last_reset_date: Date;
+    active_api: CloudVisionAPIMode;
 };
 
 export function getCloudVisionDefaultSettings(): CloudVisionOcrEngineSettings {
@@ -27,6 +30,7 @@ export function getCloudVisionDefaultSettings(): CloudVisionOcrEngineSettings {
         last_reset_date: new Date(),
         client_email: '',
         private_key: '',
+        active_api: 'main',
     }
 
     return defaultSettings;

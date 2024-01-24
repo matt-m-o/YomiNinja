@@ -9,6 +9,7 @@ import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import OcrTemplateSelector from "./OcrTemplateSelector";
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 const ButtonInput = styled(TextField)({
     minWidth: '500px',
@@ -133,7 +134,7 @@ export default function HomeContent() {
                                     InputProps={{
                                         ...params.InputProps,
                                         startAdornment: (
-                                            <AutoAwesomeOutlinedIcon sx={{ mr: '10px' }} />
+                                            <AutoAwesomeIcon sx={{ mr: '10px' }} />
                                         ),
                                         style: {
                                             paddingLeft: '14px'
