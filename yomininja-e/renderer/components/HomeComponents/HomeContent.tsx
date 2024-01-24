@@ -227,7 +227,7 @@ export default function HomeContent() {
                         The overlay can be operated by using the following hotkeys <br/>                        
                     </Typography>
 
-                    <HotkeyHints/>                  
+                    <HotkeyHints/>
 
                     <ul
                         style={{

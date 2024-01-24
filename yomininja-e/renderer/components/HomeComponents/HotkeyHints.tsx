@@ -124,7 +124,7 @@ export default function HotkeyHints() {
                 justifyContent='center'
                 m='auto' width='100%'
             >
-                { createHotkeyHint( 'OCR', ocrHotkeysStrings ) }
+                { createHotkeyHint( 'Primary OCR', ocrHotkeysStrings ) }
                 { createHotkeyHint( 'PaddleOCR', [ppOcrSettings?.hotkey] ) }
                 { createHotkeyHint( 'Cloud Vision', [cloudVisionSettings?.hotkey] ) }
 
