@@ -4,7 +4,8 @@ export type OverlayOcrRegionVisuals = {
 
 
 export type OverlayOcrItemBoxVisuals = {
-    border_color: string;
+    inactive_border_color: string;
+    active_border_color: string;
     border_width: number; // pixels
     border_radius: number; // pixels
     background_color: string;

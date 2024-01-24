@@ -92,7 +92,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                 }}
             />
 
-            <TextField label="Font Weight" sx={textFieldSx}                      
+            <TextField label="Font Weight"
                 size='small'
                 type="number"
                 inputProps={{ style: { textAlign: 'center' } }}
@@ -107,6 +107,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                         }
                     });
                 }}
+                sx={{ ...textFieldSx, width: 'min-content'}}
             />
 
             <TextField label="Letter Spacing" sx={textFieldSx}                      
@@ -161,7 +162,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                 }}
             />
 
-            <ColorPicker label="Highlight" sx={textFieldSx}
+            <ColorPicker label="Highlight Color" sx={textFieldSx}
                 value={ ocrItemBoxVisuals?.selected_text?.background_color || '' }
                 onChangeComplete={ (color) => {
                     updateOcrItemBoxVisuals({                                
@@ -187,34 +188,47 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                 mb: 2,
             }}>
 
-            <ColorPicker label="Inactive BG" sx={ textFieldSx }
+            <ColorPicker label="Inactive BG"
                 value={ ocrItemBoxVisuals?.background_color_inactive || '' }
                 onChangeComplete={ ( color: string ) => {
                     updateOcrItemBoxVisuals({
                         background_color_inactive: color
                     });
                 }}
+                sx={{ ...textFieldSx, minWidth: '90px' }}
             />
 
-            <ColorPicker label="Active BG" sx={ textFieldSx }
+            <ColorPicker label="Active BG"
                 value={ ocrItemBoxVisuals?.background_color || '' }
                 onChangeComplete={ ( color: string ) => {
                     updateOcrItemBoxVisuals({
                         background_color: color
                     });
                 }}
+                sx={{ ...textFieldSx, minWidth: '85px' }}
             />
 
-            <ColorPicker label="Border Color" sx={textFieldSx}
-                value={ ocrItemBoxVisuals?.border_color || '' }
+            <ColorPicker label="Inactive Border"
+                value={ ocrItemBoxVisuals?.inactive_border_color || '' }
+                onChangeComplete={ ( color: string ) => {
+                    updateOcrItemBoxVisuals({
+                        inactive_border_color: color
+                    });
+                }}
+                sx={{ ...textFieldSx, minWidth: '110px' }}
+            />
+
+            <ColorPicker label="Active Border" sx={textFieldSx}
+                value={ ocrItemBoxVisuals?.active_border_color || '' }
                 onChangeComplete={ ( color: string ) => {
                     updateOcrItemBoxVisuals({                                
-                        border_color: color
+                        active_border_color: color
                     });
                 }}
             />
 
-            <TextField label="Border Width" sx={textFieldSx}                        
+            <TextField label="Border Width" sx={textFieldSx}
+                title='Border Width'                     
                 size='small'
                 type="number"
                 inputProps={{ style: { textAlign: 'center' } }}                        
@@ -226,9 +240,10 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                 }}
             />
 
-            <TextField label="Border Radius" sx={textFieldSx}                      
+            <TextField label="Border Radius" sx={textFieldSx}
+                title='Border Radius'
                 size='small'
-                type="number"                        
+                type="number"
                 inputProps={{ style: { textAlign: 'center' } }}                        
                 value={ ocrItemBoxVisuals?.border_radius || '' }
                 onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {

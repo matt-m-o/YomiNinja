@@ -93,12 +93,13 @@ export default function AppSettingsVisuals() {
 
     const OcrItemBox = styled( BaseOcrResultBox )({
         outline: `solid ${ocrItemBoxVisuals?.border_width}px`,
-        outlineColor: ocrItemBoxVisuals?.border_color,
+        outlineColor: ocrItemBoxVisuals?.inactive_border_color,
         borderRadius: ocrItemBoxVisuals?.border_radius,
         backgroundColor: ocrItemBoxVisuals?.background_color_inactive,
         "&:hover": {
             contentVisibility: 'visible',
             backgroundColor: ocrItemBoxVisuals?.background_color,
+            outlineColor: ocrItemBoxVisuals?.active_border_color,
             color: ocrItemBoxVisuals?.text.color,
             letterSpacing: ocrItemBoxVisuals?.text?.letter_spacing || 'inherit',
             fontSize: ocrItemBoxVisuals?.text?.font_size_factor + '%',

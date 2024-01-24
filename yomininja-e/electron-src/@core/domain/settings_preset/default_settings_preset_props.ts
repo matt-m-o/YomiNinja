@@ -17,7 +17,8 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                 ocr_item_box: {
                     background_color: '#000000', // Black
                     background_color_inactive: '#5b7eff00', // transparent
-                    border_color: "#e21212", // Red
+                    inactive_border_color: "#e21212", // Red
+                    active_border_color: "#e21212", // Red
                     border_radius: 10,
                     border_width: 1,
                     size_factor: 35,

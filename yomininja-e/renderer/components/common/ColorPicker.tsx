@@ -79,7 +79,8 @@ export default function ColorPicker( props: ColorPickerProps ) {
 
     const input = (
         <Container id='container'>
-            <TextField label={label} sx={sx}                      
+            <TextField label={label} sx={sx}
+                title={label}
                 size='small'
                 type="color"
                 inputProps={{ style: { textAlign: 'center' } }}                        
