@@ -81,8 +81,8 @@ export class OcrRecognitionController {
 
             if ( 
                 !ocrResultScalable ||
-                !ocrResultScalable.ocr_regions.length ||
-                !ocrResultScalable.ocr_regions?.[0]?.results.length
+                !ocrResultScalable?.ocr_regions?.length ||
+                !ocrResultScalable?.ocr_regions?.some( region => region?.results?.length )
             ) {
                 const notification: InAppNotification = {
                     type: 'info',
