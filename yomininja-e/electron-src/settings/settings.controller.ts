@@ -5,6 +5,8 @@ import { ipcMain } from 'electron';
 import { SettingsPreset, SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 import path from "path";
 import fs from 'fs';
+import { pushInAppNotification } from "../common/notification_helpers";
+import { InAppNotification } from "../common/types/in_app_notification";
 
 
 
@@ -61,6 +63,10 @@ export class SettingsController {
                         { token }
                     );
                     this.cloudVisionWindow?.close();
+                    this.notifyCredentialsLoaded();
+                }
+                else {
+                    this.notifyFailedToLoadCredentials();
                 }
             }
             callback({});
@@ -115,7 +121,12 @@ export class SettingsController {
                     clientEmail: json.client_email,
                     privateKey: json.private_key
                 }
-            )
+            );
+            this.notifyCredentialsLoaded();
+        }
+        else {
+            console.error('Failed to load credentials!');
+            this.notifyFailedToLoadCredentials();
         }
     }
 
@@ -132,9 +143,32 @@ export class SettingsController {
 
         this.cloudVisionWindow.loadURL('https://cloud.google.com/vision/docs/drag-and-drop');
         this.cloudVisionWindow.show();
-        // this.cloudVisionWindow.maximize();
 
         this.cloudVisionWindow.webContents.executeJavaScript(`window.scrollTo(0, 520)`);
         
+    }
+
+    notifyCredentialsLoaded() {
+        pushInAppNotification({
+            notification: {
+                type: 'info',
+                message: 'Credentials loaded!',
+            },
+            windows: [
+                this.mainWindow
+            ]
+        });
+    }
+
+    notifyFailedToLoadCredentials() {
+        pushInAppNotification({
+            notification: {
+                type: 'error',
+                message: 'Failed to load credentials!',
+            },
+            windows: [
+                this.mainWindow
+            ]
+        });
     }
 }
