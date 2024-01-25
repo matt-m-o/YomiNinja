@@ -12,6 +12,7 @@ import { TaskbarProperties } from "../../gyp_modules/window_management/window_ma
 import sharp from "sharp";
 import os from 'os';
 import { OcrEngineSettingsU } from "../@core/infra/types/entity_instance.types";
+import { InAppNotification } from "../common/types/in_app_notification";
 
 export class OcrRecognitionController {
     
@@ -78,7 +79,22 @@ export class OcrRecognitionController {
             // console.timeEnd('controller.recognize');
             // console.log('');
 
-            // console.log( ocrResultScalable );
+            if ( 
+                !ocrResultScalable ||
+                !ocrResultScalable.ocr_regions.length ||
+                !ocrResultScalable.ocr_regions?.[0]?.results.length
+            ) {
+                const notification: InAppNotification = {
+                    type: 'info',
+                    message: 'No text recognized! Please try again.',
+                    autoHideDuration: 3000
+                };
+
+                this.overlayWindow.webContents.send(
+                    'notifications:show',
+                    notification
+                );
+            }
 
             this.overlayWindow.webContents.send( 'ocr:result', ocrResultScalable );
 
