@@ -24,7 +24,7 @@ export default function PasswordField( props: PasswordFieldProps ) {
 
 
     return (
-        <FormControl sx={{ m: 1, width: '100%' }} >
+        <FormControl sx={{ width: '100%' }} >
             <InputLabel htmlFor="filled-adornment-password" required={required}>
                 { label }
             </InputLabel>

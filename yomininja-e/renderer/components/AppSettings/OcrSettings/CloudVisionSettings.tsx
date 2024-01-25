@@ -12,6 +12,12 @@ const ModeToggleButton = styled( ToggleButton )({
     // borderRadius: '30px'
 });
 
+const Link = styled( 'a' )({
+    // textDecoration: 'none',
+    color: 'inherit',
+    fontWeight: 700,
+})
+
 
 type CloudVisionSettingsProps = {
     ocrEngineSettings: CloudVisionOcrEngineSettings;    
@@ -61,25 +67,49 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
         </ToggleButtonGroup>
     );
 
+    function createLink(input: { link: string, displayText: string }) {
+        return (
+            <Link href="#"
+                title={input.link}
+                onClick={ () => openLink(input.link)  }
+            >
+                {input.displayText}
+            </Link>
+        )
+    }
 
+    const googleCloudConsoleLink = createLink({
+        link: 'https://console.cloud.google.com',
+        displayText: 'Google Cloud'
+    });
 
-    const divider = (
-        <Divider
-            sx={{
-                width: '100%',
-                mt: '40px',
-                mb: '40px'
-            }}>
-        </Divider>
-    );
+    const billingBudgetLink = createLink({
+        link: 'https://cloud.google.com/billing/docs/how-to/budgets',
+        displayText: 'Billing budget'
+    });
 
+    const pricingLink = createLink({
+        link: 'https://cloud.google.com/vision/pricing#prices',
+        displayText: 'here'
+    });
+    
+
+    function openLink( link: string ) {
+        global.ipcRenderer.invoke( 'open_link', link );
+    }
 
     return (
         <Box sx={{ flexGrow: 1, margin: 1, }}>
 
             {/* <CommonOcrSettings ocrEngineSettings={ocrEngineSettings} /> */}
 
-            <Container sx={{display: 'flex', flexDirection: 'column' }}>
+            <Typography component="div" fontSize='1.0rem'
+                mt={1} mb={4}
+            >
+                Utilizes the same advanced technology as Google Lens for accurate and powerful text recognition.
+            </Typography>
+
+            <Container sx={{display: 'flex', flexDirection: 'column', mb: 2 }}>
                 <Typography gutterBottom component="div" fontSize='1.0rem' 
                     mt={1} mb={0}
                     textAlign='center'
@@ -89,10 +119,22 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
                 </Typography>
                 {ApiToggleButton}
             </Container>
+            
+            { ocrEngineSettings?.active_api === 'main' &&
+                <Typography mb={4}>
+                    The main API allows for up to 1000 free requests per month. For detailed pricing information, click {pricingLink}.
+                </Typography>
+            }
+            { ocrEngineSettings?.active_api === 'demo' &&
+                <Typography mb={4}>
+                    The demo API allows you to use Cloud Vision for free with a very limited number of requests each time you load the demo credentials.
+                    You can load the credentials multiple times for continued testing, but there are no guarantees.
+                </Typography>
+            }
 
-            <Box display='flex' justifyContent='space-between'>
+            <Box> {/* display='flex' justifyContent='space-between' */}
 
-                <Typography gutterBottom component="div" fontSize='1.2rem' mt={1} ml={2} mb={2}>
+                <Typography gutterBottom component="div" fontSize='1.2rem' mt={1} mb={2}>
                     API Credentials
                 </Typography>
 
@@ -102,6 +144,23 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
                 >
                     Unauthorized
                 </Typography> */}
+
+                { ocrEngineSettings?.active_api === 'main' &&
+                    <Typography mb={4}>
+                        To enable Google Cloud Vision main API, sign in to {googleCloudConsoleLink}, create a project with billing, and set up a service account with a JSON key.                    It's advisable to set a {billingBudgetLink} to avoid surprises on your bill.
+                    </Typography>
+                }
+
+                { ocrEngineSettings?.active_api === 'demo' && <>
+                    <Typography>
+                        To load the demo API credentials, follow these steps:
+                    </Typography>
+                    <ol>
+                        <li>Click on the button bellow.</li>
+                        <li>Upload any image file.</li>
+                        <li>Solve the reCAPTCHA.</li>
+                    </ol>
+                </> }
 
             </Box>
 
@@ -114,20 +173,16 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
                     ),
                     flexDirection: 'column',
                 }}
-            >   
+            >
 
                 <Button variant="contained"
                     size="large"
                     startIcon={ <InsertDriveFileOutlinedIcon/> }
                     onClick={ loadCloudVisionCredentialsFile }
-                    style={{
-                        width: '100%',
-                        margin: '8px',
-                        marginLeft: '10px',
-                        marginBottom: '15px'
-                    }}
+                    fullWidth
+                    sx={{ mb: 3 }}
                 >
-                    Load from file
+                    Load from JSON file
                 </Button>
 
                 <PasswordField
@@ -141,6 +196,7 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
                             private_key: event.target.value
                         });
                     } }
+                    sx={{ mb: 2 }}
                 />
 
                 <PasswordField
@@ -171,13 +227,10 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
                 <Button variant="contained"
                     size="large"
                     onClick={ openCloudVisionPage }
-                    style={{
-                        width: '100%',
-                        margin: '8px',
-                        marginLeft: '10px',
-                    }}
+                    fullWidth
+                    sx={{ mb: 2 }}
                 >
-                    Load from Cloud Vision demo page (only a few requests)
+                    Load demo API credentials
                 </Button>
 
             </Container>
