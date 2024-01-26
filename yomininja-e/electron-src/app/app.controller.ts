@@ -455,6 +455,7 @@ export class AppController {
         } = input;
 
         this.overlayWindow?.webContents.send( 'user_command:toggle_results', false );
+        this.overlayWindow?.webContents.send( 'ocr:processing_started' );
         
         await this.handleCaptureSourceSelection();
 
@@ -483,6 +484,8 @@ export class AppController {
             })
                 .catch( console.error );
         }
+
+        this.overlayWindow?.webContents.send( 'ocr:processing_complete' );
 
         let isFullScreenImage = true;
 

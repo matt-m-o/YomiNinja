@@ -8,7 +8,7 @@ import {
   OverlayOcrRegionVisuals
 } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import { SettingsContext } from "../../context/settings.provider";
-import { debounce } from "@mui/material";
+import { CircularProgress, Typography, debounce } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import FullscreenOcrResult from "./OcrResults";
 import { DictionaryContext } from "../../context/dictionary.provider";
@@ -26,6 +26,16 @@ const OverlayFrame = styled('div')({
   boxSizing: 'border-box',
 });
 
+const ProgressContainer = styled('div')({
+  position: 'absolute',
+  display: 'flex',
+  alignItems: 'center',
+  justifyItems:'center', 
+  right: '2%',
+  bottom: '5%'
+
+});
+
 export default function OcrOverlay() {
 
   const { activeSettingsPreset } = useContext( SettingsContext );
@@ -33,7 +43,7 @@ export default function OcrOverlay() {
   const { activeOcrTemplate } = useContext( OcrTemplatesContext );
   
 
-  const { ocrResult, showResults } = useContext( OcrResultContext );
+  const { ocrResult, showResults, processing } = useContext( OcrResultContext );
 
   const ocrItemBoxVisuals: OverlayOcrItemBoxVisuals = activeSettingsPreset?.overlay?.visuals.ocr_item_box;
   const overlayFrameVisuals: OverlayFrameVisuals = activeSettingsPreset?.overlay?.visuals.frame;
@@ -76,13 +86,23 @@ export default function OcrOverlay() {
     global.ipcRenderer.invoke( 'overlay:set_ignore_mouse_events', value );
   };
 
+  let circularProgressSize = 35;
+
   useEffect( () => {
 
     document.addEventListener( 'mousemove', handleClickThrough );
+    
+    if ( !window ) return;
+    
+    circularProgressSize = window.innerWidth * 0.03;
+
+    if ( circularProgressSize < 35 )
+      circularProgressSize = 35;
 
     return () => {
       document.removeEventListener( 'mousemove', handleClickThrough );
     };
+
 
   }, [] );
 
@@ -105,7 +125,9 @@ export default function OcrOverlay() {
     );
   });
 
-  return (
+  
+
+  return ( <>
     <OverlayFrame id='overlay-frame'
       sx={{
         borderColor: overlayFrameVisuals?.border_color || 'red',
@@ -125,5 +147,17 @@ export default function OcrOverlay() {
       }
 
     </OverlayFrame>
-  )
+
+    { processing &&
+      <ProgressContainer>
+        <CircularProgress 
+          size={circularProgressSize+'px'}
+          sx={{
+            color: overlayFrameVisuals?.border_color
+          }}
+        />
+      </ProgressContainer>
+    }
+    
+  </> )
 }
