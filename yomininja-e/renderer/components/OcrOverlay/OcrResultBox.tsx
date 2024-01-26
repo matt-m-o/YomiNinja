@@ -194,7 +194,11 @@ export default function OcrResultBox( props: {
             onMouseEnter={ () => props.onMouseEnter( ocrItem ) }
             onMouseLeave={ props.onMouseLeave }
             onClick={ () => props.onClick( ocrItem ) }
-            onDoubleClick={ props.onDoubleClick }
+            onDoubleClick={ (e) => {
+                if ( !e.ctrlKey )
+                    return;
+                props.onDoubleClick();
+            }}
             // onBlur={ ( e ) => {
             //     // ocrItem.text = e.target.innerText;
             //     props.onBlur();
