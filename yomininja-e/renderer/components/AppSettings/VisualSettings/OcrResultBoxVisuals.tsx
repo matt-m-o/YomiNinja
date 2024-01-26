@@ -34,7 +34,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
 
         <Container sx={{ ml: 1.5,  mt: 0, mb: 2 }}>
             <FormControlLabel label='Individual character positioning (not supported by all OCR engines)'
-                title="Currently only supported by Google Cloud Vision"
+                title="Currently only supported by Google Cloud Vision. Breaks JPDB Reader."
                 control={
                     <Switch
                         checked={ Boolean( ocrItemBoxVisuals?.text.character_positioning ) }

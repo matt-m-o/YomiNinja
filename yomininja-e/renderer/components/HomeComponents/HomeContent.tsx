@@ -208,11 +208,16 @@ export default function HomeContent() {
                             marginLeft: 20
                         }}
                     >
-                        <li> Chrome Extensions Manager. </li>
-                        <li> OCR Templates. </li>
-                        <li> Option to control which window is displayed when the text is copied (e.g. Yomichan, Yomitan, Yomibaba...). </li>
-                        <li> Option to enable a custom mouse cursor for games that hide the mouse cursor. </li>
-                        <li> Option to change the overlay font size. </li>
+                        <li> Google Cloud Vision integration, matching the exceptional accuracy of Google Lens. </li>
+                        <li> Per-character OCR result positioning for more accurate text overlay on the original content (currently exclusive to Cloud Vision). </li>
+                        <li> Expanded PaddleOCR settings menu with additional parameters. </li>
+                        <li> Native support for Yomitan, Yomichan, and JPDB extensions. </li>
+                        <li> Global hotkeys for toggling the overlay and coping extracted text. </li>
+                        <li> Dedicated global hotkeys for each OCR engine. </li>
+                        <li> Edit extracted text with Ctrl + Double Click, allowing for manual corrections. </li>
+                        <li> Enhanced overlay customization options. </li>
+                        <li> Option to automatically hide OCR results upon focus loss. </li>
+
                     </ul>
 
                 </CardContent>
@@ -241,6 +246,7 @@ export default function HomeContent() {
                         <li>Customize hotkeys, text auto-copy, and more in the settings menu.</li>
                         <li>The copied text is also transmitted via WebSockets on port 6677.</li>
                         <li>If the game hides the mouse cursor, enable the custom cursor in the settings menu.</li>
+                        <li>Edit extracted text with Ctrl + Double Click. </li>
                     </ul>
 
                 </CardContent>
