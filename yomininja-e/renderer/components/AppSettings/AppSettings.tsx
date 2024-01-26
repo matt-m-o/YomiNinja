@@ -7,32 +7,7 @@ import AppSettingsOthers from "./AppSettingsOthers";
 import AppSettingsOcrEngine from "./AppSettingsOcrEngine";
 
 
-const SectionDivider = styled( Divider )({
-    marginTop: '30px',
-    marginBottom: '30px',
-});
-
 export default function AppSettingsMenu() {
-
-    const { activeSettingsPreset, updateActivePreset } = useContext( SettingsContext );
-
-    // <Container maxWidth='md'>
-                    
-    //     <AppSettingsHotkeys/>
-        
-    //     <SectionDivider/>
-
-    //     <AppSettingsOthers/>
-
-    //     <SectionDivider/>
-
-    //     <AppSettingsVisuals/>
-
-    //     <SectionDivider/>
-
-    //     <AppSettingsOcrEngine/>
-
-    // </Container>
 
     function SettingsSection( props:{ children: ReactNode } ) {
         return (
@@ -53,19 +28,27 @@ export default function AppSettingsMenu() {
         <Container maxWidth='lg'>
 
             <SettingsSection>
+
                 <AppSettingsHotkeys/>
+
             </SettingsSection>
 
             <SettingsSection>
+
                 <AppSettingsOthers/>
-            </SettingsSection>
 
-            <SettingsSection>                
-                <AppSettingsVisuals/>
             </SettingsSection>
 
             <SettingsSection>
+
+                <AppSettingsVisuals/>
+
+            </SettingsSection>
+
+            <SettingsSection>
+
                 <AppSettingsOcrEngine/>
+
             </SettingsSection>
 
         </Container>

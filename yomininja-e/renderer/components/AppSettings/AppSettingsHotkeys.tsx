@@ -80,14 +80,11 @@ export default function AppSettingsHotkeys() {
 
     
     return (
-        <Box sx={{ margin: 1 }}>
-            
+        <Box sx={{ margin: 1, mt: 0 }}>
 
-            <Typography gutterBottom variant="h6" component="div" margin={2} ml={0}>
+            <Typography gutterBottom variant="h6" component="div" ml={0} mb={3}>
                 Overlay Hotkeys
             </Typography>
-
-            
 
             <div
                 style={{
