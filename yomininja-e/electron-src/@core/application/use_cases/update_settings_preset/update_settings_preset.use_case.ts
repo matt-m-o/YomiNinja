@@ -36,6 +36,7 @@ export class UpdateSettingsPresetUseCase< TOcrSettings extends OcrEngineSettings
 
 
         settingsPreset.name = input.name;
+        settingsPreset.version = input.version;
 
         const ocrAdaptersToBeRestarted: string[] = [];
 

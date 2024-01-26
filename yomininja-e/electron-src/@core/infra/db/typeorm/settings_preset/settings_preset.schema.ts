@@ -29,6 +29,13 @@ export const SettingsPresetTypeOrmSchema = new EntitySchema< SettingsPresetInsta
 
         ocr_engines: {
             type: 'json',
+            nullable: true
+        },
+
+        version: {
+            type: String,
+            length: 50,
+            default: ''
         },
 
         created_at: {

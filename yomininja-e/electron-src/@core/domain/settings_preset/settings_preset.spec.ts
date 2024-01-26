@@ -21,6 +21,7 @@ describe( "SettingsPreset tests", () => {
 
         expect( settingsPreset.id ).toBeDefined();
         expect( settingsPreset.name ).toStrictEqual( 'default' );
+        expect( settingsPreset.version ).toBeDefined();
         expect( settingsPreset.ocr_engines ).toBeDefined();
         expect( settingsPreset.ocr_engines.length > 0 ).toBeTruthy();
         expect( settingsPreset.created_at ).toBeDefined();

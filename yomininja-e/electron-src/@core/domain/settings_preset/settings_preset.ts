@@ -17,6 +17,7 @@ export interface SettingsPresetProps < TOcrSettings extends OcrEngineSettings = 
     overlay: OverlaySettings;
     ocr_engines: TOcrSettings[];
     dictionary: DictionarySettings;
+    version: string;
     created_at: Date;
     updated_at: Date;
 };
@@ -47,6 +48,7 @@ export class SettingsPreset < TProps extends SettingsPresetProps = SettingsPrese
             },
             ocr_engines: [],
             overlay: {},
+            version: '',
             created_at: new Date(),
             updated_at: new Date(),
         } as unknown as TProps;
@@ -68,6 +70,7 @@ export class SettingsPreset < TProps extends SettingsPresetProps = SettingsPrese
     get name(){ return this.props.name; }    
     get overlay(){ return this.props.overlay; }
     get ocr_engines() { return this.props.ocr_engines; }
+    get version() { return this.props.version; }
 
     get created_at(){ return this.props.created_at; }
     get updated_at(){ return this.props.updated_at; }
@@ -100,6 +103,8 @@ export class SettingsPreset < TProps extends SettingsPresetProps = SettingsPrese
     }
 
     public set ocr_engines( data: OcrEngineSettings[] ) { this.props.ocr_engines = data; }
+
+    public set version( data: string ){ this.props.version = data; }
     
     protected set created_at( date: Date ){ this.props.created_at = date; }
     protected set updated_at( date: Date ){ this.props.updated_at = date; }

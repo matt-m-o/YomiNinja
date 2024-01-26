@@ -11,6 +11,7 @@ import { get_CreateSettingsPresetUseCaseInstance, get_GetActiveSettingsPresetUse
 import { get_PpOcrAdapter } from './container_registry/adapters_registry';
 import { WindowManager } from '../../../gyp_modules/window_management/window_manager';
 import { ppOcrAdapterName } from './ocr/ppocr.adapter/ppocr_settings';
+import { getDefaultSettingsPresetProps } from '../domain/settings_preset/default_settings_preset_props';
 
 
 export let activeProfile: Profile;
@@ -73,8 +74,23 @@ export async function initializeApp() {
             defaultSettingsPreset = await settingsPresetRepo.findOne({ name: SettingsPreset.default_name }) as SettingsPreset ;
         }
         else {
+
+            const defaultSettingsProps = getDefaultSettingsPresetProps();
+
+            let settingsPresetUpdateData = defaultSettingsPreset.toJson();
+
+            if (
+                !settingsPresetUpdateData?.version ||
+                settingsPresetUpdateData.version !== defaultSettingsProps.version
+            ) {
+                settingsPresetUpdateData = {
+                    ...defaultSettingsProps,
+                    id: settingsPresetUpdateData.id,
+                };
+            }
+
             await get_UpdateSettingsPresetUseCaseInstance().execute({
-                ...defaultSettingsPreset.toJson(),
+                ...settingsPresetUpdateData,
                 options: {
                     restartOcrEngine: true
                 }

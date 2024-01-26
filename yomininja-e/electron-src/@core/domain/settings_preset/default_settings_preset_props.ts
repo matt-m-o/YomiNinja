@@ -5,6 +5,7 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
 
     return {
         name: SettingsPreset.default_name,
+        version: "0.6.0",
         overlay: {
             visuals: {
                 frame: {
