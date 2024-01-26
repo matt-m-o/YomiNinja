@@ -115,8 +115,8 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
                     display: 'table-cell',
                     verticalAlign: 'middle',
                     textAlign: 'right',
-                    minWidth: '55px',
-                    maxWidth: '55px'
+                    minWidth: '80px',
+                    maxWidth: '80px'
                 }}
             >
                 <Typography
