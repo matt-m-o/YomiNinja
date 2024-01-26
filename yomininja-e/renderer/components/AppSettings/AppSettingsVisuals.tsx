@@ -169,7 +169,7 @@ export default function AppSettingsVisuals() {
                     }}
                 >
 
-                    <Typography gutterBottom component="div" mb={1} fontSize='0.9rem'>
+                    <Typography gutterBottom component="div" mb={1} fontSize='1rem'>
                         This is a workaround for applications that hide the mouse cursor.
                     </Typography>
 

@@ -1,6 +1,6 @@
 import { Box, Card, CardContent, Container, Divider, Grid, TextField, Typography, styled } from "@mui/material";
 import { SettingsContext } from "../../context/settings.provider";
-import { useContext, useEffect } from "react";
+import { ReactNode, useContext, useEffect } from "react";
 import AppSettingsHotkeys from "./AppSettingsHotkeys";
 import AppSettingsVisuals from "./AppSettingsVisuals";
 import AppSettingsOthers from "./AppSettingsOthers";
@@ -14,34 +14,60 @@ const SectionDivider = styled( Divider )({
 
 export default function AppSettingsMenu() {
 
-    const { activeSettingsPreset, updateActivePreset } = useContext( SettingsContext );    
+    const { activeSettingsPreset, updateActivePreset } = useContext( SettingsContext );
+
+    // <Container maxWidth='md'>
+                    
+    //     <AppSettingsHotkeys/>
+        
+    //     <SectionDivider/>
+
+    //     <AppSettingsOthers/>
+
+    //     <SectionDivider/>
+
+    //     <AppSettingsVisuals/>
+
+    //     <SectionDivider/>
+
+    //     <AppSettingsOcrEngine/>
+
+    // </Container>
+
+    function SettingsSection( props:{ children: ReactNode } ) {
+        return (
+            <Card variant="elevation"
+                sx={{
+                    borderRadius: 4,
+                    mb: 2
+                }}
+            >
+                <CardContent>
+                    { props.children }
+                </CardContent>
+            </Card>
+        )
+    }
 
     return (
-        <Card variant="elevation" sx={{ borderRadius: 4 }}>
+        <Container maxWidth='lg'>
 
-            <CardContent>
+            <SettingsSection>
+                <AppSettingsHotkeys/>
+            </SettingsSection>
 
-                <Container maxWidth='md'>
-                
-                    <AppSettingsHotkeys/>
-                    
-                    <SectionDivider/>
+            <SettingsSection>
+                <AppSettingsOthers/>
+            </SettingsSection>
 
-                    <AppSettingsOthers/>
+            <SettingsSection>                
+                <AppSettingsVisuals/>
+            </SettingsSection>
 
-                    <SectionDivider/>
+            <SettingsSection>
+                <AppSettingsOcrEngine/>
+            </SettingsSection>
 
-                    <AppSettingsVisuals/>
-
-                    <SectionDivider/>
-
-                    <AppSettingsOcrEngine/>
-
-                </Container>
-
-            </CardContent>
-
-        </Card>
-        
+        </Container>
     )
 }
