@@ -116,6 +116,11 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
                 ...activeSettingsPreset.overlay.visuals.mouse,
                 ...newVisuals.mouse,
             },
+
+            indicators: {
+                ...activeSettingsPreset.overlay.visuals.indicators,
+                ...newVisuals.indicators,
+            },
         };
 
         updateActivePreset( activeSettingsPreset );

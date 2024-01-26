@@ -1,7 +1,7 @@
 import { Box, Container, Divider, FormControlLabel, FormGroup, Slider, Stack, Switch, SxProps, TextField, Theme, Typography, debounce, styled } from "@mui/material";
 import { SettingsContext } from "../../context/settings.provider";
 import { CSSProperties, useCallback, useContext, useEffect, useState } from "react";
-import { OverlayFrameVisuals, OverlayMouseVisuals, OverlayOcrItemBoxVisuals, OverlayVisualCustomizations } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
+import { OverlayFrameVisuals, OverlayIndicatorsVisuals, OverlayMouseVisuals, OverlayOcrItemBoxVisuals, OverlayVisualCustomizations } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import { throttle } from "lodash";
 import CustomCursor from "../OcrOverlay/CustomCursor/CustomCursor";
 import { ProfileContext } from "../../context/profile.provider";
@@ -39,6 +39,7 @@ export default function AppSettingsVisuals() {
     const ocrItemBoxVisuals: OverlayOcrItemBoxVisuals = activeSettingsPreset?.overlay?.visuals.ocr_item_box;
     const overlayFrameVisuals: OverlayFrameVisuals = activeSettingsPreset?.overlay?.visuals.frame;
     const overlayMouseVisuals: OverlayMouseVisuals = activeSettingsPreset?.overlay?.visuals.mouse;
+    const overlayIndicatorsVisuals: OverlayIndicatorsVisuals = activeSettingsPreset?.overlay?.visuals.indicators;
 
     const [ mouseSize, setMouseSize ] = useState<number>( overlayMouseVisuals?.custom_cursor_size || 30 );
 
@@ -75,7 +76,17 @@ export default function AppSettingsVisuals() {
             }
         });
     }, 100 );
+
+    const updateOverlayIndicatorsVisuals = debounce( ( update: Partial<OverlayIndicatorsVisuals> ) => {
+        updateActivePresetVisuals({
+            indicators: {
+                ...activeSettingsPreset.overlay.visuals.indicators,
+                ...update
+            }
+        });
+    }, 100 );
     
+
     const textFieldBaseSx: SxProps<Theme> = {
         minWidth: '100px',
         maxWidth: '110px',
@@ -135,7 +146,7 @@ export default function AppSettingsVisuals() {
                     <ColorPicker label="Border Color" sx={textFieldBaseSx}
                         value={ overlayFrameVisuals?.border_color || '' }
                         onChangeComplete={ ( color: string ) => {
-                            updateOverlayFrameVisuals({                                
+                            updateOverlayFrameVisuals({
                                 border_color: color
                             });
                         }}
@@ -149,6 +160,24 @@ export default function AppSettingsVisuals() {
                         onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
                             updateOverlayFrameVisuals({                                
                                 border_width: Number(event.target.value)
+                            });
+                        }}
+                    />
+
+                </Container>
+
+
+                <Typography gutterBottom component="div" mb={1} fontSize='1.1rem'>
+                    Indicators
+                </Typography>
+
+                <Container sx={{ mt: 0, mb: 2 }}>
+
+                    <ColorPicker label="Processing" sx={textFieldBaseSx}
+                        value={ overlayIndicatorsVisuals?.processing_icon_color || '' }
+                        onChangeComplete={ ( color: string ) => {
+                            updateOverlayIndicatorsVisuals({
+                                processing_icon_color: color
                             });
                         }}
                     />
@@ -226,7 +255,8 @@ export default function AppSettingsVisuals() {
                         display: 'flex',
                         ml: '35px',
                         border: `solid ${overlayFrameVisuals?.border_width}px`,
-                        borderColor: overlayFrameVisuals?.border_color
+                        borderColor: overlayFrameVisuals?.border_color,
+                        boxSizing: 'border-box'
                     }}
                 >
 

@@ -5,7 +5,8 @@ import {
   OverlayHotkeys,
   OverlayBehavior,
   OverlayMouseVisuals,
-  OverlayOcrRegionVisuals
+  OverlayOcrRegionVisuals,
+  OverlayIndicatorsVisuals
 } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import { SettingsContext } from "../../context/settings.provider";
 import { CircularProgress, Typography, debounce } from "@mui/material";
@@ -17,6 +18,7 @@ import { OcrResultContext } from "../../context/ocr_result.provider";
 import { OcrTemplateJson } from "../../../electron-src/@core/domain/ocr_template/ocr_template";
 import { OcrTargetRegionDiv, toCssPercentage } from "../OcrTemplates/OcrTargetRegion";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
+import ProcessingIndicator from "./ProcessingIndicator";
 
 
 const OverlayFrame = styled('div')({
@@ -49,6 +51,7 @@ export default function OcrOverlay() {
   const overlayFrameVisuals: OverlayFrameVisuals = activeSettingsPreset?.overlay?.visuals.frame;
   const overlayOcrRegionVisuals: OverlayOcrRegionVisuals = activeSettingsPreset?.overlay?.visuals.ocr_region;
   const overlayMouseVisuals: OverlayMouseVisuals = activeSettingsPreset?.overlay?.visuals.mouse;
+  const overlayIndicatorsVisuals: OverlayIndicatorsVisuals = activeSettingsPreset?.overlay?.visuals.indicators;
   const overlayHotkeys: OverlayHotkeys = activeSettingsPreset?.overlay?.hotkeys;
   const overlayBehavior: OverlayBehavior = activeSettingsPreset?.overlay?.behavior;
 
@@ -86,18 +89,11 @@ export default function OcrOverlay() {
     global.ipcRenderer.invoke( 'overlay:set_ignore_mouse_events', value );
   };
 
-  let circularProgressSize = 35;
-
   useEffect( () => {
 
     document.addEventListener( 'mousemove', handleClickThrough );
     
     if ( !window ) return;
-    
-    circularProgressSize = window.innerWidth * 0.03;
-
-    if ( circularProgressSize < 35 )
-      circularProgressSize = 35;
 
     return () => {
       document.removeEventListener( 'mousemove', handleClickThrough );
@@ -149,14 +145,9 @@ export default function OcrOverlay() {
     </OverlayFrame>
 
     { processing &&
-      <ProgressContainer>
-        <CircularProgress 
-          size={circularProgressSize+'px'}
-          sx={{
-            color: overlayFrameVisuals?.border_color
-          }}
-        />
-      </ProgressContainer>
+      <ProcessingIndicator
+        color={ overlayIndicatorsVisuals?.processing_icon_color }
+      />
     }
     
   </> )

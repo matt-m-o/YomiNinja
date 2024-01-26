@@ -32,13 +32,16 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                         character_positioning: true,
                     },
                     selected_text: {
-                        color: '#ffffff',
+                        color: '#ffffff', // White
                         background_color: '#c50b0b' // Red
                     }
                 },
                 mouse: {
                     show_custom_cursor: false,
                     custom_cursor_size: 30
+                },
+                indicators: {
+                    processing_icon_color: '#c50b0b' // Red
                 }
             },
             hotkeys: {

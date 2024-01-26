@@ -2,7 +2,6 @@ export type OverlayOcrRegionVisuals = {
     border_width: number;
 };
 
-
 export type OverlayOcrItemBoxVisuals = {
     inactive_border_color: string;
     active_border_color: string;
@@ -36,11 +35,16 @@ export type OverlayFrameVisuals = {
     border_width: number; // pixels
 };
 
+export type OverlayIndicatorsVisuals = {
+    processing_icon_color: string;
+}
+
 export type OverlayVisualCustomizations = {
     ocr_item_box: OverlayOcrItemBoxVisuals;
     frame: OverlayFrameVisuals;
     ocr_region: OverlayOcrRegionVisuals;
     mouse: OverlayMouseVisuals;
+    indicators: OverlayIndicatorsVisuals;
 };
 
 export type ClickThroughMode = 'auto' | 'enabled' | 'disabled';
