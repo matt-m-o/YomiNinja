@@ -119,7 +119,7 @@ export default function AppInfo() {
                     <Grid item>
                         <IconWithLink onClick={ openPatreonPage }>
                             <Image
-                                priority
+                                // priority // for some reason this breaks the window title
                                 src={patreonIcon}                            
                                 alt="Support the project on Patreon"
                                 height={60}
@@ -137,7 +137,7 @@ export default function AppInfo() {
                     <Grid item>
                         <IconWithLink onClick={ openGithubRepoPage }>
                             <Image
-                                priority
+                                // priority // for some reason this breaks the window title
                                 src={githubIcon}
                                 alt="GitHub repository"
                                 height={60}                            
