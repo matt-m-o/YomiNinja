@@ -39,6 +39,7 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
         event: React.MouseEvent<HTMLElement>,
         newApi: CloudVisionAPIMode,
     ) => {
+        if ( !newApi ) return;
         updateActivePresetOcrEngine({
             ...ocrEngineSettings,
             active_api: newApi
