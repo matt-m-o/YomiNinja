@@ -49,109 +49,151 @@ export default function AppSettingsHotkeys() {
         return combination;
     }
 
+    const ocrOnPrintScreenSwitch = (
+        <dl
+            style={{
+                display: 'table-row'
+            }}
+        >
+            <dt style={{ display: 'table-cell' }}>
+            </dt>
+            <dd>
+                <FormGroup >
+                    <FormControlLabel label='Trigger OCR on PrintScreen key press (fastest)'
+                        control={
+                            <Switch
+                                checked={ocrOnPrintScreen}
+                                onChange={ ( event ) => {
+                                    updateActivePresetHotkeys({
+                                        ocr_on_screen_shot: event.target.checked
+                                    });
+                                }}
+                            /> 
+                        }
+                        sx={{ ml: -3, mb: 2 }}
+                    />
+                </FormGroup>
+            </dd>
+        </dl>
+        
+    );
+
     
     return (
-        <Box sx={{ flexGrow: 1, margin: 1, }}>
+        <Box sx={{ margin: 1 }}>
             
 
             <Typography gutterBottom variant="h6" component="div" margin={2} ml={0}>
                 Overlay Hotkeys
             </Typography>
 
-
-            <HotkeyFields
-                label='Primary OCR'
-                title='Triggers the currently selected OCR engine'
-                keyCombination={ ocrKeys }
-                // setStateAction={ setOcrKeys }
-                onChangeHandler={ ( input?: string[]  ) => {
-                    if ( !input ) return;
-                    updateActivePresetHotkeys({ ocr: hotkeyCombinationToString( input ) })
-                }}
-                sx={{ mb: 0 }}
-            />
-
-            <FormGroup sx={{ marginLeft: 25 }}>
-                <FormControlLabel label='Trigger OCR on PrintScreen key press (fastest)' sx={{ ml: '40px' }}
-                    control={
-                        <Switch
-                            checked={ocrOnPrintScreen}
-                            onChange={ ( event ) => {
-                                updateActivePresetHotkeys({
-                                    ocr_on_screen_shot: event.target.checked
-                                });
-                            }}
-                        /> 
-                    }
-                />
-            </FormGroup>
-
-
-            <HotkeyFields
-                label='PaddleOCR'
-                keyCombination={ paddleOcrKeys }
-                // setStateAction={ setOcrKeys }
-                onChangeHandler={ ( input?: string[]  ) => {
-                    if ( !input ) return;
-                    updateActivePresetOcrEngine({
-                        ...ppOcrSettings,
-                        hotkey: hotkeyCombinationToString( input )
-                    });
-                }}
-                sx={{ mb: 0 }}
-            />
-
-            <HotkeyFields
-                label='Cloud Vision'
-                keyCombination={ cloudVisionKeys }
-                // setStateAction={ setOcrKeys }
-                onChangeHandler={ ( input?: string[]  ) => {
-                    if ( !input ) return;
-                    updateActivePresetOcrEngine({
-                        ...cloudVisionSettings,
-                        hotkey: hotkeyCombinationToString( input )
-                    });
-                }}
-                sx={{ mb: 0 }}
-            />
             
 
-            <HotkeyFields
-                label='Toggle overlay'
-                keyCombination={ toggleOverlayKeys }
-                onChangeHandler={ ( input?: string[]  ) => {
-                    if ( !input ) return;
-                    updateActivePresetHotkeys({ toggle: hotkeyCombinationToString( input ) })
+            <div
+                style={{
+                    width: '100%',
+                    display:'inline-table',
+                    borderCollapse: 'separate',
+                    margin: 'auto',
+                    paddingLeft: '20px',
+                    paddingRight: '15px'
                 }}
-            />
+            >
 
-            <HotkeyFields
-                label='Show overlay'
-                keyCombination={ showOverlayKeys }
-                onChangeHandler={ ( input?: string[]  ) => {
-                    if ( !input ) return;
-                    updateActivePresetHotkeys({ show: hotkeyCombinationToString( input ) })
-                }}
-            />
+                <HotkeyFields
+                    label='Primary OCR'
+                    title='Triggers the currently selected OCR engine'
+                    keyCombination={ ocrKeys }
+                    // setStateAction={ setOcrKeys }
+                    onChangeHandler={ ( input?: string[]  ) => {
+                        if ( !input ) return;
+                        updateActivePresetHotkeys({ ocr: hotkeyCombinationToString( input ) })
+                    }}
+                    sx={{ marginBottom: 0 }}
+                    children={
+                        <FormGroup >
+                            <FormControlLabel label='Trigger OCR on PrintScreen key press (fastest)' sx={{ ml: '40px' }}
+                                control={
+                                    <Switch
+                                        checked={ocrOnPrintScreen}
+                                        onChange={ ( event ) => {
+                                            updateActivePresetHotkeys({
+                                                ocr_on_screen_shot: event.target.checked
+                                            });
+                                        }}
+                                    /> 
+                                }
+                            />
+                        </FormGroup>
+                    }
+                />
+                {ocrOnPrintScreenSwitch}
 
-            <HotkeyFields
-                label='Hide overlay'
-                keyCombination={ clearOverlayKeys }
-                onChangeHandler={ ( input?: string[]  ) => {
-                    if ( !input ) return;
-                    updateActivePresetHotkeys({ clear: hotkeyCombinationToString( input ) })
-                }}
-            />
+                <HotkeyFields
+                    label='PaddleOCR'
+                    keyCombination={ paddleOcrKeys }
+                    // setStateAction={ setOcrKeys }
+                    onChangeHandler={ ( input?: string[]  ) => {
+                        if ( !input ) return;
+                        updateActivePresetOcrEngine({
+                            ...ppOcrSettings,
+                            hotkey: hotkeyCombinationToString( input )
+                        });
+                    }}
+                    // sx={{ mb: 0 }}
+                />
 
-            <HotkeyFields
-                label='Copy text'
-                keyCombination={ copyTextKeys }
-                onChangeHandler={ ( input?: string[]  ) => {
-                    if ( !input ) return;
-                    updateActivePresetHotkeys({ copy_text: hotkeyCombinationToString( input ) })
-                }}
-            />
+                <HotkeyFields
+                    label='Cloud Vision'
+                    keyCombination={ cloudVisionKeys }
+                    // setStateAction={ setOcrKeys }
+                    onChangeHandler={ ( input?: string[]  ) => {
+                        if ( !input ) return;
+                        updateActivePresetOcrEngine({
+                            ...cloudVisionSettings,
+                            hotkey: hotkeyCombinationToString( input )
+                        });
+                    }}
+                    // sx={{ mb: 0 }}
+                />
 
+                <HotkeyFields
+                    label='Toggle overlay'
+                    keyCombination={ toggleOverlayKeys }
+                    onChangeHandler={ ( input?: string[]  ) => {
+                        if ( !input ) return;
+                        updateActivePresetHotkeys({ toggle: hotkeyCombinationToString( input ) })
+                    }}
+                />
+
+                <HotkeyFields
+                    label='Show overlay'
+                    keyCombination={ showOverlayKeys }
+                    onChangeHandler={ ( input?: string[]  ) => {
+                        if ( !input ) return;
+                        updateActivePresetHotkeys({ show: hotkeyCombinationToString( input ) })
+                    }}
+                />
+
+                <HotkeyFields
+                    label='Hide overlay'
+                    keyCombination={ clearOverlayKeys }
+                    onChangeHandler={ ( input?: string[]  ) => {
+                        if ( !input ) return;
+                        updateActivePresetHotkeys({ clear: hotkeyCombinationToString( input ) })
+                    }}
+                />
+
+                <HotkeyFields
+                    label='Copy text'
+                    keyCombination={ copyTextKeys }
+                    onChangeHandler={ ( input?: string[]  ) => {
+                        if ( !input ) return;
+                        updateActivePresetHotkeys({ copy_text: hotkeyCombinationToString( input ) })
+                    }}
+                />
+
+            </div>
         </Box>
     )
 }

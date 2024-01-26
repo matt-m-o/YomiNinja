@@ -1,5 +1,5 @@
 import { Box, Button, Container, InputBaseComponentProps, SxProps, TextField, Theme, Typography } from "@mui/material";
-import { Dispatch, SetStateAction, KeyboardEvent, MouseEvent } from "react";
+import { Dispatch, SetStateAction, KeyboardEvent, MouseEvent, CSSProperties, ReactNode } from "react";
 import AddSharpIcon from '@mui/icons-material/AddSharp';
 import BackspaceRoundedIcon from '@mui/icons-material/BackspaceRounded';
 import IconButton from '@mui/material/IconButton';
@@ -63,7 +63,8 @@ export type HotkeyFieldsProps = {
     title?: string;
     keyCombination: string;
     onChangeHandler: ( input?: string[] ) => void; // Dispatch<SetStateAction<HotkeyCombination>>;
-    sx?: SxProps<Theme>;
+    sx?: CSSProperties;
+    children?: ReactNode;
 };
 
 // Inputs component
@@ -103,51 +104,86 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
     }
 
     return (        
-        <Container title={title}
-            sx={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: 'row',
-                mt: 2,
-                mb: 2,
+        <dl title={title}
+            style={{
+                display: 'table-row',
                 ...sx
-            }}>
-
-            <Typography
-                gutterBottom
-                component="div"
-                margin={0}
-                ml={0}
-                width='200px'
-                sx={{
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    alignItems: 'center'
+            }}
+        >
+            <dt
+                style={{
+                    display: 'table-cell',
+                    verticalAlign: 'middle',
+                    textAlign: 'right',
+                    minWidth: '55px',
+                    maxWidth: '55px'
                 }}
             >
-                { label }
-            </Typography>
-            
-            <Box sx={{ display: 'flex', direction: 'row', alignItems: 'center', ml: '14px' }}>
-
-                <TextField 
-                    // label={title}
-                    size='small'
-                    inputProps={{
-                        style: { textAlign: 'center' },
-                    }}
-                    value={ keyCombination }
-                    
-                    onKeyDown={ keyDownHandler }
-                    onMouseDown={ mouseDownHandler }
-
+                <Typography
+                    gutterBottom
+                    component="div"
+                    margin={0}
+                    ml={0}
                     sx={{
-                        width: '100%',
-                        minWidth: '350px',
-                        margin: 1
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        alignItems: 'right'
                     }}
-                />
+                >
+                    { label }
+                </Typography>
+            </dt>
+            
+            <dd
+                style={{
+                    // width: '100%',
+                    display: 'table-cell',
+                    verticalAlign: 'middle'
+                }}
+            >
+                <Box sx={{ display: 'flex', direction: 'row', alignItems: 'center', ml: '14px' }}>
 
+                    <TextField 
+                        // label={title}
+                        size='small'
+                        inputProps={{
+                            style: { textAlign: 'center' },
+                        }}
+                        value={ keyCombination }
+                        
+                        onKeyDown={ keyDownHandler }
+                        onMouseDown={ mouseDownHandler }
+
+                        sx={{
+                            width: '100%',
+                            minWidth: '350px',
+                            margin: 1
+                        }}
+                    />
+
+                    <Button variant="text"
+                        onClick={ () => onChangeHandler([]) }
+                        style={{
+                            minWidth: '40px',
+                        }}
+                    >
+                        <BackspaceRoundedIcon 
+                            style={{
+                                width: '25px',
+                                height: '25px'
+                            }}
+                        />
+                    </Button>
+                </Box>
+            </dd>
+
+            {/* <dd
+                style={{
+                    width: '100%',
+                    display: 'table-cell',
+                    verticalAlign: 'middle'
+                }}
+            >
                 <Button variant="text"
                     onClick={ () => onChangeHandler([]) }
                     style={{
@@ -161,11 +197,9 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
                         }}
                     />
                 </Button>
+            </dd> */}
 
-            </Box>
-            
-
-        </Container>
+        </dl>
     )
 }
 
