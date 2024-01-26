@@ -2,6 +2,7 @@ import { settings } from "cluster";
 import { OcrEngineSettings, SettingsPreset, SettingsPresetJson } from "../../../domain/settings_preset/settings_preset";
 import { SettingsPresetRepository } from "../../../domain/settings_preset/settings_preset.repository";
 import { OcrAdapter } from "../../adapters/ocr.adapter";
+import { getDefaultSettingsPresetProps } from "../../../domain/settings_preset/default_settings_preset_props";
 
 export type UpdateSettingsPreset_Input = {
     options?: UpdateSettingsPresetOptions
@@ -26,7 +27,9 @@ export class UpdateSettingsPresetUseCase< TOcrSettings extends OcrEngineSettings
             restartOcrAdapter: false,
         };
 
-        const settingsPreset = await this.settingsPresetRepo.findOne({ id: input.id });        
+        const settingsPreset = await this.settingsPresetRepo.findOne({ id: input.id });
+
+        const defaultSettingsProps = getDefaultSettingsPresetProps();
 
         if ( !settingsPreset )
             return output;
@@ -81,9 +84,14 @@ export class UpdateSettingsPresetUseCase< TOcrSettings extends OcrEngineSettings
             }
         }
         
-
-        settingsPreset.updateOverlaySettings( input.overlay );
-        settingsPreset.updateDictionarySettings( input.dictionary );
+        settingsPreset.updateOverlaySettings({
+            ...defaultSettingsProps,
+            ...input.overlay,
+        });
+        settingsPreset.updateDictionarySettings({
+            ...defaultSettingsProps,
+            ...input.dictionary,
+        });
 
         // console.log( settingsPreset );
 

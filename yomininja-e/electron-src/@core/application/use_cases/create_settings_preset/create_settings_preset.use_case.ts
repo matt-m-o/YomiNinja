@@ -1,3 +1,4 @@
+import { getDefaultSettingsPresetProps } from "../../../domain/settings_preset/default_settings_preset_props";
 import { OcrEngineSettings, SettingsPreset, SettingsPresetJson } from "../../../domain/settings_preset/settings_preset";
 import { SettingsPresetRepository } from "../../../domain/settings_preset/settings_preset.repository";
 import { OcrAdapter } from "../../adapters/ocr.adapter";
@@ -27,11 +28,18 @@ export class CreateSettingsPresetUseCase< TOcrSettings extends OcrEngineSettings
         }
 
         let settingsPreset: SettingsPreset;
+
+        const defaultSettingsProps = getDefaultSettingsPresetProps();
         
-        if ( input?.name )
-            settingsPreset = SettingsPreset.create({ name: input.name });
-        else
-            settingsPreset = SettingsPreset.create();                
+        if ( input?.name ) {
+            settingsPreset = SettingsPreset.create({
+                ...defaultSettingsProps,
+                name: input.name
+            });
+        }
+        else {
+            settingsPreset = SettingsPreset.create(defaultSettingsProps);
+        }
 
 
         if ( input?.ocr_engines?.length ) {

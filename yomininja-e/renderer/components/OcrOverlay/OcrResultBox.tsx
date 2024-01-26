@@ -104,7 +104,7 @@ export default function OcrResultBox( props: {
 
     const fontSize = isVertical ? boxWidthPx * 0.7 : boxHeightPx * 0.75; // Pixels
 
-    let { font_size_factor } = ocrItemBoxVisuals.text;
+    let { font_size_factor } = ocrItemBoxVisuals?.text;
 
     if ( isVertical )
         font_size_factor = font_size_factor * 1.10;
