@@ -180,13 +180,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
             Bounding box
         </Typography>
 
-        <Container
-            sx={{
-                display: 'flex',
-                alignItems: 'center',
-                mt: 0,
-                mb: 2,
-            }}>
+        <Container sx={{ mt: 0, mb: 2 }}>
 
             <ColorPicker label="Inactive BG"
                 value={ ocrItemBoxVisuals?.background_color_inactive || '' }
