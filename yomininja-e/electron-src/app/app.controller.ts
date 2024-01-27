@@ -102,11 +102,11 @@ export class AppController {
 
                 await mainController.loadMainPage();
                 
-                setTimeout( () => {
+                // setTimeout( () => { // The timeout seems unnecessary
                     browserExtensionsController.addBrowserWindow( this.mainWindow, true );
                     browserExtensionsController.addBrowserWindow( this.overlayWindow, false );
-                    browserExtensionsController.loadExtensions();
-                }, 500 );
+                    await browserExtensionsController.loadExtensions();
+                // }, 500 );
 
                 if ( startupTimer ) {
                     clearTimeout( startupTimer );
