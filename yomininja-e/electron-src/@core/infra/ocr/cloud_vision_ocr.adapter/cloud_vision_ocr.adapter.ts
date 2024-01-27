@@ -190,7 +190,9 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
 
     getSettingsOptions: () => OcrEngineSettingsOptions;
 
-    restart: ( callback: () => void) => void;
+    restart = async ( callback: () => void ) => {
+        callback();
+    };
 
     private getOcrItemBox(
         vertices: google.cloud.vision.v1.IVertex[]
