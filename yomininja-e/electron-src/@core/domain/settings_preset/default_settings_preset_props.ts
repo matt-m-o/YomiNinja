@@ -59,7 +59,7 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                 always_on_top: false,
                 click_through_mode: 'auto',
                 show_window_on_copy: {
-                    enabled: true,
+                    enabled: false,
                     title: 'Yomichan Search'
                 },
                 always_forward_mouse_clicks: false,
