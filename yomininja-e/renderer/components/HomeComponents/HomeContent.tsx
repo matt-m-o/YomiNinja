@@ -209,7 +209,7 @@ export default function HomeContent() {
                         }}
                     >
                         <li> Google Cloud Vision integration, matching the exceptional accuracy of Google Lens. </li>
-                        <li> Per-character OCR result positioning for more accurate text overlay on the original content (currently exclusive to Cloud Vision). </li>
+                        <li> Individual character positioning for accurate text overlay (currently exclusive to Cloud Vision). </li>
                         <li> Expanded PaddleOCR settings menu with additional parameters. </li>
                         <li> Native support for Yomitan, Yomichan, and JPDB extensions. </li>
                         <li> Global hotkeys for toggling the overlay and coping extracted text. </li>
