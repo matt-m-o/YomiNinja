@@ -57,22 +57,20 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     });
 
     let lineFontSize = 0;
+    let fontSizeFactor = ocrItemBoxVisuals.text.font_size_factor;
+    fontSizeFactor = fontSizeFactor ? fontSizeFactor / 100 : 1;
 
-    line?.symbols.map( symbol => {
+    line?.symbols.forEach( symbol => {
 
         const charBoxHeightPx = ( regionHeightPx * ( symbol.box.dimensions.height / 100 ) );
         if ( charBoxHeightPx > lineFontSize )
-            lineFontSize = charBoxHeightPx;
+            lineFontSize = charBoxHeightPx * fontSizeFactor;
     });
 
 
     let symbols: JSX.Element[];
 
     if ( ocrItemBoxVisuals.text.character_positioning && line.symbols.length ) {
-
-        let fontSizeFactor = ocrItemBoxVisuals.text.font_size_factor;
-
-        fontSizeFactor = fontSizeFactor ? fontSizeFactor / 100 : 1;
 
         lineFontSize = lineFontSize * fontSizeFactor;
 
