@@ -47,6 +47,9 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         whiteSpace: 'pre',
         width: 'max-content',
         '&::selection': textSelectionStyle,
+        '& ruby': {
+            '::selection': textSelectionStyle
+        }
     });
 
     const Symbol = styled('span')({
