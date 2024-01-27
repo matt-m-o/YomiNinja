@@ -70,7 +70,7 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
             <Typography component="div" fontSize='1.0rem'
                 mt={1} mb={4}
             >
-                Fast and reliable for most use cases. Runs locally.
+                Fast and reliable for most use cases. Operates entirely offline.
             </Typography>
 
             <CommonOcrSettings ocrEngineSettings={ocrEngineSettings} />
