@@ -101,15 +101,15 @@ It supports dozens of languages, that will be integrated into this application i
        
        ./yomininja-e/extensions/10ten
 
-5. Install node modules. Note: `--force` is used due to outdated react-furi peerDependencies, but it should function normally.
+4. Install node modules. Note: `--force` is used due to outdated react-furi peerDependencies, but it should function normally.
     ```commandline
     cd yomininja-e && npm install --force
     ```
-6. Generate gRPC Protobuf types
+5. Generate gRPC Protobuf types
     ```commandline
     npm run grpc-types
     ```
-7. Build the distribution
+6. Build the distribution
     ```commandline
     npm run dist
     ```
@@ -121,5 +121,5 @@ It supports dozens of languages, that will be integrated into this application i
 
 ## Inspired by:
 - [Yomichan](https://github.com/FooSoft/yomichan)
-- [Manga OCR](https://github.com/kha-white/manga-ocr)
+- [mokuro](https://github.com/kha-white/mokuro)
 - [kanjitomo-ocr](https://github.com/sakarika/kanjitomo-ocr)

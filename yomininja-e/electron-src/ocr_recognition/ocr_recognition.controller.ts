@@ -17,21 +17,8 @@ export class OcrRecognitionController {
     private ocrRecognitionService: OcrRecognitionService;
     
     private mainWindow: BrowserWindow;
-    private overlayWindow: BrowserWindow;    
-    
-    private captureSourceDisplay: Electron.Display | undefined;        
-    private userSelectedDisplayId: number | undefined;
-    
-    private captureSourceWindow: ExternalWindow | undefined;
-    private userSelectedWindowId: number | undefined;
+    private overlayWindow: BrowserWindow;
 
-    private activeCaptureSource: CaptureSource;
-    
-    private taskbar: TaskbarProperties;
-
-    private globalShortcutAccelerators: string[] = [];
-
-    private showOverlayWindowWithoutFocus: boolean = false;
 
     constructor( input: {        
         ocrRecognitionService: OcrRecognitionService;        
@@ -43,8 +30,6 @@ export class OcrRecognitionController {
         mainWindow: BrowserWindow,
         overlayWindow: BrowserWindow,
     }) {
-        
-        uIOhook.start();
 
         this.mainWindow = input.mainWindow;
         this.overlayWindow = input.overlayWindow;
@@ -52,16 +37,8 @@ export class OcrRecognitionController {
         const settings = await this.ocrRecognitionService.getActiveSettingsPreset();
 
         if (!settings) return;
-
-        this.showOverlayWindowWithoutFocus = Boolean( settings.overlay.behavior.show_window_without_focus );
         
-        this.registerGlobalShortcuts( settings.toJson() );
-        this.registersIpcHandlers();        
-        this.handleCaptureSourceSelection();
-
-        this.taskbar = this.ocrRecognitionService.getTaskbar();
-
-        this.activeCaptureSource = entireScreenAutoCaptureSource;
+        this.registersIpcHandlers();
     }
     
     private registersIpcHandlers() {
@@ -73,46 +50,9 @@ export class OcrRecognitionController {
                     .map( language => language.toJson() );                
             }
         );
-
-        ipcMain.handle( 'ocr_recognition:get_capture_sources',
-            async ( event: IpcMainInvokeEvent ): Promise< CaptureSource[] > => {
-
-                const sources = await this.ocrRecognitionService.getAllCaptureSources();
-                return sources;
-            }
-        );
-
-        ipcMain.handle( 'ocr_recognition:get_active_capture_source',
-            async ( event: IpcMainInvokeEvent ): Promise< CaptureSource > => {
-                return this.activeCaptureSource;
-            }
-        );
-
-        ipcMain.handle( 'ocr_recognition:set_capture_source',
-            async ( event: IpcMainInvokeEvent, message: CaptureSource ): Promise< void > => {
-
-                const { type, displayId } = message;
-
-                this.userSelectedDisplayId = type === 'screen' && displayId != -1  ? 
-                    message.displayId :
-                    undefined;
-
-                if ( !message?.displayId )
-                    this.userSelectedWindowId = Number( message.id.split(':')[1] );
-                else
-                    this.userSelectedWindowId = undefined;
-
-                this.activeCaptureSource = message;
-
-                this.mainWindow.webContents.send(
-                    'ocr_recognition:active_capture_source',
-                    this.activeCaptureSource
-                ); 
-            }
-        );
     }
 
-    async recognize( entireScreenImage?: Buffer, runFullScreenImageCheck?: boolean ) {
+    async recognize( entireScreenImage: Buffer ) {
         // console.log('');
         // console.time('controller.recognize');
 
@@ -120,113 +60,22 @@ export class OcrRecognitionController {
             // console.log(activeProfile);
             // console.log('OcrRecognitionController.recognize')
 
-            await this.handleCaptureSourceSelection();
-
             const ocrResultScalable = await this.ocrRecognitionService.recognize({
                 imageBuffer: entireScreenImage,
-                profileId: getActiveProfile().id,
-                display: this.captureSourceDisplay,
-                window: this.captureSourceWindow,
+                profileId: getActiveProfile().id
             });
             // console.log({ ocrResultScalable });
 
             // console.timeEnd('controller.recognize');
             // console.log('');
 
+            // console.log( ocrResultScalable );
+
             this.overlayWindow.webContents.send( 'ocr:result', ocrResultScalable );
-
-            let isFullScreenImage = true;
-
-            if ( entireScreenImage && runFullScreenImageCheck)
-                isFullScreenImage = await this.isFullScreenImage(entireScreenImage);             
-
-            this.setOverlayBounds( isFullScreenImage ? 'fullscreen' :  'maximized' );
-            this.showOverlayWindow();
 
         } catch (error) {
             console.error( error );
         }
-    }
-
-    async registerGlobalShortcuts( settingsPresetJson?: SettingsPresetJson ) {
-        
-        if ( !settingsPresetJson ) {
-            
-            const settingsPreset = await this.ocrRecognitionService.getActiveSettingsPreset();
-
-            settingsPresetJson = settingsPreset?.toJson();
-        }
-
-        if ( !settingsPresetJson )
-            return;
-
-        const overlayHotkeys = settingsPresetJson.overlay.hotkeys;
-
-        this.unregisterGlobalShortcuts();
-
-        // Electron full screen OCR
-        globalShortcut.register( overlayHotkeys.ocr, async () => {            
-
-            this.overlayWindow?.webContents.send( 'user_command:clear_overlay' );
-            await this.recognize();            
-        });
-        this.globalShortcutAccelerators.push( overlayHotkeys.ocr );
-        
-        
-        if ( overlayHotkeys.ocr_on_screen_shot ) {
-            uIOhook.on( 'keyup', async ( e ) => {
-
-                if ( e.keycode !== UiohookKey.PrintScreen ) return;
-                
-                                        
-                const runFullScreenImageCheck = e.altKey && !this.taskbar.auto_hide;
-
-                // console.log({ runFullScreenImageCheck });
-                // console.log({ userPreferredDisplayId: this.userPreferredDisplayId });
-                // console.log({ captureSourceDisplay: this.captureSourceDisplay });
-
-                const multipleDisplays = screen.getAllDisplays().length > 1;
-                const isWindowImage = Boolean(e.altKey);
-                
-
-                if ( multipleDisplays ) {
-
-                    if ( !isWindowImage )
-                        return this.recognize();
-                    
-                    if ( isWindowImage && this.userSelectedWindowId )
-                        return this.recognize( clipboard.readImage().toPNG() );
-
-                    else
-                        return this.recognize( clipboard.readImage().toPNG(), runFullScreenImageCheck );
-                }
-                else {
-
-                    if ( this.userSelectedWindowId )
-                        return this.recognize( clipboard.readImage().toPNG() );
-
-                    return this.recognize( clipboard.readImage().toPNG(), runFullScreenImageCheck );
-                }
-                
-            });
-        }
-    }
-
-    private unregisterGlobalShortcuts() {
-
-        this.globalShortcutAccelerators.forEach( accelerator => {
-            globalShortcut.unregister( accelerator );
-        });
-
-        this.globalShortcutAccelerators = [];
-    }
-
-    private showOverlayWindow() {
-
-        if ( this.showOverlayWindowWithoutFocus )
-            this.overlayWindow.showInactive();
-        else
-            this.overlayWindow.show();
     }
 
     async applySettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
@@ -238,10 +87,6 @@ export class OcrRecognitionController {
 
         if ( !settingsPresetJson )
             return;
-
-        this.showOverlayWindowWithoutFocus = Boolean( settingsPresetJson.overlay.behavior.show_window_without_focus );
-
-        this.registerGlobalShortcuts( settingsPresetJson );
     }
 
     restartEngine() {
@@ -255,107 +100,6 @@ export class OcrRecognitionController {
                 this.mainWindow.webContents.send( 'ocr_recognition:ocr_engine_restarted' );
             });
         }, 3000 );
-    }
-
-    setOverlayBounds( entireScreenMode: 'fullscreen' | 'maximized' = 'fullscreen' ) {
-        // console.time("setOverlayBounds");        
-        
-        if ( this.captureSourceDisplay ) {            
-            
-            this.overlayWindow.setBounds({                
-                ...this.captureSourceDisplay?.workArea,
-            });
-            
-            if ( entireScreenMode === 'fullscreen' )
-                this.overlayWindow.setFullScreen( entireScreenMode === 'fullscreen' );
-
-            if ( entireScreenMode === 'maximized')
-                this.overlayWindow.maximize();
-        }
-
-        else if ( this.captureSourceWindow ) {
-
-            let targetWindowBounds = {
-                width: this.captureSourceWindow.size.width,
-                height: this.captureSourceWindow.size.height,
-                x: this.captureSourceWindow.position.x,
-                y: this.captureSourceWindow.position.y,
-            };
-
-            if ( os.platform() === 'linux' )
-                this.overlayWindow.setFullScreen( false );
-
-            if ( os.platform() === 'win32' ) {
-                // Handling potential issues with DIP
-                targetWindowBounds = screen.screenToDipRect( this.overlayWindow, targetWindowBounds );
-            }
-
-            this.overlayWindow.setBounds( targetWindowBounds );
-
-            console.log({
-                targetWindowBounds
-            });
-
-            // Might be necessary to calculate and set twice
-            // dipRect = screen.screenToDipRect( this.overlayWindow, targetWindowBounds )
-            // this.overlayWindow.setBounds( dipRect );
-        }
-
-        // console.timeEnd("setOverlayBounds");
-    }
-
-
-    handleDisplaySource() {
-
-        if ( this.userSelectedDisplayId !== undefined ) {
-            this.captureSourceDisplay = this.ocrRecognitionService.getDisplay( this.userSelectedDisplayId );
-            return;
-        }
-
-        if ( 
-            this.userSelectedDisplayId === undefined &&
-            !this.userSelectedWindowId
-        ) 
-            this.captureSourceDisplay = this.ocrRecognitionService.getCurrentDisplay();
-        else 
-            this.captureSourceDisplay = undefined;        
-    }
-
-    async handleWindowSource() {      
-        
-        if ( this.userSelectedWindowId )
-            this.captureSourceWindow = await this.ocrRecognitionService.getExternalWindow( this?.userSelectedWindowId );
-
-        else 
-            this.captureSourceWindow = undefined;            
-    }
-
-    async handleCaptureSourceSelection() {
-        // console.time('handleCaptureSourceSelection');
-        this.handleDisplaySource();
-        await this.handleWindowSource();
-        // console.timeEnd('handleCaptureSourceSelection');
-    }
-
-    private async isFullScreenImage( imageBuffer: Buffer ): Promise<boolean> {
-
-        const metadata = await sharp(imageBuffer).metadata();
-
-        if ( 
-            !this.captureSourceDisplay ||
-            !metadata?.width ||
-            !metadata?.height
-         )
-            return false;        
-
-        if ( 
-            metadata.width >= this.captureSourceDisplay?.size.width &&
-            metadata.height >= this.captureSourceDisplay?.size.height
-        ) {
-            return true;
-        }
-
-        return false
     }
 
 }

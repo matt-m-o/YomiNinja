@@ -18,8 +18,7 @@ export const LanguagesProvider = ( { children }: PropsWithChildren ) => {
 
         global.ipcRenderer.invoke( 'ocr_recognition:get_supported_languages' )
             .then( ( result: LanguageJson[] ) => {
-
-                // console.log( result );
+                result.sort();
                 setLanguages(result);
             });
         

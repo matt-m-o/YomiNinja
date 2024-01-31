@@ -47,7 +47,7 @@ export default function AppInfo() {
 
     const AppName = ( props ) => (
         <Typography variant="h4" mb={1} {...props}>
-            <AppNameFirstLetter className={AppNameFont.className}>Y</AppNameFirstLetter>omi Ninja
+            YomiNinja
         </Typography>
     );
 
@@ -71,7 +71,7 @@ export default function AppInfo() {
                 pl={5}
                 pr={5}
                 pt={0}
-                maxWidth='1000px'
+                maxWidth='1600px'
                 sx={{ userSelect: 'none' }}
             >
 
@@ -83,7 +83,7 @@ export default function AppInfo() {
                             {versionText}
                         </AboutText>
 
-                        { !versionInfo.isUpToDate &&
+                        { !versionInfo?.isUpToDate &&
                             <AboutText sx={{ mt: 0 }}>
                                 ✨{newVersionText} <GithubReleasesLink />
                             </AboutText>
@@ -156,14 +156,18 @@ export default function AppInfo() {
                 <Typography variant="h4" mb={2} mt={7}>
                     Supporters
                 </Typography>
-
-                { supporters.map( ( supporter, idx ) => (
-                    <Typography key={idx} variant="h5" mb={1} 
-                        // sx={{ textTransform: 'capitalize' }}
-                    >
-                        { supporter }
-                    </Typography>
-                )) }                
+                
+                <Grid container spacing={1} columns={16}>                
+                    { supporters.map( ( supporter, idx ) => (
+                        <Grid item key={idx} xl={4} md={4} sm={8} xs={16}>
+                            <Typography variant="h5"
+                                // sx={{ textTransform: 'capitalize' }}
+                            >
+                                { supporter }
+                            </Typography>
+                        </Grid>
+                    )) }
+                </Grid>
                 
             </Box>
                         

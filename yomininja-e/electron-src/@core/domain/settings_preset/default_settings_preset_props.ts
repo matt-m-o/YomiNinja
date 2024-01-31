@@ -10,6 +10,9 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                     border_color: "#e21212", // Red
                     border_width: 1
                 },
+                ocr_region: {
+                    border_width: 1
+                },
                 ocr_item_box: {
                     background_color: '#000000', // Black
                     border_color: "#e21212", // Red
@@ -17,7 +20,13 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                     border_width: 1,
                     text: {
                         color: "#ffffff", // White
+                        font_size_factor: 100,
+                        letter_spacing: 1
                     }
+                },
+                mouse: {
+                    show_custom_cursor: false,
+                    custom_cursor_size: 30
                 }
             },
             hotkeys: {
@@ -32,7 +41,10 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                 copy_text_on_click: true,
                 always_on_top: false,
                 click_through_mode: 'auto',
-                show_yomichan_window_on_copy: true,
+                show_window_on_copy: {
+                    enabled: true,
+                    title: 'Yomichan Search'
+                },
                 always_forward_mouse_clicks: false,
                 show_window_without_focus: false,
             }

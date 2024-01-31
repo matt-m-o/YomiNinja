@@ -14,15 +14,26 @@ import { CaptureSourceProvider } from '../context/capture_source.provider';
 import AutoStoriesRoundedIcon from '@mui/icons-material/AutoStoriesRounded';
 import Dictionary from '../components/Dictionary/Dictionary';
 import { DictionaryProvider } from '../context/dictionary.provider';
+import { ExtensionsProvider } from '../context/extensions.provider';
+import ExtensionRoundedIcon from '@mui/icons-material/ExtensionRounded';
+import Extensions from '../components/Extensions/Extensions';
+import { NotificationsProvider } from '../context/notifications.provider';
+import ViewComfyRoundedIcon from '@mui/icons-material/ViewComfyRounded';
+import OcrTemplates from "../components/OcrTemplates/OcrTemplates";
+import { OcrTemplatesProvider } from '../context/ocr_templates.provider';
 
 
 export default function IndexPage() {
 
-  const homeTabContents = (    
-    <LanguagesProvider>
-      <HomeContent/>
-    </LanguagesProvider>
-  )
+  const homeTabContents = (
+    <CaptureSourceProvider>
+      <OcrTemplatesProvider>
+        <LanguagesProvider>
+          <HomeContent/>
+        </LanguagesProvider>
+      </OcrTemplatesProvider>
+    </CaptureSourceProvider>
+  );
   
   const settingsTabContents = (
     <AppSettingsMenu/>    
@@ -36,6 +47,18 @@ export default function IndexPage() {
     </LanguagesProvider>
   );
 
+  const extensionsTabContents = (
+    <Extensions/>
+  );
+
+  const ocrTemplatesTabContents = (
+    <OcrTemplatesProvider>
+      <CaptureSourceProvider>
+        <OcrTemplates/>
+      </CaptureSourceProvider>
+    </OcrTemplatesProvider>
+  );
+
   const layoutProps: LayoutProps = {
     contents: [
       {
@@ -44,6 +67,20 @@ export default function IndexPage() {
           icon: <Home/>,
         },
         tabContent: homeTabContents
+      },
+      {
+        tabLabel: {
+          text: 'OCR Templates',
+          icon: <ViewComfyRoundedIcon/>,
+        },
+        tabContent: ocrTemplatesTabContents
+      },
+      {
+        tabLabel: {
+          text: 'Extensions',
+          icon: <ExtensionRoundedIcon/>,
+        },
+        tabContent: extensionsTabContents
       },
       {
         tabLabel: {
@@ -70,23 +107,26 @@ export default function IndexPage() {
   };
 
   useEffect( () => {
-    document.addEventListener( 'contextmenu', event => {
-        event.preventDefault();
-    });        
+    // document.addEventListener( 'contextmenu', event => {
+    //     event.preventDefault();
+    // });
   }, [] );
 
-  return (
-    <CaptureSourceProvider>
-      <ProfileProvider>
-        <AppInfoProvider>
-          <SettingsProvider>
+  return ( <>
+    <title>YomiNinja</title>
+    <ProfileProvider>
+      <AppInfoProvider>
+        <SettingsProvider>
+          <ExtensionsProvider>
+            <NotificationsProvider>
 
-            <Layout {...layoutProps}/>
+              <Layout {...layoutProps}/>
 
-          </SettingsProvider>
-        </AppInfoProvider>
-      </ProfileProvider>
-    </CaptureSourceProvider>
-  );
+            </NotificationsProvider>
+          </ExtensionsProvider>
+        </SettingsProvider>
+      </AppInfoProvider>
+    </ProfileProvider>
+  </> );
 }
 

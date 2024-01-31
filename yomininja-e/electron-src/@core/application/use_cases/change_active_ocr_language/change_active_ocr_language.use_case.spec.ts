@@ -8,6 +8,8 @@ import { LanguageTypeOrmSchema } from "../../../infra/db/typeorm/language/langua
 import ProfileTypeOrmRepository from "../../../infra/db/typeorm/profile/profile.typeorm.repository";
 import { ChangeActiveLanguage_Input, ChangeActiveOcrLanguageUseCase } from "./change_active_ocr_language.use_case";
 import LanguageTypeOrmRepository from "../../../infra/db/typeorm/language/language.typeorm.repository";
+import { OcrTemplateTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_template.schema";
+import { OcrTargetRegionTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.schema";
 
 describe("ChangeActiveOcrLanguageUseCase tests", () => {
         
@@ -27,7 +29,9 @@ describe("ChangeActiveOcrLanguageUseCase tests", () => {
             entities: [
                 ProfileTypeOrmSchema,
                 SettingsPresetTypeOrmSchema,
-                LanguageTypeOrmSchema
+                LanguageTypeOrmSchema,
+                OcrTemplateTypeOrmSchema,
+                OcrTargetRegionTypeOrmSchema
             ],
         });
 

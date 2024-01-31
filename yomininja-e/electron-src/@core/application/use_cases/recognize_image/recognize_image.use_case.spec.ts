@@ -10,6 +10,10 @@ import { ProfileTypeOrmSchema } from "../../../infra/db/typeorm/profile/profile.
 import { SettingsPresetTypeOrmSchema } from "../../../infra/db/typeorm/settings_preset/settings_preset.schema";
 import { LanguageTypeOrmSchema } from "../../../infra/db/typeorm/language/language.schema";
 import ProfileTypeOrmRepository from "../../../infra/db/typeorm/profile/profile.typeorm.repository";
+import { OcrTemplate } from "../../../domain/ocr_template/ocr_template";
+import { OcrTargetRegion } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region";
+import { OcrTemplateTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_template.schema";
+import { OcrTargetRegionTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.schema";
 
 describe("Recognize Image Use Case tests", () => {    
                 
@@ -29,6 +33,16 @@ describe("Recognize Image Use Case tests", () => {
                     bottom_left: { x: 0, y: 10 },
                     bottom_right: { x: 10, y: 10 },
                 }
+            },
+            {
+                text: "recognized_text",
+                score: 0.99,
+                box: {
+                    top_left: { x: 10, y: 10 },
+                    top_right: { x: 20, y: 10 },
+                    bottom_left: { x: 10, y: 20 },
+                    bottom_right: { x: 20, y: 20 },
+                }
             }
         ]
     };
@@ -41,6 +55,8 @@ describe("Recognize Image Use Case tests", () => {
 
     let profile: Profile;
 
+    let ocrTemplate: OcrTemplate;
+
     beforeEach( async () => {
         
         let dataSource = new DataSource({
@@ -51,7 +67,9 @@ describe("Recognize Image Use Case tests", () => {
             entities: [
                 ProfileTypeOrmSchema,
                 SettingsPresetTypeOrmSchema,
-                LanguageTypeOrmSchema
+                LanguageTypeOrmSchema,
+                OcrTemplateTypeOrmSchema,
+                OcrTargetRegionTypeOrmSchema
             ],
         });
 
@@ -83,6 +101,27 @@ describe("Recognize Image Use Case tests", () => {
             profileRepo,
         );
 
+        ocrTemplate = OcrTemplate.create({
+            id: 1,
+            image: Buffer.from(''),
+            name: 'template',
+        });
+
+        const targetRegion = OcrTargetRegion.create({
+            ocr_template_id: ocrTemplate.id,
+            position: {
+                top: 0.5,
+                left: 0.5,
+            },
+            size: {
+                width: 0.5,
+                height: 0.5,
+            },
+        });
+
+        ocrTemplate.addTargetRegion( targetRegion );
+
+
     });
 
     it("should check if the use case has an adapter", () => {
@@ -103,8 +142,13 @@ describe("Recognize Image Use Case tests", () => {
 
         const result = await recognizeImageUseCase.execute( input );
 
+        expect( result ).toBeTruthy();
+        if ( !result ) return;
+
+        const { ocr_regions } = result;
+
         expect( result?.context_resolution ).toStrictEqual( ocrTestAdapterResultProps.context_resolution );
-        expect( result?.results[0].text ).toStrictEqual( testText );
+        expect( ocr_regions[0].results?.[0].text ).toStrictEqual( testText );
     });
     
 });

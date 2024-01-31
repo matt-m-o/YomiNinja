@@ -40,19 +40,26 @@ export const ProfileTypeOrmSchema = new EntitySchema< Profile >({
           target: 'SettingsPreset',
           joinColumn: {
             name: 'active_settings_preset_id',
-          },          
-          //inverseSide: '' // Note that this is relation name, not the entity name
+          },
           createForeignKeyConstraints: false,
         },
 
         active_ocr_language: {
-            type: 'many-to-one',
-            target: 'Language',
-            joinColumn: {
-              name: 'active_ocr_language_id',
-            },          
-            //inverseSide: '' // Note that this is relation name, not the entity name
-            createForeignKeyConstraints: false,
+          type: 'many-to-one',
+          target: 'Language',
+          joinColumn: {
+            name: 'active_ocr_language_id',
           },
+          createForeignKeyConstraints: false,
+        },
+
+        active_ocr_template: {
+          type: 'many-to-one',
+          target: 'OcrTemplate',
+          joinColumn: {
+            name: 'active_ocr_template_id',
+          },
+          createForeignKeyConstraints: false,
+        },
     },
 })

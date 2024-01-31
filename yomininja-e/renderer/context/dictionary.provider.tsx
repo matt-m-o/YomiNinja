@@ -207,7 +207,7 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
     async function getDictionaries() {
 
         const dictionaries = await global.ipcRenderer.invoke( 'dictionaries:get_all_installed' );
-        const extensions = await global.ipcRenderer.invoke( 'dictionaries:get_all_extensions' );
+        const extensions = await global.ipcRenderer.invoke( 'extensions:get_all_extensions' );
 
         // console.log({ extensions })
 
@@ -221,7 +221,7 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
     }
 
     async function openExtensionOptions( browserExtension: BrowserExtension ): Promise< void > {
-        await global.ipcRenderer.invoke( 'dictionaries:open_extension_options', browserExtension );
+        await global.ipcRenderer.invoke( 'extensions:open_extension_options', browserExtension );
     }
     
     useEffect( () => {

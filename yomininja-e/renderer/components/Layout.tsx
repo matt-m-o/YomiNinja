@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from 'react'
+import { ReactNode, useContext, useEffect, useState } from 'react'
 import CssBaseline from '@mui/material/CssBaseline';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import { AppBar, Drawer } from '../components/AppBar';
@@ -15,6 +15,11 @@ import TabContext from '@mui/lab/TabContext';
 import TabPanel from'@mui/lab/TabPanel';
 import TabList from '@mui/lab/TabList';
 import { defaultTheme } from './Theme';
+import { ExtensionsContext } from '../context/extensions.provider';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+
+
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -72,7 +77,51 @@ export default function Layout( { contents }: LayoutProps) {
   const [ activeTab, setActiveTab ] = React.useState('0');
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setActiveTab(newValue);
-  };  
+    global.ipcRenderer.invoke( 'main:set_active_tab', newValue );
+  }; 
+  const router = useRouter();
+
+  function hashToTabIdx( hash: string ) {
+    return hash.split('tab-')[1];
+  }
+
+  useEffect(() => {
+
+    const onHashChangeStart = ( hash ) => {
+
+      if ( !hash.includes('tab') )
+        return;
+
+      const tabIdx = hashToTabIdx(hash);
+
+      setActiveTab( tabIdx );
+    };
+
+    router.events.on("hashChangeStart", onHashChangeStart);
+
+    return () => {
+        router.events.off("hashChangeStart", onHashChangeStart);
+    };
+  }, [router.events]);
+
+  useEffect( () => {
+
+    // if ( !location?.hash ) return;
+
+    // const tabIdx = hashToTabIdx( location.hash );
+    // setActiveTab( tabIdx );
+
+    global.ipcRenderer.invoke( 'main:get_active_tab' )
+      .then( ( tabId: string ) => {
+        console.log({ tabId });
+
+        if ( !tabId ) return;
+  
+        setActiveTab( tabId );
+      });
+    
+  }, [] );
+
 
   const toolbarVariant = 'dense';
   const tabSx: SxProps<Theme> = {
@@ -87,27 +136,31 @@ export default function Layout( { contents }: LayoutProps) {
 
   const tabLabelStyle: React.CSSProperties = {
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
   }
   
   const tabLabelsComponents = contents.map( item => (
-    <div style={tabLabelStyle}>
+    <div style={tabLabelStyle} title={item.tabLabel.text}>
       <ListItemIcon sx={{ minWidth: '48px' }}>
         {item.tabLabel.icon}
       </ListItemIcon>
-      <ListItemText primary={item.tabLabel.text} sx={{ paddingTop: '1px' }} />
+      <ListItemText
+        primary={item.tabLabel.text}
+        sx={{
+          paddingTop: '1px',
+          // textTransform: 'capitalize'
+        }}
+      />
     </div>
   ));
 
-  function refreshAllWindows() {
-    global.ipcRenderer.invoke( 'refresh_all_windows' );
-  }
+  const { browserActionList } = useContext( ExtensionsContext )
 
   return (
     <TabContext value={activeTab}>
       <Box sx={{ display: 'flex', height: '100vh' }}>
   
-        <CssBaseline />
+        <CssBaseline enableColorScheme/>
   
         <AppBar position="absolute" open={open}>
           <Toolbar variant={toolbarVariant}
@@ -117,8 +170,9 @@ export default function Layout( { contents }: LayoutProps) {
               theme.palette.mode === 'light'
                 ? theme.palette.grey[100]
                 : theme.palette.grey[1000],
-                
+              userSelect: 'none'
             }}
+            style={{ paddingRight: '12px' }}
           >
   
             <IconButton
@@ -150,8 +204,7 @@ export default function Layout( { contents }: LayoutProps) {
               </Badge>
             </IconButton> */}
 
-            { /* @ts-expect-error */ }
-            <browser-action-list onClick={ () => refreshAllWindows() }></browser-action-list>
+            {browserActionList}
   
           </Toolbar>
         </AppBar>
@@ -162,7 +215,7 @@ export default function Layout( { contents }: LayoutProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-end',
-              px: [1],              
+              px: [1],
             }}
           >
             <IconButton onClick={toggleDrawer}>
@@ -189,7 +242,15 @@ export default function Layout( { contents }: LayoutProps) {
             }}          
           >
             { tabLabelsComponents.map( ( component, idx ) => (
-              <Tab label={component} {...a11yProps(0)} sx={tabSx} key={idx} value={idx.toString()}/>
+              <Tab
+                label={component} 
+                {...a11yProps(0)}
+                sx={tabSx}
+                key={idx}
+                value={idx.toString()}
+                // component={Link}
+                // href={'#tab-'+idx}
+              />
             ))}
           </TabList>
 
