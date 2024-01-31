@@ -60,7 +60,7 @@ describe("CreateSettingsPresetUseCase tests", () => {
 
         const input: CreateSettingsPreset_Input = {
             name: 'Custom',
-            ocr_engine: [
+            ocr_engines: [
                 {    
                     cpu_threads: 32,
                     image_scaling_factor: 1,
