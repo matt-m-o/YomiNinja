@@ -12,7 +12,7 @@ https://github.com/matt-m-o/YomiNinja/assets/25914763/2bb02444-fc41-44e7-bc9e-c6
 https://github.com/matt-m-o/YomiNinja/assets/25914763/1868db47-5b50-44c1-a5b3-694d46c69e28
 
 
-The extracted text overlays the original content, allowing for quick look-ups with pop-up dictionaries like [10ten](https://github.com/birchill/10ten-ja-reader) and [Yomichan](https://github.com/FooSoft/yomichan). <br>
+The extracted text overlays the original content, allowing for quick look-ups with pop-up dictionaries like [10ten](https://github.com/birchill/10ten-ja-reader), [Yomichan](https://github.com/FooSoft/yomichan) and [Inkah](https://chromewebstore.google.com/detail/inkah-chinese-korean-pop/pcgmedbmchghfgikplcimdmfldfnecec). <br>
 It minimizes distractions and simplifies the process of looking up unfamiliar words. <br>
 This is especially beneficial for language learners who study through videos or games.  
 
@@ -47,28 +47,30 @@ YomiNinja currently offers support for distros using the X11 window system. Wayl
     ```
 
 
-### Install Yomichan (optional):
-1. Install [Yomichan](https://foosoft.net/projects/yomichan/) on your browser of preference.
-2. Go to the Yomichan settings.
+### Install Yomichan or Yomitan (optional):
+1. Install [Yomichan](https://foosoft.net/projects/yomichan/)/[Yomitan](https://github.com/themoeway/yomitan#installation) on your browser of preference.
+2. Go to the Yomichan/Yomitan settings.
 3. Find and enable the clipboard monitoring option.
 
    - Chromium: `Enable background clipboard text monitoring`
    - Firefox: `Enable native popups when copying Japanese text`
-4. Go to the YomiNinja settings and enable ```Show Yomichan window on text copy```
+4. Go to the YomiNinja settings and enable ```Show window on text copy```
+5. Set the `Window title` to "Yomichan Search" or "Yomitan Search".
 
 
 ## Current features
 
 - Text extraction from the entire screen or specific window.
 - Built-in pop-up dictionaries.
+- Chrome Extensions (partial support).
+- OCR Templates (predefined text areas, optimizing OCR efficiency).
 - WebSocket for Texthookers.
 
 
 ## Planned Features
 
-- Text extraction from snip.
-- OCR Templates (predefined text areas, optimizing OCR efficiency).
 - Auto OCR.
+- Text extraction from snip.
 - Anki integration.
 - History.
 - Text translation.
@@ -101,15 +103,15 @@ It supports dozens of languages, that will be integrated into this application i
        
        ./yomininja-e/extensions/10ten
 
-5. Install node modules. Note: `--force` is used due to outdated react-furi peerDependencies, but it should function normally.
+4. Install node modules. Note: `--force` is used due to outdated react-furi peerDependencies, but it should function normally.
     ```commandline
     cd yomininja-e && npm install --force
     ```
-6. Generate gRPC Protobuf types
+5. Generate gRPC Protobuf types
     ```commandline
     npm run grpc-types
     ```
-7. Build the distribution
+6. Build the distribution
     ```commandline
     npm run dist
     ```
@@ -121,5 +123,5 @@ It supports dozens of languages, that will be integrated into this application i
 
 ## Inspired by:
 - [Yomichan](https://github.com/FooSoft/yomichan)
-- [Manga OCR](https://github.com/kha-white/manga-ocr)
+- [mokuro](https://github.com/kha-white/mokuro)
 - [kanjitomo-ocr](https://github.com/sakarika/kanjitomo-ocr)

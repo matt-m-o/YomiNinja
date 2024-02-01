@@ -16,7 +16,6 @@ import { UpdateSettingsPresetResponse__Output } from "../../../../grpc/rpc/ocr_s
 import { UpdateSettingsPresetRequest } from "../../../../grpc/rpc/ocr_service/UpdateSettingsPresetRequest";
 import { applyCpuHotfix } from "./hotfix/hardware_compatibility_hotfix";
 import os from 'os';
-import { addExecutionPermissionToPPOCR } from "./ppocr_executable_permission";
 
 export class PpOcrAdapter implements OcrAdapter {
     
@@ -30,6 +29,7 @@ export class PpOcrAdapter implements OcrAdapter {
 
 
     initialize( serviceAddress?: string ) {
+
         
         if ( !serviceAddress )
             return;
@@ -58,11 +58,13 @@ export class PpOcrAdapter implements OcrAdapter {
         const ok = await this.ppocrServiceProcessStatusCheck();        
         if ( !ok ) return null;
         
+        this.idCounter++;
+        
         const requestInput: RecognizeBytesRequest = {
             id: this.idCounter.toString(),
             image_bytes: input.imageBuffer,
             language_code: input.languageCode            
-        };        
+        };
 
         console.log('processing recognition input');
         this.status = OcrAdapterStatus.Processing;
@@ -92,7 +94,6 @@ export class PpOcrAdapter implements OcrAdapter {
             !clientResponse?.results
         )
             return null;
-        
         
         return OcrResult.create({
             id: parseInt(clientResponse.id),
@@ -134,13 +135,15 @@ export class PpOcrAdapter implements OcrAdapter {
 
         const executableName = platform === 'win32'
             ? 'ppocr_infer_service_grpc.exe'
-            : 'start.sh';
-            
-        // addExecutionPermissionToPPOCR( cwd );
+            : 'start.sh'; // start.sh | ppocr_infer_service_grpc
 
         const executable = join( cwd + `/${executableName}` );
         
-        this.ppocrServiceProcess = spawn( executable, [/* command line arguments */], { cwd } );
+        this.ppocrServiceProcess = spawn(
+            executable,
+            [/*arguments */],
+            { cwd }
+        );
 
         // Handle stdout and stderr data
         this.ppocrServiceProcess.stdout.on('data', ( data: string ) => {

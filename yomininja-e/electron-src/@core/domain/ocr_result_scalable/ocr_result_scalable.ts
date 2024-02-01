@@ -25,19 +25,33 @@ export interface OcrItemScalable {
     score: number;
 };
 
+export interface OcrRegion {
+    results: OcrItemScalable[],
+    position: { // Percentages
+        top: number; 
+        left: number;
+    };
+    size: { // Percentages
+        width: number;
+        height: number;
+    };
+};
+
 
 export type OcrResultScalable_CreationInput = {
     id: number;
     context_resolution?: OcrResultContextResolution;
     results?: OcrItemScalable[];
+    ocr_regions?: OcrRegion[];
 };
 
 // Scalable version OcrResult. Uses percentages instead of pixel coordinates
 export class OcrResultScalable {
 
-    public readonly id: number;
+    public id: number;
     public context_resolution: OcrResultContextResolution;
-    public results: OcrItemScalable[];
+    // public results: OcrItemScalable[];
+    public ocr_regions: OcrRegion[];
     
     private constructor( input: OcrResultScalable_CreationInput ) {
 
@@ -48,19 +62,73 @@ export class OcrResultScalable {
             height: input?.context_resolution?.height || 0,
         };
 
-        this.results = input.results ? [ ...input?.results ] : [];
+        // this.results = input.results ? [ ...input?.results ] : [];
+        this.ocr_regions = input?.ocr_regions ? input.ocr_regions : [];
     }
 
     static create( input: OcrResultScalable_CreationInput ): OcrResultScalable {
         return new OcrResultScalable( input );
     }
     
+    // Adds results from another OcrResultScalable as a subregion
+    addRegionResult(
+        input: {
+            regionResult: OcrResultScalable;
+            regionPosition: { // Percentages
+                top: number; 
+                left: number;
+            };
+            regionSize: {
+                width: number;
+                height: number;
+            },
+            globalScaling?: boolean; // true => Use global context resolution instead of region resolution
+        }
+    ) {
+        const { regionResult, regionPosition, regionSize, globalScaling } = input;
+
+        const rescaledRegionResults = regionResult.ocr_regions[0].results.map( result => {
+
+            if ( !globalScaling )
+                return result;
+
+            let {
+                position: boxPosition,
+                dimensions: boxDimensions
+            } = result.box;
+
+
+            result.box.position = {
+                top: ( regionPosition.top * 100 ) + ( boxPosition.top * regionSize.height ),
+                left: ( regionPosition.left * 100 ) + ( boxPosition.left * regionSize.width ),
+            };
+
+            if ( !boxDimensions )
+                boxDimensions = { width: 0, height: 0 };
+
+            result.box.dimensions = {
+                width: ( boxDimensions.width * regionSize.width ),
+                height: ( boxDimensions.height * regionSize.height ),
+            };
+
+            return result;
+        });
+
+        this.ocr_regions.push({
+            results: rescaledRegionResults,
+            position: regionPosition,
+            size: regionSize
+        });
+
+        // this.results = [ ...this.results, ...rescaledRegionResults ];
+    }
 
     static createFromOcrResult( ocrResult: OcrResult ): OcrResultScalable {
 
         // console.time("createFromOcrResult");
 
         const results: OcrItemScalable[] = [];
+        const ocr_regions: OcrRegion[] = []
 
         ocrResult.results.forEach( item => {
 
@@ -104,11 +172,24 @@ export class OcrResultScalable {
 
         // console.timeEnd("createFromOcrResult"); // ~0.154ms to ~0.332ms
 
+        ocr_regions.push({
+            results,
+            position: {
+                left: 0,
+                top: 0,
+            },
+            size: {
+                height: 1,
+                width: 1
+            }
+        });
+
         return OcrResultScalable.create({
             id: ocrResult.id,
             results,
-            context_resolution: ocrResult.context_resolution
-        })
+            context_resolution: ocrResult.context_resolution,
+            ocr_regions
+        });
     }
 
     

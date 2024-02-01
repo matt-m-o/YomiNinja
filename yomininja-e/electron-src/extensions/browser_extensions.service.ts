@@ -7,17 +7,23 @@ import { BrowserExtension } from "./browser_extension";
 import sharp from 'sharp';
 import { EXTENSIONS_DIR } from "../util/directories.util";
 import isDev from "electron-is-dev";
+import { BrowserExtensionManager } from "./browser_extension_manager/browser_extension_manager";
+
 
 export class BrowserExtensionsService {
 
     session: Electron.Session;
     extensionsApi: ElectronChromeExtensions;
     installedExtensions: Map< string, Electron.Extension > = new Map();
-    windows: Map< number, BrowserWindow > = new Map(); 
+    windows: Map< number, BrowserWindow > = new Map();
+    browserExtensionManager: BrowserExtensionManager;
 
     onExtensionButtonClick: () => void = () => {};
 
-    constructor() {
+    constructor( input: { browserExtensionManager: BrowserExtensionManager } ) {
+
+        this.browserExtensionManager = input.browserExtensionManager;
+
         // Enable context menu
         app.on('web-contents-created', ( event, webContents ) => {
             webContents.on('context-menu', (e, params) => {
@@ -29,6 +35,10 @@ export class BrowserExtensionsService {
                     const { click } = item;
                     item.click = () => {
                         click();
+
+                        if ( !item.label.includes('10ten') )
+                            return;
+
                         this.windows.forEach( window => {
                             window.reload();
                         });
@@ -43,11 +53,11 @@ export class BrowserExtensionsService {
                         webContents.loadURL(url);
                     }
                 });
-            
-                menu.popup();                
-                this.getInstalledExtensions()
+
+                menu.popup();
             });
         });
+
     }
 
     init = async () => {
@@ -67,6 +77,7 @@ export class BrowserExtensionsService {
                     }
                 });
 
+                // console.log(details)
                 if (details.url) {                    
                     extensionWindow.loadURL( details.url );                   
                 }
@@ -80,22 +91,32 @@ export class BrowserExtensionsService {
         // console.log({ EXTENSIONS_DIR });
 
         // await this.loadExtensions();
-        // console.log('BrowserExtensionsService.installedExtensions:')
-        // console.log(this.installedExtensions)
-
-        
 
         // console.log(
-        //     this.installedExtensions[0].manifest.commands
-        // );        
+        //     Array.from(this.installedExtensions)[0]
+        // );
     }
 
-    addBrowserWindow = async ( window: BrowserWindow ) => {
+    addBrowserWindow = async ( window: BrowserWindow, selectWindow?: boolean ) => {
 
-        this.windows.set( window.id, window );
+        if ( !this.windows.has( window.id ) )
+            this.windows.set( window.id, window );
 
         this.extensionsApi.addTab( window.webContents, window );
-        this.extensionsApi.selectTab( window.webContents );        
+
+        if ( selectWindow )
+            this.selectWindow( window )
+    }
+
+    // Select tab
+    selectWindow = ( window: BrowserWindow ) => {
+        this.extensionsApi.selectTab( window.webContents );
+    }
+
+    reloadWindows = () => {
+        this.windows.forEach( window => {
+            window.reload();
+        });
     }
 
     getInstalledExtensions = async (): Promise< BrowserExtension[] > => {
@@ -103,18 +124,25 @@ export class BrowserExtensionsService {
 
         const extensions: BrowserExtension[] = [];
 
-        // console.log( Array.from( this.installedExtensions.values() ) );
+        // console.log( this.installedExtensions );
         // console.log( installedExtensions );
 
         for ( const item of Array.from( this.installedExtensions.values() ) ) {
 
-            const optionsUrl = item.url + item.manifest.options_ui?.page;
+            const optionsUiPage = item.manifest?.options_ui?.page;
+
+            let optionsUrl: string | undefined;
+
+            if ( optionsUiPage )
+                optionsUrl = item.url + item.manifest?.options_ui?.page;
 
             // console.log( item.manifest )
 
             const extension: BrowserExtension = {
                 id: item.id,
                 name: item.name,
+                description: item.manifest.description,
+                version: item.manifest.version,
                 optionsUrl,
                 icon: await this.getExtensionIcon( item.id ) || ''
             };
@@ -165,7 +193,7 @@ export class BrowserExtensionsService {
         );
       
         for ( const extPath of extensionDirectories.filter(Boolean) ) {
-            // console.log(`Loading extension from ${extPath}`);
+            console.log(`Loading extension from ${extPath}`);
             
             if ( !extPath ) continue;
         
@@ -174,6 +202,7 @@ export class BrowserExtensionsService {
                     extPath,
                     { allowFileAccess: !isDev } // Required in production
                 );
+
                 this.installedExtensions.set( extension.id, extension );
             } catch ( error ) {
                 console.error( error );
@@ -239,7 +268,8 @@ export class BrowserExtensionsService {
 
         const extension = extensions.find( item => item.id === extensionId );
 
-        if ( !extension ) return;
+        if ( !extension || !extension?.optionsUrl )
+            return;
 
         const extensionWindow = new BrowserWindow({
             autoHideMenuBar: true,
@@ -255,18 +285,35 @@ export class BrowserExtensionsService {
         extensionWindow.loadURL( extension.optionsUrl );
     }
 
-    handleActionListClick = async () => {
+    installExtension = async ( input: { zipFilePath: string } ) => {
 
-        console.log('handleActionListClick');
-        console.log( this.windows );
+        const { zipFilePath } = input;
+
+        await this.browserExtensionManager.install( zipFilePath );
+
+        await this.loadExtensions();
+
+        this.reloadWindows();
+    }
+
+    uninstallExtension = async ( extension: BrowserExtension ) => {
+
+        const installedExtension = this.installedExtensions.get( extension.id );
+
+        if ( !installedExtension ) return;
+
+        this.browserExtensionManager.uninstall( installedExtension.path );
+
+        await this.loadExtensions();
+
         this.windows.forEach( window => {
             window.reload();
         });
     }
 
-    installExtension = async (  ) => {
-
+    handleActionButtonClick = async () => {
+        this.windows.forEach( window => {
+            window.reload();
+        });
     }
 }
-
-export const browserExtensions = new BrowserExtensionsService();

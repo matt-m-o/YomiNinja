@@ -37,6 +37,6 @@ export const SettingsPresetTypeOrmSchema = new EntitySchema< SettingsPreset >({
         updated_at: {
             type: 'datetime',
             updateDate: true,
-        },       
+        },
     }
 })

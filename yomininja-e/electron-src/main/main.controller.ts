@@ -2,7 +2,7 @@
 import { join } from 'path';
 import { format } from 'url';
 
-import { BrowserWindow, IpcMainInvokeEvent, ipcMain } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, Menu, MenuItem, ipcMain } from "electron";
 import isDev from 'electron-is-dev';
 import { PAGES_DIR } from '../util/directories.util';
 import { WindowManager } from '../../gyp_modules/window_management/window_manager';
@@ -13,6 +13,9 @@ export class MainController {
 
     private mainWindow: BrowserWindow;
     private captureSourceWindow: BrowserWindow | null;    
+    private mainWindowUrl: string;
+
+    private activeTabId: string; // Temporary solution for reloading UI without loosing tab
 
     constructor() {}
 
@@ -54,10 +57,45 @@ export class MainController {
             }
         });
 
+        if ( !isDev ) {
+            const menu = new Menu();
+            menu.append( new MenuItem({
+                label: 'View',
+                submenu: [
+                    {
+                        role: 'resetZoom',
+                        label: 'Reset Zoom',
+                        accelerator: 'CommandOrControl+0',
+                    },
+                    {
+                        role: 'zoomIn',
+                        label: 'Zoom In',
+                        accelerator: 'CommandOrControl+=',
+                    },
+                    {
+                        role: 'zoomOut',
+                        label: 'Zoom Out',
+                        accelerator: 'CommandOrControl+-',
+                    }
+                ]
+            }));
+            Menu.setApplicationMenu( menu );
+        }
+        
+
+
         return this.mainWindow;
     }
 
     private registersIpcHandlers() {
+
+        ipcMain.handle( 'main:set_active_tab', ( event: IpcMainInvokeEvent, message: string ) => {
+            this.activeTabId = message;
+        });
+
+        ipcMain.handle( 'main:get_active_tab', ( event: IpcMainInvokeEvent, message: string ) => {
+            return this.activeTabId;
+        });
 
         ipcMain.handle( 'main:show_capture_source_selection', ( event: IpcMainInvokeEvent, message: string ) => {
             this.createCaptureSourceSelectionWindow();
@@ -67,24 +105,27 @@ export class MainController {
             this.captureSourceWindow?.close();
             this.captureSourceWindow = null;
         });
+
+        
     }
 
     async loadMainPage(): Promise< void >  {
-        const url = isDev
-        ? 'http://localhost:8000/'
-        : format({
-            pathname: join( PAGES_DIR, '/index.html'),
-            protocol: 'file:',
-            slashes: true,
-        });
+        this.mainWindowUrl = isDev ?
+            'http://localhost:8000/' :
+            format({
+                pathname: join( PAGES_DIR, '/index.html'),
+                protocol: 'file:',
+                slashes: true,
+            });
 
-        await this.mainWindow.loadURL(url);
+        await this.mainWindow.loadURL (this.mainWindowUrl );
 
         this.mainWindow.show();
     }
 
     refreshPage(): void {
-        this.mainWindow.reload();
+        this.mainWindow.loadURL( this.mainWindowUrl );
+        this.mainWindow.setTitle('YomiNinja');
     }
 
     private createCaptureSourceSelectionWindow() {

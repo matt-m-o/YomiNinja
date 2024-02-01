@@ -65,11 +65,11 @@ export async function initializeApp() {
         // console.log('Initializing settings...');
         let defaultSettingsPreset = await settingsPresetRepo.findOne({ name: SettingsPreset.default_name });
         if ( !defaultSettingsPreset ) {
-            
+
             // Creating default settings preset
-            await get_CreateSettingsPresetUseCase().execute();
-            
-            defaultSettingsPreset = await settingsPresetRepo.findOne({ name: SettingsPreset.default_name }) as SettingsPreset;
+            await get_CreateSettingsPresetUseCase().execute();            
+
+            defaultSettingsPreset = await settingsPresetRepo.findOne({ name: SettingsPreset.default_name }) as SettingsPreset ;
         }
         else {
             await get_UpdateSettingsPresetUseCase().execute({
@@ -80,8 +80,8 @@ export async function initializeApp() {
             });
         }
         await ppocrAdapter.ppocrServiceProcessStatusCheck();
-        
 
+        
         // console.log('Initializing languages...');
         let defaultLanguage = await languageRepo.findOne({ name: 'japanese' });
         if ( !defaultLanguage ) {
@@ -110,7 +110,7 @@ export async function initializeApp() {
 
         // console.log('Initialization completed!');
     } catch (error) {
-        console.error( error );
+        console.error( error )
     }
 }
 

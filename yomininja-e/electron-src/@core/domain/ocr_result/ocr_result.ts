@@ -45,14 +45,24 @@ export class OcrResult {
         };
 
         this.results = input.results ? [ ...input?.results ] : [];
+
+        this.results.forEach( this.fixUndefined );
     }
 
     static create( input: OcrResult_CreationInput ): OcrResult {
         return new OcrResult( input );
     }
     
-
     addResultItem( item: OcrItem ): void {
+        this.fixUndefined( item );
         this.results.push( item );
-    }    
+    }
+
+    private fixUndefined( item: OcrItem ) {
+
+        for ( const [ key, vertex ] of Object.entries( item.box ) ) {
+            vertex.x = vertex.x || 0;
+            vertex.y = vertex.y || 0;
+        }
+    }
 }

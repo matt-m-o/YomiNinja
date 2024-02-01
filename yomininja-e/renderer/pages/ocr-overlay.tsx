@@ -1,12 +1,10 @@
 import { useContext, useEffect, useState } from 'react';
-import { OcrResult } from '../../electron-src/@core/domain/ocr_result/ocr_result';
-import { styled } from '@mui/material/styles';
 import { OcrResultContext, OcrResultProvider } from '../context/ocr_result.provider';
 import FullscreenOcrResult from '../components/OcrOverlay/FullscreenOcrResult';
 import { SettingsContext, SettingsProvider } from '../context/settings.provider';
-import { OverlayFrameVisuals, OverlayOcrItemBoxVisuals } from '../../electron-src/@core/domain/settings_preset/settings_preset';
 import OcrOverlay from '../components/OcrOverlay/OcrOverlay';
 import { DictionaryProvider } from '../context/dictionary.provider';
+import { OcrTemplatesProvider } from '../context/ocr_templates.provider';
 
 
 
@@ -21,20 +19,18 @@ export default function OcrOverlayPage() {
   }, []);
   
 
-  return (
-    <>      
-      <title>OCR Overlay - YomiNinja</title>
+  return ( <>
+    <title>OCR Overlay - YomiNinja</title>
+    <SettingsProvider>
+      <DictionaryProvider>
+        <OcrResultProvider>
+          <OcrTemplatesProvider>
 
-      <SettingsProvider>
-        <DictionaryProvider>
-          <OcrResultProvider>
-
-            <OcrOverlay/>          
-
-          </OcrResultProvider>
-        </DictionaryProvider>
-      </SettingsProvider>
-    </>
-    
-  );
+            <OcrOverlay/>
+            
+          </OcrTemplatesProvider>
+        </OcrResultProvider>
+      </DictionaryProvider>
+    </SettingsProvider>
+  </> );
 }

@@ -34,6 +34,11 @@ export const Registry = {
     GetDictionariesUseCase: Symbol.for('GetDictionariesUseCase'),
     DeleteAllDictionariesUseCase: Symbol.for('DeleteAllDictionariesUseCase'),
     CreateSettingsPresetUseCase: Symbol.for('CreateSettingsPresetUseCase'),
+    CreateOcrTemplateUseCase: Symbol.for('CreateOcrTemplateUseCase'),
+    UpdateOcrTemplateUseCase: Symbol.for('UpdateOcrTemplateUseCase'),
+    GetOcrTemplatesUseCase: Symbol.for('GetOcrTemplatesUseCase'),
+    DeleteOcrTemplateUseCase: Symbol.for('DeleteOcrTemplatesUseCase'),
+    ChangeActiveOcrTemplateUseCase: Symbol.for('ChangeActiveOcrTemplateUseCase'),
 
     // Repositories
     SettingsPresetInMemoryRepository: Symbol.for('SettingsPresetInMemoryRepository'),
@@ -44,6 +49,8 @@ export const Registry = {
     DictionaryTagTypeOrmRepository: Symbol.for('DictionaryTagTypeOrmRepository'),
     DictionaryDefinitionTypeOrmRepository: Symbol.for('DictionaryDefinitionTypeOrmRepository'),
     DictionaryHeadwordTypeOrmRepository: Symbol.for('DictionaryHeadwordTypeOrmRepository'),
+    OcrTemplateTypeOrmRepository: Symbol.for('OcrTemplateTypeOrmRepository'),
+    OcrTargetRegionTypeOrmRepository: Symbol.for('OcrTargetRegionTypeOrmRepository'),
 }
 
 import "./db_registry";

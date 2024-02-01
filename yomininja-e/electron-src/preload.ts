@@ -22,7 +22,7 @@ process.once('loaded', () => {
 // Inject <browser-action-list> element into our page
 if ( 
   location.href.includes('index') || // Prod
-  location.href === ('http://localhost:8000/') // Dev
+  location.href.includes('http://localhost:8000/') // Dev
 ) {
   injectBrowserAction();
 }

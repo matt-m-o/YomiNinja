@@ -23,11 +23,8 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     const [ allSettingsPresets, setAllSettingsPresets ] = useState< SettingsPresetJson[] >( [] );
 
     const updateActivePresetIPC = debounce( async ( updatedPreset: SettingsPresetJson ) => {
-
         const { restartOcrAdapter } = await global.ipcRenderer.invoke( 'settings_preset:update', updatedPreset );
-
         // console.log({ restartOcrAdapter });
-
     }, 1500 );
 
 
@@ -95,7 +92,17 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
             frame: {
                 ...activeSettingsPreset.overlay.visuals.frame,
                 ...newVisuals.frame,
-            }  
+            },
+
+            ocr_region: {
+                ...activeSettingsPreset.overlay.visuals.ocr_region,
+                ...newVisuals.ocr_region,
+            },
+
+            mouse: {
+                ...activeSettingsPreset.overlay.visuals.mouse,
+                ...newVisuals.mouse,
+            },
         };
 
         updateActivePreset( activeSettingsPreset );

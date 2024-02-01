@@ -1,86 +1,134 @@
 import { useContext, useState, useEffect } from "react";
-import { OverlayOcrItemBoxVisuals, OverlayFrameVisuals, OverlayHotkeys, OverlayBehavior } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import { OverlayOcrItemBoxVisuals, OverlayFrameVisuals, OverlayHotkeys, OverlayBehavior, OverlayMouseVisuals, OverlayOcrRegionVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
 import { SettingsContext } from "../../context/settings.provider";
-import { debounce, styled } from "@mui/material";
+import { debounce } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import FullscreenOcrResult from "./FullscreenOcrResult";
 import { DictionaryContext } from "../../context/dictionary.provider";
+import CustomCursor from "./CustomCursor/CustomCursor";
+import { OcrResultContext } from "../../context/ocr_result.provider";
+import { OcrTemplateJson } from "../../../electron-src/@core/domain/ocr_template/ocr_template";
+import { OcrTargetRegionDiv, toCssPercentage } from "../OcrTemplates/OcrTargetRegion";
+import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 
 
 const OverlayFrame = styled('div')({
-    border: 'solid 1px',
-    height: '100vh',
-    overflow: 'hidden',
-    boxSizing: 'border-box'
+  border: 'solid 1px',
+  height: '100vh',
+  overflow: 'hidden',
+  boxSizing: 'border-box',
 });
 
 export default function OcrOverlay() {
 
-    const {
-      activeSettingsPreset,
-    } = useContext( SettingsContext );
-    const { toggleScanner } = useContext( DictionaryContext );
+  const { activeSettingsPreset } = useContext( SettingsContext );
+  const { toggleScanner } = useContext( DictionaryContext );
+  const { activeOcrTemplate } = useContext( OcrTemplatesContext );
+  
 
-    const ocrItemBoxVisuals: OverlayOcrItemBoxVisuals = activeSettingsPreset?.overlay?.visuals.ocr_item_box;
-    const overlayFrameVisuals: OverlayFrameVisuals = activeSettingsPreset?.overlay?.visuals.frame;
-    const overlayHotkeys: OverlayHotkeys = activeSettingsPreset?.overlay?.hotkeys;
-    const overlayBehavior: OverlayBehavior = activeSettingsPreset?.overlay?.behavior;
+  const { ocrResult } = useContext( OcrResultContext );
 
+  const ocrItemBoxVisuals: OverlayOcrItemBoxVisuals = activeSettingsPreset?.overlay?.visuals.ocr_item_box;
+  const overlayFrameVisuals: OverlayFrameVisuals = activeSettingsPreset?.overlay?.visuals.frame;
+  const overlayOcrRegionVisuals: OverlayOcrRegionVisuals = activeSettingsPreset?.overlay?.visuals.ocr_region;
+  const overlayMouseVisuals: OverlayMouseVisuals = activeSettingsPreset?.overlay?.visuals.mouse;
+  const overlayHotkeys: OverlayHotkeys = activeSettingsPreset?.overlay?.hotkeys;
+  const overlayBehavior: OverlayBehavior = activeSettingsPreset?.overlay?.behavior;
+  
 
-    useEffect( () => {
+  const showCustomCursor = true;
 
-      if ( !activeSettingsPreset ) return;
+  useEffect( () => {
 
-      const { enabled } = activeSettingsPreset.dictionary;
-      toggleScanner( enabled );
+    if ( !activeSettingsPreset ) return;
 
-    }, [activeSettingsPreset] );
+    const { enabled } = activeSettingsPreset.dictionary;
+    toggleScanner( enabled );
 
-    function handleClickThrough( event: MouseEvent ) {
+  }, [activeSettingsPreset] );
+
+  function handleClickThrough( event: MouseEvent ) {
+    
+    const element = document.elementFromPoint(
+      event.clientX,
+      event.clientY
+    );
+
+    let value = false;
+
+    if (
+      element.id === 'overlay-frame' ||
+      element.classList.contains('ocr-region')
+    )
+      value = true;
       
-      const element = document.elementFromPoint(
-        event.clientX,
-        event.clientY
-      );
+    else
+      value = false;
+    
+    // console.log( currentElement );
+    // console.log( value );
 
-      let value = false;
+    global.ipcRenderer.invoke( 'overlay:set_ignore_mouse_events', value );
 
-      if ( element.id === 'overlay-frame' )
-        value = true;
+    if ( showCustomCursor ) {
+      
+      const customCursor = document.getElementById('custom-cursor');
+      if ( !customCursor ) return;
+
+      if ( value === false)
+        customCursor.style.visibility = 'hidden';
       else
-        value = false;
-      
-      // console.log( currentElement );
-      // console.log( value );
+        customCursor.style.visibility = 'unset';
+    }
+  };
 
-      global.ipcRenderer.invoke( 'overlay:set_ignore_mouse_events', value );
+  useEffect( () => {
+
+    document.addEventListener( 'mousemove', handleClickThrough );
+
+    return () => {
+      document.removeEventListener( 'mousemove', handleClickThrough );
     };
 
-
-    useEffect( () => {
-
-      document.addEventListener( 'mousemove', handleClickThrough );
-
-      return () => {
-        document.removeEventListener( 'mousemove', handleClickThrough );
-      };
-
-    }, [] );
+  }, [] );
 
 
+  const templateRegions = activeOcrTemplate?.target_regions.map( region => {
+    const { position, size } = region;
     return (
-        <OverlayFrame id='overlay-frame'
-            sx={{
+        <OcrTargetRegionDiv className="ocr-region" key={ region.id }
+            style={{
+              border: 'solid',
               borderColor: overlayFrameVisuals?.border_color || 'red',
-              borderWidth: overlayFrameVisuals?.border_width || '0px'
+              borderWidth: overlayOcrRegionVisuals?.border_width + 'px',
+              top: toCssPercentage( position.top ),
+              left: toCssPercentage( position.left ),
+              width: toCssPercentage( size.width ),
+              height: toCssPercentage( size.height ),
+              zIndex: -10
             }}
-          >
+        />
+    );
+  });
 
-            <FullscreenOcrResult 
-              ocrItemBoxVisuals={ocrItemBoxVisuals}
-              overlayHotkeys={overlayHotkeys}
-              overlayBehavior={overlayBehavior}
-            />
+  return (
+    <OverlayFrame id='overlay-frame'
+      sx={{
+        borderColor: overlayFrameVisuals?.border_color || 'red',
+        borderWidth: overlayFrameVisuals?.border_width + 'px'
+      }}
+    >
+      {templateRegions}
+      <FullscreenOcrResult
+        ocrItemBoxVisuals={ocrItemBoxVisuals}
+        overlayHotkeys={overlayHotkeys}
+        overlayBehavior={overlayBehavior}
+      />
 
-        </OverlayFrame>
-    )
+      { overlayMouseVisuals?.show_custom_cursor && ocrResult &&
+        <CustomCursor size={ overlayMouseVisuals.custom_cursor_size }/>
+      }
+
+    </OverlayFrame>
+  )
 }

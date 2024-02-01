@@ -1,11 +1,13 @@
 import { useContext, useEffect } from "react"
 import { LanguagesContext } from "../../context/languages.provider";
-import { Autocomplete, Box, Button, Card, CardContent, Container, FormControlLabel, Grid, TextField, TextFieldProps, Typography } from "@mui/material";
+import { Autocomplete, Box, Button, Card, CardContent, Container, FormControlLabel, Grid, SxProps, TextField, TextFieldProps, Theme, Typography } from "@mui/material";
 import { ProfileContext } from "../../context/profile.provider";
 import { CaptureSourceContext, CaptureSourceProvider } from "../../context/capture_source.provider";
 import HotkeyHints from "./HotkeyHints";
 import { ScreenshotMonitorRounded } from "@mui/icons-material";
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
+import OcrTemplateSelector from "./OcrTemplateSelector";
+import CustomTextField from "./CustomTextField";
 
 
 
@@ -27,7 +29,7 @@ export default function HomeContent() {
 
     function handleLanguageSelectChange( languageName: string ) {
 
-        if (!languageName) return;        
+        if (!languageName) return;
 
         const language = languages?.find( language => language.name === languageName.toLowerCase() );
 
@@ -36,20 +38,6 @@ export default function HomeContent() {
         changeActiveOcrLanguage( language );
     }
 
-
-    function CustomTextField( props: { label?: string, width?: string } & TextFieldProps ) {
-        return (
-            <FormControlLabel label={props.label}
-                sx={{
-                    alignItems: 'start',
-                }}
-                labelPlacement="top"
-                control={
-                    <TextField {...props } label='' sx={{ width: props.width }}/>
-                }
-            />
-        )
-    }
 
     function openCaptureSourceSelectionWindow() {
         global.ipcRenderer.invoke('main:show_capture_source_selection');
@@ -76,7 +64,7 @@ export default function HomeContent() {
                         <Grid item>
                             <FormControlLabel label={'Capture source'}
                                 sx={{
-                                    alignItems: 'start',                            
+                                    alignItems: 'start',
                                 }}
                                 labelPlacement="top"
                                 control={
@@ -86,10 +74,11 @@ export default function HomeContent() {
                                         onClick={ openCaptureSourceSelectionWindow }
                                         sx={{
                                             width: 'max-content',
-                                            height: '56px',                                    
+                                            height: '56px',
+                                            textTransform: 'none'                  
                                         }}
                                     >                
-                                        <Typography color='#90caf9' fontSize='0.85rem' >
+                                        <Typography color='#90caf9'>
                                             {activeCaptureSource?.name}
                                         </Typography>
                                     </Button>
@@ -97,17 +86,25 @@ export default function HomeContent() {
                             />
                         </Grid>
                         
-                        <Grid item>                        
+                        <Grid item>
                             <Autocomplete autoHighlight
                                 renderInput={ (params) => {
-                                    return <CustomTextField {...params} label='OCR language' width='200px' />
+                                    return <CustomTextField {...params}
+                                        label='OCR language'
+                                        sx={{ width: '177px' }}
+                                    />
                                 }}
-                                value={ activeOcrLanguage || 'english' }
-                                onChange={(event: any, newValue: string | null) => {
+                                value={ activeOcrLanguage || '' }
+                                onChange={( event: any, newValue: string | null ) => {
                                     handleLanguageSelectChange( newValue );
                                 }}
                                 options={ languageOptions || [] }
                             />
+                        </Grid>
+                            
+                        
+                        <Grid item>
+                            <OcrTemplateSelector/>
                         </Grid>
 
                     </Grid>                    
@@ -124,9 +121,11 @@ export default function HomeContent() {
                             marginLeft: 20
                         }}
                     >
-                        <li> Click-through auto mode. </li>
-                        <li> Option to enable overlay clicks even with click-through enabled. </li>
-                        <li> Option to show the overlay without stealing focus from the current application. </li>
+                        <li> Chrome Extensions Manager. </li>
+                        <li> OCR Templates. </li>
+                        <li> Option to control which window is displayed when the text is copied (e.g. Yomichan, Yomitan, Yomibaba...). </li>
+                        <li> Option to enable a custom mouse cursor for games that hide the mouse cursor. </li>
+                        <li> Option to change the overlay font size. </li>
                     </ul>
 
                 </CardContent>
@@ -154,6 +153,7 @@ export default function HomeContent() {
                         <li>Achieve the lowest latency by using the "PrintScreen" key.</li>
                         <li>Customize hotkeys, text auto-copy, and more in the settings menu.</li>
                         <li>The copied text is also transmitted via WebSockets on port 6677.</li>
+                        <li>If the game hides the mouse cursor, enable the custom cursor in the settings menu.</li>
                     </ul>
 
                 </CardContent>

@@ -76,7 +76,7 @@ export const AppInfoProvider = ( { children }: PropsWithChildren ) => {
 
         if ( !versionInfo ) return;
 
-        if ( !versionInfo.isUpToDate )
+        if ( !versionInfo?.isUpToDate )
             setOpenSnackbar(true);
 
         // console.log(versionInfo)

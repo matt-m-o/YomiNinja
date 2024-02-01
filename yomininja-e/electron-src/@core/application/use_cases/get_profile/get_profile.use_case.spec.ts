@@ -9,6 +9,8 @@ import { SettingsPresetTypeOrmSchema } from "../../../infra/db/typeorm/settings_
 
 import { DataSource } from 'typeorm';
 import { GetProfileUseCase, GetProfile_Input } from "./get_profile.use_case";
+import { OcrTemplateTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_template.schema";
+import { OcrTargetRegionTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.schema";
 
 describe("GetProfileUseCase tests", () => {
                 
@@ -28,7 +30,9 @@ describe("GetProfileUseCase tests", () => {
             entities: [
                 ProfileTypeOrmSchema,
                 SettingsPresetTypeOrmSchema,
-                LanguageTypeOrmSchema
+                LanguageTypeOrmSchema,
+                OcrTemplateTypeOrmSchema,
+                OcrTargetRegionTypeOrmSchema
             ],
         });
 

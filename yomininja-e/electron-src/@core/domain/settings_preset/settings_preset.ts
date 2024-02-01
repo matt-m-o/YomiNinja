@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { getDefaultSettingsPresetProps } from "./default_settings_preset_props";
 
 export type DictionarySettings = {
-    enabled: boolean;    
+    enabled: boolean;
 };
 
 export type OcrEngineSettings = {
@@ -14,6 +14,10 @@ export type OcrEngineSettings = {
     inference_runtime: string;
 };
 
+export type OverlayOcrRegionVisuals = {
+    border_width: number;
+};
+
 export type OverlayOcrItemBoxVisuals = {
     border_color: string;
     border_width: number; // pixels
@@ -21,7 +25,14 @@ export type OverlayOcrItemBoxVisuals = {
     background_color: string;
     text: {
         color: string;
+        font_size_factor: number; // 10% to 1000%
+        letter_spacing: number;
     };
+};
+
+export type OverlayMouseVisuals = {
+    show_custom_cursor: boolean;
+    custom_cursor_size: number;
 };
 
 export type OverlayFrameVisuals = {
@@ -32,15 +43,21 @@ export type OverlayFrameVisuals = {
 export type OverlayVisualCustomizations = {
     ocr_item_box: OverlayOcrItemBoxVisuals;
     frame: OverlayFrameVisuals;
+    ocr_region: OverlayOcrRegionVisuals;
+    mouse: OverlayMouseVisuals;
 };
 
 export type ClickThroughMode = 'auto' | 'enabled' | 'disabled';
+export type ShowWindowOnCopy = {
+    enabled: boolean;
+    title: string;
+};
 export type OverlayBehavior = {
     copy_text_on_hover: boolean;
     copy_text_on_click: boolean;
-    always_on_top: boolean;    
+    always_on_top: boolean;
     click_through_mode: ClickThroughMode;
-    show_yomichan_window_on_copy: boolean;
+    show_window_on_copy: ShowWindowOnCopy
     always_forward_mouse_clicks: boolean;
     show_window_without_focus: boolean;
 };
@@ -50,7 +67,7 @@ export type OverlayHotkeys = {
     ocr_on_screen_shot: boolean; // Perform ocr when pressing "PrintScreen"
     copy_text: string;
     show: string;
-    show_and_clear: string;    
+    show_and_clear: string;
 };
 
 export type OverlaySettings = {
@@ -60,7 +77,7 @@ export type OverlaySettings = {
 };
 
 export interface SettingsPresetProps {
-    name: string;    
+    name: string;
     overlay: OverlaySettings;
     ocr_engine: OcrEngineSettings;
     dictionary: DictionarySettings;

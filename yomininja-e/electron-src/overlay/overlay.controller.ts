@@ -5,7 +5,7 @@ import isDev from 'electron-is-dev';
 import { format } from "url";
 import { PAGES_DIR } from "../util/directories.util";
 import { WindowManager } from "../../gyp_modules/window_management/window_manager";
-import { ClickThroughMode, SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
+import { ClickThroughMode, SettingsPresetJson, ShowWindowOnCopy } from "../@core/domain/settings_preset/settings_preset";
 import { uIOhook } from "uiohook-napi";
 import { windowManager } from "../@core/infra/app_initialization";
 import { getBrowserWindowHandle } from "../util/browserWindow.util";
@@ -20,7 +20,10 @@ export class OverlayController {
     private overlayAlwaysOnTop: boolean = true;
     private clickThroughMode: ClickThroughMode = 'auto';
     private copyTextOnClick: boolean = false;
-    private showYomichanWindowOnCopy: boolean = true;
+    private showWindowOnCopy: ShowWindowOnCopy = {
+        enabled: false,
+        title: 'Yomichan'
+    };
     private alwaysForwardMouseClicks: boolean = false;
     private showWindowWithoutFocus: boolean = false;
 
@@ -42,7 +45,7 @@ export class OverlayController {
         if ( settingsJson ) {
 
             this.overlayAlwaysOnTop = Boolean( settingsJson.overlay.behavior.always_on_top );
-            this.showYomichanWindowOnCopy = Boolean( settingsJson.overlay.behavior.show_yomichan_window_on_copy );
+            this.showWindowOnCopy = settingsJson.overlay.behavior.show_window_on_copy;
             this.clickThroughMode = settingsJson.overlay.behavior.click_through_mode;
             this.alwaysForwardMouseClicks = Boolean( settingsJson.overlay.behavior.always_forward_mouse_clicks );
             this.showWindowWithoutFocus = Boolean( settingsJson.overlay.behavior.show_window_without_focus );
@@ -71,8 +74,11 @@ export class OverlayController {
             webPreferences: {
                 nodeIntegration: false, // false
                 contextIsolation: false,
-                preload: join(__dirname, '../preload.js'),                
+                preload: join(__dirname, '../preload.js'),
             },
+            titleBarStyle: 'hidden',
+            titleBarOverlay: false,
+            title: 'OCR Overlay - YomiNinja'
         });
 
         this.overlayWindow.on( 'close', ( e ) => {
@@ -112,6 +118,7 @@ export class OverlayController {
 
     refreshPage(): void {
         this.overlayWindow.reload();
+        this.overlayWindow.setTitle('OCR Overlay - YomiNinja');
     }
 
     private registersIpcHandlers() {
@@ -126,17 +133,22 @@ export class OverlayController {
                 this.overlayService.sendOcrTextTroughWS( message );
                 // console.log({ text_to_copy: message });
                 
-                if ( !this.showYomichanWindowOnCopy )
+                if ( 
+                    !this.showWindowOnCopy.enabled ||
+                    !this.showWindowOnCopy.title
+                )
                     return;
 
-                const windows = await windowManager.searchWindow( 'Yomichan Search' );
+                const windows = await windowManager.searchWindow(
+                    this.showWindowOnCopy.title
+                );
             
                 if ( windows.length === 0 ) 
                     return;
             
-                const yomichanWindow = windows[0];
+                const windowToShow = windows[0];
                 
-                windowManager.setForegroundWindow( yomichanWindow.handle );
+                windowManager.setForegroundWindow( windowToShow.handle );
 
             } catch (error) {
                 console.error( error );
@@ -317,7 +329,7 @@ export class OverlayController {
 
         this.overlayAlwaysOnTop = Boolean( settingsPresetJson.overlay.behavior.always_on_top );
         this.clickThroughMode = settingsPresetJson.overlay.behavior.click_through_mode;
-        this.showYomichanWindowOnCopy = Boolean( settingsPresetJson.overlay.behavior.show_yomichan_window_on_copy );
+        this.showWindowOnCopy = settingsPresetJson.overlay.behavior.show_window_on_copy;
         this.alwaysForwardMouseClicks = Boolean( settingsPresetJson.overlay.behavior.always_forward_mouse_clicks );
         this.showWindowWithoutFocus = Boolean( settingsPresetJson.overlay.behavior.show_window_without_focus );
 
