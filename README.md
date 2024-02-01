@@ -47,28 +47,30 @@ YomiNinja currently offers support for distros using the X11 window system. Wayl
     ```
 
 
-### Install Yomichan (optional):
-1. Install [Yomichan](https://foosoft.net/projects/yomichan/) on your browser of preference.
-2. Go to the Yomichan settings.
+### Install Yomichan or Yomitan (optional):
+1. Install [Yomichan](https://foosoft.net/projects/yomichan/)/[Yomitan](https://foosoft.net/projects/yomichan/) on your browser of preference.
+2. Go to the Yomichan/Yomitan settings.
 3. Find and enable the clipboard monitoring option.
 
    - Chromium: `Enable background clipboard text monitoring`
    - Firefox: `Enable native popups when copying Japanese text`
-4. Go to the YomiNinja settings and enable ```Show Yomichan window on text copy```
+4. Go to the YomiNinja settings and enable ```Show window on text copy```
+5. Set the `Window title` to "Yomichan Search" or "Yomitan Search".
 
 
 ## Current features
 
 - Text extraction from the entire screen or specific window.
 - Built-in pop-up dictionaries.
+- Chrome Extensions (partial support).
+- OCR Templates (predefined text areas, optimizing OCR efficiency).
 - WebSocket for Texthookers.
 
 
 ## Planned Features
 
-- Text extraction from snip.
-- OCR Templates (predefined text areas, optimizing OCR efficiency).
 - Auto OCR.
+- Text extraction from snip.
 - Anki integration.
 - History.
 - Text translation.
