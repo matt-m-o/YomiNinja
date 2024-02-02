@@ -142,7 +142,9 @@ export class BrowserExtensionsService {
 
             const extension = await this.electronExtensionToExtensionJson( item );
 
-            extension.enabled = await this.isExtensionEnabled( extension.id );
+            extension.enabled = await this.isExtensionEnabled({
+                extensionId: extension.id
+            });
 
             extensions.push( extension );
         }
@@ -178,7 +180,7 @@ export class BrowserExtensionsService {
             
                     const versionDirPath =
                         extSubDirs.length === 1 && extSubDirs[0].isDirectory()
-                        ? path.join(extPath, extSubDirs[0].name)
+                        ? path.join( extPath, extSubDirs[0].name )
                         : null;
             
                     if ( !versionDirPath ) return;
@@ -203,7 +205,9 @@ export class BrowserExtensionsService {
 
                 this.installedExtensions.set( extension.id, extension );
 
-                const enabled = await this.isExtensionEnabled( extension.id );
+                const enabled = await this.isExtensionEnabled({
+                    extension
+                });
 
                 if ( !enabled )
                     this.session.removeExtension( extension.id );
@@ -352,25 +356,45 @@ export class BrowserExtensionsService {
                 extensionInDb => extensionInDb.id === item.id
             );
 
-            if ( !extensionIsRegistered )
+            if ( !extensionIsRegistered ) {
+
+                if ( item.name.includes('JPDBreader') )
+                    item.enabled = false;
+                
                 await this.createBrowserExtensionUseCase.execute( item );
+            }
             else
                 await this.updateBrowserExtensionUseCase.execute( item );
         }
     }
 
-    isExtensionEnabled = async ( extensionId: string ): Promise< boolean > => {
+    isExtensionEnabled = async (
+        input: {
+            extensionId?: string,
+            extension?: Electron.Extension
+        }
+    ): Promise< boolean > => {
+
+        const extensionId = input?.extensionId || input?.extension?.id;
+
+        if ( !extensionId ) return false;
 
         const extensionsInDb = await this.getBrowserExtensionsUseCase.execute();
 
         const extension = extensionsInDb.find(
             extension => extension.id === extensionId
         );
+        
+        // Handle JPDBReader first load
+        if ( input?.extension?.name.includes( 'JPDBreader' ) ) {
+            if ( !extension ) return false;
+        }
 
         if ( !extension ) return true;
 
         return extension.enabled;
     }
+
 
     electronExtensionToExtensionJson = async (
         electronExtension: Electron.Extension
