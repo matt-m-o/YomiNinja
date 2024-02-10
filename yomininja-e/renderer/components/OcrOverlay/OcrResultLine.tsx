@@ -63,7 +63,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     let fontSizeFactor = ocrItemBoxVisuals.text.font_size_factor;
     fontSizeFactor = fontSizeFactor ? fontSizeFactor / 100 : 1;
 
-    line?.symbols.forEach( symbol => {
+    line?.symbols?.forEach( symbol => {
 
         const charBoxHeightPx = ( regionHeightPx * ( symbol.box.dimensions.height / 100 ) );
         if ( charBoxHeightPx > lineFontSize )
@@ -73,7 +73,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
 
     let symbols: JSX.Element[];
 
-    if ( ocrItemBoxVisuals.text.character_positioning && line.symbols.length ) {
+    if ( ocrItemBoxVisuals.text.character_positioning && line.symbols?.length ) {
 
         lineFontSize = lineFontSize * fontSizeFactor;
 

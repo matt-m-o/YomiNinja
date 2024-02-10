@@ -29,7 +29,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
         if ( !data ) return null;
 
         const ocrResultItems: OcrItemScalable[] = this.handleOcrData( data );
-        console.log( ocrResultItems );
+        // console.log( ocrResultItems );
 
         const imageMetadata = await sharp( imageBuffer ).metadata();
 
@@ -156,6 +156,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                     },
                     angle_degrees: lineBoxData[5],
                     isVertical: false, // lineBoxData[4] ?
+                    transform_origin: 'center'
                 };
             
                 const line: OcrTextLineScalable = {
@@ -185,6 +186,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                     },
                     isVertical: false,
                     angle_degrees: blockBoxData[5],
+                    transform_origin: 'center',
                 },
                 classification_label: 0,
                 classification_score: 1,

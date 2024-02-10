@@ -185,7 +185,8 @@ export default function OcrResultBox( props: {
             role="textbox"
             style={{
                 left: left - sizeExpansionLeftPct + '%',
-                // top: (box.position.top * 0.999) + '%',
+                // top: box.position.top + '%',
+                transformOrigin: box?.transform_origin || 'top left',
                 bottom: ( bottom - sizeExpansionBottomPct ) + '%',
                 transform: `rotate( ${box.angle_degrees}deg )`,
                 minWidth: ( minWidth + sizeExpansionWidthPct ) + '%',
@@ -209,7 +210,7 @@ export default function OcrResultBox( props: {
 
                 let lineFontSize = 0;
 
-                line?.symbols.map( symbol => {
+                line?.symbols?.forEach( symbol => {
                     const charBoxHeightPx = regionHeightPx * ( symbol.box.dimensions.height / 100 );
                     if ( charBoxHeightPx > lineFontSize )
                         lineFontSize = charBoxHeightPx;

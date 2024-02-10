@@ -41,9 +41,8 @@ export default function HomeContent() {
     // Adapter name : Engine name
     const ocrEnginesDict = {
         'PpOcrAdapter': 'PaddleOCR',
-        'CloudVisionOcrAdapter': 'Google Cloud Vision'
-        // 'PaddleOCR': 'PpOcrAdapter',
-        // 'Google Cloud Vision': 'CloudVisionOcrAdapter'
+        'CloudVisionOcrAdapter': 'Google Cloud Vision',
+        'GoogleLensOcrAdapter': 'Google Lens'
     };
     
     const ocrEngineOptions: string[] = Object.values( ocrEnginesDict );
