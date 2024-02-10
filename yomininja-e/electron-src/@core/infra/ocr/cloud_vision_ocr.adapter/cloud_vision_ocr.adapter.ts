@@ -4,6 +4,7 @@ import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrResult, OcrResultContextResol
 import { CloudVisionAPICredentials, CloudVisionApi } from "./cloud_vision_api";
 import { CloudVisionAPIMode, CloudVisionOcrEngineSettings, cloudVisionOcrAdapterName, getCloudVisionDefaultSettings } from "./cloud_vision_ocr_settings";
 import { OcrEngineSettingsU } from "../../types/entity_instance.types";
+import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 
 export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSettings > {
 
@@ -29,7 +30,7 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
 
     initialize( serviceAddress?: string | undefined ) {}
 
-    async recognize( input: OcrRecognitionInput ): Promise< OcrResult | null > {
+    async recognize( input: OcrRecognitionInput ): Promise< OcrResultScalable | null > {
 
         const { imageBuffer, languageCode } = input;
 
@@ -147,11 +148,13 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
             });
         });
 
-        return OcrResult.create({
+        const ocrResult = OcrResult.create({
             id: this.idCounter,
             context_resolution: contextResolution,
             results: ocrResultItems,
         });
+
+        return OcrResultScalable.createFromOcrResult( ocrResult );
     }
 
     async getSupportedLanguages(): Promise< string[] > {
@@ -159,14 +162,14 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
     }
 
     async updateSettings(
-        settingsUpdate: OcrEngineSettingsU,
-        oldSettings?: OcrEngineSettingsU | undefined
+        _settingsUpdate: OcrEngineSettingsU,
+        _oldSettings?: OcrEngineSettingsU | undefined
     ): Promise< UpdateOcrAdapterSettingsOutput< CloudVisionOcrEngineSettings > > {
 
         // TODO: Settings validation
 
-        settingsUpdate = settingsUpdate as CloudVisionOcrEngineSettings;
-        oldSettings = settingsUpdate as CloudVisionOcrEngineSettings;
+        let settingsUpdate = _settingsUpdate as CloudVisionOcrEngineSettings;
+        let oldSettings = _oldSettings as CloudVisionOcrEngineSettings;
 
         const credentials: CloudVisionAPICredentials = {
             clientEmail: settingsUpdate?.client_email,

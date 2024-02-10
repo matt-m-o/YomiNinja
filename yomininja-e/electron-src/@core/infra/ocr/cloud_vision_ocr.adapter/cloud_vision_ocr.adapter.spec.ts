@@ -27,9 +27,14 @@ describe('CloudVisionOcrAdapter tests', () => {
             languageCode: 'ja'
         });
 
-        expect( result?.results ).toHaveLength( 2 );
-        expect( result?.results[0].text[0].content ).toStrictEqual( '開かない…のは当たり前か。' );
-        expect( result?.results[1].text[0].content ).toStrictEqual( 'ここは先頭車両で、こっちはその先頭の方だもんな。' );
+        const regionResults = result?.ocr_regions[0].results;
+        expect( regionResults ).toBeDefined();
+
+        if ( !regionResults ) return;
+
+        expect( regionResults ).toHaveLength( 2 );
+        expect( regionResults[0].text[0].content ).toStrictEqual( '開かない…のは当たり前か。' );
+        expect( regionResults[1].text[0].content ).toStrictEqual( 'ここは先頭車両で、こっちはその先頭の方だもんな。' );
     });
 
     it('should update the credentials', async () => {
@@ -46,6 +51,8 @@ describe('CloudVisionOcrAdapter tests', () => {
             languageCode: 'ja'
         });
 
-        expect( result?.results ).toHaveLength( 2 );
+        const regionResults = result?.ocr_regions[0].results;
+
+        expect( regionResults ).toHaveLength( 2 );
     });
 })

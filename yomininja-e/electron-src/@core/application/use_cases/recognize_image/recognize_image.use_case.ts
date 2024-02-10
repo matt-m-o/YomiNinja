@@ -91,7 +91,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
         if ( !ocrResult )
             return null;
 
-        return OcrResultScalable.createFromOcrResult( ocrResult );
+        return ocrResult;
     }
 
     private async recognizeWithTemplate(
@@ -144,10 +144,10 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
                 result.id = regionResult.id;
 
             
-            const regionResultScalable = OcrResultScalable.createFromOcrResult( regionResult );
+            // const regionResultScalable = OcrResultScalable.createFromOcrResult( regionResult );
 
             result.addRegionResult({
-                regionResult: regionResultScalable,
+                regionResult,
                 regionPosition: targetRegion.position,
                 regionSize: targetRegion.size,
                 globalScaling: false,

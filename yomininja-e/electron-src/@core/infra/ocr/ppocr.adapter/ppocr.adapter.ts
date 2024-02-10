@@ -18,6 +18,7 @@ import os from 'os';
 import { PpOcrEngineSettings, getPpOcrDefaultSettings, ppOcrAdapterName } from "./ppocr_settings";
 import { UpdatePpOcrSettingsRequest } from "../../../../../grpc/rpc/ocr_service/UpdatePpOcrSettingsRequest";
 import { OcrEngineSettingsU } from "../../types/entity_instance.types";
+import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 
 export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
     
@@ -46,7 +47,7 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
         this.status = OcrAdapterStatus.Enabled;
     }
 
-    async recognize( input: OcrRecognitionInput ): Promise< OcrResult | null > {
+    async recognize( input: OcrRecognitionInput ): Promise< OcrResultScalable | null > {
         
         if ( this.status === OcrAdapterStatus.Processing ) {
             this.recognitionCallOnHold = input;
@@ -106,11 +107,14 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
             } as OcrItem
         });
 
-        return OcrResult.create({
+        const result = OcrResult.create({
             id: parseInt(clientResponse.id),
             context_resolution: clientResponse.context_resolution,
             results: ocrItems,
-        });        
+        });
+
+
+        return OcrResultScalable.createFromOcrResult( result )
     }
 
     async getSupportedLanguages(): Promise< string[] > {
@@ -212,14 +216,14 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
     }
 
     async updateSettings(
-        settingsUpdate: OcrEngineSettingsU,
-        oldSettings?: OcrEngineSettingsU
+        _settingsUpdate: OcrEngineSettingsU,
+        _oldSettings?: OcrEngineSettingsU
     ): Promise< UpdateOcrAdapterSettingsOutput< PpOcrEngineSettings > > {
 
         let restart = false;
 
-        settingsUpdate = settingsUpdate as PpOcrEngineSettings;
-        oldSettings = oldSettings as PpOcrEngineSettings;
+        let settingsUpdate = _settingsUpdate as PpOcrEngineSettings;
+        let oldSettings = _oldSettings as PpOcrEngineSettings;
 
         if (
             !oldSettings ||

@@ -2,6 +2,7 @@ import { OcrItem, OcrResult, OcrResultContextResolution, OcrResult_CreationInput
 import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import { OcrEngineSettings } from "../../../domain/settings_preset/settings_preset";
 import { PpOcrEngineSettings, getPpOcrDefaultSettings } from "../../ocr/ppocr.adapter/ppocr_settings";
+import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 
 const ocrTestAdapterResultProps: OcrResult_CreationInput = {
     id: 1,
@@ -43,7 +44,7 @@ export class FakeOcrTestAdapter implements OcrAdapter< FakeOcrEngineSettings > {
         this.status = OcrAdapterStatus.Enabled; 
     }
 
-    async recognize(input: OcrRecognitionInput ): Promise< OcrResult | null > {
+    async recognize(input: OcrRecognitionInput ): Promise< OcrResultScalable | null > {
 
         this.idCounter++;
 
@@ -59,7 +60,7 @@ export class FakeOcrTestAdapter implements OcrAdapter< FakeOcrEngineSettings > {
             { content: input.imageBuffer.toString() }
         ];
 
-        return result;
+        return OcrResultScalable.createFromOcrResult(result);
     }
     async getSupportedLanguages(): Promise< string[] > {        
         
