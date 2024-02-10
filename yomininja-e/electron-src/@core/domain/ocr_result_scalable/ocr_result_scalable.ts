@@ -18,6 +18,7 @@ export type OcrResultBoxScalable = {
     dimensions?: OcrResultBoxDimensionsPcts;
     angle_degrees?: number;
     isVertical: boolean;
+    transform_origin?: 'top' | 'bottom' | 'center';
 };
 
 export type OcrTextLineSymbolScalable = {
