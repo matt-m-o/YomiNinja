@@ -12,7 +12,7 @@ describe('CloudVisionOcrAdapter tests', () => {
 
     });
     
-    it('should extract text from a base64 image', async () => {
+    it('should extract text from a simple image', async () => {
 
         const result = await ocrAdapter.recognize({
             imageBuffer: Buffer.from( base64Image, 'base64' ),
@@ -30,5 +30,5 @@ describe('CloudVisionOcrAdapter tests', () => {
         expect( items[1].text[0].content ).toStrictEqual( 'ここは先頭車両で、こっちはその先頭の方だもんな。' );
     });
     
-    
+
 })

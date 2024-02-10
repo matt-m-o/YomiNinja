@@ -7,6 +7,7 @@ import FormData from 'form-data';
 import axios from 'axios';
 import { OcrItemScalable, OcrResultBoxScalable, OcrResultScalable, OcrTextLineScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 import sharp from "sharp";
+import fs from 'fs';
 
 export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSettings > {
 
@@ -28,6 +29,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
         if ( !data ) return null;
 
         const ocrResultItems: OcrItemScalable[] = this.handleOcrData( data );
+        console.log( ocrResultItems );
 
         const imageMetadata = await sharp( imageBuffer ).metadata();
 
@@ -45,7 +47,10 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                         top: 0,
                         left: 0,
                     },
-                    size: contextResolution,
+                    size: {
+                        width: 1,
+                        height: 1
+                    },
                     results: ocrResultItems
                 }
             ]
@@ -96,7 +101,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
             const data = extractedJson.data;
 
             // Debugging 
-            // fs.writeFileSync('./data/google_lens_result.json', JSON.stringify(extractedJson));
+            fs.writeFileSync('./data/google_lens_result.json', JSON.stringify(extractedJson));
             
             return data;
 
@@ -117,6 +122,8 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
             break;
         }
 
+        // console.log({ firstIdx })
+
         const blocksDataArr = data[2][3][0].slice( firstIdx );
 
         // if ( isSingleLinesOnly )
@@ -126,7 +133,8 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
 
         const blocks: OcrItemScalable[] = blocksDataArr.map( ( blockData: any[] ) => {
 
-            const blockLines: OcrTextLineScalable[] = blockData[2][0][5][3][0]?.map( ( lineData: any[] ) => {
+            // TypeError: Cannot read properties of null (reading '3') | image: Rain Code Cloud Vision Multiline.png
+            const blockLines: OcrTextLineScalable[] = blockData[2]?.[0][5]?.[3][0]?.map( ( lineData: any[] ) => {
                 
                 const lineTextData = lineData[0];
                 const lineBoxData = lineData[1];
@@ -139,12 +147,12 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
 
                 const box: OcrResultBoxScalable = {
                     position: {
-                        top: lineBoxData[0],
-                        left: lineBoxData[1],
+                        top: lineBoxData[0] * 100,
+                        left: lineBoxData[1] * 100,
                     },
                     dimensions: {
-                        width: lineBoxData[2],
-                        height: lineBoxData[3]
+                        width: lineBoxData[2] * 100,
+                        height: lineBoxData[3] * 100
                     },
                     angle_degrees: lineBoxData[5],
                     isVertical: false, // lineBoxData[4] ?
@@ -160,18 +168,20 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                 return line;
             });
 
-            const blockBoxData = blockData[2][0][5][3][1];
+            const blockBoxData = blockData[2]?.[0][5]?.[3][1];
+
+            if ( !blockBoxData ) return;
 
             const block: OcrItemScalable = {
                 text: blockLines,
                 box: {
                     position: {
-                        top: blockBoxData[0],
-                        left: blockBoxData[1],
+                        top: blockBoxData[0] * 100,
+                        left: blockBoxData[1] * 100,
                     },
                     dimensions: {
-                        width: blockBoxData[2],
-                        height: blockBoxData[3],
+                        width: blockBoxData[2] * 100,
+                        height: blockBoxData[3] * 100,
                     },
                     isVertical: false,
                     angle_degrees: blockBoxData[5],
@@ -184,7 +194,8 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
             // console.log( block.box )
 
             return block;
-        });
+
+        }).filter( ( block: OcrItemScalable | undefined ) => Boolean(block) );
 
         return blocks;
     }

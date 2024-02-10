@@ -11,7 +11,7 @@ export function getGoogleLensDefaultSettings(): GoogleLensOcrEngineSettings {
     
     const defaultSettings: GoogleLensOcrEngineSettings = {
         ocr_adapter_name: googleLensOcrAdapterName,
-        hotkey: 'Alt+G',
+        hotkey: 'Alt+H',
         invert_colors: false,
         image_scaling_factor: 1
     }
