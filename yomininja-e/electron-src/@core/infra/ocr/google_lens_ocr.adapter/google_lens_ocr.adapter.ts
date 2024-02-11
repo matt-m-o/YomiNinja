@@ -133,6 +133,8 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
 
         const blocks: OcrItemScalable[] = blocksDataArr.map( ( blockData: any[] ) => {
 
+            let blockIsVertical = false;
+
             // TypeError: Cannot read properties of null (reading '3') | image: Rain Code Cloud Vision Multiline.png
             const blockLines: OcrTextLineScalable[] = blockData[2]?.[0][5]?.[3][0]?.map( ( lineData: any[] ) => {
                 
@@ -145,6 +147,10 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                 // console.log( lineBoxData );
                 // console.log(text)
 
+                const isVertical = lineBoxData[3] > ( lineBoxData[2] * 1.20 );
+
+                blockIsVertical =  blockIsVertical || isVertical;
+
                 const box: OcrResultBoxScalable = {
                     position: {
                         top: lineBoxData[0] * 100,
@@ -155,9 +161,10 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                         height: lineBoxData[3] * 100
                     },
                     angle_degrees: lineBoxData[5],
-                    isVertical: false, // lineBoxData[4] ?
+                    isVertical,
                     transform_origin: 'center'
                 };
+
             
                 const line: OcrTextLineScalable = {
                     content: text,
@@ -173,6 +180,8 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
 
             if ( !blockBoxData ) return;
 
+            // if ( blockIsVertical ) blockLines.reverse();
+
             const block: OcrItemScalable = {
                 text: blockLines,
                 box: {
@@ -184,7 +193,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                         width: blockBoxData[2] * 100,
                         height: blockBoxData[3] * 100,
                     },
-                    isVertical: false,
+                    isVertical: blockIsVertical,
                     angle_degrees: blockBoxData[5],
                     transform_origin: 'center',
                 },

@@ -19,7 +19,7 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
     const [ processing, setProcessing ] = useState<boolean>(false);
   
     function ocrResultHandler ( _event, data: OcrResultScalable ) {
-        // console.log( data );
+        console.log( data );
         setOcrResult(data);
     }
     

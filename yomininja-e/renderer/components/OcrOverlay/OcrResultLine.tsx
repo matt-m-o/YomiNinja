@@ -25,6 +25,34 @@ export type OcrResultLineProps = {
     onBlur?: () => void;
 };
 
+function getPositionOffset(
+    input: {
+        symbol: string;
+        vertical: boolean;
+        fontSize: number;
+    }
+): {
+    topOffset: number;
+    leftOffset: number;
+} {
+
+    let topOffset = 0;
+    let leftOffset = 0;
+
+    if ( [ '【', '『', '「' ].includes( input.symbol ) ) {
+
+        if ( !input.vertical )
+            leftOffset = -input.fontSize * 0.5;
+        else
+            topOffset = -input.fontSize * 0.5;
+    }
+
+    return {
+        topOffset,
+        leftOffset
+    }
+}
+
 export default function OcrResultLine( props: OcrResultLineProps ) {
 
     const {
@@ -42,7 +70,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         color: ocrItemBoxVisuals.selected_text.color,
     };
 
-    const Line = styled('span')({
+    const Line = styled('div')({
         transformOrigin: 'top left',
         whiteSpace: 'pre',
         width: 'max-content',
@@ -71,10 +99,23 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     });
 
 
+    let setLineHeight = true;
+
     let symbols: JSX.Element[];
+
+    const lineBoxWidthPx = regionWidthPx * ( line?.box?.dimensions.width / 100 );
+    const lineBoxHeightPx = regionHeightPx * ( line?.box?.dimensions.height / 100 );
+
+    const lineLeft = line?.box ? line.box?.position.left - box.position.left : undefined;
+    const lineTop = line?.box ? line.box?.position.top - box.position.top : undefined;
+
+    let lineTopOffset = 0;
+    let lineLeftOffset = 0;
+
 
     if ( ocrItemBoxVisuals.text.character_positioning && line.symbols?.length ) {
 
+        setLineHeight = !box.isVertical;
         lineFontSize = lineFontSize * fontSizeFactor;
 
         symbols = line?.symbols.map( ( symbol, sIdx ) => {
@@ -91,17 +132,13 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             let top = symbol.box.position.top - box.position.top;
 
             let letterSpacing = 1;
-            let topOffset = 0;
-            let leftOffset = 0;
 
             // Handle some special characters
-            if ( [ '【', '『', '「' ].includes( symbol.symbol ) ) {
-
-                if ( !box.isVertical )
-                    leftOffset = -lineFontSize * 0.5;
-                else
-                    topOffset = -lineFontSize * 0.5;
-            }
+            const { topOffset, leftOffset } = getPositionOffset({
+                symbol: symbol.symbol,
+                fontSize: lineFontSize,
+                vertical: box.isVertical,
+            });
             
             const leftPx = leftOffset + ( ( left / 100 ) * regionWidthPx ) + ( sizeExpansionPx / 2 );
             const topPx = topOffset + ( ( top / 100 ) * regionHeightPx ) + ( sizeExpansionPx / 2 );
@@ -118,7 +155,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                         top: topPx + 'px',
                         fontSize: lineFontSize + 'px',
                         letterSpacing: letterSpacing + 'px',
-                        lineHeight: lineHeight,
+                        lineHeight: lineHeight + 'px',
                         transform: `rotate( ${ symbol.box.angle_degrees }deg )`,
                         border: 'none'
                     }}
@@ -128,6 +165,25 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             )
         });
 
+    }
+    else {
+
+        if ( !lineFontSize ) {
+            lineFontSize = box.isVertical ? lineBoxWidthPx : lineBoxHeightPx;
+            lineFontSize *= fontSizeFactor;
+        }
+
+        const firstSymbol = line.content[0];
+
+        // Handle some special characters
+        const offsets = getPositionOffset({
+            symbol: firstSymbol,
+            fontSize: lineFontSize,
+            vertical: box.isVertical,
+        });
+
+        lineTopOffset = offsets.topOffset;
+        lineLeftOffset = offsets.leftOffset;
     }
 
     const symbolsContainerRotation = symbols ? -box.angle_degrees : 0;
@@ -143,6 +199,20 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         </SymbolsContainer>
     ) : undefined;
     
+    
+    let lineLeftPx: number;
+    let lineTopPx: number;
+
+    if ( lineTop !== undefined && lineLeft !== undefined ) {
+        lineLeftPx = lineLeftOffset + ( ( lineLeft / 100 ) * regionWidthPx );
+        lineTopPx = lineTopOffset + ( ( lineTop / 100 ) * regionHeightPx );
+    }
+
+    const linePositioning = (
+        lineTopPx !== undefined &&
+        ocrItemBoxVisuals.text.character_positioning
+    ) ? 'absolute' : 'unset';
+
     return (
         <Line
             contentEditable={contentEditable}
@@ -151,8 +221,21 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                 props?.onBlur();
             }}
             sx={{
+                position: linePositioning,
+                top: lineTopPx || '0%',
+                left: lineLeftPx || '0%',
+                writingMode: line?.box?.isVertical ? 'vertical-rl' :'inherit',
+                textOrientation: line?.box?.isVertical ? 'upright' :'inherit',
+                minWidth: lineBoxWidthPx,
+                minHeight: lineBoxHeightPx,
+                // transformOrigin: line?.box?.transform_origin || 'left top',
+                // transform: `rotate( ${line?.box?.angle_degrees}deg )`,
                 m: props.sizeExpansionPx / 2 + 'px',
-                fontSize: lineFontSize ? lineFontSize+'px' : 'inherit'
+                fontSize: lineFontSize ? lineFontSize+'px' : 'inherit',
+                lineHeight: setLineHeight && lineFontSize ? lineFontSize+'px' : 'inherit',
+                borderRadius: '0px',
+                textAlign: box.isVertical ? 'inherit' : 'left',
+                backgroundColor: 'inherit'
             }}
         >
             {
@@ -160,6 +243,5 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                 line.content
             }
         </Line>
-        
     )
 }
