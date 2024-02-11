@@ -87,21 +87,27 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
         const codeBlockPattern = /AF_initDataCallback\({key: 'ds:1',([\s\S]*?)\}\)/;
         const codeBlockMatchResult = response.data.match(codeBlockPattern);
         
-        const dataPattern = /\(([^)]+)\)/;
-        const dataMatchResult = codeBlockMatchResult[0].match( dataPattern );
+        // const dataPattern = /\(([^)]+)\)/;
+        // const dataMatchResult = codeBlockMatchResult[0].match( dataPattern );
 
-        if ( dataMatchResult ) {
-            const extractedContent = dataMatchResult[1];
+        // fs.writeFileSync('./data/codeBlockMatchResult.json', codeBlockMatchResult[1]);
+        // fs.writeFileSync('./data/dataMatchResult.json', dataMatchResult[1]);
+
+        if ( codeBlockMatchResult?.[1] ) {
+
+            const extractedContent = `{${codeBlockMatchResult[1]}}`;
 
             const fixedJsonString = `${extractedContent}`
                 .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
                 .replaceAll("'", '"');
 
+            
+            // fs.writeFileSync('./data/fixedJsonString.json', fixedJsonString);
             const extractedJson = JSON.parse(fixedJsonString);
             const data = extractedJson.data;
 
             // Debugging 
-            fs.writeFileSync('./data/google_lens_result.json', JSON.stringify(extractedJson));
+            // fs.writeFileSync('./data/google_lens_result.json', JSON.stringify(extractedJson));
             
             return data;
 
