@@ -100,6 +100,11 @@ export default function HotkeyHints() {
             return engineSettings.ocr_adapter_name === 'CloudVisionOcrAdapter'
         });
 
+    const googleLensSettings = activeSettingsPreset?.ocr_engines
+        .find( engineSettings => {
+            return engineSettings.ocr_adapter_name === 'GoogleLensOcrAdapter'
+        });
+
     function createHotkeyHint( label: string, keyCombinationsStr: string[] ): JSX.Element {
 
         if ( !label || !keyCombinationsStr ) return;
@@ -126,6 +131,7 @@ export default function HotkeyHints() {
             >
                 { createHotkeyHint( 'Primary OCR', ocrHotkeysStrings ) }
                 { createHotkeyHint( 'PaddleOCR', [ppOcrSettings?.hotkey] ) }
+                { createHotkeyHint( 'Google Lens', [googleLensSettings?.hotkey] ) }
                 { createHotkeyHint( 'Cloud Vision', [cloudVisionSettings?.hotkey] ) }
 
                 { createHotkeyHint( 'Toggle overlay', [overlayHotkeys?.toggle] ) }

@@ -22,6 +22,10 @@ export default function AppSettingsHotkeys() {
         .find( engineSettings => {
             return engineSettings.ocr_adapter_name === 'CloudVisionOcrAdapter'
         });
+    const googleLensSettings = activeSettingsPreset?.ocr_engines
+        .find( engineSettings => {
+            return engineSettings.ocr_adapter_name === 'GoogleLensOcrAdapter'
+        });
     
     // const [ copyTextKeys, setCopyTextKeys ] = useState< HotkeyCombination >();
     
@@ -38,6 +42,7 @@ export default function AppSettingsHotkeys() {
 
     const paddleOcrKeys = stringToHotkeyCombination( ppOcrSettings?.hotkey );
     const cloudVisionKeys = stringToHotkeyCombination( cloudVisionSettings?.hotkey );
+    const googleLensKeys = stringToHotkeyCombination( googleLensSettings?.hotkey );
 
     function stringToHotkeyCombination( hotkeyString: string ): string {
         return hotkeyString?.split('+').join( ' + ' ) || '';
@@ -134,6 +139,20 @@ export default function AppSettingsHotkeys() {
                         if ( !input ) return;
                         updateActivePresetOcrEngine({
                             ...ppOcrSettings,
+                            hotkey: hotkeyCombinationToString( input )
+                        });
+                    }}
+                    // sx={{ mb: 0 }}
+                />
+
+                <HotkeyFields
+                    label='Google Lens'
+                    keyCombination={ googleLensKeys }
+                    // setStateAction={ setOcrKeys }
+                    onChangeHandler={ ( input?: string[]  ) => {
+                        if ( !input ) return;
+                        updateActivePresetOcrEngine({
+                            ...googleLensSettings,
                             hotkey: hotkeyCombinationToString( input )
                         });
                     }}
