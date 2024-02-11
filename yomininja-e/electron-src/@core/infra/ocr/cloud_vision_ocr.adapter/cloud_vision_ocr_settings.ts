@@ -21,7 +21,7 @@ export function getCloudVisionDefaultSettings(): CloudVisionOcrEngineSettings {
     
     const defaultSettings: CloudVisionOcrEngineSettings = {
         ocr_adapter_name: cloudVisionOcrAdapterName,
-        hotkey: 'Alt+G',
+        hotkey: 'Alt+H',
         invert_colors: false,
         image_scaling_factor: 1,
         monthly_request_limit: 500,
