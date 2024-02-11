@@ -5,8 +5,6 @@ import { CSSProperties } from "react";
 
 
 
-
-
 const SymbolsContainer = styled('span')({
     position: 'absolute',
     left: '0px',
@@ -77,6 +75,9 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         '&::selection': textSelectionStyle,
         '& ruby': {
             '::selection': textSelectionStyle
+        },
+        '&:hover': {
+            zIndex: '1000000'
         }
     });
 
@@ -173,7 +174,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             lineFontSize *= fontSizeFactor;
         }
 
-        const firstSymbol = line.content[0];
+        const firstSymbol = line?.content?.[0];
 
         // Handle some special characters
         const offsets = getPositionOffset({
@@ -213,26 +214,40 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         ocrItemBoxVisuals.text.character_positioning
     ) ? 'absolute' : 'unset';
 
-    return (
+    const lineBaseCSS: CSSProperties = {
+        minWidth: lineBoxWidthPx,
+        minHeight: lineBoxHeightPx,
+        writingMode: line?.box?.isVertical ? 'vertical-rl' :'inherit',
+        textOrientation: line?.box?.isVertical ? 'upright' :'inherit',
+        fontSize: lineFontSize ? lineFontSize+'px' : 'inherit',
+        lineHeight: setLineHeight && lineFontSize ? lineFontSize+'px' : 'inherit',
+        margin: props.sizeExpansionPx / 2 + 'px',
+    };
+
+    const lineSizeHolder = (
+        <span style={{
+            ...lineBaseCSS,
+            visibility: 'hidden',
+        }}>
+            {symbolsContainer || line.content}
+        </span>
+    );
+
+    return ( <span>
+        { linePositioning === 'absolute' && lineSizeHolder }
         <Line
             contentEditable={contentEditable}
             onBlur={ ( e ) => {
                 line.content = e.target.textContent;
                 props?.onBlur();
             }}
-            sx={{
+            style={{
+                ...lineBaseCSS,
                 position: linePositioning,
                 top: lineTopPx || '0%',
                 left: lineLeftPx || '0%',
-                writingMode: line?.box?.isVertical ? 'vertical-rl' :'inherit',
-                textOrientation: line?.box?.isVertical ? 'upright' :'inherit',
-                minWidth: lineBoxWidthPx,
-                minHeight: lineBoxHeightPx,
                 // transformOrigin: line?.box?.transform_origin || 'left top',
                 // transform: `rotate( ${line?.box?.angle_degrees}deg )`,
-                m: props.sizeExpansionPx / 2 + 'px',
-                fontSize: lineFontSize ? lineFontSize+'px' : 'inherit',
-                lineHeight: setLineHeight && lineFontSize ? lineFontSize+'px' : 'inherit',
                 borderRadius: '0px',
                 textAlign: box.isVertical ? 'inherit' : 'left',
                 backgroundColor: 'inherit'
@@ -243,5 +258,5 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                 line.content
             }
         </Line>
-    )
+    </span> )
 }
