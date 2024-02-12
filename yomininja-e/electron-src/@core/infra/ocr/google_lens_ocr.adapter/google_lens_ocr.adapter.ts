@@ -77,43 +77,47 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
             data
         };
 
-        const response = await axios.request(config)
-            .catch( ( error: any ) => {
-                console.log(error);
-            });
+        try {
 
-        if ( !response?.data ) return;
+            const response = await axios.request(config);
 
-        const codeBlockPattern = /AF_initDataCallback\({key: 'ds:1',([\s\S]*?)\}\)/;
-        const codeBlockMatchResult = response.data.match(codeBlockPattern);
-        
-        // const dataPattern = /\(([^)]+)\)/;
-        // const dataMatchResult = codeBlockMatchResult[0].match( dataPattern );
+            if ( !response?.data ) return;
 
-        // fs.writeFileSync('./data/codeBlockMatchResult.json', codeBlockMatchResult[1]);
-        // fs.writeFileSync('./data/dataMatchResult.json', dataMatchResult[1]);
-
-        if ( codeBlockMatchResult?.[1] ) {
-
-            const extractedContent = `{${codeBlockMatchResult[1]}}`;
-
-            const fixedJsonString = `${extractedContent}`
-                .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
-                .replaceAll("'", '"');
-
+            const codeBlockPattern = /AF_initDataCallback\({key: 'ds:1',([\s\S]*?)\}\)/;
+            const codeBlockMatchResult = response.data.match(codeBlockPattern);
             
-            // fs.writeFileSync('./data/fixedJsonString.json', fixedJsonString);
-            const extractedJson = JSON.parse(fixedJsonString);
-            const data = extractedJson.data;
+            // const dataPattern = /\(([^)]+)\)/;
+            // const dataMatchResult = codeBlockMatchResult[0].match( dataPattern );
 
-            // Debugging 
-            // fs.writeFileSync('./data/google_lens_result.json', JSON.stringify(extractedJson));
-            
-            return data;
+            // fs.writeFileSync('./data/codeBlockMatchResult.json', codeBlockMatchResult[1]);
+            // fs.writeFileSync('./data/dataMatchResult.json', dataMatchResult[1]);
 
-        } else {
-            console.log('No match found.');
+            if ( codeBlockMatchResult?.[1] ) {
+
+                const extractedContent = `{${codeBlockMatchResult[1]}}`;
+
+                const fixedJsonString = `${extractedContent}`
+                    .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
+                    .replaceAll("'", '"');
+
+                
+                // fs.writeFileSync('./data/fixedJsonString.json', fixedJsonString);
+                const extractedJson = JSON.parse(fixedJsonString);
+                const data = extractedJson.data;
+
+                // Debugging 
+                // fs.writeFileSync('./data/google_lens_result.json', JSON.stringify(extractedJson));
+                
+                return data;
+
+            } else {
+                console.log('No match found.');
+            }
+
+        } catch (error) {
+            console.log(error);
         }
+        
     }
 
     handleOcrData( data: any[] ): OcrItemScalable[] {
