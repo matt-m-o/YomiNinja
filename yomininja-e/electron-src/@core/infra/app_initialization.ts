@@ -12,6 +12,9 @@ import { get_PpOcrAdapter } from './container_registry/adapters_registry';
 import { WindowManager } from '../../../gyp_modules/window_management/window_manager';
 import { ppOcrAdapterName } from './ocr/ppocr.adapter/ppocr_settings';
 import { getDefaultSettingsPresetProps } from '../domain/settings_preset/default_settings_preset_props';
+import semver from 'semver';
+import { cloudVisionOcrAdapterName, getCloudVisionDefaultSettings } from './ocr/cloud_vision_ocr.adapter/cloud_vision_ocr_settings';
+import { getGoogleLensDefaultSettings } from './ocr/google_lens_ocr.adapter/google_lens_ocr_settings';
 
 
 export let activeProfile: Profile;
@@ -79,6 +82,8 @@ export async function initializeApp() {
 
             let settingsPresetUpdateData = defaultSettingsPreset.toJson();
 
+            // const settingsAreTooOld = !semver.gte( settingsPresetUpdateData.version, defaultSettingsProps.version );
+
             if (
                 !settingsPresetUpdateData?.version ||
                 settingsPresetUpdateData.version !== defaultSettingsProps.version
@@ -88,6 +93,18 @@ export async function initializeApp() {
                     id: settingsPresetUpdateData.id,
                 };
             }
+
+            /// Migrating from v0.6 to v0.6.1 -----------------------------------
+            const cloudVisionSettings = settingsPresetUpdateData.ocr_engines.find(
+                item => item.ocr_adapter_name === cloudVisionOcrAdapterName
+            );
+
+            const defaultGoogleLensSettings = getGoogleLensDefaultSettings();
+
+            if ( cloudVisionSettings?.hotkey === defaultGoogleLensSettings.hotkey ) {
+                cloudVisionSettings.hotkey = getCloudVisionDefaultSettings().hotkey;
+            }
+            /// ------------------------------------------------------------------
 
             await get_UpdateSettingsPresetUseCaseInstance().execute({
                 ...settingsPresetUpdateData,
