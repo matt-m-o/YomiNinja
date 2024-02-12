@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react"
+import { CSSProperties, useContext, useEffect } from "react"
 import { LanguagesContext } from "../../context/languages.provider";
 import { Autocomplete, Box, Button, Card, CardContent, Container, FormControl, FormControlLabel, Grid, InputAdornment, InputLabel, OutlinedInput, SxProps, TextField, TextFieldProps, Theme, Typography, styled } from "@mui/material";
 import { ProfileContext } from "../../context/profile.provider";
@@ -96,6 +96,10 @@ export default function HomeContent() {
         />
     );
 
+    const selectListBoxCSS: CSSProperties = {
+        backgroundColor: '#121212',
+    };
+
     return (
         
         <Box display='flex'
@@ -150,6 +154,7 @@ export default function HomeContent() {
                                 minWidth: '450px',
                                 mb: '25px',
                             }}
+                            ListboxProps={{ style: selectListBoxCSS }}
                         />
 
                         <Autocomplete autoHighlight
@@ -173,27 +178,14 @@ export default function HomeContent() {
                             }}
                             options={ languageOptions || [] }
                             sx={{ mb: '25px' }}
+                            ListboxProps={{ style: selectListBoxCSS }}
                         />
 
-                        <OcrTemplateSelector/>
+                        <OcrTemplateSelector
+                            listBoxCSS={selectListBoxCSS}
+                        />
                         
                     </Container>
-
-                    <Grid container justifyContent="center" spacing={{ xs: 2, md: 2 }} columns={{ xs: 1, sm: 4, md: 12 }} >
-                    
-                        <Grid item columns={12}>
-                        </Grid>
-                        
-                        <Grid item>
-                            
-                        </Grid>
-                            
-                        
-                        <Grid item>
-                            
-                        </Grid>
-
-                    </Grid>                    
 
                     <Typography fontSize='1rem' lineHeight={2} ml={1} mb={0} mt={'56px'}>
                         ✨New features:
