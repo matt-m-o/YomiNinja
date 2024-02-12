@@ -207,7 +207,8 @@ export default function HomeContent() {
                             marginLeft: 20
                         }}
                     >
-                        <li> Google Cloud Vision integration, matching the exceptional accuracy of Google Lens. </li>
+                        <li> Google Lens integration. </li>
+                        <li> Google Cloud Vision integration. </li>
                         <li> Individual character positioning for accurate text overlay (currently exclusive to Cloud Vision). </li>
                         <li> Expanded PaddleOCR settings menu with additional parameters. </li>
                         <li> Native support for Yomitan, Yomichan, and JPDB extensions. </li>
