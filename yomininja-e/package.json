@@ -127,7 +127,7 @@
     },
     "forceCodeSigning": true,
     "nsis": {
-      "oneClick": false,
+      "oneClick": true,
       "runAfterFinish": true
     },
     "win": {
