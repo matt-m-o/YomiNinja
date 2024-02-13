@@ -23,21 +23,30 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
 
     async recognize( input: OcrRecognitionInput ): Promise< OcrResultScalable | null > {
 
-        const { imageBuffer, languageCode } = input;
+        const imageBuffer = await this.rescaleImage( input.imageBuffer );
+
+        const imageMetadata = await sharp( imageBuffer ).metadata();
+
+        // console.log({
+        //     imageWidth: imageMetadata.width,
+        //     imageHeight: imageMetadata.height
+        // });
 
         const data = await this.sendRequest( imageBuffer );
 
         if ( !data ) return null;
 
-        const ocrResultItems: OcrItemScalable[] = this.handleOcrData( data );
-        // console.log( ocrResultItems );
-
-        const imageMetadata = await sharp( imageBuffer ).metadata();
-
         const contextResolution: OcrResultContextResolution  = {
             width: imageMetadata?.width || 0,
             height: imageMetadata?.height || 0
         };
+
+        const ocrResultItems: OcrItemScalable[] = this.handleOcrData(
+            data, contextResolution
+        );
+        // console.log( ocrResultItems );
+
+       
 
         const result = OcrResultScalable.create({
             id: this.idCounter,
@@ -111,7 +120,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
         
     }
 
-    handleOcrData( data: any[] ): OcrItemScalable[] {
+    handleOcrData( data: any[], contextResolution: OcrResultContextResolution ): OcrItemScalable[] {
         
         let firstIdx = 2;
 
@@ -143,8 +152,11 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                 // console.log( lineBoxData );
                 // console.log(text)
 
+                const widthPx = contextResolution.width * lineBoxData[2];
+                const heightPx = contextResolution.height * lineBoxData[3];
+
                 const isVertical = (
-                    lineBoxData[3] > ( lineBoxData[2] * 1.20 ) &&
+                    heightPx > ( widthPx * 1.20 ) &&
                     text?.length > 1
                 );
 
@@ -208,6 +220,37 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
         }).filter( ( block: OcrItemScalable | undefined ) => Boolean(block) );
 
         return blocks;
+    }
+
+    async rescaleImage( image: Buffer, maxPixelCount = 3_686_400 ): Promise< Buffer > {
+        // 3_686_400 is equivalent to 1440p (16:9)
+
+        const sharpImage = sharp(image);
+
+        const { width, height } = await sharpImage.metadata();
+
+        if ( !width || !height )
+            return image;
+
+        const pixelCount = width * height;
+        
+        if ( pixelCount < maxPixelCount )
+            return image;
+
+        const newWidth = Math.floor(
+            Math.sqrt( ( maxPixelCount * width ) / height )
+        );
+
+        const newHeight = Math.floor(
+            Math.sqrt( ( maxPixelCount * height) / width )
+        );
+
+        console.log({ newWidth, newHeight });
+        
+        return await sharpImage.resize({
+            width: newWidth,
+            height: newHeight
+        }).toBuffer();
     }
 
     async getSupportedLanguages(): Promise< string[] > {
