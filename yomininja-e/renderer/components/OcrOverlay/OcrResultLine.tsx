@@ -228,6 +228,9 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         <span style={{
             ...lineBaseCSS,
             visibility: 'hidden',
+            display: 'block',
+            minWidth: 'max-content',
+            minHeight: 'max-content'
         }}>
             {symbolsContainer || line.content}
         </span>
@@ -250,7 +253,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                 // transform: `rotate( ${line?.box?.angle_degrees}deg )`,
                 borderRadius: '0px',
                 textAlign: box.isVertical ? 'inherit' : 'left',
-                backgroundColor: 'inherit'
+                backgroundColor: ocrItemBoxVisuals.background_color
             }}
         >
             {
