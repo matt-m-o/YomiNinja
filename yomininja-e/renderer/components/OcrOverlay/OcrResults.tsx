@@ -25,7 +25,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
     const handleBoxMouseEnter = ( item: OcrItemScalable ) => {
         
         const hoveredText = item.text.map( line => line.content ).join(' ');
-        console.log({ hoveredText });
+        // console.log({ hoveredText });
 
         sendHoveredText( hoveredText );
 
@@ -63,7 +63,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
     function handleBoxDoubleClick( id: string | undefined ) {
         setEditableBoxId( id );
-        console.log({ id })
+        // console.log({ id })
     }
 
     function handleBoxBlur() {
