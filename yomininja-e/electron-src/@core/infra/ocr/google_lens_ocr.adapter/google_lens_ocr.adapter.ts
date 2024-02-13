@@ -8,6 +8,7 @@ import axios from 'axios';
 import { OcrItemScalable, OcrResultBoxScalable, OcrResultScalable, OcrTextLineScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 import sharp from "sharp";
 import fs from 'fs';
+import vm from 'vm';
 
 export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSettings > {
 
@@ -85,24 +86,14 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
 
             const codeBlockPattern = /AF_initDataCallback\({key: 'ds:1',([\s\S]*?)\}\)/;
             const codeBlockMatchResult = response.data.match(codeBlockPattern);
-            
-            // const dataPattern = /\(([^)]+)\)/;
-            // const dataMatchResult = codeBlockMatchResult[0].match( dataPattern );
-
-            // fs.writeFileSync('./data/codeBlockMatchResult.json', codeBlockMatchResult[1]);
-            // fs.writeFileSync('./data/dataMatchResult.json', dataMatchResult[1]);
 
             if ( codeBlockMatchResult?.[1] ) {
 
                 const extractedContent = `{${codeBlockMatchResult[1]}}`;
+                // fs.writeFileSync('./data/extractedContent.json', extractedContent);
 
-                const fixedJsonString = `${extractedContent}`
-                    .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
-                    .replaceAll("'", '"');
-
-                
-                // fs.writeFileSync('./data/fixedJsonString.json', fixedJsonString);
-                const extractedJson = JSON.parse(fixedJsonString);
+                const context = vm.createContext({});
+                const extractedJson = vm.runInContext(`(${extractedContent})`, context);
                 const data = extractedJson.data;
 
                 // Debugging 
@@ -136,11 +127,6 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
 
         const blocksDataArr = data[2][3][0].slice( firstIdx );
 
-        // if ( isSingleLinesOnly )
-        //     blocksDataArr = data[2][3][0].slice( 3 );
-        // else
-        //     blocksDataArr = data[2][3][0].slice( 4 );
-
         const blocks: OcrItemScalable[] = blocksDataArr.map( ( blockData: any[] ) => {
 
             let blockIsVertical = false;
@@ -151,13 +137,16 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                 const lineTextData = lineData[0];
                 const lineBoxData = lineData[1];
 
-                const text = lineTextData.map( ( word: any[] ) => word[0] + ( word[3] || '' )  ).join('');
+                const text: string = lineTextData.map( ( word: any[] ) => word[0] + ( word[3] || '' )  ).join('');
 
                 // console.log( lineTextData );
                 // console.log( lineBoxData );
                 // console.log(text)
 
-                const isVertical = lineBoxData[3] > ( lineBoxData[2] * 1.20 );
+                const isVertical = (
+                    lineBoxData[3] > ( lineBoxData[2] * 1.20 ) &&
+                    text?.length > 1
+                );
 
                 blockIsVertical =  blockIsVertical || isVertical;
 
