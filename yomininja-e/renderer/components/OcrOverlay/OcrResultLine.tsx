@@ -217,20 +217,27 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     const lineBaseCSS: CSSProperties = {
         minWidth: lineBoxWidthPx,
         minHeight: lineBoxHeightPx,
-        writingMode: line?.box?.isVertical ? 'vertical-rl' :'inherit',
-        textOrientation: line?.box?.isVertical ? 'upright' :'inherit',
+        writingMode: box?.isVertical ? 'vertical-rl' :'inherit',
+        textOrientation: box?.isVertical ? 'upright' :'inherit',
         fontSize: lineFontSize ? lineFontSize+'px' : 'inherit',
         lineHeight: setLineHeight && lineFontSize ? lineFontSize+'px' : 'inherit',
         margin: props.sizeExpansionPx / 2 + 'px',
     };
+
+    const margin = props.sizeExpansionPx / 2 + 'px';
 
     const lineSizeHolder = (
         <span style={{
             ...lineBaseCSS,
             visibility: 'hidden',
             display: 'block',
-            minWidth: 'max-content',
-            minHeight: 'max-content'
+            minWidth: box.isVertical ? '0px' : 'max-content',
+            minHeight: !box.isVertical ? '0px' : 'max-content',
+            maxWidth: box.isVertical ? '0px' : 'max-content',
+            maxHeight: !box.isVertical ? '0px' : 'max-content',
+            margin,
+            marginTop: !box.isVertical ? margin : lineTopPx,
+            marginLeft: box.isVertical ? margin : lineLeftPx,
         }}>
             {symbolsContainer || line.content}
         </span>
