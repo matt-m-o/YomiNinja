@@ -9,6 +9,7 @@ import { OcrItemScalable, OcrResultBoxScalable, OcrResultScalable, OcrTextLineSc
 import sharp from "sharp";
 import fs from 'fs';
 import vm from 'vm';
+import { session } from "electron";
 
 export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSettings > {
 
@@ -16,6 +17,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
     public readonly name: string = GoogleLensOcrAdapter._name;
     public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
     private idCounter: number = 0;
+    private cookie: string = '';
 
     constructor() {}
 
@@ -69,7 +71,43 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
         return result;
     }
 
+    async getCookie(): Promise< string > {
+
+        if ( this.cookie.includes('SOCS') )
+            return this.cookie;
+
+        const { defaultSession } = session;
+
+        const allCookies = await defaultSession.cookies.get({
+            domain: '.google.com'
+        });
+
+        if ( allCookies.length === 0 ) return '';
+
+        const aec = allCookies.find( c => c.name.toUpperCase() === 'AEC' );
+        const __secure_enid = allCookies.find( c => c.name.toUpperCase() === '__SECURE-ENID' );
+        const nid = allCookies.find( c => c.name.toUpperCase() === 'NID' );
+        const consent = allCookies.find( c => c.name.toUpperCase() === 'CONSENT' );
+        const socs = allCookies.find( c => c.name.toUpperCase() === 'SOCS' );
+
+        const necessaryCookies = nid ?
+            [ aec, consent, socs, nid ] : // Accept
+            [ aec, __secure_enid, consent, socs ]; // Reject    
+            
+        this.cookie = necessaryCookies.map( cookie => {
+                if ( !cookie ) return;
+                return `${cookie.name}=${cookie.value}`;
+            })
+            .filter(Boolean)
+            .join('; ')
+            .trim();
+
+        return this.cookie;
+    }
+
     async sendRequest( image: Buffer ): Promise< any[] | undefined > {
+
+        const cookie = await this.getCookie();
 
         const data = new FormData();
 
@@ -82,7 +120,15 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
             maxBodyLength: Infinity,
             url: `https://lens.google.com/v3/upload?stcs=${stcs}`,
             headers: { 
-                ...data.getHeaders()
+                ...data.getHeaders(),
+                'User-Agent': session.defaultSession.getUserAgent(),
+                'Origin': 'https://lens.google.com',
+                'Referer': 'https://lens.google.com/',
+                'Host': 'lens.google.com',
+                'Cookie': cookie,
+                'Accept': '*/*',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive'
             },
             data
         };
@@ -92,6 +138,8 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
             const response = await axios.request(config);
 
             if ( !response?.data ) return;
+
+            // fs.writeFileSync( './data/google_lens_response_data', response.data );
 
             const codeBlockPattern = /AF_initDataCallback\({key: 'ds:1',([\s\S]*?)\}\)/;
             const codeBlockMatchResult = response.data.match(codeBlockPattern);
