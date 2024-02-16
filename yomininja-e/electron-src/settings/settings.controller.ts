@@ -7,6 +7,8 @@ import path from "path";
 import fs from 'fs';
 import { pushInAppNotification } from "../common/notification_helpers";
 import { InAppNotification } from "../common/types/in_app_notification";
+import { timingSafeEqual } from "crypto";
+import { UnorderedBulkOperation } from "typeorm";
 
 
 
@@ -15,7 +17,8 @@ export class SettingsController {
     private mainWindow: BrowserWindow;
     private settingsService: SettingsService;
 
-    private cloudVisionWindow: BrowserWindow;
+    private cloudVisionWindow?: BrowserWindow;
+    private googleWindow?: BrowserWindow;
 
     constructor( input: {
         settingsService: SettingsService,
@@ -50,6 +53,10 @@ export class SettingsController {
 
         ipcMain.handle( 'settings_preset:open_cloud_vision_page', async ( event: IpcMainInvokeEvent ) => {
             this.openCloudVisionTryItPage()
+        });
+
+        ipcMain.handle( 'settings_preset:open_google_page', async ( event: IpcMainInvokeEvent ) => {
+            this.openGooglePage()
         });
         
         session.defaultSession.webRequest.onBeforeRequest( ( details, callback ) => {
@@ -132,20 +139,18 @@ export class SettingsController {
 
     openCloudVisionTryItPage() {
 
-        this.cloudVisionWindow = new BrowserWindow({
-            height: 720,
-            autoHideMenuBar: true,
-            webPreferences: {
-                nodeIntegration: false,
-                contextIsolation: false,
-            },
+        if ( this.cloudVisionWindow )
+            return this.cloudVisionWindow.show();
+
+        this.cloudVisionWindow = this.createWindow();
+        this.cloudVisionWindow.on( 'closed', () => {
+            this.cloudVisionWindow = undefined;
         });
 
         this.cloudVisionWindow.loadURL('https://cloud.google.com/vision/docs/drag-and-drop');
         this.cloudVisionWindow.show();
 
         this.cloudVisionWindow.webContents.executeJavaScript(`window.scrollTo(0, 520)`);
-        
     }
 
     notifyCredentialsLoaded() {
@@ -169,6 +174,31 @@ export class SettingsController {
             windows: [
                 this.mainWindow
             ]
+        });
+    }
+
+    openGooglePage() {
+
+        if ( this.googleWindow )
+            return this.googleWindow.show();
+
+        this.googleWindow = this.createWindow();
+        this.googleWindow.on( 'closed', () => {
+            this.googleWindow = undefined;
+        });
+
+        this.googleWindow.loadURL('https://www.google.com');
+        this.googleWindow.show();
+    }
+
+    createWindow(): BrowserWindow {
+        return new BrowserWindow({
+            height: 720,
+            autoHideMenuBar: true,
+            webPreferences: {
+                nodeIntegration: false,
+                contextIsolation: false,
+            },
         });
     }
 }

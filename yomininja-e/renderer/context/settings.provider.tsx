@@ -16,6 +16,7 @@ export type SettingsContextType = {
     triggerOcrEngineRestart: ( engineName: string ) => void;
     loadCloudVisionCredentialsFile: () => Promise< void >;
     openCloudVisionPage: () => void;
+    openGooglePage: () => void;
 };
 
 
@@ -158,6 +159,10 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         global.ipcRenderer.invoke( 'settings_preset:open_cloud_vision_page' );
     }
 
+    async function openGooglePage() {
+        global.ipcRenderer.invoke( 'settings_preset:open_google_page' );
+    }
+
     async function getActiveSettingsPreset(): Promise< SettingsPresetJson > {
 
         const settings = await global.ipcRenderer.invoke( 'settings_preset:get_active' ) as SettingsPresetJson;
@@ -237,7 +242,8 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
                 updateActivePresetDictionary,
                 triggerOcrEngineRestart,
                 loadCloudVisionCredentialsFile,
-                openCloudVisionPage
+                openCloudVisionPage,
+                openGooglePage
             }}
         >
 
