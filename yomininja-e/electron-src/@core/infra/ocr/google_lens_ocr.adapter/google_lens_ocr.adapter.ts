@@ -105,6 +105,10 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
         return this.cookie;
     }
 
+    removeCookies() {
+        this.cookie = '';
+    }
+
     async sendRequest( image: Buffer ): Promise< any[] | undefined > {
 
         const cookie = await this.getCookie();

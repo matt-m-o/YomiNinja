@@ -17,6 +17,8 @@ export type SettingsContextType = {
     loadCloudVisionCredentialsFile: () => Promise< void >;
     openCloudVisionPage: () => void;
     openGooglePage: () => void;
+    removeGoogleCookies: () => void;
+    hasGoogleCookies: boolean;
 };
 
 
@@ -27,6 +29,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     
     const [ activeSettingsPreset, setActiveSettingsPreset ] = useState< SettingsPresetJson | null >( null );
     const [ allSettingsPresets, setAllSettingsPresets ] = useState< SettingsPresetJson[] >( [] );
+    const [ hasGoogleCookies, setHasGoogleCookies ] = useState(false);
 
     const updateActivePresetIPC = debounce( async ( updatedPreset: SettingsPresetJson ) => {
         const { restartOcrAdapter } = await global.ipcRenderer.invoke( 'settings_preset:update', updatedPreset );
@@ -163,6 +166,27 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         global.ipcRenderer.invoke( 'settings_preset:open_google_page' );
     }
 
+    async function getGoogleCookies(): Promise< Electron.Cookie[] > {
+
+        const cookies: Electron.Cookie[] = await global.ipcRenderer.invoke( 'settings_preset:get_google_cookies' );
+
+        return cookies;
+    }
+
+    async function checkGoogleCookies() {
+        const hasCookies = ( await getGoogleCookies() ).length > 0 ;
+        setHasGoogleCookies( hasCookies );
+    }
+
+    async function removeGoogleCookies() {
+
+        await global.ipcRenderer.invoke(
+            'settings_preset:remove_google_cookies'
+        );
+        
+        setHasGoogleCookies( false );
+    }
+
     async function getActiveSettingsPreset(): Promise< SettingsPresetJson > {
 
         const settings = await global.ipcRenderer.invoke( 'settings_preset:get_active' ) as SettingsPresetJson;
@@ -179,10 +203,16 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
             activeSettingsPresetHandler( data );
         });
 
+        global.ipcRenderer.on( 'settings_preset:google_window_closed', ( event ) => {
+            checkGoogleCookies();
+        });
+
         getActiveSettingsPreset();
+        checkGoogleCookies();
 
         return () => {
             global.ipcRenderer.removeAllListeners( 'settings_preset:active_data' );
+            global.ipcRenderer.removeAllListeners( 'settings_preset:google_window_closed' );
         }
     }, [ global.ipcRenderer ] );
 
@@ -243,7 +273,9 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
                 triggerOcrEngineRestart,
                 loadCloudVisionCredentialsFile,
                 openCloudVisionPage,
-                openGooglePage
+                openGooglePage,
+                removeGoogleCookies,
+                hasGoogleCookies
             }}
         >
 

@@ -24,8 +24,7 @@ export class SettingsController {
         settingsService: SettingsService,
         mainWindow?: BrowserWindow,
     }) {
-
-        this.settingsService = input.settingsService;        
+        this.settingsService = input.settingsService;
     }
 
     init( mainWindow: BrowserWindow ) {
@@ -58,6 +57,20 @@ export class SettingsController {
         ipcMain.handle( 'settings_preset:open_google_page', async ( event: IpcMainInvokeEvent ) => {
             this.openGooglePage()
         });
+
+        ipcMain.handle(
+            'settings_preset:get_google_cookies',
+            async ( event: IpcMainInvokeEvent ): Promise<Electron.Cookie[]> => {
+                return this.settingsService.getGoogleCookies()
+            }
+        );
+
+        ipcMain.handle(
+            'settings_preset:remove_google_cookies',
+            async ( event: IpcMainInvokeEvent ): Promise< void > => {
+                return await this.settingsService.removeGoogleCookies();
+            }
+        );
         
         session.defaultSession.webRequest.onBeforeRequest( ( details, callback ) => {
             if ( details.url.includes( 'vision.googleapis' ) ) {
@@ -183,8 +196,11 @@ export class SettingsController {
             return this.googleWindow.show();
 
         this.googleWindow = this.createWindow();
-        this.googleWindow.on( 'closed', () => {
+        this.googleWindow.on( 'closed', async () => {
+            
             this.googleWindow = undefined;
+            
+            this.mainWindow.webContents.send( 'settings_preset:google_window_closed' );
         });
 
         this.googleWindow.loadURL('https://www.google.com');

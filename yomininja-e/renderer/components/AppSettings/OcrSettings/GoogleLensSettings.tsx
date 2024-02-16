@@ -1,11 +1,6 @@
 import { Alert, Backdrop, Box, Button, Card, CardContent, CircularProgress, Container, Divider, FilledInput, FormControl, FormControlLabel, FormGroup, IconButton, InputAdornment, InputLabel, MenuItem, OutlinedInput, Popover, Select, Slider, Snackbar, Stack, Switch, SxProps, TextField, Theme, ToggleButton, ToggleButtonGroup, Typography, debounce, styled } from "@mui/material";
 import { SettingsContext } from "../../../context/settings.provider";
 import { ChangeEvent, useContext, useEffect, useState } from "react";
-import { OcrEngineSettingsU } from "../../../../electron-src/@core/infra/types/entity_instance.types";
-import CommonOcrSettings, { SettingsOptionContainer } from "./CommonOcrSettings";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
-import PasswordField from "../../common/PasswordField";
-import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
 import { GoogleLensOcrEngineSettings } from "../../../../electron-src/@core/infra/ocr/google_lens_ocr.adapter/google_lens_ocr_settings";
 
 
@@ -21,7 +16,9 @@ export default function GoogleLensSettings( props: GoogleLensSettingsProps ) {
 
     const {
         updateActivePresetOcrEngine,
-        openGooglePage
+        openGooglePage,
+        removeGoogleCookies,
+        hasGoogleCookies
     } = useContext( SettingsContext );
 
 
@@ -54,11 +51,33 @@ export default function GoogleLensSettings( props: GoogleLensSettingsProps ) {
             
                 <Button variant="contained"
                     size="large"
-                    onClick={ openGooglePage }
+                    onClick={ () => {
+                        openGooglePage()
+                    }}
                     fullWidth
                     sx={{ mb: 2 }}
                 >
                     Open Google Page
+                </Button>
+
+            </Container>
+
+            <Container
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}
+            >
+            
+                <Button variant="contained"
+                    size="large"
+                    color='error'
+                    onClick={ removeGoogleCookies }
+                    fullWidth
+                    sx={{ mb: 2 }}
+                    disabled={ !hasGoogleCookies }
+                >
+                    Delete Cookies
                 </Button>
 
             </Container>
