@@ -174,6 +174,10 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
                     ),
                     flexDirection: 'column',
                 }}
+                style={{
+                    padding: 0,
+                    margin: 0
+                }}
             >
 
                 <Button variant="contained"
@@ -222,6 +226,10 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
                             'none'
                     ),
                     flexDirection: 'column'
+                }}
+                style={{
+                    padding: 0,
+                    margin: 0
                 }}
             >
             

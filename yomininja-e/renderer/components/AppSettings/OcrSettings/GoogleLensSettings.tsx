@@ -36,16 +36,25 @@ export default function GoogleLensSettings( props: GoogleLensSettingsProps ) {
 
             <Box>
                 
-                <Typography mb={4}>
+                <Typography mb={6}>
+                    Google Lens serves as free alternative to Cloud Vision, delivering similar results.
+                    However, it's essential to maintain realistic expectations as this API was originally designed for Google's apps,
+                    which means its longevity is uncertain.
+                </Typography>
 
+                <Typography mb={4}>
+                    In certain regions, it's important to agree to the cookies consent banner for the proper functioning of this API.
+                    To do this, click the button below to open Google and either <strong>accept</strong> or <strong>reject</strong> the cookies.
                 </Typography>
 
             </Box>
             
             <Container
-                sx={{
+                style={{
                     display: 'flex',
-                    flexDirection: 'column'
+                    flexDirection: 'column',
+                    padding: 0,
+                    margin: 0
                 }}
             >
             
@@ -57,24 +66,14 @@ export default function GoogleLensSettings( props: GoogleLensSettingsProps ) {
                     fullWidth
                     sx={{ mb: 2 }}
                 >
-                    Open Google Page
+                    Go to Google
                 </Button>
 
-            </Container>
-
-            <Container
-                sx={{
-                    display: 'flex',
-                    flexDirection: 'column'
-                }}
-            >
-            
                 <Button variant="contained"
                     size="large"
                     color='error'
                     onClick={ removeGoogleCookies }
                     fullWidth
-                    sx={{ mb: 2 }}
                     disabled={ !hasGoogleCookies }
                 >
                     Delete Cookies
