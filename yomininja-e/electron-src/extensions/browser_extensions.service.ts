@@ -5,7 +5,7 @@ import { PopupView } from "electron-chrome-extensions/dist/browser/popup";
 import path, { join } from "path";
 import fs from 'fs/promises';
 import sharp from 'sharp';
-import { EXTENSIONS_DIR } from "../util/directories.util";
+import { USER_EXTENSIONS_DIR } from "../util/directories.util";
 import isDev from "electron-is-dev";
 import { BrowserExtensionManager } from "./browser_extension_manager/browser_extension_manager";
 import { BrowserExtension, BrowserExtensionJson } from "../@core/domain/browser_extension/browser_extension";
@@ -171,7 +171,7 @@ export class BrowserExtensionsService {
         });
         this.installedExtensions.clear();
 
-        const subDirectories = await fs.readdir( EXTENSIONS_DIR, {
+        const subDirectories = await fs.readdir( USER_EXTENSIONS_DIR, {
             withFileTypes: true,
         });
       
@@ -180,7 +180,7 @@ export class BrowserExtensionsService {
                 .filter( (dirEnt) => dirEnt.isDirectory() )
                 .map( async (dirEnt) => {
         
-                    const extPath = path.join( EXTENSIONS_DIR, dirEnt.name );
+                    const extPath = path.join( USER_EXTENSIONS_DIR, dirEnt.name );
             
                     if ( await this.manifestExists(extPath) ) {
                         return extPath;
@@ -230,6 +230,10 @@ export class BrowserExtensionsService {
         }
 
         await this.syncExtensionsRegistry();
+    }
+
+    async handleBuiltinExtensions() {
+        await this.browserExtensionManager.installBuiltinExtensions();
     }
 
     private manifestExists = async ( dirPath: string ): Promise< boolean > => {
@@ -329,7 +333,7 @@ export class BrowserExtensionsService {
 
         const { zipFilePath } = input;
 
-        await this.browserExtensionManager.install( zipFilePath );
+        await this.browserExtensionManager.installZip( zipFilePath );
 
         await this.loadExtensions();
 

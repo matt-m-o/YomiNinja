@@ -71,7 +71,7 @@ export class AppController {
   
         await browserExtensionsController.init({
             mainWindow: this.mainWindow
-        })
+        });
 
         // if ( isDev )
             // createDebuggingWindow();

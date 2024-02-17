@@ -6,15 +6,23 @@ import { applyYomiWorkaround } from "./workarounds/yomi_workaround";
 
 export class BrowserExtensionManager {
 
-    extensionsPath: string;
+    userExtensionsPath: string;
+    builtinExtensionsPath: string;
+    isDev: boolean;
 
-    constructor( input?: { extensionsPath?: string }) {
+    constructor( input?: {
+        userExtensionsPath?: string;
+        builtinExtensionsPath?: string;
+        isDev?: boolean;
+    }) {
 
-        this.extensionsPath = input?.extensionsPath || './extensions';
+        this.userExtensionsPath = input?.userExtensionsPath || './extensions';
+        this.builtinExtensionsPath = input?.builtinExtensionsPath || './extensions';
+        this.isDev = input?.isDev || true;
     }
 
 
-    async install( zipFilePath: string ): Promise< string > {
+    async installZip( zipFilePath: string ): Promise< string > {
 
         const isValid = await this.validateExtensionZip( zipFilePath );
 
@@ -22,8 +30,10 @@ export class BrowserExtensionManager {
             throw new Error('invalid-extension');
         
         const fileName = path.basename( zipFilePath ).split('.zip')[0];
+
+        console.log(`Installing ${fileName}`);
             
-        const extractedExtensionPath = path.join( this.extensionsPath, fileName );
+        const extractedExtensionPath = path.join( this.userExtensionsPath, fileName );
 
         if ( !fs.existsSync( extractedExtensionPath ))
             fs.mkdirSync( extractedExtensionPath, { recursive: true } );
@@ -104,5 +114,29 @@ export class BrowserExtensionManager {
         };
 
         return manifest;
+    }
+
+    async installBuiltinExtensions() {
+
+        const files = fs.readdirSync( this.builtinExtensionsPath );
+        
+        for ( const fileName of files ) {
+
+            if ( !fileName.includes('.zip') ) continue;
+
+            const zipFilePath = path.join( this.builtinExtensionsPath, fileName );
+
+            try {
+
+                await this.installZip( zipFilePath );
+
+                if ( !this.isDev )
+                    fs.rmSync( zipFilePath );
+
+            } catch (error) {
+                console.error(error);
+            }
+
+        }
     }
 }

@@ -9,14 +9,18 @@ describe( 'BrowserExtensionManager', () => {
     const extensionZipPath = './data/extension-test.zip';
 
     beforeAll( () => {
-        browserExtensionManager = new BrowserExtensionManager({ extensionsPath: './data/extensions' });
+        browserExtensionManager = new BrowserExtensionManager({
+            userExtensionsPath: './data/extensions',
+            builtinExtensionsPath: './extensions',
+            isDev: true
+        });
     });
 
     it('should install a browser extension', async () => {
 
-        const extensionDirectory = await browserExtensionManager.install( extensionZipPath );
+        const extensionDirectory = await browserExtensionManager.installZip( extensionZipPath );
 
-        const extensionsDirectories = fs.readdirSync( browserExtensionManager.extensionsPath );
+        const extensionsDirectories = fs.readdirSync( browserExtensionManager.userExtensionsPath );
         expect( extensionsDirectories.includes( 'extension-test' ) ).toBeTruthy();
 
         const extensionFiles = fs.readdirSync( extensionDirectory );
@@ -26,11 +30,11 @@ describe( 'BrowserExtensionManager', () => {
 
     it('should uninstall a browser extension', async () => {
 
-        const extensionDirectory = await browserExtensionManager.install( extensionZipPath );
+        const extensionDirectory = await browserExtensionManager.installZip( extensionZipPath );
 
         browserExtensionManager.uninstall( extensionDirectory );
         
-        const extensionsDirectories = fs.readdirSync( browserExtensionManager.extensionsPath );
+        const extensionsDirectories = fs.readdirSync( browserExtensionManager.userExtensionsPath );
         
         expect( extensionsDirectories.includes( 'extension-test' ) ).toBeFalsy();
     });
