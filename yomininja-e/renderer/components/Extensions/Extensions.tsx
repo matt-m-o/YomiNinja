@@ -199,15 +199,15 @@ export default function Extensions() {
                                 To open Yomitan/Yomichan options:
                                 <OL>
                                     <li> Right-click the Yomitan icon. </li>
-                                    <li> Click on "Options". </li>
+                                    <li> Click on <strong>Options</strong>. </li>
                                 </OL>
 
-                                For a better experience, it's recommended to enable "Hide popup on cursor exit":
+                                For a better experience, it's recommended to enable <strong>"Hide popup on cursor exit"</strong>:
 
                                 <OL>
                                     <li> Open Yomitan/Yomichan settings. </li>
-                                    <li> Go to the "Scanning" section. </li>
-                                    <li> Enable "Hide popup on cursor exit". </li>
+                                    <li> Go to the <strong>Scanning</strong> section. </li>
+                                    <li> Enable <strong>"Hide popup on cursor exit"</strong>. </li>
                                 </OL>
                             </CustomAccordion>
 
@@ -222,9 +222,9 @@ export default function Extensions() {
                                 <OL>
                                     <li> Make sure JPDB Reader is enabled. </li>
                                     <li> Click on its icon (upper-right corner). </li>
-                                    <li> Right-click "Settings". </li>
-                                    <li> Click on "Open link in a new window". </li>
-                                    <li> Paste your JPDB.io API key into the "API Token" field and click on "Save". </li>
+                                    <li> Click on <strong>Settings</strong>. </li>
+                                    <li> Paste your JPDB.io API key into the <strong>API Token</strong> field. </li>
+                                    <li> Click on <strong>Save</strong>. </li>
                                 </OL>
 
                             </CustomAccordion>
