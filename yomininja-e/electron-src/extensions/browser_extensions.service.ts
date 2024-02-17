@@ -1,6 +1,7 @@
 import { BrowserWindow, app, session } from "electron";
 import buildChromeContextMenu from "electron-chrome-context-menu";
 import { ElectronChromeExtensions } from "electron-chrome-extensions";
+import { PopupView } from "electron-chrome-extensions/dist/browser/popup";
 import path, { join } from "path";
 import fs from 'fs/promises';
 import sharp from 'sharp';
@@ -11,7 +12,7 @@ import { BrowserExtension, BrowserExtensionJson } from "../@core/domain/browser_
 import { UpdateBrowserExtensionUseCase } from "../@core/application/use_cases/browser_extension/update_browser_extension/update_browser_extension.use_case";
 import { CreateBrowserExtensionUseCase } from "../@core/application/use_cases/browser_extension/create_browser_extension/create_browser_extension.use_case";
 import { GetBrowserExtensionsUseCase } from "../@core/application/use_cases/browser_extension/get_browser_extensions/get_browser_extensions.use_case";
-
+import { handleJPDBReaderPopup } from "./browser_extension_manager/workarounds/jpdb_reader";
 
 export class BrowserExtensionsService {
 
@@ -97,6 +98,17 @@ export class BrowserExtensionsService {
 
                 return [ extensionWindow.webContents, extensionWindow ];
             },
+            createWindow: async ( details: chrome.tabs.CreateProperties ): Promise< BrowserWindow > => {
+                return this.createExtensionWindow( details.url || '' );
+            },
+        });
+
+        this.extensionsApi.on( 'browser-action-popup-created', ( popup: PopupView ) => {
+
+            const extension = this.installedExtensions.get( popup.extensionId );
+
+            if ( extension?.name.includes('JPDBreader') )
+                handleJPDBReaderPopup( popup );
         });
         
         // console.log({ EXTENSIONS_DIR });
