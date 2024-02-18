@@ -64,7 +64,7 @@ export class AppController {
             startupTimer = setTimeout( () => {
                 console.log('Initialization took too long. Closing the app.');
                 app.quit();
-            }, 15_000 );
+            }, 30_000 );
         }
 
         this.mainWindow = await mainController.init();
