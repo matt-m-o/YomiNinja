@@ -10,7 +10,7 @@ import { join } from "path";
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { dialog } from 'electron';
 import isDev from 'electron-is-dev';
-import { BIN_DIR } from "../../../../util/directories.util";
+import { BIN_DIR, USER_DATA_DIR } from "../../../../util/directories.util";
 import { OcrEngineSettings } from "../../../domain/settings_preset/settings_preset";
 import { UpdateSettingsPresetResponse__Output } from "../../../../../grpc/rpc/ocr_service/UpdateSettingsPresetResponse";
 import { applyCpuHotfix } from "./hotfix/hardware_compatibility_hotfix";
@@ -19,6 +19,7 @@ import { PpOcrEngineSettings, getPpOcrDefaultSettings, ppOcrAdapterName } from "
 import { UpdatePpOcrSettingsRequest } from "../../../../../grpc/rpc/ocr_service/UpdatePpOcrSettingsRequest";
 import { OcrEngineSettingsU } from "../../types/entity_instance.types";
 import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
+import fs from 'fs';
 
 export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
     
@@ -29,7 +30,17 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
     private idCounter: number = 0;
     private ppocrServiceProcess: ChildProcessWithoutNullStreams;
     private recognitionCallOnHold: OcrRecognitionInput | undefined;
+    private settingsPresetsRoot: string;
+    private binRoot: string;
 
+    constructor() {
+
+        this.binRoot = isDev
+            ? join( BIN_DIR, `/${os.platform()}/ppocr` )
+            : join( process.resourcesPath, '/bin/ppocr/' );
+
+        this.handleSettingsPreset();
+    }
 
     initialize( serviceAddress?: string ) {
 
@@ -144,20 +155,16 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
 
         const platform = os.platform();
 
-        const cwd = isDev
-            ? join( BIN_DIR, `/${platform}/ppocr` )
-            : join( process.resourcesPath, '/bin/ppocr/' );
-
         const executableName = platform === 'win32'
             ? 'ppocr_infer_service_grpc.exe'
             : 'start.sh'; // start.sh | ppocr_infer_service_grpc
 
-        const executable = join( cwd + `/${executableName}` );
+        const executable = join( this.binRoot + `/${executableName}` );
         
         this.ppocrServiceProcess = spawn(
             executable,
-            [/*arguments */],
-            { cwd }
+            [ this.settingsPresetsRoot ],
+            { cwd: this.binRoot }
         );
 
         // Handle stdout and stderr data
@@ -318,5 +325,25 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
             return 1600;
 
         return maxImageWidth;
+    }
+
+    handleSettingsPreset() {
+
+        this.settingsPresetsRoot = join( USER_DATA_DIR, "/ppocr/presets/" );
+
+        const dirExists = fs.existsSync( this.settingsPresetsRoot );
+        const fileExists = fs.existsSync( this.settingsPresetsRoot + 'default.json' );
+
+        if ( !dirExists )
+            fs.mkdirSync( this.settingsPresetsRoot, { recursive: true } );
+    
+        if ( !fileExists ) {
+            const baseFilePath = join( this.binRoot, '/presets/default.json' );
+            const dest = join( this.settingsPresetsRoot, 'default.json' );
+            fs.copyFileSync(
+                baseFilePath,
+                dest
+            );
+        }
     }
 }
