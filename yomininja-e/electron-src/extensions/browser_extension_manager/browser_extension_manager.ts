@@ -2,7 +2,7 @@ import path from "path";
 import fs from "fs"
 import StreamZip, { StreamZipAsync } from "node-stream-zip";
 import { applyYomiWorkaround } from "./workarounds/yomi_workaround";
-
+import sanitize from 'sanitize-filename';
 
 export class BrowserExtensionManager {
 
@@ -13,16 +13,16 @@ export class BrowserExtensionManager {
     constructor( input?: {
         userExtensionsPath?: string;
         builtinExtensionsPath?: string;
-        isDev?: boolean;
+        isDev: boolean;
     }) {
 
         this.userExtensionsPath = input?.userExtensionsPath || './extensions';
         this.builtinExtensionsPath = input?.builtinExtensionsPath || './extensions';
-        this.isDev = input?.isDev || true;
+        this.isDev = input?.isDev !== undefined ? input?.isDev : true;
     }
 
 
-    async installZip( zipFilePath: string ): Promise< string > {
+    async installZip( zipFilePath: string, overwrite = true ): Promise< string > {
 
         const isValid = await this.validateExtensionZip( zipFilePath );
 
@@ -35,7 +35,7 @@ export class BrowserExtensionManager {
             
         const extractedExtensionPath = path.join( this.userExtensionsPath, fileName );
 
-        if ( !fs.existsSync( extractedExtensionPath ))
+        if ( !fs.existsSync( extractedExtensionPath ) )
             fs.mkdirSync( extractedExtensionPath, { recursive: true } );
 
         const zip = new StreamZip.async({ file: zipFilePath });
@@ -44,9 +44,18 @@ export class BrowserExtensionManager {
 
         await zip.close();
 
-        await this.applyWorkarounds( extractedExtensionPath );
+        const newPath = await this.renameExtensionDirectory(
+            extractedExtensionPath, overwrite
+        );
 
-        return extractedExtensionPath;
+        if ( newPath === extractedExtensionPath ) {
+            fs.rmSync( extractedExtensionPath, { recursive: true, force: true } );
+            return '';
+        }
+
+        await this.applyWorkarounds( newPath );
+
+        return newPath;
     }
     
     uninstall( extensionPath: string ) {
@@ -116,6 +125,37 @@ export class BrowserExtensionManager {
         return manifest;
     }
 
+
+    async renameExtensionDirectory( extensionPath: string, overwrite = true ): Promise< string > {
+
+        const manifest = await this.handleManifestJson( extensionPath );
+
+        let author: string | undefined = undefined;
+
+        if ( typeof manifest.author === 'string' )
+            author = manifest.author;
+
+        else if ( manifest?.author?.email )
+            author = manifest.author.email;
+
+
+        const newDir = sanitize(`${author}.${manifest.name}`);
+
+        const newPath = path.join( path.dirname( extensionPath ), newDir );
+
+        const newDirAlreadyExists = fs.existsSync( newPath );
+        
+        if ( newDirAlreadyExists && !overwrite )
+            return extensionPath;
+
+        else if ( newDirAlreadyExists )
+            fs.rmSync( newPath, { recursive: true, force: true } );
+
+        fs.renameSync( extensionPath, newPath );
+
+        return newPath;
+    }
+
     async installBuiltinExtensions() {
 
         const files = fs.readdirSync( this.builtinExtensionsPath );
@@ -128,7 +168,7 @@ export class BrowserExtensionManager {
 
             try {
 
-                await this.installZip( zipFilePath );
+                await this.installZip( zipFilePath, false );
 
                 if ( !this.isDev )
                     fs.rmSync( zipFilePath );
