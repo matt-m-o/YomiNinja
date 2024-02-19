@@ -155,6 +155,7 @@
         }
       ],
       "target": [
+        "AppImage",
         "deb",
         "rpm",
         "pacman"
