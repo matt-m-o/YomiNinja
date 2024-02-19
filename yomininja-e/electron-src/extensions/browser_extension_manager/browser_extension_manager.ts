@@ -170,7 +170,7 @@ export class BrowserExtensionManager {
 
                 await this.installZip( zipFilePath, false );
 
-                if ( !this.isDev )
+                if ( !this.isDev && !this.isAppImage() )
                     fs.rmSync( zipFilePath );
 
             } catch (error) {
@@ -178,5 +178,9 @@ export class BrowserExtensionManager {
             }
 
         }
+    }
+
+    isAppImage(): boolean {
+        return Boolean( process.env.APPIMAGE );
     }
 }
