@@ -2,11 +2,17 @@ import { Alert, Backdrop, Box, CircularProgress, Container, Divider, FormControl
 import { SettingsContext } from "../../../context/settings.provider";
 import { useContext, useEffect, useState } from "react";
 import { OcrEngineSettingsU } from "../../../../electron-src/@core/infra/types/entity_instance.types";
+import OcrSettingsSlider from "./OcrSettingsSlider";
 
 
 export const SettingsOptionContainer = styled( Container )({
     marginTop: 25,
-    marginBottom: 25
+    marginBottom: 25,
+    '&:hover': {
+        '& .reset-parameter-btn': {
+            visibility: 'visible !important'
+        }
+    }
 });
 
 type CommonOcrSettingsProps = {
@@ -32,9 +38,17 @@ export default function CommonOcrSettings( props: CommonOcrSettingsProps ) {
     }, [ ocrEngineSettings ] )
 
 
+    function resetImageScalingFactor() {
+        updateActivePresetOcrEngine({
+            ...ocrEngineSettings,
+            image_scaling_factor: 1
+        });
+        setImageScalingFactor( 1 );
+    }
+
     return ( <>
         
-        <SettingsOptionContainer sx={{ mt: 1 }}>
+        <SettingsOptionContainer sx={{ mt: 1, mb: 2 }}>
 
             <FormControlLabel label='Invert image colors'
                 control={
@@ -51,43 +65,32 @@ export default function CommonOcrSettings( props: CommonOcrSettingsProps ) {
                 }
             />
 
-            <Typography gutterBottom component="div" margin={2} mb={1} ml={0} fontSize={'1.1rem'}>
-                Image scaling factor
-            </Typography>
+        </SettingsOptionContainer>
 
-            <Stack spacing={2} direction="row" sx={{ mb: 1, pl: 2, pr: 0 }} alignItems="center">
-
-                <Typography gutterBottom component="div" margin={2} fontSize={'0.95rem'}>
-                    Speed
-                </Typography>
-
-                <Slider
-                    marks
-                    min={0.1}
-                    max={2}
-                    step={0.05}
-                    valueLabelDisplay="auto"
-                    value={ imageScalingFactor }
-                    style={{ marginRight: 8 }}
-                    onChange={ ( event, newValue ) => {
-                        if (typeof newValue === 'number') {
-                            setImageScalingFactor( newValue );
-                        }
-                    }}
-                    onChangeCommitted={ () => {
-                        console.log({ imageScalingFactor });
-                        updateActivePresetOcrEngine({
-                            ...ocrEngineSettings,
-                            image_scaling_factor: imageScalingFactor
-                        });
-                    }}
-                />
-
-                <Typography gutterBottom component="div" margin={2} fontSize={'0.95rem'}>
-                    Accuracy
-                </Typography>
-
-            </Stack>
+        <SettingsOptionContainer sx={{ mt: 0 }}>
+            <OcrSettingsSlider
+                label="Image scaling factor"
+                leftLabel="Speed"
+                rightLabel="Accuracy"
+                marks
+                min={0.1}
+                max={2}
+                step={0.05}
+                value={ imageScalingFactor }
+                onChange={ ( event, newValue ) => {
+                    if (typeof newValue === 'number') {
+                        setImageScalingFactor( newValue );
+                    }
+                }}
+                onChangeCommitted={ () => {
+                    // console.log({ imageScalingFactor });
+                    updateActivePresetOcrEngine({
+                        ...ocrEngineSettings,
+                        image_scaling_factor: imageScalingFactor
+                    });
+                }}
+                reset={ resetImageScalingFactor }
+            />
         
         </SettingsOptionContainer>
 

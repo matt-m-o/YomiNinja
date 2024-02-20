@@ -10,15 +10,21 @@ import OcrSettingsSlider from "./OcrSettingsSlider";
 import { PpOcrEngineSettings } from "../../../../electron-src/@core/infra/ocr/ppocr.adapter/ppocr_settings";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import AccordionSummary from '@mui/material/AccordionSummary';
+import ResetParameterButton from "./common/ResetParameterButton";
 
 
-const OptionsGroupCard = styled(Card)({
-    display: 'flex',
-    flexDirection: 'column',
-    backgroundColor: '#202124',
-    borderRadius: '8px',
-    marginTop: '35px'
-});
+const defaultSettings = {
+    image_scaling_factor: 1,
+    max_image_width: 1600,
+    invert_colors: false,
+    inference_runtime: 'Open_VINO',
+    det_db_thresh: 0.3,
+    det_db_box_thresh: 0.6,
+    det_db_unclip_ratio: 1.6,
+    det_db_score_mode: "slow",
+    use_dilation: false,
+    cls_thresh: 0.9,
+}
 
 
 type PpOcrSettingsProps = {
@@ -33,14 +39,14 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
     const { updateActivePresetOcrEngine, triggerOcrEngineRestart } = useContext( SettingsContext );    
 
     
-    const [ maxImageWidth, setMaxImageWidth ] = useState( ocrEngineSettings?.max_image_width || 1920 );
-    const [ cpuThreads, setCpuThreads ] = useState( ocrEngineSettings?.cpu_threads || 2 );
-    const [ inferenceRuntime, setInferenceRuntime ] = useState( ocrEngineSettings?.inference_runtime || '' );
-    const [ detDbThresh, setDetDbThresh ] = useState( ocrEngineSettings?.det_db_thresh || 0.3 );
-    const [ detDbBoxThresh, setDetDbBoxThresh ] = useState( ocrEngineSettings?.det_db_box_thresh || 0.6 );
-    const [ detDbUnclipRatio, setDetDbUnclipRatio ] = useState( ocrEngineSettings?.det_db_unclip_ratio || 1.5 );
-    const [ detDbScoreMode, setDetDbScoreMode ] = useState( ocrEngineSettings?.det_db_score_mode || 'slow' );
-    const [ useDilation, setUseDilation ] = useState( ocrEngineSettings?.use_dilation || false );
+    const [ maxImageWidth, setMaxImageWidth ] = useState( ocrEngineSettings?.max_image_width || defaultSettings.max_image_width );
+    const [ cpuThreads, setCpuThreads ] = useState( ocrEngineSettings?.cpu_threads || navigator.hardwareConcurrency );
+    const [ inferenceRuntime, setInferenceRuntime ] = useState( ocrEngineSettings?.inference_runtime || defaultSettings.inference_runtime );
+    const [ detDbThresh, setDetDbThresh ] = useState( ocrEngineSettings?.det_db_thresh || defaultSettings.det_db_thresh );
+    const [ detDbBoxThresh, setDetDbBoxThresh ] = useState( ocrEngineSettings?.det_db_box_thresh || defaultSettings.det_db_box_thresh );
+    const [ detDbUnclipRatio, setDetDbUnclipRatio ] = useState( ocrEngineSettings?.det_db_unclip_ratio || defaultSettings.det_db_unclip_ratio );
+    const [ detDbScoreMode, setDetDbScoreMode ] = useState( ocrEngineSettings?.det_db_score_mode || defaultSettings.det_db_score_mode );
+    const [ useDilation, setUseDilation ] = useState( ocrEngineSettings?.use_dilation || defaultSettings.use_dilation );
 
     useEffect( () => {
 
@@ -51,6 +57,54 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
         setInferenceRuntime( ocrEngineSettings.inference_runtime );
 
     }, [ ocrEngineSettings ] )
+
+
+    function handleEngineSettingsUpdate( update: Partial< PpOcrEngineSettings > ) {
+        updateActivePresetOcrEngine({
+            ...ocrEngineSettings,
+            ...update
+        });
+    }
+
+    function resetDetDbUnclipRatio() {
+        const { det_db_unclip_ratio } = defaultSettings;
+        handleEngineSettingsUpdate({
+            det_db_unclip_ratio
+        });
+        setDetDbUnclipRatio( det_db_unclip_ratio );
+    }
+
+    function resetMaxImageWidth() {
+        const { max_image_width } = defaultSettings;
+        handleEngineSettingsUpdate({
+            max_image_width
+        });
+        setMaxImageWidth( max_image_width );
+    }
+
+    function resetCpuThreads() {
+        const cpu_threads = navigator.hardwareConcurrency;
+        handleEngineSettingsUpdate({
+            cpu_threads
+        });
+        setCpuThreads( cpu_threads );
+    }
+
+    function resetDetDbThresh() {
+        const { det_db_thresh } = defaultSettings;
+        handleEngineSettingsUpdate({
+            det_db_thresh
+        });
+        setDetDbThresh( det_db_thresh );
+    }
+
+    function resetDetDbBoxThresh() {
+        const { det_db_box_thresh } = defaultSettings;
+        handleEngineSettingsUpdate({
+            det_db_box_thresh
+        });
+        setDetDbBoxThresh( det_db_box_thresh );
+    }
 
     const requiresRestartIcon = (
         <Box title='Requires restarting the OCR Engine' 
@@ -63,6 +117,8 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
             }}/>
         </Box>
     );
+
+
 
     return (
         <Box sx={{ flexGrow: 1, margin: 1, }}>
@@ -90,11 +146,11 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
                         }
                     }}
                     onChangeCommitted={ () => {
-                        updateActivePresetOcrEngine({
-                            ...ocrEngineSettings,
+                        handleEngineSettingsUpdate({
                             max_image_width: maxImageWidth
                         });
                     }}
+                    reset={ resetMaxImageWidth }
                 />
             </SettingsOptionContainer>
 
@@ -111,11 +167,11 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
                         }
                     }}
                     onChangeCommitted={ () => {
-                        updateActivePresetOcrEngine({
-                            ...ocrEngineSettings,
+                        handleEngineSettingsUpdate({
                             det_db_unclip_ratio: detDbUnclipRatio
                         });
                     }}
+                    reset={ resetDetDbUnclipRatio }
                 />
             </SettingsOptionContainer>
 
@@ -128,8 +184,7 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
                             checked={ useDilation }
                             onChange={ ( event ) => {
                                 setUseDilation( event.target.checked );
-                                updateActivePresetOcrEngine({
-                                    ...ocrEngineSettings,
+                                handleEngineSettingsUpdate({
                                     use_dilation: event.target.checked
                                 });
                             }}
@@ -157,8 +212,7 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
                             const value = event.target.value as 'slow' | 'fast';
                             if (typeof value === 'string') {
                                 setDetDbScoreMode( value );
-                                updateActivePresetOcrEngine({
-                                    ...ocrEngineSettings,
+                                handleEngineSettingsUpdate({
                                     det_db_score_mode: value
                                 });
                             }
@@ -189,11 +243,11 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
                         }
                     }}
                     onChangeCommitted={ () => {
-                        updateActivePresetOcrEngine({
-                            ...ocrEngineSettings,
+                        handleEngineSettingsUpdate({
                             cpu_threads: cpuThreads
                         });
                     }}
+                    reset={ resetCpuThreads }
                 />
             </SettingsOptionContainer>
 
@@ -209,8 +263,7 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
                             if (typeof value === 'string') {
                                 setInferenceRuntime( value );
                                 console.log(value)
-                                updateActivePresetOcrEngine({
-                                    ...ocrEngineSettings,
+                                handleEngineSettingsUpdate({
                                     inference_runtime: value
                                 });
                             }
@@ -251,11 +304,11 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
                                     }
                                 }}
                                 onChangeCommitted={ () => {
-                                    updateActivePresetOcrEngine({
-                                        ...ocrEngineSettings,
+                                    handleEngineSettingsUpdate({
                                         det_db_thresh: detDbThresh
                                     });
                                 }}
+                                reset={ resetDetDbThresh }
                             />
                         </SettingsOptionContainer>
                 
@@ -274,11 +327,11 @@ export default function PpOcrSettings( props: PpOcrSettingsProps ) {
                                     }
                                 }}
                                 onChangeCommitted={ () => {
-                                    updateActivePresetOcrEngine({
-                                        ...ocrEngineSettings,
+                                    handleEngineSettingsUpdate({
                                         det_db_box_thresh: detDbBoxThresh
                                     });
                                 }}
+                                reset={ resetDetDbBoxThresh }
                             />
                         </SettingsOptionContainer>
 

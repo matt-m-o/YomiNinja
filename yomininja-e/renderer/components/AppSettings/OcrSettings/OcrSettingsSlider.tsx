@@ -1,4 +1,5 @@
 import { Box, Slider, Stack, Typography } from "@mui/material";
+import ResetParameterButton from "./common/ResetParameterButton";
 
 type OcrSettingsSliderProps = {
     label: string;
@@ -13,6 +14,7 @@ type OcrSettingsSliderProps = {
     step: number;
     onChange: ( ...value: any ) => void;
     onChangeCommitted: () => void;
+    reset?: () => void;
 }
 
 export default function OcrSettingsSlider( props: OcrSettingsSliderProps ) {
@@ -28,6 +30,7 @@ export default function OcrSettingsSlider( props: OcrSettingsSliderProps ) {
         min,
         max,
         step,
+        reset: setDefault
     } = props;
 
     return <>
@@ -36,6 +39,11 @@ export default function OcrSettingsSlider( props: OcrSettingsSliderProps ) {
                 {label}
             </Typography>
             {icon}
+            <ResetParameterButton
+                onClick={ () => {
+                    if ( setDefault ) setDefault();
+                }}
+            />
         </Box>
 
         <Stack spacing={2} direction="row" sx={{ mb: 1, pl: 2, pr: 0 }} alignItems="center">
@@ -55,7 +63,7 @@ export default function OcrSettingsSlider( props: OcrSettingsSliderProps ) {
             <Typography gutterBottom component="div" margin={2} fontSize={'0.95rem'}>
                 {rightLabel}
             </Typography>
-
+        
         </Stack>
     </>
 }
