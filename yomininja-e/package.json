@@ -129,7 +129,8 @@
     "forceCodeSigning": true,
     "nsis": {
       "oneClick": false,
-      "runAfterFinish": true
+      "runAfterFinish": true,
+      "allowToChangeInstallationDirectory": true
     },
     "win": {
       "publisherName": "Matt M.",
