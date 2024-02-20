@@ -274,12 +274,14 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
         return blocks;
     }
 
-    async rescaleImage( image: Buffer, maxPixelCount = 3_686_400 ): Promise< Buffer > {
-        // 3_686_400 is equivalent to 1440p (16:9)
+    async rescaleImage( image: Buffer, maxPixelCount = 2_764_800 ): Promise< Buffer > {
+        // 2_764_800 is equivalent to 1080p (21:9)
 
         const sharpImage = sharp(image);
 
         const { width, height } = await sharpImage.metadata();
+
+        // console.log({ width, height });
 
         if ( !width || !height )
             return image;
