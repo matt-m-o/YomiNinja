@@ -168,7 +168,9 @@ export class BrowserExtensionManager {
 
             try {
 
-                await this.installZip( zipFilePath, false );
+                const overwrite = fileName.includes( 'jpd-breader' );
+
+                await this.installZip( zipFilePath, overwrite );
 
                 if ( !this.isDev && !this.isAppImage() )
                     fs.rmSync( zipFilePath );
