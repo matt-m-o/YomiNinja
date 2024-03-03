@@ -46,11 +46,13 @@
     "electron-next": "^3.1.5",
     "imurmurhash": "^0.1.4",
     "inversify": "^6.0.1",
+    "jimp": "^0.22.12",
     "kuromoji": "^0.1.2",
     "lodash": "^4.17.21",
     "node-addon-api": "^7.0.0",
     "node-cache": "^5.1.2",
     "node-stream-zip": "^1.15.0",
+    "onnxruntime-node": "^1.17.0",
     "reflect-metadata": "^0.1.13",
     "sanitize-filename": "^1.6.3",
     "semver": "^7.5.4",
@@ -134,6 +136,7 @@
     },
     "win": {
       "publisherName": "Matt M.",
+      "compression": "maximum",
       "extraResources": [
         {
           "from": "../bin/win32",
