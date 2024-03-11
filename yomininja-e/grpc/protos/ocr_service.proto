@@ -5,6 +5,7 @@ package ocr_service;
 service OCRService {
   rpc RecognizeBytes( RecognizeBytesRequest ) returns ( RecognizeDefaultResponse ) {}
   rpc RecognizeBase64( RecognizeBase64Request ) returns ( RecognizeDefaultResponse ) {}
+  rpc Detect( DetectRequest ) returns ( DetectResponse ) {}
   rpc GetSupportedLanguages( GetSupportedLanguagesRequest ) returns ( GetSupportedLanguagesResponse ) {}
   rpc UpdatePpOcrSettings( UpdatePpOcrSettingsRequest ) returns ( UpdateSettingsResponse ) {}
 }
@@ -13,13 +14,16 @@ message RecognizeBytesRequest {
   string id = 1;
   string language_code = 2;
   bytes image_bytes = 3;
+  repeated Box boxes = 4;
+  string ocr_engine = 5; // MangaOCR | PaddleOCR
 }
 message RecognizeBase64Request {
   string id = 1;
   string language_code = 2;
   string base64_image = 3;
+  repeated Box boxes = 4;
+  string ocr_engine = 5; // MangaOCR | PaddleOCR
 }
-
 
 message Vertex {
   int32 x = 1;
@@ -49,12 +53,29 @@ message RecognizeDefaultResponse {
 }
 
 
-message GetSupportedLanguagesRequest {
-}
+message GetSupportedLanguagesRequest {}
 message GetSupportedLanguagesResponse {
   repeated string language_codes = 1;
 }
 
+
+message DetectRequest {
+  string id = 1;
+  string language_code = 2;
+  bool crop_image = 3;
+  string image_bytes = 4;
+  string ocr_engine = 5; // MangaOCR | PaddleOCR
+}
+
+message DetectResult {
+  bytes image_bytes = 1;
+  Box box = 2;
+}
+message DetectResponse {
+  string id = 1;
+  repeated DetectResult results = 2;
+  ContextResolution context_resolution = 3;
+}
 
 message UpdatePpOcrSettingsRequest {
   int32 max_image_width = 1; // ppocr "max_side_length"
