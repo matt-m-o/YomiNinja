@@ -42,7 +42,8 @@ export default function HomeContent() {
     const ocrEnginesDict = {
         'PpOcrAdapter': 'PaddleOCR',
         'CloudVisionOcrAdapter': 'Google Cloud Vision',
-        'GoogleLensOcrAdapter': 'Google Lens'
+        'GoogleLensOcrAdapter': 'Google Lens',
+        'MangaOcrAdapter': 'MangaOCR'
     };
     
     const ocrEngineOptions: string[] = Object.values( ocrEnginesDict );

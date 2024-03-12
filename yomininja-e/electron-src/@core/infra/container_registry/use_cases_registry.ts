@@ -35,6 +35,7 @@ container_registry.bind( Registry.RecognizeImageUseCaseInstance )
                 context.container.get( Registry.PpOcrAdapter ),
                 context.container.get( Registry.CloudVisionOcrAdapter ),
                 context.container.get( Registry.GoogleLensOcrAdapter ),
+                context.container.get( Registry.MangaOcrAdapter ),
             ],
             context.container.get( Registry.SharpImageProcessingAdapter ),
             context.container.get( Registry.ProfileTypeOrmRepository ),
@@ -49,6 +50,7 @@ container_registry.bind( Registry.GetSupportedLanguagesUseCaseInstance )
                 context.container.get( Registry.PpOcrAdapter ),
                 context.container.get( Registry.CloudVisionOcrAdapter ),
                 context.container.get( Registry.GoogleLensOcrAdapter ),
+                context.container.get( Registry.MangaOcrAdapter ),
             ],
             context.container.get( Registry.LanguageTypeOrmRepository ),
         );
@@ -72,6 +74,7 @@ container_registry.bind( Registry.UpdateSettingsPresetUseCaseInstance )
                 context.container.get( Registry.PpOcrAdapter ),
                 context.container.get( Registry.CloudVisionOcrAdapter ),
                 context.container.get( Registry.GoogleLensOcrAdapter ),
+                context.container.get( Registry.MangaOcrAdapter ),
             ],
         );
     })
@@ -195,6 +198,7 @@ container_registry.bind( Registry.CreateSettingsPresetUseCaseInstance )
                 context.container.get( Registry.PpOcrAdapter ),
                 context.container.get( Registry.CloudVisionOcrAdapter ),
                 context.container.get( Registry.GoogleLensOcrAdapter ),
+                context.container.get( Registry.MangaOcrAdapter ),
             ]
         })
     });
