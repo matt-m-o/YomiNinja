@@ -1,8 +1,9 @@
 import { InferenceSession, Tensor } from "onnxruntime-node";
-import { MangaOcrService, MangaOcrCropAndRecognize_Input, MangaOcrRecognize_Input } from "../manga_ocr_service";
+import { MangaOcrService, MangaOcrRecognize_Input } from "../manga_ocr_service";
 import { BeamSearch } from "./beam_search";
 import { readFileSync } from "fs";
 import * as Jimp from 'jimp';
+import { OcrItemBox, OcrResult } from "../../../../domain/ocr_result/ocr_result";
 
 
 export class MangaOcrOnnxService implements MangaOcrService {
@@ -42,22 +43,47 @@ export class MangaOcrOnnxService implements MangaOcrService {
         });
     }
 
-    async recognize( input: MangaOcrRecognize_Input ): Promise< string[][] > {
+    async recognize( input: MangaOcrRecognize_Input ): Promise< OcrResult > {
 
-        const results: string[][] = [];
+        const jimpImage = await Jimp.read( input.image );
 
-        for ( const image of input.textImages ) {
-            const result = await this._recognize( image );
-            results.push( result );
+        const result = OcrResult.create({
+            id: Number(input.id),
+            context_resolution: {
+                height: (await jimpImage).getHeight(),
+                width: (await jimpImage).getWidth(),
+            },
+        });
+
+        // TODO: Detect text
+        const boxes: OcrItemBox[] = input.boxes || [];
+
+        for ( const box of boxes ) {
+
+            const textImage = await this.crop( jimpImage, box );
+
+            const hypotheses = await this._recognize( textImage );
+            result.addResultItem({
+                box,
+                classification_label: 1,
+                classification_score: 1,
+                recognition_score: 1,
+                text: [
+                    {
+                        content: hypotheses?.[0] || ''
+                    }
+                ]
+            });
         }
 
-        return results;
+        return result;
     }
 
-    async cropAndRecognize( input: MangaOcrCropAndRecognize_Input ): Promise< string[][] > {
-
-        return [];
+    private async crop( image: Jimp, box: OcrItemBox ): Promise<Buffer> {
+        // TODO: Crop
+        return image.bitmap.data;
     }
+
     
     private async _recognize( image: Buffer, numBeams?: number) {
         
