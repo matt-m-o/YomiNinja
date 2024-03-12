@@ -4,7 +4,7 @@ import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_resul
 export type MangaOcrRecognize_Input = {
     id: string;
     image: Buffer;
-    boxes: OcrItemBox[];
+    boxes?: OcrItemBox[];
 };
 
 
