@@ -63,7 +63,7 @@ message DetectRequest {
   string id = 1;
   string language_code = 2;
   bool crop_image = 3;
-  string image_bytes = 4;
+  bytes image_bytes = 4;
   string ocr_engine = 5; // MangaOCR | PaddleOCR
 }
 
