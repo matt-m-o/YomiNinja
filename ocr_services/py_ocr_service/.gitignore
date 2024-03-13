@@ -1,0 +1,16 @@
+models/*
+*.cpython*
+*.PNG
+*.png
+**.pyc
+py_ocr_service.venv/*
+src/main.build/*
+src/output/*
+build/
+dist/
+upx/
+data/
+src/protos/py/
+src/ocr_service_pb2.pyi
+src/ocr_service_pb2.py
+src/ocr_service_pb2_grpc.py
