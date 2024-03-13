@@ -28,7 +28,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "grpc-types": "proto-loader-gen-types --longs=String --enums=String --defaults --keep-case --oneofs --grpcLib=@grpc/grpc-js --outDir=./grpc/rpc ./grpc/protos/ocr_service.proto",
+    "grpc-types": "proto-loader-gen-types --longs=String --enums=String --defaults --keep-case --oneofs --grpcLib=@grpc/grpc-js --outDir=./grpc/rpc ../ocr_services/protos/ocr_service.proto",
     "gyp-build": "node-gyp clean && node-gyp configure && node-gyp build",
     "generate-licenses": "npx generate-license-file --input package.json --output third-party-licenses.txt --overwrite",
     "types-workaround": "node ./types/types_workaround.js"
