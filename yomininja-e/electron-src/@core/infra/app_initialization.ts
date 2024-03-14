@@ -16,6 +16,7 @@ import semver from 'semver';
 import { cloudVisionOcrAdapterName, getCloudVisionDefaultSettings } from './ocr/cloud_vision_ocr.adapter/cloud_vision_ocr_settings';
 import { getGoogleLensDefaultSettings } from './ocr/google_lens_ocr.adapter/google_lens_ocr_settings';
 import { pyOcrService } from './ocr/py_ocr_service/_temp_index';
+import { paddleOcrService } from './ocr/ocr_services/paddle_ocr_service/_temp_index';
 
 
 export let activeProfile: Profile;
@@ -64,9 +65,8 @@ export async function initializeApp() {
 
         await populateLanguagesRepository( languageRepo );
 
-        const ppocrAdapter = get_PpOcrAdapter();
-        await new Promise( resolve => ppocrAdapter.startProcess( resolve ) );
-        await ppocrAdapter.ppocrServiceProcessStatusCheck();
+        await new Promise( resolve => paddleOcrService.startProcess( resolve ) );
+        await paddleOcrService.processStatusCheck();
         pyOcrService.initialize();
 
         // console.log('Initializing settings...');
@@ -115,7 +115,7 @@ export async function initializeApp() {
                 }
             });
         }
-        await ppocrAdapter.ppocrServiceProcessStatusCheck();
+        await paddleOcrService.processStatusCheck();
 
         
         // console.log('Initializing languages...');

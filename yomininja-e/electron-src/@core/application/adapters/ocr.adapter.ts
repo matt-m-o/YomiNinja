@@ -22,7 +22,6 @@ export type UpdateOcrAdapterSettingsOutput< TSettings extends OcrEngineSettings 
 export interface OcrAdapter< TSettings extends OcrEngineSettings = OcrEngineSettings > {     
     name: string;
     status: OcrAdapterStatus;
-    initialize: ( input: any ) => void;
     recognize: ( input: OcrRecognitionInput ) => Promise< OcrResultScalable | null >;
     getSupportedLanguages: () => Promise< string[] >; // Get this by calling the grpc stub or reading it's config files
     updateSettings: ( settingsUpdate: TSettings, oldSettings?: TSettings ) => Promise< UpdateOcrAdapterSettingsOutput< TSettings > >;
