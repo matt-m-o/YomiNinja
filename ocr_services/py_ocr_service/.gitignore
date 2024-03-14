@@ -14,3 +14,5 @@ src/protos/py/
 src/ocr_service_pb2.pyi
 src/ocr_service_pb2.py
 src/ocr_service_pb2_grpc.py
+output/
+py_ocr_service/
