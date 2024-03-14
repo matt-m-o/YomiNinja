@@ -17,8 +17,6 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
 
     initialize() {
 
-        pyOcrService.initialize();
-
         this.status = OcrAdapterStatus.Enabled;
     }
 

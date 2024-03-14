@@ -67,7 +67,9 @@ export async function initializeApp() {
 
         await new Promise( resolve => paddleOcrService.startProcess( resolve ) );
         await paddleOcrService.processStatusCheck();
-        pyOcrService.initialize();
+
+        await new Promise( resolve => pyOcrService.startProcess( resolve ) );
+        await pyOcrService.processStatusCheck();
 
         // console.log('Initializing settings...');
         let defaultSettingsPreset = await settingsPresetRepo.findOne({ name: SettingsPreset.default_name });
@@ -116,6 +118,7 @@ export async function initializeApp() {
             });
         }
         await paddleOcrService.processStatusCheck();
+        await pyOcrService.processStatusCheck();
 
         
         // console.log('Initializing languages...');
