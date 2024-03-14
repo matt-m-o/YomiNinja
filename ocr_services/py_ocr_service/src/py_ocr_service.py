@@ -9,7 +9,8 @@ import base64
 from io import BytesIO
 from PIL import Image
 import numpy as np
-from typing import List, Dict
+from typing import List
+
 
 class Service( service_grpc.OCRServiceServicer ):
 
@@ -27,7 +28,7 @@ class Service( service_grpc.OCRServiceServicer ):
                 results = self.manga_ocr_service.recognize( np.array( image ), request.boxes )
             case _:
                 results = self.manga_ocr_service.recognize( np.array( image ), request.boxes )
-                print('Invalid OCR engine name')
+                print(f'{request.ocr_engine} is not supported')
 
 
         return service_pb.RecognizeDefaultResponse(

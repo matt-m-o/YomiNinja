@@ -23,7 +23,7 @@ pyz = PYZ(a.pure)
 exe = EXE(
     pyz,
     a.scripts,
-    [],
+    [('u', None, 'OPTION')],
     exclude_binaries=True,
     name='py_ocr_service',
     debug=False,
