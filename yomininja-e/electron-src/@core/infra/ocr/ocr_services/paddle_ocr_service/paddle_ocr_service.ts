@@ -1,4 +1,4 @@
-import { OcrItem, OcrResult } from "../../../../domain/ocr_result/ocr_result";
+import { OcrItem, OcrItemBox, OcrResult } from "../../../../domain/ocr_result/ocr_result";
 import { OcrAdapterStatus, UpdateOcrAdapterSettingsOutput } from "../../../../application/adapters/ocr.adapter";
 import * as grpc from '@grpc/grpc-js';
 import { OCRServiceClient } from "../../../../../../grpc/rpc/ocr_service/OCRService";
@@ -16,6 +16,8 @@ import { OcrEngineSettingsU } from "../../../types/entity_instance.types";
 import fs from 'fs';
 import { PpOcrEngineSettings } from "../../ppocr.adapter/ppocr_settings";
 import { UpdateSettingsResponse__Output } from "../../../../../../grpc/rpc/ocr_service/UpdateSettingsResponse";
+import { DetectRequest } from "../../../../../../grpc/rpc/ocr_service/DetectRequest";
+import { DetectResponse__Output } from "../../../../../../grpc/rpc/ocr_service/DetectResponse";
 
 export class PaddleOcrService {
     
@@ -94,6 +96,31 @@ export class PaddleOcrService {
 
 
         return result
+    }
+
+    async detect( image: Buffer, id: string ): Promise< OcrItemBox[] > {
+        const input: DetectRequest = {
+            id: id,
+            crop_image: false,
+            image_bytes: image,
+            language_code: 'ja'
+        }
+
+        const clientResponse = await new Promise< DetectResponse__Output | undefined >(
+            (resolve, reject) => this.ocrServiceClient?.Detect( input, ( error, response ) => {
+                if (error) {
+                    return reject(error)
+                }
+                resolve(response);
+            })
+        );
+            
+        if ( !clientResponse ) return [];
+
+        const results: OcrItemBox[] = clientResponse.results.map( item => item.box )
+            .filter( item => item !== null ) as OcrItemBox[];
+
+        return results;
     }
 
     async getSupportedLanguages(): Promise< string[] > {
