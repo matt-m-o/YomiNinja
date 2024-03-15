@@ -1,9 +1,13 @@
+import os
+import torch
 from manga_ocr import MangaOcr
 import cv2
 import numpy as np
 from typing import List, Dict
 from ocr_service_pb2 import Result, Box 
 from PIL import Image
+
+torch.set_num_threads( os.cpu_count() )
 
 class MangaOcrService:
 
@@ -88,3 +92,6 @@ class MangaOcrService:
     def detect( self, image: np.ndarray ) -> List[ Box ]:
         # TODO
         return []
+    
+    def update_settings( self, cpu_threads ):
+        torch.set_num_threads( cpu_threads or os.cpu_count() )
