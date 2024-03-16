@@ -14,7 +14,7 @@ import { ppOcrAdapterName } from './ocr/ppocr.adapter/ppocr_settings';
 import { getDefaultSettingsPresetProps } from '../domain/settings_preset/default_settings_preset_props';
 import semver from 'semver';
 import { cloudVisionOcrAdapterName, getCloudVisionDefaultSettings } from './ocr/cloud_vision_ocr.adapter/cloud_vision_ocr_settings';
-import { getGoogleLensDefaultSettings } from './ocr/google_lens_ocr.adapter/google_lens_ocr_settings';
+import { getGoogleLensDefaultSettings, googleLensOcrAdapterName } from './ocr/google_lens_ocr.adapter/google_lens_ocr_settings';
 import { pyOcrService } from './ocr/py_ocr_service/_temp_index';
 import { paddleOcrService } from './ocr/ocr_services/paddle_ocr_service/_temp_index';
 
@@ -142,7 +142,7 @@ export async function initializeApp() {
             defaultProfile = Profile.create({
                 active_ocr_language: defaultLanguage,
                 active_settings_preset: defaultSettingsPreset,
-                selected_ocr_adapter_name: ppOcrAdapterName
+                selected_ocr_adapter_name: isMacOS ? googleLensOcrAdapterName : ppOcrAdapterName
             });
             await profileRepo.insert(defaultProfile);
         }
