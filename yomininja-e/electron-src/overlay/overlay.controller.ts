@@ -4,14 +4,15 @@ import { join } from "path";
 import isDev from 'electron-is-dev';
 import { format } from "url";
 import { PAGES_DIR } from "../util/directories.util";
-import { WindowManager } from "../../gyp_modules/window_management/window_manager";
 import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 import { uIOhook } from "uiohook-napi";
 import { windowManager } from "../@core/infra/app_initialization";
 import { getBrowserWindowHandle } from "../util/browserWindow.util";
-import os from 'os';
 import { matchUiohookMouseEventButton } from "../common/mouse_helpers";
 import { ClickThroughMode, ShowWindowOnCopy } from "../@core/domain/settings_preset/settings_preset_overlay";
+import { screen } from 'electron';
+
+const isMacOS = process.platform === 'darwin';
 
 export class OverlayController {
 
@@ -68,11 +69,17 @@ export class OverlayController {
 
     private createOverlayWindow() {
 
+        const useFullscreenMode = !isMacOS;
+
         this.overlayWindow = new BrowserWindow({            
-            fullscreen: true,
+            fullscreen: useFullscreenMode,
             frame: false,
             transparent: true,
             autoHideMenuBar: true,
+            skipTaskbar: isMacOS,
+            fullscreenable: true,
+            resizable: true,
+            hasShadow: false,
             webPreferences: {
                 nodeIntegration: false, // false
                 contextIsolation: false,
@@ -117,6 +124,14 @@ export class OverlayController {
         }
         
         this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop && !showDevTools, "normal" ); // normal, pop-up-menu och screen-saver
+        if ( !useFullscreenMode ) {
+            this.overlayWindow.setBounds(
+                screen.getPrimaryDisplay().bounds
+            );
+            this.overlayWindow.setVisibleOnAllWorkspaces(
+                true, { visibleOnFullScreen: true }
+            );
+        }
 
         // "True" Prevents black image when using youtube on some browsers (e.g. Brave)
         this.overlayWindow.setIgnoreMouseEvents( this.clickThroughMode !== 'disabled', { // !showDevTools

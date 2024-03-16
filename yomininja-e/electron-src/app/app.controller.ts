@@ -22,6 +22,7 @@ import { dictionariesController } from "../dictionaries/dictionaries.index";
 import { ocrTemplatesController } from "../ocr_templates/ocr_templates.index";
 import { htmlMouseButtonToUiohook, matchUiohookMouseEventButton } from "../common/mouse_helpers";
 import { debounce } from "lodash";
+const isMacOS = process.platform === 'darwin';
 
 let startupTimer: NodeJS.Timeout;
 
@@ -335,17 +336,33 @@ export class AppController {
     }
 
     setOverlayBounds( entireScreenMode: 'fullscreen' | 'maximized' = 'fullscreen' ) {
-        // console.time("setOverlayBounds");        
+        // console.time("setOverlayBounds");
+
+        const isFullscreen = entireScreenMode === 'fullscreen';
         
-        if ( this.captureSourceDisplay ) {            
+        if ( this.captureSourceDisplay ) {
+
+            if ( isMacOS ) {
+                this.overlayWindow.setVisibleOnAllWorkspaces(
+                    true, { visibleOnFullScreen: true }
+                );
+            }
             
             this.overlayWindow.setBounds({                
                 ...this.captureSourceDisplay?.workArea,
             });
-            
-            if ( entireScreenMode === 'fullscreen' )
-                this.overlayWindow.setFullScreen( entireScreenMode === 'fullscreen' );
 
+            if ( isFullscreen ) {
+                if ( !isMacOS ) {
+                    this.overlayWindow.setFullScreen( true );
+                }
+                else {
+                    this.overlayWindow.setBounds(
+                        screen.getPrimaryDisplay().bounds
+                    );
+                }
+            }
+            
             if ( entireScreenMode === 'maximized' )
                 this.overlayWindow.maximize();
         }
@@ -468,6 +485,12 @@ export class AppController {
 
         if ( !image ) return;
 
+        // Setting overlay bounds
+        let isFullScreenImage = true;
+        if ( image && runFullScreenImageCheck)
+            isFullScreenImage = await this.isFullScreenImage(image);
+        this.setOverlayBounds( isFullScreenImage ? 'fullscreen' :  'maximized' );
+
         if ( this.isEditingOcrTemplate ) {
             this.mainWindow.webContents.send(
                 'app:capture_source_image',
@@ -487,14 +510,9 @@ export class AppController {
         }
 
         this.overlayWindow?.webContents.send( 'ocr:processing_complete' );
-
-        let isFullScreenImage = true;
-
-        if ( image && runFullScreenImageCheck)
-            isFullScreenImage = await this.isFullScreenImage(image);
-
-        this.setOverlayBounds( isFullScreenImage ? 'fullscreen' :  'maximized' );
+        
         this.showOverlayWindow();
+        this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
     };
 }
 
