@@ -18,7 +18,7 @@ import { getGoogleLensDefaultSettings } from './ocr/google_lens_ocr.adapter/goog
 import { pyOcrService } from './ocr/py_ocr_service/_temp_index';
 import { paddleOcrService } from './ocr/ocr_services/paddle_ocr_service/_temp_index';
 
-
+const isMacOS = process.platform === 'darwin';
 export let activeProfile: Profile;
 export let windowManager: WindowManager;
 
@@ -65,11 +65,13 @@ export async function initializeApp() {
 
         await populateLanguagesRepository( languageRepo );
 
-        await new Promise( resolve => paddleOcrService.startProcess( resolve ) );
-        await paddleOcrService.processStatusCheck();
-
-        await new Promise( resolve => pyOcrService.startProcess( resolve ) );
-        await pyOcrService.processStatusCheck();
+        if ( !isMacOS ) {
+            await new Promise( resolve => paddleOcrService.startProcess( resolve ) );
+            await paddleOcrService.processStatusCheck();
+    
+            await new Promise( resolve => pyOcrService.startProcess( resolve ) );
+            await pyOcrService.processStatusCheck();
+        }
 
         // console.log('Initializing settings...');
         let defaultSettingsPreset = await settingsPresetRepo.findOne({ name: SettingsPreset.default_name });
@@ -117,8 +119,10 @@ export async function initializeApp() {
                 }
             });
         }
-        await paddleOcrService.processStatusCheck();
-        await pyOcrService.processStatusCheck();
+        if ( !isMacOS ) {
+            await paddleOcrService.processStatusCheck();
+            await pyOcrService.processStatusCheck();
+        }
 
         
         // console.log('Initializing languages...');

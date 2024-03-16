@@ -28,12 +28,9 @@ export class PaddleOcrService {
     private binRoot: string;
 
     constructor() {
-
         this.binRoot = isDev
             ? join( BIN_DIR, `/${os.platform()}/ppocr` )
             : join( process.resourcesPath, '/bin/ppocr/' );
-
-        this.handleSettingsPreset();
     }
 
     connect( serviceAddress?: string ) {
@@ -147,6 +144,8 @@ export class PaddleOcrService {
     }
 
     startProcess( onInitialized?: ( input?: any ) => void ) {
+
+        this.handleSettingsPreset();
 
         const platform = os.platform();
 

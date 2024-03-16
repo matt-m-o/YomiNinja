@@ -27,16 +27,23 @@ import { CreateBrowserExtensionUseCase } from "../../application/use_cases/brows
 import { UpdateBrowserExtensionUseCase } from "../../application/use_cases/browser_extension/update_browser_extension/update_browser_extension.use_case";
 import { GetBrowserExtensionsUseCase } from "../../application/use_cases/browser_extension/get_browser_extensions/get_browser_extensions.use_case";
 
+export let enabledOcrEngines: symbol[] = [
+    Registry.CloudVisionOcrAdapter,
+    Registry.GoogleLensOcrAdapter,
+];
+if ( process.platform !== 'darwin' ) {
+    enabledOcrEngines = [
+        ...enabledOcrEngines,
+        Registry.PpOcrAdapter,
+        Registry.MangaOcrAdapter
+    ];
+}
+
 
 container_registry.bind( Registry.RecognizeImageUseCaseInstance )
-    .toDynamicValue( (context) => {
+    .toDynamicValue( ( context ) => {
         return new RecognizeImageUseCase< OcrEngineSettingsU >(
-            [
-                context.container.get( Registry.PpOcrAdapter ),
-                context.container.get( Registry.CloudVisionOcrAdapter ),
-                context.container.get( Registry.GoogleLensOcrAdapter ),
-                context.container.get( Registry.MangaOcrAdapter ),
-            ],
+            enabledOcrEngines.map( symbol => context.container.get(symbol) ),
             context.container.get( Registry.SharpImageProcessingAdapter ),
             context.container.get( Registry.ProfileTypeOrmRepository ),
         );
@@ -46,12 +53,7 @@ container_registry.bind( Registry.RecognizeImageUseCaseInstance )
 container_registry.bind( Registry.GetSupportedLanguagesUseCaseInstance )
     .toDynamicValue( (context) => {
         return new GetSupportedLanguagesUseCase< OcrEngineSettingsU >(
-            [ 
-                context.container.get( Registry.PpOcrAdapter ),
-                context.container.get( Registry.CloudVisionOcrAdapter ),
-                context.container.get( Registry.GoogleLensOcrAdapter ),
-                context.container.get( Registry.MangaOcrAdapter ),
-            ],
+            enabledOcrEngines.map( symbol => context.container.get(symbol) ),
             context.container.get( Registry.LanguageTypeOrmRepository ),
         );
     })
@@ -70,12 +72,7 @@ container_registry.bind( Registry.UpdateSettingsPresetUseCaseInstance )
     .toDynamicValue( (context) => {
         return new UpdateSettingsPresetUseCase< OcrEngineSettingsU >(
             context.container.get( Registry.SettingsPresetTypeOrmRepository ),
-            [
-                context.container.get( Registry.PpOcrAdapter ),
-                context.container.get( Registry.CloudVisionOcrAdapter ),
-                context.container.get( Registry.GoogleLensOcrAdapter ),
-                context.container.get( Registry.MangaOcrAdapter ),
-            ],
+            enabledOcrEngines.map( symbol => context.container.get(symbol) ),
         );
     })
     .inSingletonScope();
@@ -194,12 +191,7 @@ container_registry.bind( Registry.CreateSettingsPresetUseCaseInstance )
             settingsPresetRepo: context.container.get(
                 Registry.SettingsPresetTypeOrmRepository
             ),
-            ocrAdapters: [
-                context.container.get( Registry.PpOcrAdapter ),
-                context.container.get( Registry.CloudVisionOcrAdapter ),
-                context.container.get( Registry.GoogleLensOcrAdapter ),
-                context.container.get( Registry.MangaOcrAdapter ),
-            ]
+            ocrAdapters: enabledOcrEngines.map( symbol => context.container.get(symbol) ),
         })
     });
 
