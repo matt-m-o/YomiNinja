@@ -71,7 +71,7 @@ export class OverlayController {
 
         const useFullscreenMode = !isMacOS;
 
-        this.overlayWindow = new BrowserWindow({            
+        const windowOptions: Electron.BrowserWindowConstructorOptions = {
             fullscreen: useFullscreenMode,
             frame: false,
             transparent: true,
@@ -88,7 +88,12 @@ export class OverlayController {
             titleBarStyle: 'hidden',
             titleBarOverlay: false,
             title: 'OCR Overlay - YomiNinja'
-        });
+        };
+
+        if ( isMacOS )
+            windowOptions.type = 'panel';
+
+        this.overlayWindow = new BrowserWindow( windowOptions );
 
         this.overlayWindow.on( 'close', ( e ) => {
             e.preventDefault();
@@ -129,7 +134,11 @@ export class OverlayController {
                 screen.getPrimaryDisplay().bounds
             );
             this.overlayWindow.setVisibleOnAllWorkspaces(
-                true, { visibleOnFullScreen: true }
+                true,
+                {
+                    visibleOnFullScreen: true,
+                    skipTransformProcessType: true
+                }
             );
         }
 
@@ -351,7 +360,11 @@ export class OverlayController {
         if ( !this.showWindowWithoutFocus ) {
 
             this.overlayWindow.setVisibleOnAllWorkspaces(
-                true, { visibleOnFullScreen:true }
+                true,
+                {
+                    visibleOnFullScreen: true,
+                    skipTransformProcessType: true
+                }
             );
             // if ( process.platform !== 'linux' ) {
             windowManager.setForegroundWindow( overlayWindowHandle );
