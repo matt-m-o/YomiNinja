@@ -129,7 +129,7 @@
       "buildResources": "electron_resources",
       "output": "dist"
     },
-    "forceCodeSigning": true,
+    "forceCodeSigning": false,
     "nsis": {
       "oneClick": false,
       "runAfterFinish": true,
@@ -167,7 +167,6 @@
       ]
     },
     "mac": {
-      "compression": "maximum",
       "icon": "./electron_resources/icon.icns",
       "asarUnpack": [
         "**/node_modules/sharp/**",
