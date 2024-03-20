@@ -206,17 +206,14 @@ export default function HomeContent() {
                             marginLeft: 20
                         }}
                     >
-                        <li> Google Lens integration. </li>
-                        <li> Google Cloud Vision integration. </li>
-                        <li> Individual character positioning for accurate text overlay (currently exclusive to Cloud Vision). </li>
-                        <li> Expanded PaddleOCR settings menu with additional parameters. </li>
-                        <li> Native support for Yomitan, Yomichan, and JPDB extensions. </li>
-                        <li> Global hotkeys for toggling the overlay and coping extracted text. </li>
-                        <li> Dedicated global hotkeys for each OCR engine. </li>
-                        <li> Edit extracted text with Ctrl + Double Click, allowing for manual corrections. </li>
-                        <li> Enhanced overlay customization options. </li>
-                        <li> Option to automatically hide OCR results upon focus loss. </li>
-
+                        <li> MangaOCR integration. </li>
+                        <li> macOS support (WIP) </li>
+                        <li> Apple Vision OCR (WIP) </li>
+                        <li> Auto OCR (WIP). </li>
+                        <li> System tray icon (WIP) </li>
+                        <li> Text-to-Speech (WIP) </li>
+                        <li> Clipboard options menu (WIP) </li>
+                        <li> Movable overlay (WIP) </li>
                     </ul>
 
                 </CardContent>
