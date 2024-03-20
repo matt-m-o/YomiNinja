@@ -1,4 +1,4 @@
-import { CSSProperties, useContext, useEffect } from "react"
+import { CSSProperties, useContext, useEffect, useState } from "react"
 import { LanguagesContext } from "../../context/languages.provider";
 import { Autocomplete, Box, Button, Card, CardContent, Container, FormControl, FormControlLabel, Grid, InputAdornment, InputLabel, OutlinedInput, SxProps, TextField, TextFieldProps, Theme, Typography, styled } from "@mui/material";
 import { ProfileContext } from "../../context/profile.provider";
@@ -38,18 +38,19 @@ export default function HomeContent() {
     const activeOcrLanguage: string = capitalize( profile?.active_ocr_language.name ) || '';
     const languageOptions: string[] = languages?.map( language => capitalize(language.name) );
 
-    // Adapter name : Engine name
-    const ocrEnginesDict = {
-        'PpOcrAdapter': 'PaddleOCR',
-        'CloudVisionOcrAdapter': 'Google Cloud Vision',
-        'GoogleLensOcrAdapter': 'Google Lens',
-        'MangaOcrAdapter': 'MangaOCR'
-    };
-    
-    const ocrEngineOptions: string[] = Object.values( ocrEnginesDict );
+    // {Adapter_name : Engine_name}
+    const [ supportedOcrEngines, setSupportedOcrEngines ] = useState<{ [key: string]: string; }>({});
 
-    let selectedOcrEngine: string = ocrEnginesDict[ profile?.selected_ocr_adapter_name ] || '';
+    const ocrEngineOptions = Object.values( supportedOcrEngines );
+    const selectedOcrEngine = supportedOcrEngines[ profile?.selected_ocr_adapter_name ] || '';
 
+
+    useEffect( () => {
+        getSupportedOcrEngines()
+            .then( dict => {
+                setSupportedOcrEngines( dict );
+            });
+    }, [] );
 
     function handleLanguageSelectChange( languageName: string ) {
 
@@ -66,9 +67,14 @@ export default function HomeContent() {
         global.ipcRenderer.invoke('main:show_capture_source_selection');
     }
 
+    async function getSupportedOcrEngines(): Promise< { [key: string]: string; } > {
+        const result = await global.ipcRenderer.invoke( 'ocr_recognition:get_supported_ocr_engines' ) as { [key: string]: string; };
+        return result;
+    }
+
     function handleOcrEngineSelection( selectedEngineName: string ) {
         
-        Object.entries( ocrEnginesDict )
+        Object.entries( supportedOcrEngines )
             .forEach( ([ adapterName, engineName ]) => {
 
                 if ( engineName !== selectedEngineName )

@@ -52,6 +52,12 @@ export class OcrRecognitionController {
                     .map( language => language.toJson() );                
             }
         );
+
+        ipcMain.handle( 'ocr_recognition:get_supported_ocr_engines',
+            ( event: IpcMainInvokeEvent ): { [key: string]: string; } => {
+                return this.ocrRecognitionService.getSupportedOcrEngines();
+            }
+        );
     }
 
     async recognize(

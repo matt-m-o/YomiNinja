@@ -169,4 +169,8 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
 
         return adapter;
     }
+
+    getSupportedOcrEngines(): string[] {
+        return this.ocrAdapters.map( adapter => adapter.name );
+    }
 }

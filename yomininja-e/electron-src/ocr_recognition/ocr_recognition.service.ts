@@ -112,4 +112,29 @@ export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = Oc
             return false;
         }
     }
+
+    getSupportedOcrEngines(): { [key: string]: string; } {
+
+        const supportedOcrAdapters = this.recognizeImageUseCase.getSupportedOcrEngines();
+        
+        const dict: { [key: string]: string; } = {
+            'PpOcrAdapter': 'PaddleOCR',
+            'CloudVisionOcrAdapter': 'Google Cloud Vision',
+            'GoogleLensOcrAdapter': 'Google Lens',
+            'MangaOcrAdapter': 'MangaOCR',
+            'AppleVisionAdapter': 'Apple Vision',
+        };
+
+        // Removing unsupported ocr options
+        Object.keys( dict )
+            .forEach( adapterName => {
+
+                if ( supportedOcrAdapters.includes( adapterName ) )
+                    return;
+
+                delete dict[adapterName];
+            });
+
+        return dict;
+    }
 }
