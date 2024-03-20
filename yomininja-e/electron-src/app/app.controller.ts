@@ -495,6 +495,7 @@ export class AppController {
             isFullScreenImage = await this.isFullScreenImage(image);
         this.setOverlayBounds( isFullScreenImage ? 'fullscreen' :  'maximized' );
         this.showOverlayWindow();
+        this.overlayWindow?.webContents.send( 'user_command:toggle_results', false );
 
         if ( this.isEditingOcrTemplate ) {
             this.mainWindow.webContents.send(
