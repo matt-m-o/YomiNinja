@@ -21,7 +21,7 @@
     "build-electron": "npm run types-workaround && tsc -p electron-src && webpack --mode production && npm run copy-assets",
     "build": "npm run build-renderer && npm run build-electron",
     "copy-assets": "node ./copy_assets.js",
-    "install-app-deps": "npx electron-rebuild install-app-deps",
+    "install-app-deps": "npx @electron/rebuild install-app-deps",
     "pack-app": "npm run build && electron-builder --dir",
     "dist": "npm run generate-licenses && npm run build && electron-builder",
     "type-check": "tsc -p ./renderer/tsconfig.json && tsc -p ./electron-src/tsconfig.json",
