@@ -172,7 +172,13 @@
         "**/node_modules/sharp/**",
         "**/node_modules/x11/**"
       ],
-      "extraResources": [],
+      "extraResources": [
+        {
+          "from": "../bin/darwin",
+          "to": "bin",
+          "filter": "**/*"
+        }
+      ],
       "target": [
         {
           "target": "default",
