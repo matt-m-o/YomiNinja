@@ -10,6 +10,11 @@ import os from 'os';
 import { join } from "path";
 import isDev from 'electron-is-dev';
 import { BIN_DIR } from "../../../../util/directories.util";
+import { GetSupportedLanguagesRequest } from "../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesRequest";
+import { GetSupportedLanguagesResponse__Output } from "../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesResponse";
+
+type OcrEnginesName = 'MangaOCR' | 'AppleVision' | string;
+
 export class PyOcrService {
     
     public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
@@ -42,7 +47,7 @@ export class PyOcrService {
         input: {
             id: string;
             image: Buffer;
-            ocrEngine: 'MangaOCR' | string;
+            ocrEngine: OcrEnginesName;
             languageCode: string;
             boxes?: OcrItemBox[]
         }
@@ -94,11 +99,35 @@ export class PyOcrService {
             results: ocrItems,
         });
 
-        console.log( clientResponse );
-
         return result;
 
     }
+
+    async getSupportedLanguages( ocrEngineName: OcrEnginesName ): Promise< string[] > {
+
+        if ( !this.ocrServiceClient )
+            return [];
+
+        const requestInput: GetSupportedLanguagesRequest = {
+            ocr_engine: ocrEngineName
+        };
+
+        const clientResponse = await new Promise< GetSupportedLanguagesResponse__Output | undefined >(
+            (resolve, reject) => this.ocrServiceClient?.GetSupportedLanguages( requestInput, ( error, response ) => {
+                if (error) {
+                    this.restart( () => {} );
+                    return reject(error);
+                }
+                resolve(response);
+            })
+        );
+
+        if ( !clientResponse )
+            return [];
+
+        return clientResponse.language_codes;
+    }
+    
 
     startProcess( onInitialized?: ( input?: any ) => void ) {
 
@@ -106,7 +135,7 @@ export class PyOcrService {
 
         let executableName = 'py_ocr_service.exe';
 
-        if ( platform === 'linux' )
+        if ( platform !== 'win32' )
             executableName = 'py_ocr_service';
 
         const executable = join( this.binRoot + `/${executableName}` );

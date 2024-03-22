@@ -38,7 +38,11 @@ if ( process.platform !== 'darwin' ) {
         Registry.MangaOcrAdapter
     ];
 }
-
+if ( process.platform === 'darwin' ) {
+    enabledOcrEngines.push(
+        Registry.AppleVisionAdapter
+    );
+}
 
 container_registry.bind( Registry.RecognizeImageUseCaseInstance )
     .toDynamicValue( ( context ) => {
