@@ -22,7 +22,7 @@ message RecognizeBase64Request {
   string language_code = 2;
   string base64_image = 3;
   repeated Box boxes = 4;
-  string ocr_engine = 5; // MangaOCR | PaddleOCR
+  string ocr_engine = 5; // MangaOCR | PaddleOCR | AppleVision
 }
 
 message Vertex {
@@ -53,7 +53,9 @@ message RecognizeDefaultResponse {
 }
 
 
-message GetSupportedLanguagesRequest {}
+message GetSupportedLanguagesRequest {
+  string ocr_engine = 1; // MangaOCR | PaddleOCR | AppleVision
+}
 message GetSupportedLanguagesResponse {
   repeated string language_codes = 1;
 }
@@ -64,7 +66,7 @@ message DetectRequest {
   string language_code = 2;
   bool crop_image = 3;
   bytes image_bytes = 4;
-  string ocr_engine = 5; // MangaOCR | PaddleOCR
+  string ocr_engine = 5; // MangaOCR | PaddleOCR | AppleVision
 }
 
 message DetectResult {

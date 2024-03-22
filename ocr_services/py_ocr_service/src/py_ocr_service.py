@@ -4,7 +4,19 @@ import grpc
 from ocr_service_pb2 import Result
 import ocr_service_pb2 as service_pb
 import ocr_service_pb2_grpc as service_grpc
-from manga_ocr_service.manga_ocr_service import MangaOcrService
+import sys
+
+isMacOs = False
+
+try:
+    from manga_ocr_service.manga_ocr_service import MangaOcrService
+except ImportError:
+    pass
+
+if sys.platform == 'darwin':
+    isMacOs = True
+    from apple_vision_service.apple_vision_service import AppleVisionService
+
 import base64
 from io import BytesIO
 from PIL import Image
@@ -14,7 +26,15 @@ from typing import List
 
 class Service( service_grpc.OCRServiceServicer ):
 
-    manga_ocr_service = MangaOcrService()
+    manga_ocr_service = None
+    apple_vision_service = None
+
+    if 'torch' in sys.modules:
+        manga_ocr_service = MangaOcrService()
+
+    if isMacOs:
+        apple_vision_service = AppleVisionService()
+
 
     def RecognizeBase64( self, request: service_pb.RecognizeBase64Request, context ):
 
@@ -25,9 +45,22 @@ class Service( service_grpc.OCRServiceServicer ):
 
         match request.ocr_engine:
             case 'MangaOCR':
-                results = self.manga_ocr_service.recognize( np.array( image ), request.boxes )
+                results = self.manga_ocr_service.recognize(
+                    np.array( image ),
+                    request.boxes
+                )
+
+            case 'AppleVision':
+                results = self.apple_vision_service.recognize(
+                    image,
+                    request.language_code
+                )
+                
             case _:
-                results = self.manga_ocr_service.recognize( np.array( image ), request.boxes )
+                results = MangaOcrService(self.manga_ocr_service).recognize(
+                    np.array( image ),
+                    request.boxes
+                )
                 print(f'{request.ocr_engine} is not supported')
 
 
@@ -38,6 +71,27 @@ class Service( service_grpc.OCRServiceServicer ):
             },
             id=request.id,
             results=results
+        )
+    
+    def GetSupportedLanguages(self, request: service_pb.GetSupportedLanguagesRequest, context):
+
+        print( request )
+
+        language_codes: List[ str ] = []
+
+        match request.ocr_engine:
+            case 'MangaOCR':
+                language_codes.append( 'ja' )
+
+            case 'AppleVision':
+                language_codes = self.apple_vision_service.getSupportedLanguages()
+                
+            case _:
+                print(f'{request.ocr_engine} is not supported')
+
+
+        return service_pb.GetSupportedLanguagesResponse(
+            language_codes= language_codes
         )
 
 
