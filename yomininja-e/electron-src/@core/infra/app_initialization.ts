@@ -24,12 +24,14 @@ export let windowManager: WindowManager;
 
 
 async function populateLanguagesRepository( languageRepo: LanguageTypeOrmRepository ) {
+
     const languages: Language_CreationInput[] = [
         { name: 'japanese', two_letter_code: 'ja', bcp47_tag: 'ja-JP' },
         { name: 'english', two_letter_code: 'en', bcp47_tag: 'en-US' },
         { name: 'chinese (simplified)', two_letter_code: 'zh', bcp47_tag: 'zh-Hans' },
         { name: 'chinese (traditional)', two_letter_code: 'zh', bcp47_tag: 'zh-Hant' },
-        { name: 'korean', two_letter_code: 'ko', bcp47_tag: 'KR' },
+        { name: 'korean', two_letter_code: 'ko', bcp47_tag: 'ko-KR' },
+        { name: 'Latin', two_letter_code: 'la', bcp47_tag: 'la' },
     ];
 
     for ( const data of languages ) {
