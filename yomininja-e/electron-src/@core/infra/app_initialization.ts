@@ -25,19 +25,47 @@ export let windowManager: WindowManager;
 
 async function populateLanguagesRepository( languageRepo: LanguageTypeOrmRepository ) {
     const languages: Language_CreationInput[] = [
-        { name: 'japanese', two_letter_code: 'ja' },
-        { name: 'english', two_letter_code: 'en' },
-        { name: 'chinese', two_letter_code: 'ch' },
-        { name: 'korean', two_letter_code: 'ko' },
-    ]
-    for ( const data of languages ) {
-        const exists = await languageRepo.findOne({ two_letter_code: data.two_letter_code });
+        { name: 'japanese', two_letter_code: 'ja', bcp47_tag: 'ja-JP' },
+        { name: 'english', two_letter_code: 'en', bcp47_tag: 'en-US' },
+        { name: 'chinese (simplified)', two_letter_code: 'zh', bcp47_tag: 'zh-Hans' },
+        { name: 'chinese (traditional)', two_letter_code: 'zh', bcp47_tag: 'zh-Hant' },
+        { name: 'korean', two_letter_code: 'ko', bcp47_tag: 'KR' },
+    ];
 
-        if ( exists ) continue;
+    for ( const data of languages ) {
+
+        const exists = await languageRepo.findOne({ two_letter_code: data.two_letter_code });
+        
+        if ( exists ) {
+
+            if ( exists.bcp47_tag ) continue;
+
+            // Adding bcp47 tag to older records
+            exists.bcp47_tag = data.bcp47_tag as string;
+
+            await languageRepo.update( exists );
+
+            continue;
+        }
+        else if ( data.bcp47_tag === 'zh-Hans' ) {
+            // Updating the old chinese record
+
+            const oldChinese = await languageRepo.findOne({ name: 'chinese' });
+            if ( oldChinese ) {
+
+                oldChinese.name = data.name;
+                oldChinese.two_letter_code = data.two_letter_code;
+                oldChinese.bcp47_tag = data.bcp47_tag;
+
+                await languageRepo.update(oldChinese);
+
+                continue;
+            }
+        }
 
         await languageRepo.insert( Language.create( data ) )
             .catch( console.error );
-    }    
+    }
 }
 
 export async function initializeApp() {
