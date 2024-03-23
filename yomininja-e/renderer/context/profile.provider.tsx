@@ -21,9 +21,7 @@ export const ProfileProvider = ( { children }: PropsWithChildren ) => {
 
         setProfile({ ...profile, active_ocr_language: language })
 
-        global.ipcRenderer.invoke( 'profile:change_active_ocr_language', {
-            two_letter_code: language.two_letter_code
-        });
+        global.ipcRenderer.invoke( 'profile:change_active_ocr_language', language );
     }
 
     async function changeSelectedOcrEngine( ocrEngineAdapterName: string ) {

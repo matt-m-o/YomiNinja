@@ -43,7 +43,7 @@ export class ProfileController {
                 if ( !message ) return;
                     
                 this.profileService.changeActiveOcrLanguage({
-                    languageCode: message.two_letter_code,
+                    language: message,
                     profileId: getActiveProfile().id
                 });
 

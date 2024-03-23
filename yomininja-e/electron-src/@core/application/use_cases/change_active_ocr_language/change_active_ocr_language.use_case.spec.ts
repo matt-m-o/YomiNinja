@@ -41,8 +41,8 @@ describe("ChangeActiveOcrLanguageUseCase tests", () => {
         const settingsPreset = SettingsPreset.create();
         await dataSource.getRepository( SettingsPreset ).insert( settingsPreset );        
 
-        const languageJa = Language.create({ name: 'japanese', two_letter_code: 'ja' });
-        const languageEn = Language.create({ name: 'english', two_letter_code: 'en' });
+        const languageJa = Language.create({ name: 'japanese', two_letter_code: 'ja', bcp47_tag: 'ja-JP' });
+        const languageEn = Language.create({ name: 'english', two_letter_code: 'en', bcp47_tag: 'en-US' });
 
         profileRepo = new ProfileTypeOrmRepository( dataSource.getRepository( Profile ) );
         const languageRepo = new LanguageTypeOrmRepository( dataSource.getRepository( Language ) );        
@@ -69,7 +69,7 @@ describe("ChangeActiveOcrLanguageUseCase tests", () => {
 
         const input: ChangeActiveLanguage_Input = {
             profileId: initialProfile.id,
-            languageCode: 'ja'
+            languageBcp47Tag: 'ja-JP'
         };
 
         expect( initialProfile.active_ocr_language.two_letter_code ).toStrictEqual('ja');
