@@ -16,7 +16,15 @@ export default class LanguageTypeOrmRepository implements LanguageRepository {
         return this.ormRepo.findOneBy( params );
     }
 
+    async update( language: Language ): Promise< void > {
+        await this.ormRepo.save( language );
+    }
+
     async getAll(): Promise< Language[] > {
         return this.ormRepo.find();
-    }    
+    }
+
+    async delete( id: string ): Promise< void > {
+        await this.ormRepo.delete({ id });
+    }
 }

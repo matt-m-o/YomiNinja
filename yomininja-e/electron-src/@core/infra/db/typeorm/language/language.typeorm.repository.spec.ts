@@ -67,6 +67,42 @@ describe( "Language TypeOrm Repository tests", () => {
         expect( foundByName ).toStrictEqual( languageEn );
     });
 
+    it('should update a language', async () => {
+
+        const languageZh = Language.create({
+            name: 'chinese',
+            two_letter_code: 'ch'
+        });
+        await ormRepo.save([
+            languageZh
+        ]);
+
+        let insertedLanguage = await repo.findOne({ id: languageZh.id });
+        expect( insertedLanguage ).toBeDefined();
+        if ( !insertedLanguage ) return;
+
+        const update = {
+            name: 'chinese (simplified)',
+            two_letter_code: 'zh',
+            bcp47_tag: 'zh-Hans',
+        };
+
+        insertedLanguage.name = update.name;
+        insertedLanguage.two_letter_code = update.two_letter_code;
+        insertedLanguage.bcp47_tag = update.bcp47_tag;
+
+        await repo.update( insertedLanguage );
+
+        const updatedLanguage = await repo.findOne({ id: languageZh.id });
+        expect( updatedLanguage ).toBeDefined();
+        if ( !updatedLanguage ) return;
+        
+        expect( updatedLanguage.name ).toStrictEqual( update.name );
+        expect( updatedLanguage.two_letter_code ).toStrictEqual( update.two_letter_code );
+        expect( updatedLanguage.bcp47_tag ).toStrictEqual( update.bcp47_tag );
+    });
+
+
     it('should find ALL', async () => {
 
         const languageJa = Language.create({

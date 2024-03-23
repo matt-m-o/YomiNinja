@@ -6,6 +6,7 @@ export type LanguageFindOneInput = {
     name?: string;
     two_letter_code?: string;
     three_letter_code?: string;
+    bcp47_tag?: string;
 }
 
 export interface LanguageRepository {
@@ -14,5 +15,9 @@ export interface LanguageRepository {
 
     findOne( input: LanguageFindOneInput ): Promise< Language | null >;
 
+    update( input: Language ): Promise< void >;
+
     getAll(): Promise< Language[] >;    
+
+    delete:( id: string ) => Promise< void >;
 }
