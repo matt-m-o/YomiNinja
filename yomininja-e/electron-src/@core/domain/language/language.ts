@@ -5,6 +5,7 @@ export interface LanguageProps {
     name: string; // English name
     two_letter_code: string; // ISO 639-1
     three_letter_code?: string; // ISO 639-2
+    bcp47_tag?: string; // IETF BCP 47 language tag
 };
 
 
@@ -26,7 +27,8 @@ export class Language {
         
         this.props = {
             ...input,
-            three_letter_code: input?.three_letter_code || undefined
+            three_letter_code: input?.three_letter_code || undefined,
+            bcp47_tag: input?.bcp47_tag || undefined,
         };        
     }
 
@@ -38,7 +40,10 @@ export class Language {
     get two_letter_code(){ return this.props.two_letter_code; }
     get three_letter_code(): string | undefined {
         return this.props.three_letter_code;
-    }    
+    }
+    get bcp47_tag(): string | undefined {
+        return this.props.bcp47_tag;
+    }
 
 
     set name( value: string ){ this.props.name = value; }
@@ -61,6 +66,10 @@ export class Language {
             return;
 
         this.props.three_letter_code = value;
+    }
+
+    set bcp47_tag( value: string | undefined ) {
+        this.props.bcp47_tag = value;
     }
 
     toJson(): LanguageJson {
