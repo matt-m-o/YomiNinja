@@ -54,8 +54,7 @@ export class AppleVisionAdapter implements OcrAdapter< AppleVisionOcrEngineSetti
     }
 
     async getSupportedLanguages(): Promise< string[] > {
-        return ( await appleVisionPyService.getSupportedLanguages() )
-            .map( code => code.slice( 0, 2 ) );
+        return ( await appleVisionPyService.getSupportedLanguages() );
     }
 
     async updateSettings (
