@@ -36,7 +36,7 @@ async function populateLanguagesRepository( languageRepo: LanguageTypeOrmReposit
 
     for ( const data of languages ) {
 
-        const exists = await languageRepo.findOne({ two_letter_code: data.two_letter_code });
+        const exists = await languageRepo.findOne({ name: data.name });
         
         if ( exists ) {
 
