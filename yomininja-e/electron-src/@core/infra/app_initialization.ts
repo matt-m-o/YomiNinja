@@ -31,7 +31,7 @@ async function populateLanguagesRepository( languageRepo: LanguageTypeOrmReposit
         { name: 'chinese (simplified)', two_letter_code: 'zh', bcp47_tag: 'zh-Hans' },
         { name: 'chinese (traditional)', two_letter_code: 'zh', bcp47_tag: 'zh-Hant' },
         { name: 'korean', two_letter_code: 'ko', bcp47_tag: 'ko-KR' },
-        { name: 'Latin', two_letter_code: 'la', bcp47_tag: 'la' },
+        { name: 'latin', two_letter_code: 'la', bcp47_tag: 'la' },
     ];
 
     for ( const data of languages ) {
