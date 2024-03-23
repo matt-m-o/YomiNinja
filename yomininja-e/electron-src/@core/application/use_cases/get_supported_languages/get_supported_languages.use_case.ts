@@ -23,7 +23,10 @@ export class GetSupportedLanguagesUseCase< TOcrSettings extends OcrEngineSetting
 
             for ( const languageCode of languageCodes ) {
 
-                const languageInRepo = await this.languagesRepo.findOne({ two_letter_code: languageCode });
+                let languageInRepo = await this.languagesRepo.findOne({ bcp47_tag: languageCode });
+
+                if ( !languageInRepo )
+                    languageInRepo = await this.languagesRepo.findOne({ two_letter_code: languageCode.slice(0, 2) });
 
                 if ( !languageInRepo ) continue;
 

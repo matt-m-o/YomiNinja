@@ -28,11 +28,18 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
         }
 
         this.idCounter++;
+
+        const { language } = input
+
+        let language_code = language.bcp47_tag || language.two_letter_code;
+
+        if ( language.two_letter_code === 'en' )
+            language_code = 'en';
         
         const requestInput: RecognizeBytesRequest = {
             id: this.idCounter.toString(),
             image_bytes: input.imageBuffer,
-            language_code: input.languageCode            
+            language_code
         };
 
         console.log('processing recognition input (PaddleOcrAdapter)');

@@ -29,6 +29,8 @@ export class AppleVisionAdapter implements OcrAdapter< AppleVisionOcrEngineSetti
         }
         
         this.idCounter++;
+
+        const { language } = input
       
         console.log('processing recognition input');
         this.status = OcrAdapterStatus.Processing;
@@ -36,7 +38,7 @@ export class AppleVisionAdapter implements OcrAdapter< AppleVisionOcrEngineSetti
         const result = await appleVisionPyService.recognize({
             id: this.idCounter.toString(),
             image: input.imageBuffer,
-            languageCode: input.languageCode
+            languageCode: language.bcp47_tag || language.two_letter_code
         });
         // console.timeEnd('AppleVisionAdapter.recognize');
         this.status = OcrAdapterStatus.Enabled;

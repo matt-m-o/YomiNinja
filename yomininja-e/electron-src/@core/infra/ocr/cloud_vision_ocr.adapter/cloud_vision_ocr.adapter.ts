@@ -32,7 +32,7 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
 
     async recognize( input: OcrRecognitionInput ): Promise< OcrResultScalable | null > {
 
-        const { imageBuffer, languageCode } = input;
+        const { imageBuffer, language } = input;
 
         let api: CloudVisionApi;
         

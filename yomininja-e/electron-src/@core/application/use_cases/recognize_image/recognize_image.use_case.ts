@@ -77,7 +77,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
 
             return await this.recognizeWithTemplate({
                 image: imageBuffer,
-                languageCode: profile.active_ocr_language.two_letter_code,
+                language: profile.active_ocr_language,
                 ocrAdapter,
                 template: profile.active_ocr_template,
             });
@@ -85,7 +85,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
         
         const ocrResult = await ocrAdapter.recognize({
             imageBuffer,
-            languageCode: profile.active_ocr_language.two_letter_code,
+            language: profile.active_ocr_language,
         });
 
         if ( !ocrResult )
@@ -99,11 +99,11 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
             image: Buffer,
             template: OcrTemplate,
             ocrAdapter: OcrAdapter< TOcrSettings >,
-            languageCode: string,
+            language: Language,
         }
     ): Promise< OcrResultScalable > {
 
-        const { image, template, ocrAdapter, languageCode } = input;
+        const { image, template, ocrAdapter, language: languageCode } = input;
 
         const { target_regions } = template;
 
@@ -134,7 +134,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
 
             const regionResult = await ocrAdapter.recognize({
                 imageBuffer: regionImage,
-                languageCode,
+                language: languageCode,
             })
                 .catch( console.error );
 

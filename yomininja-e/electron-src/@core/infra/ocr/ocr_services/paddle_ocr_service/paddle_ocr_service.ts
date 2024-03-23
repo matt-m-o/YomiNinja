@@ -313,13 +313,17 @@ export class PaddleOcrService {
         if ( !dirExists )
             fs.mkdirSync( this.settingsPresetsRoot, { recursive: true } );
     
-        if ( !fileExists ) {
+        // if ( !fileExists ) {
             const baseFilePath = join( this.binRoot, '/presets/default.json' );
             const dest = join( this.settingsPresetsRoot, 'default.json' );
             fs.copyFileSync(
                 baseFilePath,
                 dest
             );
-        }
+        // }
+    }
+
+    handleLanguageTags( tag: string ) {
+        
     }
 }

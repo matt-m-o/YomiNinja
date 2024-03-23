@@ -56,7 +56,7 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
     }
 
     async getSupportedLanguages(): Promise< string[] > {
-        return ['ja'];
+        return ['ja-JP'];
     }
 
     async updateSettings (
