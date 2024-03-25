@@ -8,7 +8,14 @@ service OCRService {
   rpc Detect( DetectRequest ) returns ( DetectResponse ) {}
   rpc GetSupportedLanguages( GetSupportedLanguagesRequest ) returns ( GetSupportedLanguagesResponse ) {}
   rpc UpdatePpOcrSettings( UpdatePpOcrSettingsRequest ) returns ( UpdateSettingsResponse ) {}
+  rpc KeepAlive( KeepAliveRequest ) returns ( KeepAliveResponse ) {}
 }
+
+message KeepAliveRequest {
+  bool keep_alive = 1;
+  int32 timeout_seconds = 2;
+}
+message KeepAliveResponse {}
 
 message RecognizeBytesRequest {
   string id = 1;

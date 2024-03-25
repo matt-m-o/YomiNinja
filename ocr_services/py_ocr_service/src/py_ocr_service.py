@@ -1,3 +1,4 @@
+import threading
 from concurrent import futures
 import logging
 import grpc
@@ -5,6 +6,7 @@ from ocr_service_pb2 import Result
 import ocr_service_pb2 as service_pb
 import ocr_service_pb2_grpc as service_grpc
 import sys
+import time
 
 isMacOs = False
 
@@ -28,6 +30,9 @@ class Service( service_grpc.OCRServiceServicer ):
 
     manga_ocr_service = None
     apple_vision_service = None
+    server = None
+    keep_alive_timeout_seconds = 30
+    processing = False
 
     if 'torch' in sys.modules:
         manga_ocr_service = MangaOcrService()
@@ -36,7 +41,28 @@ class Service( service_grpc.OCRServiceServicer ):
         apple_vision_service = AppleVisionService()
 
 
+    def __init__(self, server, keep_alive_timeout_seconds = 30):
+        self.server = server
+        self.last_rpc_time = time.time()
+
+    def timeout_check(self):
+        while True:
+            time.sleep(5)
+            if not self.processing and time.time() - self.last_rpc_time > self.keep_alive_timeout_seconds:
+                break # Terminate the server
+        self.server.stop(0)
+
+    def KeepAlive( self, request: service_pb.KeepAliveRequest, context ):
+        self.last_rpc_time = time.time()
+
+        self.keep_alive_timeout_seconds = request.timeout_seconds
+        if not request.keep_alive:
+            self.server.stop(0)
+
+        return service_pb.KeepAliveResponse()
+
     def RecognizeBase64( self, request: service_pb.RecognizeBase64Request, context ):
+        self.last_rpc_time = time.time()
 
         image_data = base64.b64decode( request.base64_image )
         image = Image.open( BytesIO(image_data) )
@@ -74,8 +100,7 @@ class Service( service_grpc.OCRServiceServicer ):
         )
     
     def GetSupportedLanguages(self, request: service_pb.GetSupportedLanguagesRequest, context):
-
-        print( request )
+        self.last_rpc_time = time.time()
 
         language_codes: List[ str ] = []
 
@@ -96,9 +121,11 @@ class Service( service_grpc.OCRServiceServicer ):
 
 
 def serve():
+
     port = "23456"
     server = grpc.server( futures.ThreadPoolExecutor( max_workers=10 ) )
-    service_grpc.add_OCRServiceServicer_to_server( Service(), server )
+    servicer = Service( server )
+    service_grpc.add_OCRServiceServicer_to_server( servicer, server )
 
     server.add_insecure_port("[::]:" + port)
     server.start()
@@ -107,6 +134,10 @@ def serve():
 
     server_info = f'[INFO-JSON]:{server_data}'
     print( server_info.replace("'", '"') )
+
+    # Start the timeout check in a new thread
+    timeout_thread = threading.Thread(target=servicer.timeout_check)
+    timeout_thread.start()
 
     server.wait_for_termination()
 

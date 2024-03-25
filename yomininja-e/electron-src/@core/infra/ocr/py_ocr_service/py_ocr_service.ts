@@ -21,6 +21,7 @@ export class PyOcrService {
     private ocrServiceClient: OCRServiceClient | null = null;
     private serviceProcess: ChildProcessWithoutNullStreams;
     private binRoot: string;
+    private serviceKeepAlive: NodeJS.Timeout;
 
     constructor() {
         this.binRoot = isDev
@@ -157,6 +158,7 @@ export class PyOcrService {
 
                 if ( 'server_address' in jsonData ) {
                     this.connect( jsonData.server_address );
+                    this.keepAlive();
                     if ( onInitialized )
                         onInitialized();
                 }
@@ -180,7 +182,12 @@ export class PyOcrService {
             // Ensure the child process is killed before exiting
             this.serviceProcess.kill('SIGTERM'); // You can use 'SIGINT' or 'SIGKILL' as well
         });
-          
+        
+        process.on('SIGSEGV', ( error: Error ) => {
+            console.error( error );
+            this.serviceProcess.kill();
+            process.exit(1);
+        });
     }
 
     async processStatusCheck(): Promise< boolean > {
@@ -202,6 +209,29 @@ export class PyOcrService {
     }
 
     restart( callback: () => void ) {
+
+    }
+
+    keepAlive = ( timeoutSeconds = 15 ) => {
+
+        if ( timeoutSeconds < 15 )
+            timeoutSeconds = 15;
+
+        if ( this.serviceKeepAlive )
+            clearInterval( this.serviceKeepAlive );
+
+        this.serviceKeepAlive = setInterval( () => {
+
+            const requestInput = {
+                keep_alive: true,
+                timeout_seconds: timeoutSeconds
+            };
+
+            this.ocrServiceClient?.KeepAlive( requestInput, ( error, response ) => {
+                if ( error ) return console.error( error );
+            });
+
+        }, ( timeoutSeconds - 10 ) * 1000 ); // Executes every 1000 milliseconds = 1 second
 
     }
 }
