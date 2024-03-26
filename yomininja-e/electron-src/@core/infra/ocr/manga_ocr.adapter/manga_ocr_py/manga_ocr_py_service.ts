@@ -29,7 +29,15 @@ export class MangaOcrPyService implements MangaOcrService {
     };
 
     async paddleOcrDetection( image: Buffer, id: string ): Promise< OcrItemBox[] > {
-        return await paddleOcrService.detect( image, id );
+        return await paddleOcrService.detect(
+            {
+                id,
+                crop_image: false,
+                image_bytes: image,
+                language_code: 'ja-JP'
+            },
+            id
+        );
     }
 
 }

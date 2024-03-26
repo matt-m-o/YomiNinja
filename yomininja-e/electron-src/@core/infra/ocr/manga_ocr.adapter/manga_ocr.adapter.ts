@@ -36,11 +36,19 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
         console.log('processing recognition input');
         this.status = OcrAdapterStatus.Processing;
         // console.time('MangaOcrAdapter.recognize');
-        const result = await mangaOcrPyService.recognize({
-            id: this.idCounter.toString(),
-            image: input.imageBuffer,
-            boxes: [],
-        });
+
+        let result: OcrResult | null = null;
+        try {
+            result = await mangaOcrPyService.recognize({
+                id: this.idCounter.toString(),
+                image: input.imageBuffer,
+                boxes: [],
+            });
+            
+        } catch (error) {
+            console.error( error );
+            this.status = OcrAdapterStatus.Enabled
+        }
 
         // console.timeEnd('PpOcrAdapter.recognize');
         this.status = OcrAdapterStatus.Enabled;

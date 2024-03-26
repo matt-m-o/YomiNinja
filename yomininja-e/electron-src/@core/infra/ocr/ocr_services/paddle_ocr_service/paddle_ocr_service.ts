@@ -95,13 +95,7 @@ export class PaddleOcrService {
         return result
     }
 
-    async detect( image: Buffer, id: string ): Promise< OcrItemBox[] > {
-        const input: DetectRequest = {
-            id: id,
-            crop_image: false,
-            image_bytes: image,
-            language_code: 'ja'
-        }
+    async detect( input: DetectRequest, id: string ): Promise< OcrItemBox[] > {
 
         const clientResponse = await new Promise< DetectResponse__Output | undefined >(
             (resolve, reject) => this.ocrServiceClient?.Detect( input, ( error, response ) => {
