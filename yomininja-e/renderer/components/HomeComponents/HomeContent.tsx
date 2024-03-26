@@ -20,9 +20,12 @@ const ButtonInput = styled(TextField)({
     }
 });
 
-function capitalize( text: string ) {
-    return text?.charAt(0).toUpperCase() + text?.slice(1);
-}
+const TextFieldCapitalize = styled(TextField)({
+    '& input': {
+        textTransform: 'capitalize'
+    }
+});
+
 
 export default function HomeContent() {
 
@@ -35,8 +38,8 @@ export default function HomeContent() {
 
     const { activeCaptureSource } = useContext( CaptureSourceContext );
 
-    const activeOcrLanguage: string = capitalize( profile?.active_ocr_language.name ) || '';
-    const languageOptions: string[] = languages?.map( language => capitalize(language.name) );
+    const activeOcrLanguage: string = profile?.active_ocr_language.name || '';
+    const languageOptions: string[] = languages?.map( language => language.name );
 
     // {Adapter_name : Engine_name}
     const [ supportedOcrEngines, setSupportedOcrEngines ] = useState<{ [key: string]: string; }>({});
@@ -167,16 +170,15 @@ export default function HomeContent() {
                         <Autocomplete autoHighlight
                             fullWidth
                             renderInput={ (params) => {
-                                return <TextField {...params}
+                                return <TextFieldCapitalize {...params}
                                     label='OCR Language'
                                     fullWidth
                                     InputProps={{
                                         ...params.InputProps,
                                         startAdornment: <TranslateOutlinedIcon sx={{ mr: '10px' }}/>,
-                                        style: {
-                                            paddingLeft: '14px'
-                                        }
+                                        style: { paddingLeft: '14px', textTransform: 'capitalize' }
                                     }}
+                                    style={{ textTransform: 'capitalize' }}
                                 />
                             }}
                             value={ activeOcrLanguage || '' }
@@ -184,8 +186,14 @@ export default function HomeContent() {
                                 handleLanguageSelectChange( newValue );
                             }}
                             options={ languageOptions || [] }
-                            sx={{ mb: '25px' }}
-                            ListboxProps={{ style: selectListBoxCSS }}
+                            sx={{ mb: '25px', textTransform: 'capitalize' }}
+                            ListboxProps={{
+                                style: {
+                                    ...selectListBoxCSS,
+                                    textTransform: 'capitalize'
+                                }
+                            }}
+                            style={{ textTransform: 'capitalize' }}
                         />
 
                         <OcrTemplateSelector
