@@ -106,7 +106,7 @@ class Service( service_grpc.OCRServiceServicer ):
 
         match request.ocr_engine:
             case 'MangaOCR':
-                language_codes.append( 'ja' )
+                language_codes.append( 'ja-JP' )
 
             case 'AppleVision':
                 language_codes = self.apple_vision_service.getSupportedLanguages()
