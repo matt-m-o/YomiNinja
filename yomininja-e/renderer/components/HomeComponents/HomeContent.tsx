@@ -215,8 +215,8 @@ export default function HomeContent() {
                         }}
                     >
                         <li> MangaOCR integration. </li>
-                        <li> macOS support (WIP) </li>
-                        <li> Apple Vision OCR (WIP) </li>
+                        <li> Initial suppport for macOS.</li>
+                        <li> Apple Vision OCR. </li>
                         <li> Auto OCR (WIP). </li>
                         <li> System tray icon (WIP) </li>
                         <li> Text-to-Speech (WIP) </li>
