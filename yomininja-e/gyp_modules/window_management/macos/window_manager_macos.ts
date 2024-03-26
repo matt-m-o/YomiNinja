@@ -4,12 +4,19 @@ import os from 'os';
 
 export class WindowManagerMacOS implements WindowManagerNativeInterface {
 
+    hasAccessibilityAccess: any = false;
+
     constructor() {
-        if ( os.platform() === 'darwin' )
-            windowManager.requestAccessibility();
+        if ( os.platform() === 'darwin' ) {
+            // this.hasAccessibilityAccess = windowManager.requestAccessibility();
+            console.log({ hasAccessibilityAccess: this.hasAccessibilityAccess });
+        }
     }
 
     async searchWindowByTitle( title: string ): Promise<WindowProperties[]> {
+
+        if ( !this.hasAccessibilityAccess )
+            return this.requestAccessibility();
 
         console.log(`searchWindowByTitle: ${title}`);
 
@@ -20,12 +27,18 @@ export class WindowManagerMacOS implements WindowManagerNativeInterface {
 
     setForegroundWindow = ( windowHandle: number ): void =>{
 
+        if ( !this.hasAccessibilityAccess )
+            return this.requestAccessibility();
+
         console.log(`setForegroundWindow: ${windowHandle}`);
         
         this.activateWindow( windowHandle );
     }
 
     async getWindowProperties( windowHandle: number ): Promise< WindowProperties | undefined > {
+
+        if ( !this.hasAccessibilityAccess )
+            return this.requestAccessibility();
 
         console.log(`getWindowProperties: ${windowHandle}`);
 
@@ -56,6 +69,9 @@ export class WindowManagerMacOS implements WindowManagerNativeInterface {
     }
 
     getAllWindows(): WindowProperties[] {
+
+        if ( !this.hasAccessibilityAccess )
+            return this.requestAccessibility();
 
         const windows: WindowProperties[] = windowManager.getWindows()
             .map( window => {
@@ -97,6 +113,10 @@ export class WindowManagerMacOS implements WindowManagerNativeInterface {
 
 
     activateWindow( windowId: number ) {
+
+        if ( !this.hasAccessibilityAccess )
+            return this.requestAccessibility();
+
         windowManager.getWindows()
             .find( window => {
 
@@ -111,6 +131,9 @@ export class WindowManagerMacOS implements WindowManagerNativeInterface {
 
     searchWindowByName( windowName: string ): number[] {
 
+        if ( !this.hasAccessibilityAccess )
+            return this.requestAccessibility();
+
         const ids = windowManager.getWindows()
             .filter( window => window.getTitle().includes( windowName ) )
             .map( window => window.id );
@@ -118,4 +141,8 @@ export class WindowManagerMacOS implements WindowManagerNativeInterface {
         return ids;
     }
 
+    requestAccessibility(): any {
+        this.hasAccessibilityAccess = windowManager.requestAccessibility();
+        return this.hasAccessibilityAccess;
+    }
 }

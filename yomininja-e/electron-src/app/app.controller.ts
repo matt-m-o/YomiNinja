@@ -22,6 +22,7 @@ import { dictionariesController } from "../dictionaries/dictionaries.index";
 import { ocrTemplatesController } from "../ocr_templates/ocr_templates.index";
 import { htmlMouseButtonToUiohook, matchUiohookMouseEventButton } from "../common/mouse_helpers";
 import { debounce } from "lodash";
+import { windowManager } from "node-window-manager";
 const isMacOS = process.platform === 'darwin';
 
 let startupTimer: NodeJS.Timeout;
@@ -56,6 +57,9 @@ export class AppController {
 
         this.appService = input.appService;
 
+        if ( isMacOS && !windowManager.requestAccessibility() )
+            return;
+        
         uIOhook.start();
     }
 
