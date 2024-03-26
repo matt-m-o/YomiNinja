@@ -27,11 +27,22 @@ async function populateLanguagesRepository( languageRepo: LanguageTypeOrmReposit
 
     const languages: Language_CreationInput[] = [
         { name: 'japanese', two_letter_code: 'ja', bcp47_tag: 'ja-JP' },
-        { name: 'english', two_letter_code: 'en', bcp47_tag: 'en-US' },
         { name: 'chinese (simplified)', two_letter_code: 'zh', bcp47_tag: 'zh-Hans' },
         { name: 'chinese (traditional)', two_letter_code: 'zh', bcp47_tag: 'zh-Hant' },
+        { name: 'cantonese (simplified)', two_letter_code: '', bcp47_tag: 'yue-Hans' },
+        { name: 'cantonese (traditional)', two_letter_code: '', bcp47_tag: 'yue-Hant' },
         { name: 'korean', two_letter_code: 'ko', bcp47_tag: 'ko-KR' },
+        { name: 'thai', two_letter_code: 'th', bcp47_tag: 'th-TH' },
+        { name: 'vietnamese', two_letter_code: 'vi', bcp47_tag: 'vi-VN' },
         { name: 'latin', two_letter_code: 'la', bcp47_tag: 'la' },
+        { name: 'english', two_letter_code: 'en', bcp47_tag: 'en' },
+        { name: 'french (FR)', two_letter_code: 'fr', bcp47_tag: 'fr-FR' },
+        { name: 'italian (IT)', two_letter_code: 'it', bcp47_tag: 'it-IT' },
+        { name: 'german (DE)', two_letter_code: 'de', bcp47_tag: 'de-DE' },
+        { name: 'spanish (ES)', two_letter_code: 'es', bcp47_tag: 'es-ES' },
+        { name: 'portuguese (BR)', two_letter_code: 'pt', bcp47_tag: 'pt-BR' },
+        { name: 'russian', two_letter_code: 'ru', bcp47_tag: 'ru-RU' },
+        { name: 'ukrainian', two_letter_code: 'uk', bcp47_tag: 'uk-UA' },
     ];
 
     for ( const data of languages ) {

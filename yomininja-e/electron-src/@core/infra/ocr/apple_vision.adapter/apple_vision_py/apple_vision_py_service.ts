@@ -11,7 +11,7 @@ export class AppleVisionPyService implements AppleVisionService {
         const result = await pyOcrService.recognize({
             id: input.id,
             image: input.image,
-            languageCode: input.languageCode,
+            languageCode: this.handleLanguageCode(input.languageCode),
             ocrEngine: 'AppleVision',
         });
         console.timeEnd("AppleVision Recognize");
@@ -21,5 +21,13 @@ export class AppleVisionPyService implements AppleVisionService {
 
     async getSupportedLanguages(): Promise<string[]> {
         return await pyOcrService.getSupportedLanguages( 'AppleVision' );
+    }
+
+    private handleLanguageCode( code: string ): string {
+
+        if ( code === 'vi-VN' )
+            return 'vi';
+
+        return code;
     }
 }
