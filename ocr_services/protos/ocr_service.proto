@@ -9,6 +9,7 @@ service OCRService {
   rpc GetSupportedLanguages( GetSupportedLanguagesRequest ) returns ( GetSupportedLanguagesResponse ) {}
   rpc UpdatePpOcrSettings( UpdatePpOcrSettingsRequest ) returns ( UpdateSettingsResponse ) {}
   rpc KeepAlive( KeepAliveRequest ) returns ( KeepAliveResponse ) {}
+  rpc MotionDetection( MotionDetectionRequest ) returns ( MotionDetectionResponse ) {}
 }
 
 message KeepAliveRequest {
@@ -85,6 +86,19 @@ message DetectResponse {
   repeated DetectResult results = 2;
   ContextResolution context_resolution = 3;
 }
+
+message MotionDetectionRequest {
+  string stream_id = 1;
+  string frame = 2;
+  int32 threshold_min = 3;
+  int32 threshold_max = 4;
+  int32 stream_length = 5;
+}
+message MotionDetectionResponse {
+  int32 frame_diff_sum = 1;
+  int32 frame_threshold_non_zero_count = 2;
+}
+
 
 message UpdatePpOcrSettingsRequest {
   int32 max_image_width = 1; // ppocr "max_side_length"

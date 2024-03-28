@@ -8,16 +8,17 @@ import ocr_service_pb2_grpc as service_grpc
 import sys
 import time
 
-isMacOs = False
+isMacOs = sys.platform == 'darwin'
 
 try:
     from manga_ocr_service.manga_ocr_service import MangaOcrService
 except ImportError:
     pass
 
-if sys.platform == 'darwin':
-    isMacOs = True
+if isMacOs:
     from apple_vision_service.apple_vision_service import AppleVisionService
+
+from motion_detection_service.motion_detection_service import MotionDetectionService
 
 import base64
 from io import BytesIO
@@ -28,11 +29,13 @@ from typing import List
 
 class Service( service_grpc.OCRServiceServicer ):
 
+    server = None
+    processing = False
+    keep_alive_timeout_seconds = 60
+
     manga_ocr_service = None
     apple_vision_service = None
-    server = None
-    keep_alive_timeout_seconds = 30
-    processing = False
+    motion_detection_service = MotionDetectionService()
 
     if 'torch' in sys.modules:
         manga_ocr_service = MangaOcrService()
@@ -41,9 +44,10 @@ class Service( service_grpc.OCRServiceServicer ):
         apple_vision_service = AppleVisionService()
 
 
-    def __init__(self, server, keep_alive_timeout_seconds = 30):
+    def __init__(self, server, keep_alive_timeout_seconds = 60):
         self.server = server
         self.last_rpc_time = time.time()
+        self.keep_alive_timeout_seconds = keep_alive_timeout_seconds
 
     def timeout_check(self):
         while True:
@@ -118,6 +122,22 @@ class Service( service_grpc.OCRServiceServicer ):
         return service_pb.GetSupportedLanguagesResponse(
             language_codes= language_codes
         )
+
+    def MotionDetection(self, request: service_pb.MotionDetectionRequest, context):
+        
+        result = self.motion_detection_service.detect(
+            request.stream_id,
+            frame= self.base64ToPILImage( request.frame ),
+            threshold_min= request.threshold_min,
+            threshold_max= request.threshold_max,
+            stream_length= request.stream_length,
+        )
+
+        return result
+    
+    def base64ToPILImage(self, base64_data: str) -> Image.Image:
+        image_data = base64.b64decode( base64_data )
+        return Image.open( BytesIO(image_data) )
 
 
 def serve():
