@@ -7,20 +7,27 @@ import { ProfileRepository } from "../../../domain/profile/profile.repository";
 import { OcrEngineSettings, SettingsPreset } from "../../../domain/settings_preset/settings_preset";
 import { ImageProcessingAdapter } from "../../adapters/image_processing.adapter";
 import { OcrAdapter } from "../../adapters/ocr.adapter";
+import { VideoAnalyzerAdapter } from "../../adapters/video_analyzer.adapter";
 
 
 export type RecognizeImageInput = {    
     imageBuffer: Buffer;
     profileId: string;
     ocrAdapterName?: string;
+    autoMode?: boolean;
 }
 
 export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
+
+    private regionIsStable = false;
+    private previousResult: OcrResultScalable;
+    private motionDetectionThreshold = 300_000; // 500_00 | 1_000_000
 
     constructor(
         public ocrAdapters: OcrAdapter< TOcrSettings >[],
         public imageProcessing: ImageProcessingAdapter,
         public profileRepo: ProfileRepository,
+        public videoAnalyzer: VideoAnalyzerAdapter,
     ) {}
 
     async execute( input: RecognizeImageInput ): Promise< OcrResultScalable | null > {
@@ -80,6 +87,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
                 language: profile.active_ocr_language,
                 ocrAdapter,
                 template: profile.active_ocr_template,
+                autoMode: input.autoMode || false
             });
         }
         
@@ -100,6 +108,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
             template: OcrTemplate,
             ocrAdapter: OcrAdapter< TOcrSettings >,
             language: Language,
+            autoMode: boolean;
         }
     ): Promise< OcrResultScalable > {
 
@@ -132,10 +141,47 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
                 size: targetRegionPixels.size,
             });
 
+            if ( input.autoMode ) {
+                const motionResult = await this.videoAnalyzer.detectMotion({
+                    videoFrame: regionImage,
+                    streamId: targetRegion.id
+                });
+    
+                console.log({
+                    motionPixelsCount: motionResult.motionPixelsCount,
+                    width: targetRegionPixels.size.width,
+                    height: targetRegionPixels.size.height,
+                });
+    
+    
+                if ( motionResult.motionPixelsCount > this.motionDetectionThreshold ) {
+                    this.regionIsStable = false;
+                    console.log({
+                        regionIsStable: this.regionIsStable,
+                    });
+                    continue;
+                }
+                else if (
+                    motionResult.motionPixelsCount < this.motionDetectionThreshold &&
+                    !this.regionIsStable
+                ) {
+                    this.regionIsStable = true;
+                }
+                else {
+                    return this.previousResult;
+                    // continue;
+                }
+    
+                console.log({
+                    regionIsStable: this.regionIsStable,
+                });
+            }
+            
+
             const regionResult = await ocrAdapter.recognize({
-                imageBuffer: regionImage,
-                language: languageCode,
-            })
+                    imageBuffer: regionImage,
+                    language: languageCode,
+                })
                 .catch( console.error );
 
             if ( !regionResult ) continue;
@@ -153,6 +199,8 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
                 globalScaling: false,
             });
         }
+
+        this.previousResult = result;
 
         return result;
     }

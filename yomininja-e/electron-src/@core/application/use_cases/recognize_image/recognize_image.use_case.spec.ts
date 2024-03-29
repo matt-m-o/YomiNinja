@@ -16,6 +16,7 @@ import { OcrTemplateTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template
 import { OcrTargetRegionTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.schema";
 import { getDefaultSettingsPresetProps } from "../../../domain/settings_preset/default_settings_preset_props";
 import { ppOcrAdapterName } from "../../../infra/ocr/ppocr.adapter/ppocr_settings";
+import { PyVideoAnalyzerAdapter } from "../../../infra/ocr/py_video_analyzer.adapter/py_video_analyzer.adapter";
 
 describe("Recognize Image Use Case tests", () => {    
                 
@@ -110,6 +111,7 @@ describe("Recognize Image Use Case tests", () => {
             [ ocrTestAdapter ],
             imageProcessingDummyAdapter,
             profileRepo,
+            new PyVideoAnalyzerAdapter()
         );
 
         ocrTemplate = OcrTemplate.create({
