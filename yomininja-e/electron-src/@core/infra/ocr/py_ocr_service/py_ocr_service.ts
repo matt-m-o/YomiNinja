@@ -12,6 +12,8 @@ import isDev from 'electron-is-dev';
 import { BIN_DIR } from "../../../../util/directories.util";
 import { GetSupportedLanguagesRequest } from "../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesRequest";
 import { GetSupportedLanguagesResponse__Output } from "../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesResponse";
+import { MotionDetectionRequest } from "../../../../../grpc/rpc/ocr_service/MotionDetectionRequest";
+import { MotionDetectionResponse__Output } from "../../../../../grpc/rpc/ocr_service/MotionDetectionResponse";
 
 type OcrEnginesName = 'MangaOCR' | 'AppleVision' | string;
 
@@ -20,6 +22,7 @@ export class PyOcrService {
     public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
     private ocrServiceClient: OCRServiceClient | null = null;
     private serviceProcess: ChildProcessWithoutNullStreams;
+    private serverAddress: string;
     private binRoot: string;
     private serviceKeepAlive: NodeJS.Timeout;
 
@@ -128,6 +131,21 @@ export class PyOcrService {
 
         return clientResponse.language_codes;
     }
+
+    async motionDetection( input: MotionDetectionRequest ): Promise<number> {
+
+        const clientResponse = await new Promise< MotionDetectionResponse__Output | undefined >(
+            (resolve, reject) => this.ocrServiceClient?.MotionDetection( input, ( error, response ) => {
+                if (error) {
+                    this.restart( () => {} );
+                    return reject(error);
+                }
+                resolve(response);
+            })
+        );
+
+        return clientResponse?.frame_diff_sum || 0;
+    }
     
 
     startProcess( onInitialized?: ( input?: any ) => void ) {
@@ -157,6 +175,7 @@ export class PyOcrService {
                 const jsonData = JSON.parse( data.toString().split('[INFO-JSON]:')[1] );
 
                 if ( 'server_address' in jsonData ) {
+                    this.serverAddress = jsonData.server_address;
                     this.connect( jsonData.server_address );
                     this.keepAlive();
                     if ( onInitialized )
@@ -228,7 +247,10 @@ export class PyOcrService {
             };
 
             this.ocrServiceClient?.KeepAlive( requestInput, ( error, response ) => {
-                if ( error ) return console.error( error );
+                if ( error ) {
+                    console.error( error );
+                    this.connect( this.serverAddress );
+                }
             });
 
         }, ( timeoutSeconds - 10 ) * 1000 ); // Executes every 1000 milliseconds = 1 second
