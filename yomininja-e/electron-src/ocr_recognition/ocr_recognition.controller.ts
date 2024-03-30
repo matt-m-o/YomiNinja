@@ -64,9 +64,10 @@ export class OcrRecognitionController {
         input: {
             image: Buffer,
             engineName?: string;
+            autoOcr?: boolean;
         }
     ) {
-        const { image, engineName } = input;
+        const { image, engineName, autoOcr } = input;
         
         
         try {
@@ -85,10 +86,11 @@ export class OcrRecognitionController {
             // console.timeEnd('controller.recognize');
             // console.log('');
 
-            if ( 
-                !ocrResultScalable ||
-                !ocrResultScalable?.ocr_regions?.length ||
-                !ocrResultScalable?.ocr_regions?.some( region => region?.results?.length )
+            if (
+                !autoOcr &&
+                ( !ocrResultScalable ||
+                  !ocrResultScalable?.ocr_regions?.length ||
+                  !ocrResultScalable?.ocr_regions?.some( region => region?.results?.length ) )
             ) {
                 const notification: InAppNotification = {
                     type: 'info',

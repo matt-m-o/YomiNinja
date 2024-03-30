@@ -23,6 +23,7 @@ import { ocrTemplatesController } from "../ocr_templates/ocr_templates.index";
 import { htmlMouseButtonToUiohook, matchUiohookMouseEventButton } from "../common/mouse_helpers";
 import { debounce } from "lodash";
 import { windowManager } from "node-window-manager";
+import { screenCapturerController } from "../screen_capturer/screen_capturer.index";
 const isMacOS = process.platform === 'darwin';
 
 let startupTimer: NodeJS.Timeout;
@@ -133,6 +134,12 @@ export class AppController {
         this.taskbar = this.appService.getTaskbar();
 
         this.activeCaptureSource = entireScreenAutoCaptureSource;
+
+        screenCapturerController.onCapture( 
+            async ( frame: Buffer ) => {
+                return this._handleVideoStream( frame );
+            }
+        );
     }
 
     registersIpcHandlers() {
@@ -188,7 +195,13 @@ export class AppController {
                 this.mainWindow.webContents.send(
                     'app:active_capture_source',
                     this.activeCaptureSource
-                ); 
+                );
+
+                await this.handleCaptureSourceSelection();
+                this.setOverlayBounds( 'maximized' );
+                
+                // TODO: Only call when auto mode is enable
+                screenCapturerController.createCaptureStream();
             }
         );
 
@@ -284,7 +297,7 @@ export class AppController {
                     else
                         return this.handleOcrCommand({
                             image: clipboard.readImage().toPNG(),
-                            runFullScreenImageCheck
+                            runFullScreenImageCheck //: false
                         });
                         // return this.ocrRecognitionController.recognize( clipboard.readImage().toPNG(), runFullScreenImageCheck );
                 }
@@ -523,6 +536,35 @@ export class AppController {
         this.showOverlayWindow();
         this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
     };
+
+    async _handleVideoStream( image: Buffer ) {
+
+        console.log('AppController._handleVideoStream');
+
+        // this.overlayWindow?.webContents.send( 'ocr:processing_started' );
+        
+        // await this.handleCaptureSourceSelection();
+
+        if ( !image ) return;
+
+        // this.setOverlayBounds( 'maximized' );
+        // this.showOverlayWindow();
+
+        if ( this.isEditingOcrTemplate ) {
+            return;
+        }
+        else {
+            await ocrRecognitionController.recognize({
+                    image,
+                    autoOcr: true
+                })
+                .catch( console.error );
+        }
+
+        // this.overlayWindow?.webContents.send( 'ocr:processing_complete' );
+        // this.showOverlayWindow();
+        // this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
+    }
 }
 
 type OcrCommandInput = {

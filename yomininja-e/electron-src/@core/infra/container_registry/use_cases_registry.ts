@@ -26,6 +26,7 @@ import { ChangeSelectedOcrEngineUseCase } from "../../application/use_cases/chan
 import { CreateBrowserExtensionUseCase } from "../../application/use_cases/browser_extension/create_browser_extension/create_browser_extension.use_case";
 import { UpdateBrowserExtensionUseCase } from "../../application/use_cases/browser_extension/update_browser_extension/update_browser_extension.use_case";
 import { GetBrowserExtensionsUseCase } from "../../application/use_cases/browser_extension/get_browser_extensions/get_browser_extensions.use_case";
+import { PyVideoAnalyzerAdapter } from "../ocr/py_video_analyzer.adapter/py_video_analyzer.adapter";
 
 export let enabledOcrEngines: symbol[] = [
     Registry.CloudVisionOcrAdapter,
@@ -50,6 +51,7 @@ container_registry.bind( Registry.RecognizeImageUseCaseInstance )
             enabledOcrEngines.map( symbol => context.container.get(symbol) ),
             context.container.get( Registry.SharpImageProcessingAdapter ),
             context.container.get( Registry.ProfileTypeOrmRepository ),
+            new PyVideoAnalyzerAdapter()
         );
     })
     .inSingletonScope();
