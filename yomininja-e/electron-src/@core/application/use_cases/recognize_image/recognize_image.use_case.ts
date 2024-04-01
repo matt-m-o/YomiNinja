@@ -21,7 +21,6 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
 
     private regionIsStable = false;
     private previousResult: OcrResultScalable;
-    private motionDetectionThreshold = 300_000; // 500_00 | 1_000_000
 
     constructor(
         public ocrAdapters: OcrAdapter< TOcrSettings >[],
@@ -128,6 +127,8 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
 
         for( const targetRegion of target_regions ) {
 
+            const { auto_ocr_options } = targetRegion;
+
             const targetRegionPixels = targetRegion.toPixels({
                 width: metadata.width,
                 height: metadata.height,
@@ -141,20 +142,30 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
                 size: targetRegionPixels.size,
             });
 
-            if ( input.autoMode ) {
+            if ( input.autoMode && auto_ocr_options.enabled ) {
                 const motionResult = await this.videoAnalyzer.detectMotion({
                     videoFrame: regionImage,
                     streamId: targetRegion.id
                 });
+
+                const motionThreshold = (
+                    ( (1 - auto_ocr_options.motion_sensitivity) / 10 ) *
+                    (
+                        targetRegionPixels.size.width *
+                        targetRegionPixels.size.height *
+                        255
+                    )
+                );
     
                 console.log({
                     motionPixelsCount: motionResult.motionPixelsCount,
+                    motionThreshold,
                     width: targetRegionPixels.size.width,
                     height: targetRegionPixels.size.height,
                 });
     
     
-                if ( motionResult.motionPixelsCount > this.motionDetectionThreshold ) {
+                if ( motionResult.motionPixelsCount > motionThreshold ) {
                     this.regionIsStable = false;
                     console.log({
                         regionIsStable: this.regionIsStable,
@@ -162,7 +173,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
                     continue;
                 }
                 else if (
-                    motionResult.motionPixelsCount < this.motionDetectionThreshold &&
+                    motionResult.motionPixelsCount < motionThreshold &&
                     !this.regionIsStable
                 ) {
                     this.regionIsStable = true;

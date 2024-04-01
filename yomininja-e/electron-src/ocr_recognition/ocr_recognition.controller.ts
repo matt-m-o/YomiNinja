@@ -79,7 +79,8 @@ export class OcrRecognitionController {
             const ocrResultScalable = await this.ocrRecognitionService.recognize({
                 imageBuffer: image,
                 profileId: getActiveProfile().id,
-                engineName
+                engineName,
+                autoMode: input.autoOcr
             });
             // console.log({ ocrResultScalable });
 

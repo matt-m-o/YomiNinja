@@ -47,6 +47,7 @@ export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = Oc
         imageBuffer?: Buffer;
         profileId: string;
         engineName?: string;
+        autoMode?: boolean;
     }): Promise< OcrResultScalable | null > {
         console.log('ocrRecognitionService.recognize');
 
@@ -66,7 +67,8 @@ export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = Oc
         return await this.recognizeImageUseCase.execute({
             imageBuffer,
             profileId: profileId,
-            ocrAdapterName: engineName
+            ocrAdapterName: engineName,
+            autoMode: Boolean( input.autoMode ),
         });
     }
 
