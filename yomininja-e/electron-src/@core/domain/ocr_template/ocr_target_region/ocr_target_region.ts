@@ -13,6 +13,11 @@ type Size = {
     height: number;
 };
 
+type AutoOcrOptions = {
+    enabled: boolean;
+    motion_sensitivity: number;
+}
+
 export type OcrTargetRegionConstructorProps = {
     id?: OcrTargetRegionId;
     ocr_template_id: OcrTemplateId;
@@ -20,6 +25,7 @@ export type OcrTargetRegionConstructorProps = {
     position: Position; // Percentages 0 ... 1
     size: Size; // Percentages 
     angle?: number; // degrees
+    auto_ocr_options?: AutoOcrOptions;
 };
 
 export interface OcrTargetRegionCreationInput extends Omit<
@@ -36,6 +42,7 @@ export class OcrTargetRegion {
     position: Position; // Percentages
     size: Size; // Percentages
     angle: number; // degrees
+    auto_ocr_options: AutoOcrOptions;
 
     constructor( props: OcrTargetRegionConstructorProps ) {
 
@@ -57,6 +64,10 @@ export class OcrTargetRegion {
         this.position = props.position;
         this.size = props.size;
         this.angle = props?.angle || 0;
+        this.auto_ocr_options = {
+            enabled: Boolean( props.auto_ocr_options?.enabled ),
+            motion_sensitivity: props.auto_ocr_options?.motion_sensitivity || 300_000 
+        }
     }
 
     static create( input: OcrTargetRegionCreationInput ): OcrTargetRegion {
@@ -96,7 +107,8 @@ export class OcrTargetRegion {
             ocr_template: this?.ocr_template,
             position: this.position,
             size: this.size,
-            angle: this.angle
+            angle: this.angle,
+            auto_ocr_options: this.auto_ocr_options
         };
     }
 

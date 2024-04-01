@@ -31,7 +31,12 @@ export const OcrTargetRegionTypeOrmSchema = new EntitySchema< OcrTargetRegion >(
         angle: {
             type: Number,
             default: 0,
-        }
+        },
+
+        auto_ocr_options: {
+            type: 'json',
+            nullable: true
+        },
     },
 
     relations: {
