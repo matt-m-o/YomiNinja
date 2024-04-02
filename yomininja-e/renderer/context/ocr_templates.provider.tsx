@@ -142,6 +142,10 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
                     width: data.size.width || item.size.width,
                     height: data.size.height || item.size.height,
                 },
+                auto_ocr_options: {
+                    ...item.auto_ocr_options,
+                    ...data.auto_ocr_options,
+                }
             };
         });
     

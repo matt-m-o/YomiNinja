@@ -1,10 +1,11 @@
-import { styled } from "@mui/material";
+import { FormControlLabel, styled, Switch } from "@mui/material";
 import { useContext, useEffect, useRef, useState } from "react";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 import OcrTargetRegion from "./OcrTargetRegion";
 import Moveable from "react-moveable";
 import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
 import Selecto from "react-selecto";
+import OcrSettingsSlider from "../AppSettings/OcrSettings/OcrSettingsSlider";
 
 export type Size = { // Pixels
     width: number;
@@ -18,6 +19,7 @@ export type Position = { // Pixels
 
 export const TemplateDiv = styled('div')( {
     display: 'flex',
+    flexDirection: 'column',
     position: 'relative',
     maxWidth: '100%',
     boxSizing: 'border-box',
@@ -49,6 +51,10 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
 
     const [ templateSize, setTemplateSize ] = useState< Size >();
     const [ selectedTargetRegion, setSelectedTargetRegion ] = useState< OcrTargetRegionJson | null >();
+
+    const motionSensitivity = selectedTargetRegion?.auto_ocr_options?.motion_sensitivity || 0;
+
+
 
     const imgRef = useRef< HTMLImageElement >( null );
     const moveableRef = useRef< Moveable >( null );
@@ -98,7 +104,8 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
     
 
     return ( <>
-        { activeOcrTemplate &&
+        { activeOcrTemplate && <>
+        
             <TemplateDiv id='ocr-template-div' className='ocr-template-div'>
                     
 
@@ -145,7 +152,7 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                     boundContainer={ document.getElementById( 'ocr-template-div' ) }
                     onSelectEnd={ e => {
 
-                        // console.log( e );
+                        console.log( e );
 
                         let didSelectARegion = false;
 
@@ -192,8 +199,66 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                         });
                     }}
                 />
+                
             </TemplateDiv>
-        }
+            
+            { selectedTargetRegion && <>
+
+                <FormControlLabel label='Auto OCR'
+                    // title=''
+                    sx={{ ml: 1,  mt: 2 }}
+                    control={
+                        <Switch
+                            checked={ Boolean( selectedTargetRegion?.auto_ocr_options?.enabled ) }
+                            onChange={ ( event ) => {
+                                console.log( event.target.checked )
+
+                                const updatedRegion = {
+                                    ...selectedTargetRegion,
+                                    auto_ocr_options: {
+                                        ...selectedTargetRegion.auto_ocr_options,
+                                        enabled: event.target.checked
+                                    }
+                                }
+
+                                updateTargetRegion( updatedRegion );
+                                setSelectedTargetRegion( updatedRegion );
+                            }}
+                        /> 
+                    }
+                />
+
+                <OcrSettingsSlider
+                    label="Motion Sensitivity"
+                    min={0}
+                    max={100}
+                    value={ motionSensitivity ? motionSensitivity * 100 : 0 }
+                    step={0.01}
+                    leftLabel="Low"
+                    rightLabel="High"
+                    onChange={ ( event, newValue ) => {
+                        if (typeof newValue === 'number') {
+                            setSelectedTargetRegion({
+                                ...selectedTargetRegion,
+                                auto_ocr_options: {
+                                    ...selectedTargetRegion.auto_ocr_options,
+                                    motion_sensitivity: newValue > 0 ? newValue / 100 : 0
+                                }
+                            })
+                        }
+                    }}
+                    onChangeCommitted={ () => {
+                        updateTargetRegion({
+                            ...selectedTargetRegion,
+                            auto_ocr_options: {
+                                ...selectedTargetRegion.auto_ocr_options,
+                            }
+                        });
+                    }}
+                />
+                
+            </>}
+        </> }
     </> )
 
 }
