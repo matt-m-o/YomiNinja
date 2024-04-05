@@ -105,6 +105,15 @@ export class OcrTemplate {
         this.target_regions = this.target_regions || [];
     }
 
+    isAutoOcrEnabled(): boolean {
+        for ( const region of this.target_regions ) {
+            if ( region?.auto_ocr_options?.enabled )
+                return true;
+        }
+
+        return false;
+    }
+
     toJson(): OcrTemplateJson {
         return {
             id: this.id,

@@ -15,6 +15,9 @@ export class ScreenCapturerService {
 
         const { display, window } = input;
 
+        if ( this.screenCapturerWindow )
+            return;
+
         this.createCapturerWindow( false );
     }
 

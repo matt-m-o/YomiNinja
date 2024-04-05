@@ -10,4 +10,7 @@ export class ScreenCapturerController {
         screenCapturerService.onCapture( handler );
     }
 
+    destroyScreenCapturer() {
+        screenCapturerService.destroyScreenCapturer();
+    }
 }

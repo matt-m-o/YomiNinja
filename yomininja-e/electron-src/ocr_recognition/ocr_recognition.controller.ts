@@ -20,7 +20,7 @@ export class OcrRecognitionController {
     
     private mainWindow: BrowserWindow;
     private overlayWindow: BrowserWindow;
-
+    private recognizing: boolean = false; 
 
     constructor( input: {        
         ocrRecognitionService: OcrRecognitionService< OcrEngineSettingsU >;        
@@ -69,6 +69,7 @@ export class OcrRecognitionController {
     ) {
         const { image, engineName, autoOcr } = input;
         
+        this.recognizing = true;
         
         try {
             console.log('');
@@ -110,6 +111,7 @@ export class OcrRecognitionController {
         } catch (error) {
             console.error( error );
         }
+        this.recognizing = false;
     }
 
     async applySettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
@@ -137,6 +139,10 @@ export class OcrRecognitionController {
                 }
             );
         }, 3000 );
+    }
+
+    isRecognizing(): boolean {
+        return this.recognizing;
     }
 
 }

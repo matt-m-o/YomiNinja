@@ -19,7 +19,7 @@ import { settingsController } from "../settings/settings.index";
 import { appInfoController } from "../app_info/app_info.index";
 import { profileController } from "../profile/profile.index";
 import { dictionariesController } from "../dictionaries/dictionaries.index";
-import { ocrTemplatesController } from "../ocr_templates/ocr_templates.index";
+import { ocrTemplateEvents, ocrTemplatesController } from "../ocr_templates/ocr_templates.index";
 import { htmlMouseButtonToUiohook, matchUiohookMouseEventButton } from "../common/mouse_helpers";
 import { debounce } from "lodash";
 import { windowManager } from "node-window-manager";
@@ -51,6 +51,7 @@ export class AppController {
 
     private isEditingOcrTemplate: boolean = false;
 
+    private isCaptureSourceUserSelected: boolean = false;
 
     constructor( input: {
         appService: AppService
@@ -129,6 +130,7 @@ export class AppController {
 
         this.registerGlobalShortcuts( settings.toJson() );
         this.registersIpcHandlers();
+        this.registerEventHandlers();
         this.handleCaptureSourceSelection();
 
         this.taskbar = this.appService.getTaskbar();
@@ -201,7 +203,10 @@ export class AppController {
                 this.setOverlayBounds( 'maximized' );
                 
                 // TODO: Only call when auto mode is enable
-                screenCapturerController.createCaptureStream();
+                if ( ocrTemplatesController.isAutoOcrEnabled )
+                    screenCapturerController.createCaptureStream();
+
+                this.isCaptureSourceUserSelected = true;
             }
         );
 
@@ -211,6 +216,19 @@ export class AppController {
                 console.log( 'app:editing_ocr_template: '+message );
             }
         );
+    }
+
+    registerEventHandlers() {
+        ocrTemplateEvents.on( 'active_template', template => {
+            const isAutoOcrEnabled = template?.isAutoOcrEnabled() || false;
+            console.log({ isAutoOcrEnabled });
+
+            if ( !isAutoOcrEnabled )
+                screenCapturerController.destroyScreenCapturer();
+
+            if ( isAutoOcrEnabled && this.isCaptureSourceUserSelected )
+                screenCapturerController.createCaptureStream();
+        });
     }
 
     async registerGlobalShortcuts( settingsPresetJson?: SettingsPresetJson ) {
@@ -554,6 +572,10 @@ export class AppController {
             return;
         }
         else {
+            
+            if ( ocrRecognitionController.isRecognizing() )
+                return;
+
             await ocrRecognitionController.recognize({
                     image,
                     autoOcr: true
