@@ -118,9 +118,12 @@ function ScreenCapturerElement() {
 
         while ( true ) {
             await sleep(300); // 250
-            console.time('while task')
-            await task( offscreenCanvas );
-            console.timeEnd('while task')
+            // console.time('capture');
+            await task( offscreenCanvas )
+                .catch( async () => {
+                    location.reload();
+                });
+            // console.timeEnd('capture');
         }
     }
 

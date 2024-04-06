@@ -204,7 +204,7 @@ export class AppController {
                 
                 // TODO: Only call when auto mode is enable
                 if ( ocrTemplatesController.isAutoOcrEnabled )
-                    screenCapturerController.createCaptureStream();
+                    screenCapturerController.createCaptureStream(true);
 
                 this.isCaptureSourceUserSelected = true;
             }

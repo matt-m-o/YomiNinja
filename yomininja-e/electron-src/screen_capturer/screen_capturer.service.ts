@@ -11,11 +11,14 @@ export class ScreenCapturerService {
     screenCapturerWindow: BrowserWindow | undefined;
     captureHandler: ( frame: Buffer ) => void;
 
-    async createCaptureStream( input: { display?: Electron.Display, window?: ExternalWindow }  ) {
+    async createCaptureStream( input: { display?: Electron.Display, window?: ExternalWindow, force?: boolean }  ) {
 
         const { display, window } = input;
 
-        if ( this.screenCapturerWindow )
+        if ( 
+            !input.force &&
+            this.screenCapturerWindow
+        )
             return;
 
         this.createCapturerWindow( false );

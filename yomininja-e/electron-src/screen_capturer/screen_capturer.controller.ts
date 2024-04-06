@@ -2,8 +2,8 @@ import { screenCapturerService } from "./screen_capturer.index";
 
 export class ScreenCapturerController {
 
-    createCaptureStream() {
-        screenCapturerService.createCaptureStream({});
+    createCaptureStream( force = false ) {
+        screenCapturerService.createCaptureStream({ force });
     }
 
     onCapture( handler: ( frame: Buffer ) => Promise<void> ) {
