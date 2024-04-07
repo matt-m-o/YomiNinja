@@ -1,4 +1,4 @@
-import { BrowserWindow, IpcMainInvokeEvent, app, clipboard, globalShortcut, ipcMain } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, Tray, nativeImage, app, clipboard, globalShortcut, ipcMain, Menu } from "electron";
 import { UiohookKey, uIOhook } from "uiohook-napi";
 import { CaptureSource, ExternalWindow } from "../ocr_recognition/common/types";
 import { TaskbarProperties } from "../../gyp_modules/window_management/window_manager";
@@ -24,6 +24,8 @@ import { htmlMouseButtonToUiohook, matchUiohookMouseEventButton } from "../commo
 import { debounce } from "lodash";
 import { windowManager } from "node-window-manager";
 import { screenCapturerController } from "../screen_capturer/screen_capturer.index";
+import { ICONS_DIR } from "../util/directories.util";
+import { join } from "path";
 const isMacOS = process.platform === 'darwin';
 
 let startupTimer: NodeJS.Timeout;
@@ -53,6 +55,8 @@ export class AppController {
 
     private isCaptureSourceUserSelected: boolean = false;
 
+    private tray: Tray;
+
     constructor( input: {
         appService: AppService
     }) {
@@ -61,7 +65,7 @@ export class AppController {
 
         if ( isMacOS && !windowManager.requestAccessibility() )
             return;
-        
+
         uIOhook.start();
     }
 
@@ -82,7 +86,8 @@ export class AppController {
 
         // if ( isDev )
             // createDebuggingWindow();
-  
+
+        this.createTrayIcon();
 
         await initializeApp()
             .then( async () => {
@@ -586,6 +591,62 @@ export class AppController {
         // this.overlayWindow?.webContents.send( 'ocr:processing_complete' );
         // this.showOverlayWindow();
         // this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
+    }
+
+    createTrayIcon() {
+
+        const { platform } = process;
+
+        const appName = app.getName();
+        const appIconFile = platform === 'win32' ?
+            'icon.ico' :
+            'icon_512x512.png';
+
+        const toggleMainWindow = ( show?: boolean ) => {
+
+            if ( show )
+                return this.mainWindow.show();
+
+            if ( this.mainWindow.isVisible() )
+                return this.mainWindow.hide();
+            
+            this.mainWindow.show();
+        }
+        
+        if ( !isMacOS ) {
+
+            const iconPath = join( ICONS_DIR, appIconFile );
+            const trayIcon = nativeImage.createFromPath( iconPath );
+            trayIcon.resize({ width: 16, height: 16, quality: 'best' });
+
+            this.tray = new Tray( trayIcon );
+            this.tray.setToolTip( appName );
+            this.tray.on( 'click', () => toggleMainWindow( true ) );
+            const contextMenu = Menu.buildFromTemplate([
+                {
+                    label: `Hide/Show ${app.getName()}`,
+                    click: ( item ) => toggleMainWindow()
+                },
+                {
+                    label: 'Hide/Show Overlay',
+                    click: ( item ) => {
+                        if ( this.overlayWindow.isVisible() ) 
+                            return this.overlayWindow.hide();
+
+                        this.overlayWindow.show();
+                    }
+                },
+                {
+                    type: 'separator'
+                },
+                {
+                    label: 'Quit',
+                    click: () => app.quit()
+                }
+            ]);
+            
+            this.tray.setContextMenu(contextMenu);
+        }
     }
 }
 
