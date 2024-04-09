@@ -1,11 +1,12 @@
-import { FormControlLabel, styled, Switch } from "@mui/material";
-import { useContext, useEffect, useRef, useState } from "react";
+import { Container, FormControlLabel, styled, Switch, Typography } from "@mui/material";
+import { CSSProperties, useContext, useEffect, useRef, useState } from "react";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 import OcrTargetRegion from "./OcrTargetRegion";
 import Moveable from "react-moveable";
 import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
 import Selecto from "react-selecto";
 import OcrSettingsSlider from "../AppSettings/OcrSettings/OcrSettingsSlider";
+import { CustomAccordion } from "../common/CustomAccordion";
 
 export type Size = { // Pixels
     width: number;
@@ -33,6 +34,10 @@ export const TemplateDiv = styled('div')( {
         backgroundColor: 'red !important'
     }
 });
+
+function OptionsAccordion () {
+    return 
+}
 
 export type OcrTemplateEditorProps = {
     ignoreKeyboard?: boolean;
@@ -101,7 +106,11 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
             document.removeEventListener( 'keydown', handleKeyDown );
         };
     }, [ selectedTargetRegion, ignoreKeyboard ] );
-    
+
+
+    const accordionStyle: CSSProperties = {
+        backgroundColor: '#202124'
+    };
 
     return ( <>
         { activeOcrTemplate && <>
@@ -204,58 +213,83 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
             
             { selectedTargetRegion && <>
 
-                <FormControlLabel label='Auto OCR'
-                    // title=''
-                    sx={{ ml: 1,  mt: 2 }}
-                    control={
-                        <Switch
-                            checked={ Boolean( selectedTargetRegion?.auto_ocr_options?.enabled ) }
-                            onChange={ ( event ) => {
-                                console.log( event.target.checked )
+                <Typography gutterBottom component="div" mt={3} mb={1} fontSize='1.1rem'>
+                    Region Options
+                </Typography>
 
-                                const updatedRegion = {
+                <Container maxWidth='xl' >
+                    <CustomAccordion style={accordionStyle}
+                        summary={
+                            <Typography fontSize={'1.1rem'}>
+                                Auto OCR 
+                            </Typography>
+                        }
+                        detailsSx={{ pl: 3 }}
+                    >
+                        <FormControlLabel label='Enable Auto OCR'
+                            // title=''
+                            sx={{ ml: 0,  mt: 0, mb: 1 }}
+                            control={
+                                <Switch
+                                    checked={ Boolean( selectedTargetRegion?.auto_ocr_options?.enabled ) }
+                                    onChange={ ( event ) => {
+                                        console.log( event.target.checked )
+
+                                        const updatedRegion = {
+                                            ...selectedTargetRegion,
+                                            auto_ocr_options: {
+                                                ...selectedTargetRegion.auto_ocr_options,
+                                                enabled: event.target.checked
+                                            }
+                                        }
+
+                                        updateTargetRegion( updatedRegion );
+                                        setSelectedTargetRegion( updatedRegion );
+                                    }}
+                                /> 
+                            }
+                        />
+
+                        <OcrSettingsSlider
+                            label="Motion Sensitivity"
+                            min={0}
+                            max={100}
+                            value={ motionSensitivity ? motionSensitivity * 100 : 0 }
+                            step={0.01}
+                            leftLabel="Low"
+                            rightLabel="High"
+                            onChange={ ( event, newValue ) => {
+                                if (typeof newValue === 'number') {
+                                    setSelectedTargetRegion({
+                                        ...selectedTargetRegion,
+                                        auto_ocr_options: {
+                                            ...selectedTargetRegion.auto_ocr_options,
+                                            motion_sensitivity: newValue > 0 ? newValue / 100 : 0
+                                        }
+                                    })
+                                }
+                            }}
+                            onChangeCommitted={ () => {
+                                updateTargetRegion({
                                     ...selectedTargetRegion,
                                     auto_ocr_options: {
                                         ...selectedTargetRegion.auto_ocr_options,
-                                        enabled: event.target.checked
                                     }
-                                }
-
-                                updateTargetRegion( updatedRegion );
-                                setSelectedTargetRegion( updatedRegion );
+                                });
                             }}
-                        /> 
-                    }
-                />
+                        />
+                    </CustomAccordion>
 
-                <OcrSettingsSlider
-                    label="Motion Sensitivity"
-                    min={0}
-                    max={100}
-                    value={ motionSensitivity ? motionSensitivity * 100 : 0 }
-                    step={0.01}
-                    leftLabel="Low"
-                    rightLabel="High"
-                    onChange={ ( event, newValue ) => {
-                        if (typeof newValue === 'number') {
-                            setSelectedTargetRegion({
-                                ...selectedTargetRegion,
-                                auto_ocr_options: {
-                                    ...selectedTargetRegion.auto_ocr_options,
-                                    motion_sensitivity: newValue > 0 ? newValue / 100 : 0
-                                }
-                            })
+                    {/* <CustomAccordion style={{ backgroundColor: '#181818' }}
+                        summary={
+                            <Typography fontSize={'1.05rem'}>
+                                Text-to-Speech
+                            </Typography>
                         }
-                    }}
-                    onChangeCommitted={ () => {
-                        updateTargetRegion({
-                            ...selectedTargetRegion,
-                            auto_ocr_options: {
-                                ...selectedTargetRegion.auto_ocr_options,
-                            }
-                        });
-                    }}
-                />
+                    >
+                    </CustomAccordion> */}
+
+                </Container>
                 
             </>}
         </> }
