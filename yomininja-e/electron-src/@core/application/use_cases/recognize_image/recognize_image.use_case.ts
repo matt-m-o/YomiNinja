@@ -204,6 +204,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
             // const regionResultScalable = OcrResultScalable.createFromOcrResult( regionResult );
 
             result.addRegionResult({
+                regionId: targetRegion?.id,
                 regionResult,
                 regionPosition: targetRegion.position,
                 regionSize: targetRegion.size,
