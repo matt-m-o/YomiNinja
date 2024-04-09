@@ -18,6 +18,14 @@ type AutoOcrOptions = {
     motion_sensitivity: number;
 }
 
+type TextToSpeechOptions = {
+    voice_uri: string;
+    automatic: boolean;
+    on_hover: boolean;
+    on_click: boolean;
+    volume: number; // 0.0 -> 1.0
+}
+
 export type OcrTargetRegionConstructorProps = {
     id?: OcrTargetRegionId;
     ocr_template_id: OcrTemplateId;
@@ -26,6 +34,7 @@ export type OcrTargetRegionConstructorProps = {
     size: Size; // Percentages 
     angle?: number; // degrees
     auto_ocr_options?: AutoOcrOptions;
+    text_to_speech_options?: TextToSpeechOptions;
 };
 
 export interface OcrTargetRegionCreationInput extends Omit<
@@ -43,6 +52,7 @@ export class OcrTargetRegion {
     size: Size; // Percentages
     angle: number; // degrees
     auto_ocr_options: AutoOcrOptions;
+    text_to_speech_options: TextToSpeechOptions;
 
     constructor( props: OcrTargetRegionConstructorProps ) {
 
@@ -67,6 +77,18 @@ export class OcrTargetRegion {
         this.auto_ocr_options = {
             enabled: Boolean( props.auto_ocr_options?.enabled ),
             motion_sensitivity: props.auto_ocr_options?.motion_sensitivity || 300_000 
+        }
+
+        const volume = props.text_to_speech_options?.volume !== undefined ?
+            props.text_to_speech_options?.volume :
+            1;
+
+        this.text_to_speech_options = {
+            voice_uri: props.text_to_speech_options?.voice_uri || '',
+            automatic: Boolean( props.text_to_speech_options?.automatic ),
+            on_click: Boolean( props.text_to_speech_options?.on_click ),
+            on_hover: Boolean( props.text_to_speech_options?.on_hover ),
+            volume,
         }
     }
 
@@ -108,7 +130,8 @@ export class OcrTargetRegion {
             position: this.position,
             size: this.size,
             angle: this.angle,
-            auto_ocr_options: this.auto_ocr_options
+            auto_ocr_options: this.auto_ocr_options,
+            text_to_speech_options: this.text_to_speech_options,
         };
     }
 

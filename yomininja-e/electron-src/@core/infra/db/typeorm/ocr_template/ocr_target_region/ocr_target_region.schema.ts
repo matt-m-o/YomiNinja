@@ -37,6 +37,11 @@ export const OcrTargetRegionTypeOrmSchema = new EntitySchema< OcrTargetRegion >(
             type: 'json',
             nullable: true
         },
+
+        text_to_speech_options: {
+            type: 'json',
+            nullable: true
+        },
     },
 
     relations: {
