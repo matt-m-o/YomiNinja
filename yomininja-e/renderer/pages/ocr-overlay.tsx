@@ -6,6 +6,7 @@ import OcrOverlay from '../components/OcrOverlay/OcrOverlay';
 import { DictionaryProvider } from '../context/dictionary.provider';
 import { OcrTemplatesProvider } from '../context/ocr_templates.provider';
 import { NotificationsProvider } from '../context/notifications.provider';
+import { TTSProvider } from '../context/text-to-speech.provider';
 
 
 
@@ -27,9 +28,11 @@ export default function OcrOverlayPage() {
         <DictionaryProvider>
           <OcrResultProvider>
             <OcrTemplatesProvider>
+              <TTSProvider>
 
-              <OcrOverlay/>
-              
+                <OcrOverlay/>
+
+              </TTSProvider>
             </OcrTemplatesProvider>
           </OcrResultProvider>
         </DictionaryProvider>

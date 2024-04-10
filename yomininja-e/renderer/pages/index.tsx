@@ -21,6 +21,7 @@ import { NotificationsProvider } from '../context/notifications.provider';
 import ViewComfyRoundedIcon from '@mui/icons-material/ViewComfyRounded';
 import OcrTemplates from "../components/OcrTemplates/OcrTemplates";
 import { OcrTemplatesProvider } from '../context/ocr_templates.provider';
+import { TTSProvider } from '../context/text-to-speech.provider';
 
 
 export default function IndexPage() {
@@ -119,9 +120,11 @@ export default function IndexPage() {
         <SettingsProvider>
           <ExtensionsProvider>
             <NotificationsProvider>
+              <TTSProvider>
 
-              <Layout {...layoutProps}/>
+                <Layout {...layoutProps}/>
 
+              </TTSProvider>
             </NotificationsProvider>
           </ExtensionsProvider>
         </SettingsProvider>
