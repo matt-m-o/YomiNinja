@@ -145,6 +145,10 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
                 auto_ocr_options: {
                     ...item.auto_ocr_options,
                     ...data.auto_ocr_options,
+                },
+                text_to_speech_options: {
+                    ...item.text_to_speech_options,
+                    ...data.text_to_speech_options,
                 }
             };
         });
