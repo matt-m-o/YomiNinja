@@ -29,13 +29,14 @@ export default function OcrResultBox( props: {
         width: number;
         height: number;
     };
+    ocrRegionId?: string;
     ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
     overlayHotkeys: OverlayHotkeys;
     overlayBehavior: OverlayBehavior;
     contentEditable: boolean;
-    onMouseEnter?: ( item: OcrItemScalable ) => void;
+    onMouseEnter?: ( item: OcrItemScalable, ocrRegionId?: string ) => void;
     onMouseLeave?: () => void;
-    onClick?: ( item: OcrItemScalable ) => void;
+    onClick?: ( item: OcrItemScalable, ocrRegionId?: string ) => void;
     onDoubleClick?: () => void;
     onBlur?: () => void;
 } ): JSX.Element {
@@ -44,7 +45,8 @@ export default function OcrResultBox( props: {
         ocrItem,
         ocrRegionSize,
         ocrItemBoxVisuals,
-        contentEditable
+        contentEditable,
+        ocrRegionId
     } = props;
     const { box } = ocrItem;
 
@@ -192,9 +194,9 @@ export default function OcrResultBox( props: {
                 minWidth: ( minWidth + sizeExpansionWidthPct ) + '%',
                 minHeight: ( box.dimensions.height + sizeExpansionHeightPct ) + '%',
             }}
-            onMouseEnter={ () => props.onMouseEnter( ocrItem ) }
+            onMouseEnter={ () => props.onMouseEnter( ocrItem, ocrRegionId ) }
             onMouseLeave={ props.onMouseLeave }
-            onClick={ () => props.onClick( ocrItem ) }
+            onClick={ () => props.onClick( ocrItem, ocrRegionId ) }
             onDoubleClick={ (e) => {
                 if ( !e.ctrlKey )
                     return;
