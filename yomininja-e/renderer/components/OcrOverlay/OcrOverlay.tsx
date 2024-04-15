@@ -38,6 +38,14 @@ const ProgressContainer = styled('div')({
 
 });
 
+const DragArea = styled('div')({
+  width: '100%',
+  height: '100%',
+  backgroundColor: '#00000092',
+  '-webkit-app-region': 'drag',
+  cursor: 'move'
+});
+
 export default function OcrOverlay() {
 
   const { activeSettingsPreset } = useContext( SettingsContext );
@@ -55,6 +63,7 @@ export default function OcrOverlay() {
   const overlayHotkeys: OverlayHotkeys = activeSettingsPreset?.overlay?.hotkeys;
   const overlayBehavior: OverlayBehavior = activeSettingsPreset?.overlay?.behavior;
 
+  let [ showDragArea, setShowDragArea ] = useState(false);
 
   useEffect( () => {
 
@@ -82,9 +91,12 @@ export default function OcrOverlay() {
       
     else
       value = false;
+
+    if ( showDragArea )
+      value = false;
     
     // console.log( currentElement );
-    // console.log( value );
+    console.log( value );
 
     global.ipcRenderer.invoke( 'overlay:set_ignore_mouse_events', value );
   };
@@ -95,10 +107,15 @@ export default function OcrOverlay() {
     
     if ( !window ) return;
 
+    global.ipcRenderer.on( 'set_movable', ( event, value ) => {
+      console.log({ value })
+      setShowDragArea( value );
+    });
+
     return () => {
       document.removeEventListener( 'mousemove', handleClickThrough );
+      global.ipcRenderer.removeAllListeners( 'set_movable' );
     };
-
 
   }, [] );
 
@@ -131,6 +148,20 @@ export default function OcrOverlay() {
         contentVisibility: showResults ? 'visible' : 'hidden'
       }}
     >
+      { showDragArea &&
+        <DragArea>
+          <Typography
+            
+            sx={{
+              ml: 2,
+              pt: 1,
+              color: overlayFrameVisuals?.border_color || 'red',
+            }}
+          >
+            The overlay is now movable and resizable!
+          </Typography>
+        </DragArea>
+      }
       {templateRegions}
       <FullscreenOcrResult
         ocrItemBoxVisuals={ocrItemBoxVisuals}

@@ -633,8 +633,15 @@ export class AppController {
                         if ( this.overlayWindow.isVisible() ) 
                             return this.overlayWindow.hide();
 
-                        this.overlayWindow.show();
+                        this.showOverlayWindow();
                     }
+                },
+                {
+                    label: 'Manually Move/Resize Overlay',
+                    click: () => {
+                        overlayController.toggleMovable();
+                    },
+                    accelerator: 'Ctrl+Shift+M'
                 },
                 {
                     type: 'separator'
@@ -644,7 +651,6 @@ export class AppController {
                     click: () => app.quit()
                 }
             ]);
-            
             this.tray.setContextMenu(contextMenu);
         }
     }

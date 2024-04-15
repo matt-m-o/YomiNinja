@@ -73,7 +73,8 @@ export class OverlayController {
 
         const windowOptions: Electron.BrowserWindowConstructorOptions = {
             fullscreen: useFullscreenMode,
-            frame: false,
+            frame: true,
+            movable: false,
             transparent: true,
             autoHideMenuBar: true,
             skipTaskbar: isMacOS,
@@ -256,6 +257,7 @@ export class OverlayController {
             this.globalShortcutAccelerators.push( overlayHotkeys.copy_text );
         }
 
+        globalShortcut.register( 'Ctrl+Shift+M', this.toggleMovable );
 
         uIOhook.on( 'mousemove', async ( e ) => {
 
@@ -465,5 +467,22 @@ export class OverlayController {
 
     private copyHoveredText = () => {
         this.copyText( this.hoveredText );
+    }
+
+    toggleMovable = ( newMovableState?: boolean ) => {
+
+        if ( newMovableState === undefined )
+            newMovableState = !this.overlayWindow.isMovable(); // isResizable
+
+        this.overlayWindow.setMovable( newMovableState );
+        this.overlayWindow.setResizable( newMovableState );
+        this.overlayWindow.setIgnoreMouseEvents(
+            !newMovableState, {
+                forward: !newMovableState
+            }
+        );
+
+        this.overlayWindow.webContents.send( 'set_movable', newMovableState );
+        this.overlayWindow.show();
     }
 }
