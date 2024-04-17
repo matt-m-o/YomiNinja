@@ -378,6 +378,9 @@ export class AppController {
     setOverlayBounds( entireScreenMode: 'fullscreen' | 'maximized' = 'fullscreen' ) {
         // console.time("setOverlayBounds");
 
+        if ( overlayController.isOverlayBoundsLocked )
+            return;
+
         const isFullscreen = entireScreenMode === 'fullscreen';
         
         if ( this.captureSourceDisplay ) {
@@ -628,6 +631,9 @@ export class AppController {
                     click: ( item ) => toggleMainWindow()
                 },
                 {
+                    type: 'separator'
+                },
+                {
                     label: 'Hide/Show Overlay',
                     click: ( item ) => {
                         if ( this.overlayWindow.isVisible() ) 
@@ -638,10 +644,20 @@ export class AppController {
                 },
                 {
                     label: 'Manually Move/Resize Overlay',
-                    click: () => {
-                        overlayController.toggleMovable();
+                    type: 'checkbox',
+                    click: ( item ) => {
+                        item.checked = overlayController.toggleMovable();
                     },
                     accelerator: 'Ctrl+Shift+M'
+                },
+                {
+                    label: 'Overlay Automatic Adjustment',
+                    toolTip: 'Overlay Auto Positioning and Resizing',
+                    type: 'checkbox',
+                    checked: !overlayController.isOverlayBoundsLocked,
+                    click: ( event ) => {
+                        overlayController.lockOverlayBounds( !event.checked );
+                    },
                 },
                 {
                     type: 'separator'

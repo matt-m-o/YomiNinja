@@ -37,6 +37,8 @@ export class OverlayController {
 
     private hoveredText: string = '';
 
+    isOverlayBoundsLocked: boolean = false;
+
     constructor( input: {
         overlayService: OverlayService
     }) {
@@ -469,7 +471,7 @@ export class OverlayController {
         this.copyText( this.hoveredText );
     }
 
-    toggleMovable = ( newMovableState?: boolean ) => {
+    toggleMovable = ( newMovableState?: boolean ): boolean => {
 
         if ( newMovableState === undefined )
             newMovableState = !this.overlayWindow.isMovable(); // isResizable
@@ -484,5 +486,11 @@ export class OverlayController {
 
         this.overlayWindow.webContents.send( 'set_movable', newMovableState );
         this.overlayWindow.show();
+
+        return newMovableState;
+    }
+
+    lockOverlayBounds( newState: boolean = true ) {
+        this.isOverlayBoundsLocked = newState;
     }
 }
