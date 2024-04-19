@@ -39,6 +39,8 @@ export class OverlayController {
 
     isOverlayBoundsLocked: boolean = false;
 
+    isOverlayWindowInTray: boolean = false;
+
     constructor( input: {
         overlayService: OverlayService
     }) {
@@ -355,6 +357,11 @@ export class OverlayController {
     private showOverlayWindow() {
         // console.log("OverlayController.showOverlayWindow");
 
+        if ( this.isOverlayWindowInTray ) {
+            this.isOverlayWindowInTray = false
+            this.overlayWindow.showInactive();
+        }
+
         this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
         
         const overlayWindowHandle = getBrowserWindowHandle( this.overlayWindow );
@@ -492,5 +499,10 @@ export class OverlayController {
 
     lockOverlayBounds( newState: boolean = true ) {
         this.isOverlayBoundsLocked = newState;
+    }
+
+    minimizeOverlayWindowToTray() {
+        this.overlayWindow.hide();
+        this.isOverlayWindowInTray = true;
     }
 }
