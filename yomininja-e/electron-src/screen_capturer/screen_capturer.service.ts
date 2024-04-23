@@ -57,7 +57,7 @@ export class ScreenCapturerService {
             this.screenCapturerWindow.show();
         }
         
-        this.screenCapturerWindow.webContents.on('dom-ready', this.screenCapturerWindow.webContents.openDevTools )
+        // this.screenCapturerWindow.webContents.on('dom-ready', this.screenCapturerWindow.webContents.openDevTools )
     }
 
     async destroyScreenCapturer() {
