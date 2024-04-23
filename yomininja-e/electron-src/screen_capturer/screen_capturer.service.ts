@@ -75,21 +75,8 @@ export class ScreenCapturerService {
             if ( !frame )
                 return;
 
-            // const index = message.length - 61;
-            // console.log( '\n'+ message.slice(index, index+60) );
-
-            // console.log("new frame!")
-            // handler( Buffer.from(message, 'base64url') );
             handler( frame );
 
-            // message.on('message', ( imageBitmap ) => {
-            //     // Handle the received ImageBitmap
-            //     // You can perform further processing or send it to other processes as needed
-            //     console.log('Received ImageBitmap:', imageBitmap);
-            // });
-
-            // const buffer = Buffer.from(new ArrayBuffer())
-            
         });
     }
 
