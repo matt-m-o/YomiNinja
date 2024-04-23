@@ -223,6 +223,10 @@ export default function Extensions() {
                                     <li> Click on <strong>Save</strong>. </li>
                                 </OL>
 
+                                <Typography fontSize={'1.1rem'}>
+                                    To log into jpdb.io, you can click on the "jpdb settings page" link from the JPDBReader extension settings screen.
+                                </Typography>
+
                             </CustomAccordion>
 
                         </Box>
