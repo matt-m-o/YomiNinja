@@ -220,231 +220,227 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                 />
                 
             </TemplateDiv>
-            
-            { selectedTargetRegion && <>
 
-                <Typography gutterBottom component="div" mt={3} mb={1} fontSize='1.1rem'>
-                    Region Options
-                </Typography>
+            <Typography gutterBottom component="div" mt={3} mb={1} fontSize='1.1rem'>
+                Region Options
+            </Typography>
 
-                <Container maxWidth='xl' >
-                    <CustomAccordion style={accordionStyle}
-                        summary={
-                            <Typography fontSize={'1.1rem'}>
-                                Auto OCR 
-                            </Typography>
-                        }
-                        title='Automatically run OCR based on detected visual changes'
-                        detailsSx={{ pl: 3 }}
-                    >
-                        <FormControlLabel label='Enable Auto OCR'
-                            sx={{ ml: 0,  mt: 0, mb: 1, width: '100%' }}
-                            control={
-                                <Switch
-                                    checked={ Boolean( selectedTargetRegion?.auto_ocr_options?.enabled ) }
-                                    onChange={ ( event ) => {
-                                        console.log( event.target.checked )
+            <Container maxWidth='xl' >
+                <CustomAccordion style={accordionStyle} disabled={ !Boolean(selectedTargetRegion) }
+                    summary={
+                        <Typography fontSize={'1.1rem'}>
+                            Auto OCR 
+                        </Typography>
+                    }
+                    title='Automatically run OCR based on detected visual changes'
+                    detailsSx={{ pl: 3 }}
+                >
+                    <FormControlLabel label='Enable Auto OCR'
+                        sx={{ ml: 0,  mt: 0, mb: 1, width: '100%' }}
+                        control={
+                            <Switch
+                                checked={ Boolean( selectedTargetRegion?.auto_ocr_options?.enabled ) }
+                                onChange={ ( event ) => {
+                                    console.log( event.target.checked )
 
-                                        const updatedRegion = {
-                                            ...selectedTargetRegion,
-                                            auto_ocr_options: {
-                                                ...selectedTargetRegion.auto_ocr_options,
-                                                enabled: event.target.checked,
-                                            }
-                                        }
-
-                                        updateTargetRegion( updatedRegion );
-                                        setSelectedTargetRegion( updatedRegion );
-                                    }}
-                                /> 
-                            }
-                        />
-
-                        <OcrSettingsSlider
-                            label="Motion Sensitivity"
-                            min={0}
-                            max={100}
-                            value={ motionSensitivity ? motionSensitivity * 100 : 0 }
-                            step={0.01}
-                            leftLabel="Low"
-                            rightLabel="High"
-                            onChange={ ( event, newValue ) => {
-                                if (typeof newValue === 'number') {
-                                    setSelectedTargetRegion({
+                                    const updatedRegion = {
                                         ...selectedTargetRegion,
                                         auto_ocr_options: {
                                             ...selectedTargetRegion.auto_ocr_options,
-                                            motion_sensitivity: newValue > 0 ? newValue / 100 : 0
+                                            enabled: event.target.checked,
                                         }
-                                    })
-                                }
-                            }}
-                            onChangeCommitted={ () => {
-                                updateTargetRegion({
+                                    }
+
+                                    updateTargetRegion( updatedRegion );
+                                    setSelectedTargetRegion( updatedRegion );
+                                }}
+                            /> 
+                        }
+                    />
+
+                    <OcrSettingsSlider
+                        label="Motion Sensitivity"
+                        min={0}
+                        max={100}
+                        value={ motionSensitivity ? motionSensitivity * 100 : 0 }
+                        step={0.01}
+                        leftLabel="Low"
+                        rightLabel="High"
+                        onChange={ ( event, newValue ) => {
+                            if (typeof newValue === 'number') {
+                                setSelectedTargetRegion({
                                     ...selectedTargetRegion,
                                     auto_ocr_options: {
                                         ...selectedTargetRegion.auto_ocr_options,
+                                        motion_sensitivity: newValue > 0 ? newValue / 100 : 0
                                     }
-                                });
-                            }}
-                        />
-                    </CustomAccordion>
+                                })
+                            }
+                        }}
+                        onChangeCommitted={ () => {
+                            updateTargetRegion({
+                                ...selectedTargetRegion,
+                                auto_ocr_options: {
+                                    ...selectedTargetRegion.auto_ocr_options,
+                                }
+                            });
+                        }}
+                    />
+                </CustomAccordion>
 
-                    <CustomAccordion style={accordionStyle}
-                        summary={
-                            <Typography fontSize={'1.1rem'}>
-                                Text-to-Speech
-                            </Typography>
-                        }
-                        detailsSx={{ pl: 3 }}
-                    >
+                <CustomAccordion style={accordionStyle} disabled={ !Boolean(selectedTargetRegion) }
+                    summary={
+                        <Typography fontSize={'1.1rem'}>
+                            Text-to-Speech
+                        </Typography>
+                    }
+                    detailsSx={{ pl: 3 }}
+                >
 
-                        <Autocomplete autoHighlight
-                            fullWidth
-                            renderInput={ (params) => {
-                                return <TextField {...params}
-                                    label='Voice'
-                                    fullWidth
-                                    InputProps={{
-                                        ...params.InputProps,
-                                        startAdornment: <RecordVoiceOverIcon sx={{ mr: '10px' }}/>,
-                                        style: { paddingLeft: '14px' }
-                                    }}
-                                />
-                            }}
-                            value={ targetRegionTTSVoiceName }
-                            onChange={( event: any, newValue: string | null ) => {
+                    <Autocomplete autoHighlight
+                        fullWidth
+                        renderInput={ (params) => {
+                            return <TextField {...params}
+                                label='Voice'
+                                fullWidth
+                                InputProps={{
+                                    ...params.InputProps,
+                                    startAdornment: <RecordVoiceOverIcon sx={{ mr: '10px' }}/>,
+                                    style: { paddingLeft: '14px' }
+                                }}
+                            />
+                        }}
+                        value={ targetRegionTTSVoiceName }
+                        onChange={( event: any, newValue: string | null ) => {
 
-                                const voice_uri = getVoices()
-                                    ?.find( item => item.name === newValue )
-                                    ?.voiceURI;
+                            const voice_uri = getVoices()
+                                ?.find( item => item.name === newValue )
+                                ?.voiceURI;
 
-                                // handleLanguageSelectChange( newValue );
-                                const updatedRegion = {
+                            // handleLanguageSelectChange( newValue );
+                            const updatedRegion = {
+                                ...selectedTargetRegion,
+                                text_to_speech_options: {
+                                    ...selectedTargetRegion.text_to_speech_options,
+                                    voice_uri
+                                }
+                            }
+
+                            updateTargetRegion( updatedRegion );
+                            setSelectedTargetRegion( updatedRegion );
+                        }}
+                        options={ ttsVoiceOptions }
+                        sx={{ mb: '25px' }}
+                        ListboxProps={{
+                            style: {
+                                backgroundColor: '#121212',
+                            }
+                        }}
+                    />
+
+                    <OcrSettingsSlider
+                        label="Volume"
+                        min={0}
+                        max={100}
+                        value={ Number( selectedTargetRegion?.text_to_speech_options?.volume ) * 100 }
+                        step={1}
+                        onChange={ ( event, newValue ) => {
+                            if (typeof newValue === 'number') {
+
+                                newValue = newValue / 100;
+
+                                setSelectedTargetRegion({
                                     ...selectedTargetRegion,
                                     text_to_speech_options: {
                                         ...selectedTargetRegion.text_to_speech_options,
-                                        voice_uri
+                                        volume: newValue
                                     }
+                                })
+                            }
+                        }}
+                        onChangeCommitted={ () => {
+                            updateTargetRegion({
+                                ...selectedTargetRegion,
+                                text_to_speech_options: {
+                                    ...selectedTargetRegion.text_to_speech_options,
                                 }
+                            });
+                        }}
+                    />
 
-                                updateTargetRegion( updatedRegion );
-                                setSelectedTargetRegion( updatedRegion );
-                            }}
-                            options={ ttsVoiceOptions }
-                            sx={{ mb: '25px' }}
-                            ListboxProps={{
-                                style: {
-                                    backgroundColor: '#121212',
-                                }
-                            }}
-                        />
+                    <FormControlLabel label='Autoplay'
+                        // title=''
+                        sx={{ ml: 0,  mt: 0, mb: 1, width: '100%' }}
+                        control={
+                            <Switch
+                                checked={ Boolean( selectedTargetRegion?.text_to_speech_options?.automatic ) }
+                                onChange={ ( event ) => {
+                                    console.log( event.target.checked )
 
-                        <OcrSettingsSlider
-                            label="Volume"
-                            min={0}
-                            max={100}
-                            value={ Number( selectedTargetRegion?.text_to_speech_options?.volume ) * 100 }
-                            step={1}
-                            onChange={ ( event, newValue ) => {
-                                if (typeof newValue === 'number') {
-
-                                    newValue = newValue / 100;
-
-                                    setSelectedTargetRegion({
+                                    const updatedRegion = {
                                         ...selectedTargetRegion,
                                         text_to_speech_options: {
                                             ...selectedTargetRegion.text_to_speech_options,
-                                            volume: newValue
+                                            automatic: event.target.checked
                                         }
-                                    })
-                                }
-                            }}
-                            onChangeCommitted={ () => {
-                                updateTargetRegion({
-                                    ...selectedTargetRegion,
-                                    text_to_speech_options: {
-                                        ...selectedTargetRegion.text_to_speech_options,
                                     }
-                                });
-                            }}
-                        />
 
-                        <FormControlLabel label='Autoplay'
-                            // title=''
-                            sx={{ ml: 0,  mt: 0, mb: 1, width: '100%' }}
-                            control={
-                                <Switch
-                                    checked={ Boolean( selectedTargetRegion?.text_to_speech_options?.automatic ) }
-                                    onChange={ ( event ) => {
-                                        console.log( event.target.checked )
+                                    updateTargetRegion( updatedRegion );
+                                    setSelectedTargetRegion( updatedRegion );
+                                }}
+                            /> 
+                        }
+                    />
 
-                                        const updatedRegion = {
-                                            ...selectedTargetRegion,
-                                            text_to_speech_options: {
-                                                ...selectedTargetRegion.text_to_speech_options,
-                                                automatic: event.target.checked
-                                            }
+                    <FormControlLabel label='Play on click'
+                        // title=''
+                        sx={{ ml: 0,  mt: 0, mb: 1, width: '100%' }}
+                        control={
+                            <Switch
+                                checked={ Boolean( selectedTargetRegion?.text_to_speech_options?.on_click ) }
+                                onChange={ ( event ) => {
+
+                                    const updatedRegion = {
+                                        ...selectedTargetRegion,
+                                        text_to_speech_options: {
+                                            ...selectedTargetRegion.text_to_speech_options,
+                                            on_click: event.target.checked
                                         }
+                                    }
 
-                                        updateTargetRegion( updatedRegion );
-                                        setSelectedTargetRegion( updatedRegion );
-                                    }}
-                                /> 
-                            }
-                        />
+                                    updateTargetRegion( updatedRegion );
+                                    setSelectedTargetRegion( updatedRegion );
+                                }}
+                            /> 
+                        }
+                    />
 
-                        <FormControlLabel label='Play on click'
-                            // title=''
-                            sx={{ ml: 0,  mt: 0, mb: 1, width: '100%' }}
-                            control={
-                                <Switch
-                                    checked={ Boolean( selectedTargetRegion?.text_to_speech_options?.on_click ) }
-                                    onChange={ ( event ) => {
+                    <FormControlLabel label='Play on hover'
+                        // title=''
+                        sx={{ ml: 0,  mt: 0, mb: 1, width: '100%' }}
+                        control={
+                            <Switch
+                                checked={ Boolean( selectedTargetRegion?.text_to_speech_options?.on_hover ) }
+                                onChange={ ( event ) => {
+                                    console.log( event.target.checked )
 
-                                        const updatedRegion = {
-                                            ...selectedTargetRegion,
-                                            text_to_speech_options: {
-                                                ...selectedTargetRegion.text_to_speech_options,
-                                                on_click: event.target.checked
-                                            }
+                                    const updatedRegion = {
+                                        ...selectedTargetRegion,
+                                        text_to_speech_options: {
+                                            ...selectedTargetRegion.text_to_speech_options,
+                                            on_hover: event.target.checked
                                         }
+                                    }
 
-                                        updateTargetRegion( updatedRegion );
-                                        setSelectedTargetRegion( updatedRegion );
-                                    }}
-                                /> 
-                            }
-                        />
+                                    updateTargetRegion( updatedRegion );
+                                    setSelectedTargetRegion( updatedRegion );
+                                }}
+                            /> 
+                        }
+                    />
+                </CustomAccordion>
 
-                        <FormControlLabel label='Play on hover'
-                            // title=''
-                            sx={{ ml: 0,  mt: 0, mb: 1, width: '100%' }}
-                            control={
-                                <Switch
-                                    checked={ Boolean( selectedTargetRegion?.text_to_speech_options?.on_hover ) }
-                                    onChange={ ( event ) => {
-                                        console.log( event.target.checked )
-
-                                        const updatedRegion = {
-                                            ...selectedTargetRegion,
-                                            text_to_speech_options: {
-                                                ...selectedTargetRegion.text_to_speech_options,
-                                                on_hover: event.target.checked
-                                            }
-                                        }
-
-                                        updateTargetRegion( updatedRegion );
-                                        setSelectedTargetRegion( updatedRegion );
-                                    }}
-                                /> 
-                            }
-                        />
-                    </CustomAccordion>
-
-                </Container>
-                
-            </>}
+            </Container>
         </> }
     </> )
 
