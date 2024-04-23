@@ -134,8 +134,6 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
                 height: metadata.height,
             });
 
-            // console.log( targetRegionPixels );
-
             const regionImage = await this.imageProcessing.extract({
                 image,
                 position: targetRegionPixels.position,
@@ -156,20 +154,22 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
                         255
                     )
                 );
-    
-                console.log({
-                    motionPixelsCount: motionResult.motionPixelsCount,
-                    motionThreshold,
-                    width: targetRegionPixels.size.width,
-                    height: targetRegionPixels.size.height,
-                });
+                
+                // ! useful
+                // console.log({
+                //     motionPixelsCount: motionResult.motionPixelsCount,
+                //     motionThreshold,
+                //     width: targetRegionPixels.size.width,
+                //     height: targetRegionPixels.size.height,
+                // });
     
     
                 if ( motionResult.motionPixelsCount > motionThreshold ) {
                     this.regionIsStable = false;
-                    console.log({
-                        regionIsStable: this.regionIsStable,
-                    });
+                    // ! useful
+                    // console.log({
+                    //     regionIsStable: this.regionIsStable,
+                    // });
                     continue;
                 }
                 else if (
@@ -182,10 +182,11 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
                     return this.previousResult;
                     // continue;
                 }
-    
-                console.log({
-                    regionIsStable: this.regionIsStable,
-                });
+                
+                // ! useful
+                // console.log({
+                //     regionIsStable: this.regionIsStable,
+                // });
             }
             
 
