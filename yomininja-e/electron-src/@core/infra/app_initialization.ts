@@ -35,6 +35,7 @@ async function populateLanguagesRepository( languageRepo: LanguageTypeOrmReposit
         { name: 'thai', two_letter_code: 'th', bcp47_tag: 'th-TH' },
         { name: 'vietnamese', two_letter_code: 'vi', bcp47_tag: 'vi-VN' },
         { name: 'latin', two_letter_code: 'la', bcp47_tag: 'la' },
+        { name: 'cyrillic', two_letter_code: 'cy', bcp47_tag: 'cyrl' },
         { name: 'english', two_letter_code: 'en', bcp47_tag: 'en' },
         { name: 'french (FR)', two_letter_code: 'fr', bcp47_tag: 'fr-FR' },
         { name: 'italian (IT)', two_letter_code: 'it', bcp47_tag: 'it-IT' },
