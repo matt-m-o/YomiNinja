@@ -25,11 +25,11 @@ export function CustomAccordion(
     return(
         <Accordion sx={props.sx}
             style={props.style}
-            title={props.title}
             disabled={props.disabled}
             expanded={expanded}
         >
             <AccordionSummary expandIcon={<ArrowDropDownIcon />}
+                title={props.title}
                 onClick={ () => {
                     if ( props.disabled !== true )
                         setExpanded( !expanded )   

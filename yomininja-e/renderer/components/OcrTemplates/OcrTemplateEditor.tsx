@@ -229,12 +229,16 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                 <CustomAccordion style={accordionStyle} disabled={ !Boolean(selectedTargetRegion) }
                     summary={
                         <Typography fontSize={'1.1rem'}>
-                            Auto OCR 
+                            Auto OCR
                         </Typography>
                     }
                     title='Automatically run OCR based on detected visual changes'
-                    detailsSx={{ pl: 3 }}
+                    detailsSx={{ pl: 3, pr: 3 }}
                 >
+                    <Typography>
+                        This feature will only be active when a Capture Source is manually selected.
+                    </Typography>
+
                     <FormControlLabel label='Enable Auto OCR'
                         sx={{ ml: 0,  mt: 0, mb: 1, width: '100%' }}
                         control={
@@ -260,6 +264,7 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
 
                     <OcrSettingsSlider
                         label="Motion Sensitivity"
+                        title="A higher value means the system will respond to smaller movements, while a lower value means only larger movements will be detected"
                         min={0}
                         max={100}
                         value={ motionSensitivity ? motionSensitivity * 100 : 0 }
@@ -294,7 +299,7 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                             Text-to-Speech
                         </Typography>
                     }
-                    detailsSx={{ pl: 3 }}
+                    detailsSx={{ pl: 3, pr: 3 }}
                 >
 
                     <Autocomplete autoHighlight
@@ -375,7 +380,6 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                             <Switch
                                 checked={ Boolean( selectedTargetRegion?.text_to_speech_options?.automatic ) }
                                 onChange={ ( event ) => {
-                                    console.log( event.target.checked )
 
                                     const updatedRegion = {
                                         ...selectedTargetRegion,
@@ -422,7 +426,6 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                             <Switch
                                 checked={ Boolean( selectedTargetRegion?.text_to_speech_options?.on_hover ) }
                                 onChange={ ( event ) => {
-                                    console.log( event.target.checked )
 
                                     const updatedRegion = {
                                         ...selectedTargetRegion,
