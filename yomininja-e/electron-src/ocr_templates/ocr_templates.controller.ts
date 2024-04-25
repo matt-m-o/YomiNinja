@@ -131,6 +131,6 @@ export class OcrTemplatesController {
         // this.mainWindow.webContents.send( eventName, json );
         ocrTemplateEvents.emit( 'active_template', template );
 
-        console.log( json?.target_regions );
+        // console.log( json?.target_regions );
     }
 }

@@ -218,7 +218,7 @@ export class AppController {
         ipcMain.handle( 'app:editing_ocr_template',
             async ( event: IpcMainInvokeEvent, message: boolean ): Promise< void > => {
                 this.isEditingOcrTemplate = message;
-                console.log( 'app:editing_ocr_template: '+message );
+                // console.log( 'app:editing_ocr_template: '+message );
             }
         );
     }
@@ -511,7 +511,7 @@ export class AppController {
         input: OcrCommandInput = {}
     ) => {
 
-        console.log('AppController.handleOcrCommand');
+        // console.log('AppController.handleOcrCommand');
 
         let {
             image,
