@@ -422,14 +422,21 @@ export class BrowserExtensionsService {
         if ( optionsUiPage )
             optionsUrl = electronExtension.url + electronExtension.manifest?.options_ui?.page;
 
-        // console.log( item.manifest )
-
         const icon = await this.getExtensionIcon( electronExtension.id );
+
+        let author = '';
+
+        if ( typeof electronExtension.manifest.author === 'string' )
+            author = electronExtension.manifest.author;
+
+        else if ( electronExtension.manifest?.author?.email )
+            author = electronExtension.manifest.author.email;
 
         const extension: BrowserExtensionJson = {
             id: electronExtension.id,
             name: electronExtension.name,
             description: electronExtension.manifest.description,
+            author,
             version: electronExtension.manifest.version,
             optionsUrl,
             icon: icon?.icon,
