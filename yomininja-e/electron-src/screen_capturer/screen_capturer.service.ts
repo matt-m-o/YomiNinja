@@ -5,13 +5,15 @@ import { PAGES_DIR } from "../util/directories.util";
 import { format } from 'url';
 import isDev from 'electron-is-dev';
 import { ocrRecognitionController } from "../ocr_recognition/ocr_recognition.index";
+import fs from 'fs';
 
 export class ScreenCapturerService {
 
     screenCapturerWindow: BrowserWindow | undefined;
     captureHandler: ( frame: Buffer ) => void;
     intervalBetweenFrames: number = 333; // ms
-
+    obs: any;
+    obsConnected: boolean = false;
 
     async createCaptureStream( input: { display?: Electron.Display, window?: ExternalWindow, force?: boolean }  ) {
 
@@ -97,5 +99,38 @@ export class ScreenCapturerService {
 
     sleep( ms: number ) {
         return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    connectObs = async ( password: string ) => {
+
+        import('obs-websocket-js') // /msgpack
+            .then( module => {
+
+                const { default: OBSWebSocket  } = module;
+                
+                this.obs = new OBSWebSocket();
+                
+                this.obs.connect('ws://localhost:4455', password )
+                    .then(( info: any ) => {
+                        this.obsConnected = true;
+                    }, () => {
+                        console.error('Error Connecting')
+                    });
+            });
+    }
+
+    getOBSScreenshot = async ( sceneName: string ): Promise<Buffer> => {
+        const data = await this.obs.call(
+            'GetSourceScreenshot',
+            {
+                "sourceName": sceneName,
+                "imageFormat": "png"
+            }
+        );
+
+        const imageData = data.imageData.split('64,')[1];
+        // fs.writeFileSync( './data/obs_screenshot.txt', imageData );
+
+        return Buffer.from( imageData );
     }
 }
