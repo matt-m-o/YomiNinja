@@ -14,6 +14,7 @@ import { GetSupportedLanguagesRequest } from "../../../../../grpc/rpc/ocr_servic
 import { GetSupportedLanguagesResponse__Output } from "../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesResponse";
 import { MotionDetectionRequest } from "../../../../../grpc/rpc/ocr_service/MotionDetectionRequest";
 import { MotionDetectionResponse__Output } from "../../../../../grpc/rpc/ocr_service/MotionDetectionResponse";
+import { RecognizeBytesRequest } from "../../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
 
 type OcrEnginesName = 'MangaOCR' | 'AppleVision' | string;
 
@@ -57,9 +58,12 @@ export class PyOcrService {
         }
     ): Promise< OcrResult | null > {
 
-        const requestInput: RecognizeBase64Request = {
+        const ok = await this.processStatusCheck();        
+        if ( !ok ) return null;
+
+        const requestInput: RecognizeBytesRequest = {
             id: input.id,
-            base64_image: input.image.toString( 'base64' ),
+            image_bytes: input.image,
             ocr_engine: input.ocrEngine,
             boxes: input?.boxes || [],
             language_code: input.languageCode
@@ -68,7 +72,7 @@ export class PyOcrService {
         this.status = OcrAdapterStatus.Processing;
         // console.time('PpOcrAdapter.recognize');        
         const clientResponse = await new Promise< RecognizeDefaultResponse__Output | undefined >(
-            (resolve, reject) => this.ocrServiceClient?.RecognizeBase64( requestInput, ( error, response ) => {
+            (resolve, reject) => this.ocrServiceClient?.RecognizeBytes( requestInput, ( error, response ) => {
                 if (error) {
                     this.restart( () => {} );
                     return reject(error)
@@ -109,6 +113,9 @@ export class PyOcrService {
 
     async getSupportedLanguages( ocrEngineName: OcrEnginesName ): Promise< string[] > {
 
+        const ok = await this.processStatusCheck();        
+        if ( !ok ) return [];
+
         if ( !this.ocrServiceClient )
             return [];
 
@@ -133,6 +140,9 @@ export class PyOcrService {
     }
 
     async motionDetection( input: MotionDetectionRequest ): Promise<number> {
+
+        const ok = await this.processStatusCheck();        
+        if ( !ok ) return 0;
 
         const clientResponse = await new Promise< MotionDetectionResponse__Output | undefined >(
             (resolve, reject) => this.ocrServiceClient?.MotionDetection( input, ( error, response ) => {
@@ -227,8 +237,25 @@ export class PyOcrService {
         return true
     }
 
-    restart( callback: () => void ) {
+    async restart( callback: () => void ): Promise< void > {
 
+        this.restartProcess();
+
+        const ok = await this.processStatusCheck();
+        callback();
+
+        if ( !ok ) {
+            console.log("PyOCR service failed to restarted");
+            return;
+        }
+
+        console.log("PyOCR service restarted successfully");
+    };
+
+    private restartProcess() {
+        this.status = OcrAdapterStatus.Restarting;
+        this.serviceProcess.kill('SIGTERM');
+        this.startProcess();
     }
 
     keepAlive = ( timeoutSeconds = 15 ) => {
@@ -249,7 +276,7 @@ export class PyOcrService {
             this.ocrServiceClient?.KeepAlive( requestInput, ( error, response ) => {
                 if ( error ) {
                     console.error( error );
-                    this.connect( this.serverAddress );
+                    this.restart( () => {} );
                 }
             });
 
