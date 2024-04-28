@@ -16,6 +16,7 @@ type Size = {
 type AutoOcrOptions = {
     enabled: boolean;
     motion_sensitivity: number;
+    frame_sample_size?: number;
 }
 
 type TextToSpeechOptions = {
@@ -78,7 +79,8 @@ export class OcrTargetRegion {
         this.angle = props?.angle || 0;
         this.auto_ocr_options = {
             enabled: Boolean( props.auto_ocr_options?.enabled ),
-            motion_sensitivity: props.auto_ocr_options?.motion_sensitivity || 300_000 
+            motion_sensitivity: props.auto_ocr_options?.motion_sensitivity || 300_000,
+            frame_sample_size: props.auto_ocr_options?.frame_sample_size || 8,
         }
 
         const volume = props.text_to_speech_options?.volume !== undefined ?

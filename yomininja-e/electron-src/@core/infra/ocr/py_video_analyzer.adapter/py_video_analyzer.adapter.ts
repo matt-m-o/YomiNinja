@@ -11,7 +11,7 @@ export class PyVideoAnalyzerAdapter implements VideoAnalyzerAdapter {
         const result = await pyOcrService.motionDetection({
             frame: input.videoFrame,
             stream_id: input.streamId,
-            stream_length: 8
+            stream_length: input.frameSampleSize || 8
         });
 
         return {

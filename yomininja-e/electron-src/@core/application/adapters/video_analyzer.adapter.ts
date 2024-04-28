@@ -1,6 +1,7 @@
 export type DetectMotion_Input = {
     streamId: string;
     videoFrame: Buffer;
+    frameSampleSize?: number;
     clearPreviousFrames?: boolean;
 };
 

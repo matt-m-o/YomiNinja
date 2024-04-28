@@ -143,7 +143,8 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
             if ( input.autoMode && auto_ocr_options.enabled ) {
                 const motionResult = await this.videoAnalyzer.detectMotion({
                     videoFrame: regionImage,
-                    streamId: targetRegion.id
+                    streamId: targetRegion.id,
+                    frameSampleSize: auto_ocr_options.frame_sample_size,
                 });
 
                 const motionThreshold = (

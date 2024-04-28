@@ -61,6 +61,7 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
     const [ selectedTargetRegion, setSelectedTargetRegion ] = useState< OcrTargetRegionJson | null >();
 
     const motionSensitivity = selectedTargetRegion?.auto_ocr_options?.motion_sensitivity || 0;
+    const frameSampleSize = selectedTargetRegion?.auto_ocr_options?.frame_sample_size || 0;
     
     const targetRegionTTSVoiceName: string = getVoices().find(
         voice => {
@@ -296,6 +297,47 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                                     ...selectedTargetRegion.auto_ocr_options,
                                 }
                             });
+                        }}
+                    />
+
+                    <OcrSettingsSlider
+                        label="Number of Frames"
+                        title="Number of frames used for motion detection. Higher values can filter out slow and gradual changes."
+                        min={3}
+                        max={30}
+                        value={ frameSampleSize }
+                        step={1}
+                        leftLabel="Low"
+                        rightLabel="High"
+                        onChange={ ( event, newValue ) => {
+                            if (typeof newValue === 'number') {
+                                setSelectedTargetRegion({
+                                    ...selectedTargetRegion,
+                                    auto_ocr_options: {
+                                        ...selectedTargetRegion.auto_ocr_options,
+                                        frame_sample_size: newValue 
+                                    }
+                                })
+                            }
+                        }}
+                        onChangeCommitted={ () => {
+                            updateTargetRegion({
+                                ...selectedTargetRegion,
+                                auto_ocr_options: {
+                                    ...selectedTargetRegion.auto_ocr_options,
+                                }
+                            });
+                        }}
+                        reset={ () => {
+                            const data = {
+                                ...selectedTargetRegion,
+                                auto_ocr_options: {
+                                    ...selectedTargetRegion.auto_ocr_options,
+                                    frame_sample_size: 8
+                                }
+                            };
+                            setSelectedTargetRegion(data);
+                            updateTargetRegion(data);
                         }}
                     />
                 </CustomAccordion>
