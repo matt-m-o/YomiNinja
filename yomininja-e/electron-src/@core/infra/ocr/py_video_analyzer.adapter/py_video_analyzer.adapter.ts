@@ -9,7 +9,7 @@ export class PyVideoAnalyzerAdapter implements VideoAnalyzerAdapter {
     async detectMotion(input: DetectMotion_Input): Promise< DetectMotion_Output> {
 
         const result = await pyOcrService.motionDetection({
-            frame: input.videoFrame.toString('base64'),
+            frame: input.videoFrame,
             stream_id: input.streamId,
             stream_length: 8
         });
