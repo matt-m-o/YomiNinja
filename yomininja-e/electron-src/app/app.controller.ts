@@ -565,7 +565,8 @@ export class AppController {
 
     async _handleVideoStream( image: Buffer ) {
 
-        console.log('AppController._handleVideoStream');
+        if ( isDev )
+            console.log('AppController._handleVideoStream');
 
         // this.overlayWindow?.webContents.send( 'ocr:processing_started' );
         
