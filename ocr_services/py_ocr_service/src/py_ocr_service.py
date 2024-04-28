@@ -68,8 +68,19 @@ class Service( service_grpc.OCRServiceServicer ):
     def RecognizeBase64( self, request: service_pb.RecognizeBase64Request, context ):
         self.last_rpc_time = time.time()
 
-        image_data = base64.b64decode( request.base64_image )
-        image = Image.open( BytesIO(image_data) )
+        image = self.base64ToPILImage(request.base64_image )
+
+        return self.HandleRecognizeRequest( image, request )
+    
+    def RecognizeBytes( self, request: service_pb.RecognizeBytesRequest, context ):
+        self.last_rpc_time = time.time()
+
+        image = self.bytesToPILImage( request.image_bytes )
+
+        return self.HandleRecognizeRequest( image, request )
+        
+    
+    def HandleRecognizeRequest( self, image: Image.Image, request: service_pb.RecognizeBase64Request ) -> service_pb.RecognizeDefaultResponse :
 
         results: List[Result] = []
 
@@ -127,7 +138,7 @@ class Service( service_grpc.OCRServiceServicer ):
         
         result = self.motion_detection_service.detect(
             request.stream_id,
-            frame= self.base64ToPILImage( request.frame ),
+            frame= self.bytesToPILImage( request.frame ),
             threshold_min= request.threshold_min,
             threshold_max= request.threshold_max,
             stream_length= request.stream_length,
@@ -135,9 +146,13 @@ class Service( service_grpc.OCRServiceServicer ):
 
         return result
     
-    def base64ToPILImage(self, base64_data: str) -> Image.Image:
+    def base64ToPILImage( self, base64_data: str ) -> Image.Image:
         image_data = base64.b64decode( base64_data )
         return Image.open( BytesIO(image_data) )
+
+    def bytesToPILImage( self, bytes_data: bytes ) -> Image.Image:
+        buffer = BytesIO(bytes_data)
+        return Image.open(buffer)
 
 
 def serve():
