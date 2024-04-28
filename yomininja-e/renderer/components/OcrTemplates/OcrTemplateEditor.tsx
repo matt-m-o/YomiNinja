@@ -382,20 +382,46 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
 
                     <OcrSettingsSlider
                         label="Speed"
-                        min={0}
-                        max={100}
-                        value={ Number( selectedTargetRegion?.text_to_speech_options?.speed ) * 100 }
+                        min={0.1}
+                        max={10}
+                        value={ Number( selectedTargetRegion?.text_to_speech_options?.speed )  }
                         step={1}
                         onChange={ ( event, newValue ) => {
                             if (typeof newValue === 'number') {
-
-                                newValue = newValue / 100;
 
                                 setSelectedTargetRegion({
                                     ...selectedTargetRegion,
                                     text_to_speech_options: {
                                         ...selectedTargetRegion.text_to_speech_options,
                                         speed: newValue
+                                    }
+                                })
+                            }
+                        }}
+                        onChangeCommitted={ () => {
+                            updateTargetRegion({
+                                ...selectedTargetRegion,
+                                text_to_speech_options: {
+                                    ...selectedTargetRegion.text_to_speech_options,
+                                }
+                            });
+                        }}
+                    />
+
+                    <OcrSettingsSlider
+                        label="Pitch"
+                        min={0}
+                        max={2}
+                        value={ Number( selectedTargetRegion?.text_to_speech_options?.pitch ) }
+                        step={0.1}
+                        onChange={ ( event, newValue ) => {
+                            if (typeof newValue === 'number') {
+
+                                setSelectedTargetRegion({
+                                    ...selectedTargetRegion,
+                                    text_to_speech_options: {
+                                        ...selectedTargetRegion.text_to_speech_options,
+                                        pitch: newValue
                                     }
                                 })
                             }

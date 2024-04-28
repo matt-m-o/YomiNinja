@@ -36,12 +36,13 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         const ocrRegion = getOcrTemplateTargetRegion( ocrRegionId );
 
         if ( ocrRegion?.text_to_speech_options?.on_hover ) {
-            const { voice_uri, volume, speed } = ocrRegion.text_to_speech_options;
+            const { voice_uri, volume, speed, pitch } = ocrRegion.text_to_speech_options;
             speak({
                 text: hoveredText,
                 voiceURI: voice_uri,
                 volume,
                 speed,
+                pitch,
                 cancelCurrentText: true
             });
         }
@@ -76,12 +77,13 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         const ocrRegion = getOcrTemplateTargetRegion( ocrRegionId );
 
         if ( ocrRegion?.text_to_speech_options?.on_click ) {
-            const { voice_uri, volume, speed } = ocrRegion.text_to_speech_options;
+            const { voice_uri, volume, speed, pitch } = ocrRegion.text_to_speech_options;
             speak({
                 text: hoveredText,
                 voiceURI: voice_uri,
                 volume,
                 speed,
+                pitch,
                 cancelCurrentText: true
             });
         }
@@ -139,12 +141,13 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                                 if ( !item?.text ) return;
 
                                 if ( ocrTemplateRegion?.text_to_speech_options?.automatic ) {
-                                    const { voice_uri, volume, speed } = ocrTemplateRegion.text_to_speech_options;
+                                    const { voice_uri, volume, speed, pitch } = ocrTemplateRegion.text_to_speech_options;
                                     speak({
                                         text: item.text.map( line => line.content ).join(' '),
                                         voiceURI: voice_uri,
                                         volume, 
                                         speed,
+                                        pitch,
                                         cancelCurrentText: false,
                                     });
                                 }

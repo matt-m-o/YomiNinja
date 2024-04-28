@@ -24,7 +24,8 @@ type TextToSpeechOptions = {
     on_hover: boolean;
     on_click: boolean;
     volume: number; // 0.0 -> 1.0
-    speed: number; // 0.0 -> 1.0
+    speed: number; // 0.1 -> 10
+    pitch: number; // 0.0 -> 2
 }
 
 export type OcrTargetRegionConstructorProps = {
@@ -88,6 +89,10 @@ export class OcrTargetRegion {
             props.text_to_speech_options?.speed :
             1;
 
+        const pitch = props.text_to_speech_options?.pitch !== undefined ?
+            props.text_to_speech_options?.pitch :
+            1;
+
         this.text_to_speech_options = {
             voice_uri: props.text_to_speech_options?.voice_uri || '',
             automatic: Boolean( props.text_to_speech_options?.automatic ),
@@ -95,6 +100,7 @@ export class OcrTargetRegion {
             on_hover: Boolean( props.text_to_speech_options?.on_hover ),
             volume,
             speed,
+            pitch
         }
     }
 
