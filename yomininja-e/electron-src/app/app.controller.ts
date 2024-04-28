@@ -226,7 +226,7 @@ export class AppController {
     registerEventHandlers() {
         ocrTemplateEvents.on( 'active_template', template => {
             const isAutoOcrEnabled = template?.isAutoOcrEnabled() || false;
-            console.log({ isAutoOcrEnabled });
+            // console.log({ isAutoOcrEnabled });
 
             if ( !isAutoOcrEnabled )
                 screenCapturerController.destroyScreenCapturer();

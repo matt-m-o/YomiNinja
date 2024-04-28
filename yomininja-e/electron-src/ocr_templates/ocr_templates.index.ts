@@ -26,8 +26,4 @@ export const ocrTemplatesController = new OcrTemplatesController({
     ocrTemplatesService
 });
 
-export const ocrTemplateEvents: OcrTemplatesEvents = ( new OcrTemplatesEvents() )
-    .on( 'active_template', data => {
-        console.log('active_template') 
-        console.log(data);
-    });
+export const ocrTemplateEvents: OcrTemplatesEvents = new OcrTemplatesEvents();
