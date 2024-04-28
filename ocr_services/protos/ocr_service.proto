@@ -89,7 +89,7 @@ message DetectResponse {
 
 message MotionDetectionRequest {
   string stream_id = 1;
-  string frame = 2;
+  bytes frame = 2;
   int32 threshold_min = 3;
   int32 threshold_max = 4;
   int32 stream_length = 5;
