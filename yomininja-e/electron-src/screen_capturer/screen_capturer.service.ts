@@ -10,6 +10,8 @@ export class ScreenCapturerService {
 
     screenCapturerWindow: BrowserWindow | undefined;
     captureHandler: ( frame: Buffer ) => void;
+    intervalBetweenFrames: number = 333; // ms
+
 
     async createCaptureStream( input: { display?: Electron.Display, window?: ExternalWindow, force?: boolean }  ) {
 
@@ -57,7 +59,12 @@ export class ScreenCapturerService {
             this.screenCapturerWindow.show();
         }
         
-        // this.screenCapturerWindow.webContents.on('dom-ready', this.screenCapturerWindow.webContents.openDevTools )
+        this.screenCapturerWindow.webContents.on('dom-ready', this.screenCapturerWindow.webContents.openDevTools )
+
+        // this.screenCapturerWindow.webContents.on( 'dom-ready', this.startStream );
+        this.screenCapturerWindow.webContents.on( 'dom-ready', () => {
+            this.setIntervalBetweenFrames( this.intervalBetweenFrames );
+        });
     }
 
     async destroyScreenCapturer() {
@@ -68,17 +75,27 @@ export class ScreenCapturerService {
         this.screenCapturerWindow = undefined;
     }
 
-    onCapture( handler: ( frame: Buffer ) => Promise<void> ) {
-
-        ipcMain.handle( 'screen_capturer:frame', async ( event: IpcMainInvokeEvent, frame: Buffer ) => {
-
-            if ( !frame )
-                return;
-
-            handler( frame );
-
-        });
+    setIntervalBetweenFrames( ms: number ) {
+        this.intervalBetweenFrames = ms;
+        this.screenCapturerWindow?.webContents.send(
+            'screen_capturer:set_interval',
+            this.intervalBetweenFrames
+        );
     }
 
+    grabFrame = () => {
+        // console.log('\ngrabFrame \n')
+        this.screenCapturerWindow?.webContents.send('screen_capturer:grab_frame');
+    }
 
+    startStream = async () => {
+        while ( this.screenCapturerWindow !== undefined ) {
+            await this.sleep( this.intervalBetweenFrames );
+            this.grabFrame();
+        }
+    }
+
+    sleep( ms: number ) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
 }

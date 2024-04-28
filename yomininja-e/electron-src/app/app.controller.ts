@@ -141,7 +141,8 @@ export class AppController {
         this.taskbar = this.appService.getTaskbar();
 
         this.activeCaptureSource = entireScreenAutoCaptureSource;
-
+        
+        screenCapturerController.init();
         screenCapturerController.onCapture( 
             async ( frame: Buffer ) => {
                 return this._handleVideoStream( frame );
