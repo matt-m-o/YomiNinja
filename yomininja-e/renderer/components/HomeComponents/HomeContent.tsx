@@ -202,7 +202,7 @@ export default function HomeContent() {
                         
                     </Container>
 
-                    <Typography fontSize='1rem' lineHeight={2} ml={1} mb={0} mt={'56px'}>
+                    <Typography fontSize='1.08rem' lineHeight={2} ml={1} mb={0} mt={'56px'}>
                         ✨New features:
                     </Typography>
                     <ul
@@ -211,17 +211,43 @@ export default function HomeContent() {
                             color: 'lightgray',
                             lineHeight: 2,
                             marginTop: 0,
-                            marginLeft: 20
+                            marginLeft: 15
                         }}
                     >
-                        <li> MangaOCR integration. </li>
-                        <li> Initial suppport for macOS.</li>
-                        <li> Apple Vision OCR. </li>
-                        <li> Auto OCR (WIP). </li>
-                        <li> System tray icon (WIP) </li>
-                        <li> Text-to-Speech (WIP) </li>
-                        <li> Clipboard options menu (WIP) </li>
-                        <li> Movable overlay (WIP) </li>
+                        <li>
+                            <strong> MangaOCR integration. </strong>
+                        </li>
+
+                        <li>
+                            <strong> Initial support for macOS. </strong>
+                        </li>
+
+                        <li>
+                            <strong> Apple's Vision Framework OCR engine integration (macOS only). </strong>
+                        </li>
+
+                        <li>
+                            <strong> Auto OCR (OCR Templates): </strong>
+                            Monitors your screen and automatically runs OCR whenever it detects meaningful changes.
+                        </li>
+
+                        <li>
+                            <strong> Text-to-Speech (OCR Templates). </strong>
+                        </li>
+
+                        <li>
+                            <strong> System tray icon. </strong>
+                        </li>
+
+                        <li> 
+                            <strong> Overlay Adjustment Option: </strong>
+                            You can now manually move or resize the overlay either from the tray icon or by pressing <strong>Ctrl+Shift+M</strong>. 
+                        </li>
+
+                        <li>
+                            <strong> Added PaddleOCR languages: </strong> Chinese (traditional), Latin, and Cyrillic. 
+                        </li>
+                        {/* <li> Clipboard options menu (WIP) </li> */}
                     </ul>
 
                 </CardContent>
