@@ -108,10 +108,10 @@ export class PaddleOcrService {
             
         if ( !clientResponse ) return [];
 
-        const results: OcrItemBox[] = clientResponse.results.map( item => item.box )
+        const results: OcrItemBox[] = clientResponse.results?.map( item => item.box )
             .filter( item => item !== null ) as OcrItemBox[];
 
-        return results;
+        return results || [];
     }
 
     async getSupportedLanguages(): Promise< string[] > {
@@ -272,11 +272,11 @@ export class PaddleOcrService {
         callback();
 
         if ( !ok ) {
-            console.log("PPOCR Adapter failed to restarted");
+            console.log("PaddleOCR service failed to restart");
             return;
         }
 
-        console.log("PPOCR Adapter restarted successfully");
+        console.log("PaddleOCR service restarted successfully");
     };
 
     private restartProcess() {
