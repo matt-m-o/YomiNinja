@@ -221,22 +221,29 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                 
             </TemplateDiv>
 
-            <Typography gutterBottom component="div" mt={3} mb={1} fontSize='1.1rem'>
+            {/* <Typography gutterBottom component="div" mt={3} mb={1} fontSize='1.1rem'>
                 Region Options
-            </Typography>
+            </Typography> */}
 
-            <Container maxWidth='xl' >
+            <Container maxWidth='xl'
+                sx={{ mt: 3 }}
+                style={{
+                    paddingLeft: '0px',
+                    paddingRight: '0px',
+                }}
+            >
                 <CustomAccordion style={accordionStyle} disabled={ !Boolean(selectedTargetRegion) }
                     summary={
                         <Typography fontSize={'1.1rem'}>
                             Auto OCR
                         </Typography>
                     }
-                    title='Automatically run OCR based on detected visual changes'
+                    title='Monitors your screen and automatically runs OCR whenever it detects meaningful changes.'
                     detailsSx={{ pl: 3, pr: 3 }}
                 >
-                    <Typography>
-                        This feature will only be active when a Capture Source is manually selected.
+                    <Typography mb={1}>
+                        <strong>Note:</strong> This feature is experimental and will only become active when a <strong>Capture Source</strong> is manually selected.
+                        To avoid potential issues, it’s currently recommended to enable this feature for a <strong>single region at a time</strong>.
                     </Typography>
 
                     <FormControlLabel label='Enable Auto OCR'
