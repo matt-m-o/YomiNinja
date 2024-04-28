@@ -380,6 +380,36 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                         }}
                     />
 
+                    <OcrSettingsSlider
+                        label="Speed"
+                        min={0}
+                        max={100}
+                        value={ Number( selectedTargetRegion?.text_to_speech_options?.speed ) * 100 }
+                        step={1}
+                        onChange={ ( event, newValue ) => {
+                            if (typeof newValue === 'number') {
+
+                                newValue = newValue / 100;
+
+                                setSelectedTargetRegion({
+                                    ...selectedTargetRegion,
+                                    text_to_speech_options: {
+                                        ...selectedTargetRegion.text_to_speech_options,
+                                        speed: newValue
+                                    }
+                                })
+                            }
+                        }}
+                        onChangeCommitted={ () => {
+                            updateTargetRegion({
+                                ...selectedTargetRegion,
+                                text_to_speech_options: {
+                                    ...selectedTargetRegion.text_to_speech_options,
+                                }
+                            });
+                        }}
+                    />
+
                     <FormControlLabel label='Autoplay'
                         // title=''
                         sx={{ ml: 0,  mt: 0, mb: 1, width: '100%' }}

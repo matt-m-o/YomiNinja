@@ -6,6 +6,7 @@ export type TTSSpeak_Input = {
     voiceURI?: string,
     cancelCurrentText?: boolean;
     volume?: number;
+    speed?: number;
 }
 
 export type TTSContextType = {
@@ -61,6 +62,9 @@ export const TTSProvider = ( { children }: PropsWithChildren ) => {
 
         if ( input.volume !== undefined )
             speechSU.volume = input.volume;
+
+        if ( input.speed !== undefined )
+            speechSU.rate = input.speed;
 
         window.speechSynthesis.speak( speechSU );
     }
