@@ -19,6 +19,8 @@ export class ScreenCapturerService {
 
         const { display, window } = input;
 
+        await this.sleep(1000);
+
         if ( 
             !input.force &&
             this.screenCapturerWindow

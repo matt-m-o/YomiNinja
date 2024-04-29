@@ -13,6 +13,7 @@ import { GetSupportedLanguagesUseCaseInstance, RecognizeImageUseCaseInstance } f
 import { PpOcrAdapter } from "../@core/infra/ocr/ppocr.adapter/ppocr.adapter";
 import { OcrEngineSettingsU } from "../@core/infra/types/entity_instance.types";
 import { OcrEngineSettings } from "../@core/domain/settings_preset/settings_preset";
+import isDev from "electron-is-dev";
 
 
 export const entireScreenAutoCaptureSource: CaptureSource = {
@@ -49,7 +50,9 @@ export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = Oc
         engineName?: string;
         autoMode?: boolean;
     }): Promise< OcrResultScalable | null > {
-        console.log('ocrRecognitionService.recognize');
+        
+        if (isDev)
+            console.log('ocrRecognitionService.recognize');
 
         let { imageBuffer, profileId, engineName } = input;
 
