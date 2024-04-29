@@ -283,9 +283,34 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                         }
                     />
 
+                    <FormControlLabel label='Refresh All Regions'
+                        sx={{ ml: 0,  mt: 0, mb: 1, width: '100%' }}
+                        disabled={ !Boolean( selectedTargetRegion?.auto_ocr_options?.enabled ) }
+                        control={
+                            <Switch
+                                checked={ Boolean( selectedTargetRegion?.auto_ocr_options?.refresh_all_regions ) }
+                                onChange={ ( event ) => {
+                                    console.log( event.target.checked )
+
+                                    const updatedRegion = {
+                                        ...selectedTargetRegion,
+                                        auto_ocr_options: {
+                                            ...selectedTargetRegion.auto_ocr_options,
+                                            refresh_all_regions: event.target.checked,
+                                        }
+                                    }
+
+                                    updateTargetRegion( updatedRegion );
+                                    setSelectedTargetRegion( updatedRegion );
+                                }}
+                            /> 
+                        }
+                    />
+
                     <OcrSettingsSlider
                         label="Motion Sensitivity"
                         title="A higher value means the system will respond to smaller movements, while a lower value means only larger movements will be detected"
+                        disabled={ !Boolean( selectedTargetRegion?.auto_ocr_options?.enabled ) }
                         min={0}
                         max={100}
                         value={ motionSensitivity ? motionSensitivity * 100 : 0 }
@@ -316,6 +341,7 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                     <OcrSettingsSlider
                         label="Number of Frames"
                         title="Number of frames used for motion detection. Higher values can filter out slow and gradual changes."
+                        disabled={ !Boolean( selectedTargetRegion?.auto_ocr_options?.enabled ) }
                         min={3}
                         max={30}
                         value={ frameSampleSize }
@@ -355,8 +381,9 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                     />
 
                     <OcrSettingsSlider
-                        label="Maximum framerate"
-                        title="This parameter is shared"
+                        label="Capture Maximum framerate"
+                        title="Maximum number of frames per second. This parameter is shared"
+                        disabled={ !Boolean( selectedTargetRegion?.auto_ocr_options?.enabled ) }
                         min={1}
                         max={10}
                         value={ maximumFrameRate }

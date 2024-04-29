@@ -1,7 +1,8 @@
 import { Language } from "../../../domain/language/language";
 import { OcrResult } from "../../../domain/ocr_result/ocr_result";
 import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
-import { OcrTemplate } from "../../../domain/ocr_template/ocr_template";
+import { AutoOcrOptions } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region";
+import { OcrTemplate, OcrTemplateId } from "../../../domain/ocr_template/ocr_template";
 import { Profile } from "../../../domain/profile/profile";
 import { ProfileRepository } from "../../../domain/profile/profile.repository";
 import { OcrEngineSettings, SettingsPreset } from "../../../domain/settings_preset/settings_preset";
@@ -20,7 +21,10 @@ export type RecognizeImageInput = {
 export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
 
     private isRegionStable: Map<string, boolean> = new Map();
-    private previousResult: OcrResultScalable;
+    private previousResult: OcrResultScalable | null; // ! Create map for storing the results of each region. Clear the map when the activeTemplateID changes.
+    private regionResultCache: Map< string, OcrResultScalable | null > = new Map(); // < OcrResultScalable.ID, OcrResultScalable >
+    private activeTemplateId: OcrTemplateId | undefined;
+    
 
     constructor(
         public ocrAdapters: OcrAdapter< TOcrSettings >[],
@@ -79,6 +83,15 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
             imageBuffer = await this.imageProcessing.invertColors( imageBuffer );
         }
 
+        if (
+            profile.active_ocr_template?.id !== this.activeTemplateId
+        ) {
+            this.isRegionStable.clear();
+            this.previousResult = null;
+            this.regionResultCache.clear();
+        }
+        this.activeTemplateId = profile.active_ocr_template?.id;
+
         if ( profile.active_ocr_template ) {
 
             return await this.recognizeWithTemplate({
@@ -109,7 +122,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
             language: Language,
             autoMode: boolean;
         }
-    ): Promise< OcrResultScalable > {
+    ): Promise< OcrResultScalable | null > {
 
         const { image, template, ocrAdapter, language: languageCode } = input;
 
@@ -139,12 +152,18 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
 
         let totalChanges = 0;
         const isTemplateStable = (): boolean => {
-            return Array.from(this.isRegionStable.values()).some( Boolean );
+            return Array.from( this.isRegionStable.values() ).some( Boolean );
         }
 
-        for( const targetRegion of targetRegions ) {
+        let refreshAllRegions = false;
+
+        for( let regionIdx=0; regionIdx < targetRegions.length; regionIdx++ ) {
+            const targetRegion = targetRegions[regionIdx];
+            const isLastRegion = regionIdx == targetRegions.length-1;
 
             const { auto_ocr_options } = targetRegion;
+
+            refreshAllRegions = refreshAllRegions || auto_ocr_options.refresh_all_regions;
 
             const targetRegionPixels = targetRegion.toPixels({
                 width: metadata.width,
@@ -201,8 +220,8 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
                     totalChanges++;
                 }
                 else {
-                    // return this.previousResult;
-                    continue;
+                    return this.previousResult;
+                    // continue;
                 }
                 
                 // ! useful
@@ -210,14 +229,45 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
                 //     regionIsStable: this.regionIsStable,
                 // });
             }
-            else if ( input.autoMode && totalChanges === 0 ) {
+            // else if ( input.autoMode && totalChanges === 0 ) {
 
-                if ( isTemplateStable() )
-                    return this.previousResult;
+            //     if ( isTemplateStable() )
+            //         return this.previousResult;
 
-                return result;
+            //     return result;
+            // }
+
+            if (
+                input.autoMode &&
+                totalChanges === 0 &&
+                ( !targetRegion.auto_ocr_options.enabled || isLastRegion ) &&
+                isTemplateStable()
+            ) {
+                return this.previousResult;
             }
-            
+
+            if (
+                input.autoMode &&
+                !auto_ocr_options.enabled
+            ) {
+
+                if ( !refreshAllRegions ) {
+                    const prevResult = this.regionResultCache.get( targetRegion.id );
+
+                    prevResult && result.addRegionResult({
+                        regionId: targetRegion?.id,
+                        regionResult: prevResult,
+                        regionPosition: targetRegion.position,
+                        regionSize: targetRegion.size,
+                        globalScaling: false,
+                    });
+
+                    continue;
+                }
+                else if (  !isTemplateStable() ) {
+                    continue;
+                }
+            }
 
             const regionResult = await ocrAdapter.recognize({
                     imageBuffer: regionImage,
@@ -225,12 +275,15 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
                 })
                 .catch( console.error );
 
+            this.regionResultCache.set( targetRegion.id, regionResult || null );
+                
             if ( !regionResult ) continue;
 
             if ( result.id === 0 )
                 result.id = regionResult.id;
 
             
+
             // const regionResultScalable = OcrResultScalable.createFromOcrResult( regionResult );
 
             result.addRegionResult({

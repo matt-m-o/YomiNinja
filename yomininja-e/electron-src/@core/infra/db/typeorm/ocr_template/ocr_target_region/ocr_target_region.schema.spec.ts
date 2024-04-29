@@ -46,7 +46,8 @@ describe( 'OcrTargetRegion Entity Schema tests', () => {
             },
             auto_ocr_options: {
                 enabled: false,
-                motion_sensitivity: 300_000
+                motion_sensitivity: 300_000,
+                refresh_all_regions: false
             }
         });
 
