@@ -53,7 +53,10 @@ export class MainController {
         // });
         this.mainWindow.on( 'close', async ( event ) => {
 
-            if ( !this.mainWindow.isVisible() ) {
+            if (
+                !this.mainWindow.isVisible() ||
+                !this.mainWindow.isFocused()
+            ) {
                 this.mainWindow.destroy()
                 uIOhook.stop();
                 this.captureSourceWindow?.close();
@@ -96,6 +99,10 @@ export class MainController {
 
             if ( hideOverlay )
                 overlayController.minimizeOverlayWindowToTray();
+        });
+
+        this.mainWindow.on('closed', () => {
+            app.quit();
         });
 
         this.mainWindow.on( 'show', () => {   
