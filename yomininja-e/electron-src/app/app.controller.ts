@@ -204,11 +204,15 @@ export class AppController {
                     'app:active_capture_source',
                     this.activeCaptureSource
                 );
+                
+                await this.handleCaptureSourceSelection()
+                    .catch( console.error );
 
-                await this.handleCaptureSourceSelection();
                 this.setOverlayBounds( 'maximized' );
                 
-                // TODO: Only call when auto mode is enable
+                // console.log({
+                //     isAutoOcrEnabled: ocrTemplatesController.isAutoOcrEnabled
+                // });
                 if ( ocrTemplatesController.isAutoOcrEnabled )
                     screenCapturerController.createCaptureStream(true);
 
@@ -227,7 +231,7 @@ export class AppController {
     registerEventHandlers() {
         ocrTemplateEvents.on( 'active_template', template => {
             const isAutoOcrEnabled = template?.isAutoOcrEnabled() || false;
-            // console.log({ isAutoOcrEnabled });
+            console.log({ isAutoOcrEnabled });
 
             if ( !isAutoOcrEnabled )
                 screenCapturerController.destroyScreenCapturer();
@@ -602,10 +606,15 @@ export class AppController {
 
         const { platform } = process;
 
+        let appIconFile = 'icon_512x512.png';
+
+        if ( isMacOS )
+            appIconFile = 'icon_64x64@3x.png';
+
+        else if ( platform === 'win32' )
+            appIconFile = 'icon.ico';
+
         const appName = app.getName();
-        const appIconFile = platform === 'win32' ?
-            'icon.ico' :
-            'icon_512x512.png';
 
         const toggleMainWindow = ( show?: boolean ) => {
 
@@ -618,11 +627,9 @@ export class AppController {
             this.mainWindow.show();
         }
         
-        if ( !isMacOS ) {
 
             const iconPath = join( ICONS_DIR, appIconFile );
             const trayIcon = nativeImage.createFromPath( iconPath );
-            trayIcon.resize({ width: 16, height: 16, quality: 'best' });
 
             this.tray = new Tray( trayIcon );
             this.tray.setToolTip( appName );
@@ -670,7 +677,6 @@ export class AppController {
                 }
             ]);
             this.tray.setContextMenu(contextMenu);
-        }
     }
 }
 
