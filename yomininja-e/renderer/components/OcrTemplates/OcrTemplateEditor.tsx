@@ -54,6 +54,7 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
         addTargetRegion,
         removeTargetRegion,
         updateTargetRegion,
+        updateOcrTemplate
     } = useContext( OcrTemplatesContext );
     const { getVoices } = useContext( TTSContext );
 
@@ -62,6 +63,18 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
 
     const motionSensitivity = selectedTargetRegion?.auto_ocr_options?.motion_sensitivity || 0;
     const frameSampleSize = selectedTargetRegion?.auto_ocr_options?.frame_sample_size || 0;
+    const intervalBetweenFrames = activeOcrTemplate?.capturer_options?.interval_between_frames || 0;
+
+    const [ maximumFrameRate, setMaximumFrameRate ] = useState(
+        intervalBetweenFrames ? Math.floor( 1000 / intervalBetweenFrames ) : 3
+    );
+
+    useEffect( () => {
+        console.log({
+            intervalBetweenFrames,
+            maximumFrameRate 
+        })
+    }, [maximumFrameRate] )
     
     const targetRegionTTSVoiceName: string = getVoices().find(
         voice => {
@@ -340,6 +353,47 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                             updateTargetRegion(data);
                         }}
                     />
+
+                    <OcrSettingsSlider
+                        label="Maximum framerate"
+                        title="This parameter is shared"
+                        min={1}
+                        max={10}
+                        value={ maximumFrameRate }
+                        step={1}
+                        onChange={ ( event, newValue ) => {
+                            if (typeof newValue === 'number') {
+
+                                setMaximumFrameRate( newValue );
+
+                                newValue = 1000 / newValue;
+                            }
+                        }}
+                        onChangeCommitted={ () => {
+                            const intervalBetweenFrames = 1000 / maximumFrameRate;
+                            global.ipcRenderer.invoke('screen_capturer:set_interval', intervalBetweenFrames );
+                            updateOcrTemplate({
+                                ...activeOcrTemplate,
+                                capturer_options: {
+                                    ...activeOcrTemplate.capturer_options,
+                                    interval_between_frames: intervalBetweenFrames
+                                }
+                            });
+                        }}
+                        reset={ () => {
+                            const interval_between_frames = 1000 / 3;
+                            updateOcrTemplate({
+                                ...activeOcrTemplate,
+                                capturer_options: {
+                                    ...activeOcrTemplate.capturer_options,
+                                    interval_between_frames
+                                }
+                            });
+                            global.ipcRenderer.invoke('screen_capturer:set_interval', interval_between_frames );
+                            setMaximumFrameRate(3);
+                        }}
+                    />
+
                 </CustomAccordion>
 
                 <CustomAccordion style={accordionStyle} disabled={ !Boolean(selectedTargetRegion) }
