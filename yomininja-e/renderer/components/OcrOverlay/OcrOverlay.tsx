@@ -92,7 +92,7 @@ export default function OcrOverlay() {
     else
       value = false;
 
-    if ( showDragArea )
+    if ( showDragArea || element.id === 'drag-area' )
       value = false;
     
     // console.log( currentElement );
@@ -149,7 +149,7 @@ export default function OcrOverlay() {
       }}
     >
       { showDragArea &&
-        <DragArea>
+        <DragArea id="drag-area">
           <Typography
             
             sx={{
