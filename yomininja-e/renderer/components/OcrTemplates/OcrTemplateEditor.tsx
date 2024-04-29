@@ -481,7 +481,7 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                         min={0.1}
                         max={10}
                         value={ Number( selectedTargetRegion?.text_to_speech_options?.speed )  }
-                        step={1}
+                        step={0.1}
                         onChange={ ( event, newValue ) => {
                             if (typeof newValue === 'number') {
 
@@ -509,7 +509,7 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                         min={0}
                         max={2}
                         value={ Number( selectedTargetRegion?.text_to_speech_options?.pitch ) }
-                        step={0.1}
+                        step={0.05}
                         onChange={ ( event, newValue ) => {
                             if (typeof newValue === 'number') {
 
