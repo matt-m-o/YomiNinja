@@ -309,7 +309,7 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
 
                     <OcrSettingsSlider
                         label="Motion Sensitivity"
-                        title="A higher value means the system will respond to smaller movements, while a lower value means only larger movements will be detected"
+                        title="A higher value means the system will respond to smaller changes, while a lower value means only larger changes will be detected"
                         disabled={ !Boolean( selectedTargetRegion?.auto_ocr_options?.enabled ) }
                         min={0}
                         max={100}
@@ -335,6 +335,17 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                                     ...selectedTargetRegion.auto_ocr_options,
                                 }
                             });
+                        }}
+                        reset={ () => {
+                            const data = {
+                                ...selectedTargetRegion,
+                                auto_ocr_options: {
+                                    ...selectedTargetRegion.auto_ocr_options,
+                                    motion_sensitivity: 0.5
+                                }
+                            };
+                            setSelectedTargetRegion(data);
+                            updateTargetRegion(data);
                         }}
                     />
 
