@@ -22,6 +22,7 @@ type OcrSettingsSliderProps = {
     min: number;
     max: number;
     step: number;
+    disabled?: boolean;
     onChange: ( ...value: any ) => void;
     onChangeCommitted: () => void;
     reset?: () => void;
@@ -56,6 +57,7 @@ export default function OcrSettingsSlider( props: OcrSettingsSliderProps ) {
                         onClick={ () => {
                             if ( setDefault ) setDefault();
                         }}
+                        disabled={props?.disabled}
                     />
                 }
             </Box>
@@ -72,6 +74,7 @@ export default function OcrSettingsSlider( props: OcrSettingsSliderProps ) {
                     style={{ marginRight: 8 }}                
                     onChange={ props.onChange }
                     onChangeCommitted={ props.onChangeCommitted }
+                    disabled={ props.disabled }
                 />
 
                 <Typography gutterBottom component="div" margin={2} fontSize={'0.95rem'}>
