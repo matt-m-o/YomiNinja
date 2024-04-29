@@ -19,7 +19,7 @@ export type RecognizeImageInput = {
 
 export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
 
-    private regionIsStable = false;
+    private isRegionStable: Map<string, boolean> = new Map();
     private previousResult: OcrResultScalable;
 
     constructor(
@@ -125,7 +125,24 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
             }
         });
 
-        for( const targetRegion of target_regions ) {
+        
+        const autoOcrEnabledRegions = target_regions.filter( region => {
+            return region.auto_ocr_options?.enabled;
+        });
+
+        const targetRegions = [
+            ...autoOcrEnabledRegions,
+            ...target_regions.filter( region => {
+                return !region.auto_ocr_options?.enabled;
+            }),
+        ];
+
+        let totalChanges = 0;
+        const isTemplateStable = (): boolean => {
+            return Array.from(this.isRegionStable.values()).some( Boolean );
+        }
+
+        for( const targetRegion of targetRegions ) {
 
             const { auto_ocr_options } = targetRegion;
 
@@ -141,6 +158,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
             });
 
             if ( input.autoMode && auto_ocr_options.enabled ) {
+
                 const motionResult = await this.videoAnalyzer.detectMotion({
                     videoFrame: regionImage,
                     streamId: targetRegion.id,
@@ -166,7 +184,8 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
     
     
                 if ( motionResult.motionPixelsCount > motionThreshold ) {
-                    this.regionIsStable = false;
+                    // this.isRegionStable = false;
+                    this.isRegionStable.set(targetRegion.id, false);
                     // ! useful
                     // console.log({
                     //     regionIsStable: this.regionIsStable,
@@ -175,19 +194,28 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
                 }
                 else if (
                     motionResult.motionPixelsCount < motionThreshold &&
-                    !this.regionIsStable
+                    !this.isRegionStable.get( targetRegion.id )
                 ) {
-                    this.regionIsStable = true;
+                    // this.isRegionStable = true;
+                    this.isRegionStable.set( targetRegion.id, true );
+                    totalChanges++;
                 }
                 else {
-                    return this.previousResult;
-                    // continue;
+                    // return this.previousResult;
+                    continue;
                 }
                 
                 // ! useful
                 // console.log({
                 //     regionIsStable: this.regionIsStable,
                 // });
+            }
+            else if ( input.autoMode && totalChanges === 0 ) {
+
+                if ( isTemplateStable() )
+                    return this.previousResult;
+
+                return result;
             }
             
 

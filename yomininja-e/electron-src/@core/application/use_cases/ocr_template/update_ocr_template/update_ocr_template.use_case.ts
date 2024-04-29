@@ -78,6 +78,7 @@ export class UpdateOcrTemplateUseCase {
         template.name = input.name;
         template.image = input.image;
         template.capture_source_name = input.capture_source_name;
+        template.capturer_options = input.capturer_options;
 
         await this.ocrTemplateRepo.update( template );
 
