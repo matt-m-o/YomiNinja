@@ -202,7 +202,9 @@ export default function HomeContent() {
                         
                     </Container>
 
-                    <Typography fontSize='1.08rem' lineHeight={2} ml={1} mb={0} mt={'56px'}>
+                    <Typography fontSize='1.08rem' lineHeight={2} ml={1} mb={0} mt={'56px'}
+                        sx={{ fontWeight: 600 }}
+                    >
                         ✨New features:
                     </Typography>
                     <ul
