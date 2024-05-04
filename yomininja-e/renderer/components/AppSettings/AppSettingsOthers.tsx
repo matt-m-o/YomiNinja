@@ -142,7 +142,7 @@ export default function AppSettingsOthers() {
                             /> 
                         }
                     />
-                    <FormControlLabel label='Auto-copy text on hover'
+                    <FormControlLabel label='Copy text on hover'
                         sx={ switchFormControlLabelSx }
                         control={
                             <Switch
