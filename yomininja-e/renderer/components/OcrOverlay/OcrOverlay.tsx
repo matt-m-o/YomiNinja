@@ -26,6 +26,7 @@ const OverlayFrame = styled('div')({
   height: '100vh',
   overflow: 'hidden',
   boxSizing: 'border-box',
+  '-webkit-app-region': 'no-drag'
 });
 
 const ProgressContainer = styled('div')({
@@ -43,7 +44,9 @@ const DragArea = styled('div')({
   height: '100%',
   backgroundColor: '#00000092',
   '-webkit-app-region': 'drag',
-  cursor: 'move'
+  cursor: 'move',
+  position: 'relative',
+  zIndex: 999999999
 });
 
 export default function OcrOverlay() {

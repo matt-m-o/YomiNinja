@@ -13,6 +13,7 @@ import { ClickThroughMode, ShowWindowOnCopy } from "../@core/domain/settings_pre
 import { screen } from 'electron';
 
 const isMacOS = process.platform === 'darwin';
+const isLinux = process.platform === 'linux';
 
 export class OverlayController {
 
@@ -41,6 +42,8 @@ export class OverlayController {
 
     isOverlayWindowInTray: boolean = false;
 
+    isOverlayMovableResizable: boolean = false;
+
     constructor( input: {
         overlayService: OverlayService
     }) {
@@ -64,7 +67,7 @@ export class OverlayController {
 
         this.overlayWindow.on( 'show', ( ) => {
             this.showOverlayWindow();
-        });        
+        });
 
         this.overlayService.initWebSocket();
 
@@ -75,15 +78,16 @@ export class OverlayController {
 
         const useFullscreenMode = !isMacOS;
 
-        const windowOptions: Electron.BrowserWindowConstructorOptions = {
+        let windowOptions: Electron.BrowserWindowConstructorOptions = {
             fullscreen: useFullscreenMode,
-            frame: true,
-            movable: false,
+            frame: false,
+            movable: true, //! false
+            resizable: true,
             transparent: true,
             autoHideMenuBar: true,
-            skipTaskbar: isMacOS,
-            fullscreenable: true,
-            resizable: true,
+            // skipTaskbar: isMacOS,
+            // fullscreenable: true,
+            // resizable: true,
             hasShadow: false,
             webPreferences: {
                 nodeIntegration: false, // false
@@ -95,8 +99,14 @@ export class OverlayController {
             title: 'OCR Overlay - YomiNinja'
         };
 
-        if ( isMacOS )
-            windowOptions.type = 'panel';
+        if ( isMacOS ) {
+            windowOptions = {
+                ...windowOptions,
+                skipTaskbar: true,
+                fullscreenable: true,
+                type: 'panel'
+            }
+        }
 
         this.overlayWindow = new BrowserWindow( windowOptions );
 
@@ -125,7 +135,7 @@ export class OverlayController {
         });
 
         this.overlayWindow.loadURL(url);
-        // this.overlayWindow.maximize();        
+        // this.overlayWindow.maximize();
         
         const showDevTools = isDev && false;
         if (showDevTools) {
@@ -481,18 +491,39 @@ export class OverlayController {
     toggleMovable = ( newMovableState?: boolean ): boolean => {
 
         if ( newMovableState === undefined )
-            newMovableState = !this.overlayWindow.isMovable(); // isResizable
+            newMovableState = !this.isOverlayMovableResizable; // isResizable
+
+        this.isOverlayMovableResizable = newMovableState;
 
         this.overlayWindow.setMovable( newMovableState );
         this.overlayWindow.setResizable( newMovableState );
+
+        let ignoreMouseEvents = !newMovableState;
+
+        if ( this.clickThroughMode === 'disabled' )
+            ignoreMouseEvents = false;
+
         this.overlayWindow.setIgnoreMouseEvents(
-            !newMovableState, {
-                forward: !newMovableState
+            ignoreMouseEvents, {
+                forward: true
             }
         );
 
         this.overlayWindow.webContents.send( 'set_movable', newMovableState );
         this.overlayWindow.show();
+
+        if ( newMovableState ) {
+
+            if ( this.overlayWindow.isFullScreen() )
+                this.overlayWindow.setFullScreen( false );
+
+            if ( this.overlayWindow.isMaximized() )
+                this.overlayWindow.unmaximize();
+            
+            // this.overlayWindow.setBounds(
+            //     this.mainWindow.getBounds()
+            // );
+        }
 
         return newMovableState;
     }
