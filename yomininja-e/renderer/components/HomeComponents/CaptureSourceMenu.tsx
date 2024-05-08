@@ -53,6 +53,8 @@ export default function CaptureSourceMenu() {
                     chromeMediaSourceId: input.mediaSourceId,
                     maxWidth: input.maxWidth,
                     maxFrameRate: 1,
+                    minAspectRatio: 0.1,
+                    // maxAspectRatio: 20
                 }
             }
         });

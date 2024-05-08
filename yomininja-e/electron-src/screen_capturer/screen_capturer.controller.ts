@@ -1,5 +1,6 @@
-import { ipcMain, IpcMainInvokeEvent } from "electron";
+import { ipcMain, IpcMainInvokeEvent, screen } from "electron";
 import { screenCapturerService } from "./screen_capturer.index";
+import { CaptureSource } from "../app/types";
 
 export class ScreenCapturerController {
 
@@ -15,10 +16,18 @@ export class ScreenCapturerController {
         ipcMain.handle('screen_capturer:get_interval', ( ): number => {
             return screenCapturerService.intervalBetweenFrames;
         });
+
+        ipcMain.handle('screen_capturer:get_display_size', ( ): any => {
+            const display = screen.getPrimaryDisplay();
+            return display.workAreaSize;
+        });
     }
 
-    createCaptureStream( force = false ) {
-        screenCapturerService.createCaptureStream({ force });
+    createCaptureStream( input: { captureSource: CaptureSource, force?: boolean } ) {
+        screenCapturerService.createCaptureStream({
+            captureSource: input.captureSource,
+            force: Boolean(input.force)
+        });
     }
 
     onCapture( handler: ( frame: Buffer ) => Promise<void> ) {
@@ -32,7 +41,15 @@ export class ScreenCapturerController {
         });
     }
 
-    destroyScreenCapturer() {
-        screenCapturerService.destroyScreenCapturer();
+    async destroyScreenCapturer() {
+        await screenCapturerService.destroyScreenCapturer();
+    }
+
+    async setCaptureSource( captureSource?: CaptureSource ) {
+
+        if ( !captureSource )
+            return;
+
+        await screenCapturerService.setCaptureSource( captureSource );
     }
 }

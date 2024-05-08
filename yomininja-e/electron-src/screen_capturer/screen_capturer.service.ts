@@ -1,23 +1,26 @@
 import { BrowserWindow, ipcMain, IpcMainInvokeEvent, MessagePortMain } from "electron";
-import { ExternalWindow } from "../app/types";
+import { CaptureSource, ExternalWindow } from "../app/types";
 import { join } from 'path';
 import { PAGES_DIR } from "../util/directories.util";
 import { format } from 'url';
 import isDev from 'electron-is-dev';
 import { ocrRecognitionController } from "../ocr_recognition/ocr_recognition.index";
 import fs from 'fs';
+import { cloneDeep } from 'lodash';
 
 export class ScreenCapturerService {
 
+    captureSource: CaptureSource | undefined = undefined;
     screenCapturerWindow: BrowserWindow | undefined;
+
     captureHandler: ( frame: Buffer ) => void;
     intervalBetweenFrames: number = 333; // ms
     obs: any;
     obsConnected: boolean = false;
 
-    async createCaptureStream( input: { display?: Electron.Display, window?: ExternalWindow, force?: boolean }  ) {
+    async createCaptureStream( input: { captureSource: CaptureSource, force?: boolean }  ) {
 
-        const { display, window } = input;
+        this.captureSource = cloneDeep( input.captureSource );
 
         await this.sleep(1000);
 
@@ -27,13 +30,13 @@ export class ScreenCapturerService {
         )
             return;
 
-        this.createCapturerWindow( false );
+        await this.createCapturerWindow( false );
     }
 
-    createCapturerWindow( showWindow = false ) {
+    async createCapturerWindow( showWindow = false ) {
         
         if ( this.screenCapturerWindow )
-            this.destroyScreenCapturer();
+            await this.destroyScreenCapturer();
             
         this.screenCapturerWindow = new BrowserWindow({
             width: 960,
@@ -63,7 +66,12 @@ export class ScreenCapturerService {
             this.screenCapturerWindow.show();
         }
         
-        this.screenCapturerWindow.webContents.on('dom-ready', this.screenCapturerWindow.webContents.openDevTools )
+        if ( isDev ) {
+            this.screenCapturerWindow.webContents.on(
+                'dom-ready',
+                this.screenCapturerWindow.webContents.openDevTools
+            );
+        }
 
         // this.screenCapturerWindow.webContents.on( 'dom-ready', this.startStream );
         this.screenCapturerWindow.webContents.on( 'dom-ready', () => {
@@ -75,6 +83,10 @@ export class ScreenCapturerService {
         if ( !this.screenCapturerWindow ) 
             return;
 
+        this.screenCapturerWindow.webContents.send('screen_capturer:stop_stream');
+
+        await this.sleep(1000);
+        
         this.screenCapturerWindow.destroy();
         this.screenCapturerWindow = undefined;
     }
@@ -135,4 +147,33 @@ export class ScreenCapturerService {
 
         return Buffer.from( imageData );
     }
+
+    async setCaptureSource( captureSource: CaptureSource ) {
+
+        if ( !this.screenCapturerWindow ) {
+            this.captureSource = cloneDeep( captureSource );
+            return;
+        }
+
+        const currentSize = this.captureSource?.window?.size;
+        const newSize = captureSource.window?.size;
+
+        const sameShape = (
+            currentSize?.width === newSize?.width &&
+            currentSize?.height === newSize?.height
+        );
+
+        if ( !sameShape ) {
+
+            this.captureSource = cloneDeep( captureSource );
+
+            await this.destroyScreenCapturer();
+            await this.createCaptureStream({
+                captureSource,
+                force: true
+            });
+        }
+
+    }
+
 }

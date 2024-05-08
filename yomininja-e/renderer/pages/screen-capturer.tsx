@@ -14,7 +14,10 @@ class Capturer {
 
     keepStreaming: boolean = false;
 
-    init = async ( mediaSourceId: string ) => {
+    init = async (
+        mediaSourceId: string,
+        screenSize: { width: number, height: number }
+    ) => {
         this.mediaStream = await navigator.mediaDevices.getUserMedia({
             audio: false,
             video: {
@@ -22,8 +25,13 @@ class Capturer {
                 mandatory: {
                     chromeMediaSource: 'desktop',
                     chromeMediaSourceId: mediaSourceId,
-                    // maxWidth: input.maxWidth,
+                    maxWidth: screenSize.width,
+                    maxHeight: screenSize.height,
+                    // maxWidth: 1920,
+                    // maxHeight: 1000,
                     maxFrameRate: 10,
+                    // minAspectRatio: 0.1,
+                    maxAspectRatio: 40
                 }
             }
         });
@@ -79,6 +87,7 @@ class Capturer {
     }
 
     stopStream = () => {
+        this.mediaStream.stop();
         this.keepStreaming = false;
     }
 
@@ -116,27 +125,40 @@ function ScreenCapturerElement() {
         console.log({ activeCaptureSource });
         if ( !activeCaptureSource ) return;
 
-        capturer.init( activeCaptureSource.id )
-            .then( async () => {
+        global.ipcRenderer.invoke( 'screen_capturer:get_display_size')
+            .then( displaySize => {
 
-                // This makes the render independent
-                capturer.startStream( sendFrame );
+                const { size } = activeCaptureSource?.window;
 
-                global.ipcRenderer.on( 'screen_capturer:set_interval', ( _, interval: number ) => {
-                    capturer.setIntervalBetweenFrames( interval );
-                });
+                capturer.init( activeCaptureSource.id, size || displaySize )
+                    .then( async () => {
 
-                global.ipcRenderer.on( 'screen_capturer:grab_frame', async () => {
-        
-                    const frame = await capturer.grabFrame();
-                    
-                    if ( frame )
-                        sendFrame( frame );
-                });
+                        // This makes the render independent
+                        capturer.startStream( sendFrame );
 
-                const interval = await global.ipcRenderer.invoke( 'screen_capturer:get_interval');
-                capturer.setIntervalBetweenFrames( interval );
+                        global.ipcRenderer.on( 'screen_capturer:set_interval', ( _, interval: number ) => {
+                            capturer.setIntervalBetweenFrames( interval );
+                        });
+
+                        global.ipcRenderer.on( 'screen_capturer:grab_frame', async () => {
+                
+                            const frame = await capturer.grabFrame();
+                            
+                            if ( frame )
+                                sendFrame( frame );
+                        });
+
+                        global.ipcRenderer.on( 'screen_capturer:stop_stream', async () => {
+                            capturer.stopStream();
+                        });
+
+                        const interval = await global.ipcRenderer.invoke( 'screen_capturer:get_interval');
+                        capturer.setIntervalBetweenFrames( interval );
+                    });
+
             });
+
+        
         
         return () => {
             global.ipcRenderer.removeAllListeners( 'screen_capturer:set_interval' );

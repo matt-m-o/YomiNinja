@@ -200,6 +200,13 @@ export class AppController {
 
                 this.activeCaptureSource = message;
 
+                if ( this.userSelectedWindowId ) {
+                    this.captureSourceWindow = await this.appService.getExternalWindow(
+                        this.userSelectedWindowId
+                    );
+                    this.activeCaptureSource.window = this.captureSourceWindow;
+                }
+
                 this.mainWindow.webContents.send(
                     'app:active_capture_source',
                     this.activeCaptureSource
@@ -213,8 +220,12 @@ export class AppController {
                 // console.log({
                 //     isAutoOcrEnabled: ocrTemplatesController.isAutoOcrEnabled
                 // });
-                if ( ocrTemplatesController.isAutoOcrEnabled )
-                    screenCapturerController.createCaptureStream(true);
+                if ( ocrTemplatesController.isAutoOcrEnabled ) {
+                    screenCapturerController.createCaptureStream({
+                        captureSource: this.activeCaptureSource,
+                        force: true
+                    });
+                }
 
                 this.isCaptureSourceUserSelected = true;
             }
@@ -229,15 +240,19 @@ export class AppController {
     }
 
     registerEventHandlers() {
-        ocrTemplateEvents.on( 'active_template', template => {
+        ocrTemplateEvents.on( 'active_template', async (template) => {
             const isAutoOcrEnabled = template?.isAutoOcrEnabled() || false;
             console.log({ isAutoOcrEnabled });
 
             if ( !isAutoOcrEnabled )
-                screenCapturerController.destroyScreenCapturer();
+                await screenCapturerController.destroyScreenCapturer();
 
-            if ( isAutoOcrEnabled && this.isCaptureSourceUserSelected )
-                screenCapturerController.createCaptureStream();
+            if ( isAutoOcrEnabled && this.isCaptureSourceUserSelected ) {
+                screenCapturerController.createCaptureStream({
+                    captureSource: this.activeCaptureSource,
+                    force: true
+                });
+            }
         });
     }
 
@@ -467,9 +482,10 @@ export class AppController {
 
     async handleWindowSource() {      
         
-        if ( this.userSelectedWindowId )
+        if ( this.userSelectedWindowId ) {
             this.captureSourceWindow = await this.appService.getExternalWindow( this?.userSelectedWindowId );
-
+            this.activeCaptureSource.window = this.captureSourceWindow;
+        }
         else 
             this.captureSourceWindow = undefined;
 
@@ -481,6 +497,7 @@ export class AppController {
         this.handleDisplaySource();
         await this.handleWindowSource();
         // console.timeEnd('handleCaptureSourceSelection');
+        await screenCapturerController.setCaptureSource( this.activeCaptureSource );
     }
 
     private async isFullScreenImage( imageBuffer: Buffer ): Promise<boolean> {
@@ -523,6 +540,9 @@ export class AppController {
             runFullScreenImageCheck,
             engineName
         } = input;
+
+        if ( overlayController.isOverlayMovableResizable )
+            return;
 
         this.overlayWindow?.webContents.send( 'user_command:toggle_results', false );
         this.overlayWindow?.webContents.send( 'ocr:processing_started' );
@@ -576,6 +596,9 @@ export class AppController {
         // this.overlayWindow?.webContents.send( 'ocr:processing_started' );
         
         // await this.handleCaptureSourceSelection();
+
+        if ( overlayController.isOverlayMovableResizable )
+            return;
 
         if ( !image ) return;
 
@@ -635,6 +658,14 @@ export class AppController {
             this.tray.setToolTip( appName );
             this.tray.on( 'click', () => toggleMainWindow( true ) );
             const contextMenu = Menu.buildFromTemplate([
+                // {
+                //     id: 'ocr',
+                //     label: `OCR`,
+                //     click: ( item ) => this.handleOcrCommand(),
+                // },
+                // {
+                //     type: 'separator'
+                // },
                 {
                     label: `Hide/Show ${app.getName()}`,
                     click: ( item ) => toggleMainWindow()
@@ -666,6 +697,7 @@ export class AppController {
                     checked: !overlayController.isOverlayBoundsLocked,
                     click: ( event ) => {
                         overlayController.lockOverlayBounds( !event.checked );
+                        // event.checked = !overlayController.isOverlayBoundsLocked;
                     },
                 },
                 {
