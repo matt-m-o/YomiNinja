@@ -33,12 +33,17 @@ class MotionDetectionService:
 
         if len(stream) and next_frame.shape != self.getStreamShape( stream_id ):
             self.deleteStream( stream_id )
+            return result
 
         if not stream or not len(stream):
             self.updateStream( stream_id, next_frame )
             return result
 
         background_frame = self.medianImage( stream )
+
+        # if background_frame.shape != next_frame.shape:
+        #     self.deleteStream( stream_id )
+        #     return result
 
         frame_difference = self.frameDiff( background_frame, next_frame )
 
@@ -95,11 +100,11 @@ class MotionDetectionService:
         if not self.streamExists( stream_id ):
             return
         del self.streams[stream_id]
+        # self.streams[stream_id] = []
 
     def streamExists(self, stream_id: str) -> bool:
         return stream_id in self.streams
     
-    def getStreamShape(self, stream_id: str) -> tuple[int, int, int]: # height, width, channels
+    def getStreamShape(self, stream_id: str) -> tuple[int, int]: # height, width
         stream = self.getStream( stream_id )
-        last_frame = stream[-1]
-        return last_frame.shape
+        return stream[0].shape
