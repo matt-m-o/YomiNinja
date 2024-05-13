@@ -658,14 +658,14 @@ export class AppController {
             this.tray.setToolTip( appName );
             this.tray.on( 'click', () => toggleMainWindow( true ) );
             const contextMenu = Menu.buildFromTemplate([
-                // {
-                //     id: 'ocr',
-                //     label: `OCR`,
-                //     click: ( item ) => this.handleOcrCommand(),
-                // },
-                // {
-                //     type: 'separator'
-                // },
+                {
+                    id: 'ocr',
+                    label: `OCR`,
+                    click: ( item ) => this.handleOcrCommand(),
+                },
+                {
+                    type: 'separator'
+                },
                 {
                     label: `Hide/Show ${app.getName()}`,
                     click: ( item ) => toggleMainWindow()
