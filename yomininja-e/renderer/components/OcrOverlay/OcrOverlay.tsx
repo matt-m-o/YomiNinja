@@ -99,7 +99,7 @@ export default function OcrOverlay() {
       value = false;
     
     // console.log( currentElement );
-    console.log( value );
+    // console.log( value );
 
     global.ipcRenderer.invoke( 'overlay:set_ignore_mouse_events', value );
   };
