@@ -23,8 +23,6 @@ export const TTSContext = createContext( {} as TTSContextType );
 export const TTSProvider = ( { children }: PropsWithChildren ) => {
     
     const [ voices, setVoices ] = useState< SpeechSynthesisVoice[] >([]);
-    const [ speechSU, setSpeechSU ] = useState< SpeechSynthesisUtterance >();
-    // let speechSU: SpeechSynthesisUtterance;
     
     useEffect( () => {
 
@@ -33,10 +31,6 @@ export const TTSProvider = ( { children }: PropsWithChildren ) => {
             setVoices( window.speechSynthesis.getVoices() );
             console.log({ voicesChangedEvent });
             console.log({ voices });
-
-            const ssu = new SpeechSynthesisUtterance();
-            ssu.voice = voices[0];
-            setSpeechSU( ssu );
         }
     }, [] );
 
@@ -44,6 +38,8 @@ export const TTSProvider = ( { children }: PropsWithChildren ) => {
 
         if ( input.cancelCurrentText )
             window.speechSynthesis.cancel();
+
+        const speechSU = new SpeechSynthesisUtterance();
 
         speechSU.text = input.text;
 
