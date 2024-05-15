@@ -684,9 +684,8 @@ export class AppController {
                 },
                 {
                     label: 'Manually Move/Resize Overlay',
-                    type: 'checkbox',
                     click: ( item ) => {
-                        item.checked = overlayController.toggleMovable();
+                        overlayController.toggleMovable();
                     },
                     accelerator: 'Ctrl+Shift+M'
                 },
