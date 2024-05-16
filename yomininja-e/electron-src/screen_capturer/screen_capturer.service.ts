@@ -30,7 +30,7 @@ export class ScreenCapturerService {
         )
             return;
 
-        await this.createCapturerWindow( false );
+        await this.createCapturerWindow( false ); // isDev
     }
 
     async createCapturerWindow( showWindow = false ) {

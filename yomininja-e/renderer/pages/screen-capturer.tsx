@@ -1,4 +1,3 @@
-import { Box } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { CaptureSourceContext, CaptureSourceProvider } from '../context/capture_source.provider';
 
@@ -125,12 +124,15 @@ function ScreenCapturerElement() {
         console.log({ activeCaptureSource });
         if ( !activeCaptureSource ) return;
 
+        if ( capturer.keepStreaming )
+            return;
+
         global.ipcRenderer.invoke( 'screen_capturer:get_display_size')
             .then( displaySize => {
 
-                const { size } = activeCaptureSource?.window;
+                const windowSize = activeCaptureSource?.window?.size;
 
-                capturer.init( activeCaptureSource.id, size || displaySize )
+                capturer.init( activeCaptureSource.id, windowSize || displaySize )
                     .then( async () => {
 
                         // This makes the render independent
