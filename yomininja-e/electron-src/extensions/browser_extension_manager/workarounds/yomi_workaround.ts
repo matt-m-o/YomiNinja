@@ -53,7 +53,25 @@ export function applyYomiWorkaround( extensionPath: string  ) {
 
         fs.writeFileSync( permissionsUtilPath, updatedFileContent, 'utf-8' );
 
+        applyManifestV2Patch( extensionPath );
+
     } catch (error) {
+        console.error(error);
+    }
+}
+
+function applyManifestV2Patch( extensionPath: string ) {
+    const backendFilePath = path.join(
+        extensionPath,
+        '/js/background/backend.js'
+    );
+
+    try {
+        const fileContent = fs.readFileSync( backendFilePath, 'utf-8' );
+        const updatedFileContent = fileContent.replaceAll('manifest.action', 'manifest.browser_action');
+        fs.writeFileSync( backendFilePath, updatedFileContent, 'utf-8' );
+    }
+    catch (error) {
         console.error(error);
     }
 }
