@@ -25,6 +25,8 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
 
     async recognize( input: OcrRecognitionInput ): Promise< OcrResultScalable | null > {
 
+        this.idCounter++;
+
         const imageBuffer = await this.rescaleImage( input.imageBuffer );
 
         const imageMetadata = await sharp( imageBuffer ).metadata();
