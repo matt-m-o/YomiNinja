@@ -131,7 +131,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
         const metadata = await this.imageProcessing.getMetadata(image);
 
         const result = OcrResultScalable.create({
-            id: 0,
+            id: '0',
             context_resolution: {
                 width: metadata.width,
                 height: metadata.height,
@@ -279,7 +279,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
                 
             if ( !regionResult ) continue;
 
-            if ( result.id === 0 )
+            if ( result.id === '0' )
                 result.id = regionResult.id;
 
             

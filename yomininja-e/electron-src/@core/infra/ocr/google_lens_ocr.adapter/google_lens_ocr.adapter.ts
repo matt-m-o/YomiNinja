@@ -53,7 +53,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
        
 
         const result = OcrResultScalable.create({
-            id: this.idCounter,
+            id: this.idCounter.toString() + this.name,
             context_resolution: contextResolution,
             ocr_regions: [
                 {

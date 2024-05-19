@@ -12,7 +12,7 @@ describe( "OCRResultScalable tests", () => {
     beforeEach( () => {
 
         ocrResultCreationInput = {
-            id: 1,
+            id: '1',
             context_resolution: {
                 width: 1920,
                 height: 1080,
@@ -51,7 +51,7 @@ describe( "OCRResultScalable tests", () => {
     it( "should define an OCRResultScalable without props", () => {
 
         const ocrResult = OcrResultScalable.create({
-            id: 1,
+            id: '1',
         });
 
 
@@ -103,7 +103,7 @@ describe( "OCRResultScalable tests", () => {
         ocrResultScalable.ocr_regions = [];
 
         const ocrRegionResult = OcrResult.create({
-            id: 2,
+            id: '2',
             context_resolution: {
                 width: 960,
                 height: 540,

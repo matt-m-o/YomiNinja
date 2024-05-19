@@ -40,7 +40,7 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
         let result: OcrResult | null = null;
         try {
             result = await mangaOcrPyService.recognize({
-                id: this.idCounter.toString(),
+                id: this.idCounter.toString() + this.name,
                 image: input.imageBuffer,
                 boxes: [],
             });

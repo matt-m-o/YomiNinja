@@ -21,7 +21,7 @@ import { PyVideoAnalyzerAdapter } from "../../../infra/ocr/py_video_analyzer.ada
 describe("Recognize Image Use Case tests", () => {    
                 
     const ocrTestAdapterResultProps: OcrResult_CreationInput = {
-        id: 1,
+        id: '1',
         context_resolution: {
             width: 1920,
             height: 1080,                        

@@ -48,7 +48,7 @@ export class MangaOcrOnnxService implements MangaOcrService {
         const jimpImage = await Jimp.read( input.image );
 
         const result = OcrResult.create({
-            id: Number(input.id),
+            id: input.id,
             context_resolution: {
                 height: (await jimpImage).getHeight(),
                 width: (await jimpImage).getWidth(),

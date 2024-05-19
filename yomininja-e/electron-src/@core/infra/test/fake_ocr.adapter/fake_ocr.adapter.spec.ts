@@ -5,7 +5,7 @@ import { FakeOcrTestAdapter } from "./fake_ocr.adapter";
 describe("OCR Test Adapter tests", () => {
                 
     const ocrTestAdapterBaseProps: OcrResult_CreationInput = {
-        id: 1,
+        id: '1',
         context_resolution: {
             width: 1920,
             height: 1080,                        

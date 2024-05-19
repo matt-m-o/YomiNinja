@@ -102,7 +102,7 @@ export class PyOcrService {
         });
 
         const result = OcrResult.create({
-            id: parseInt(clientResponse.id),
+            id: clientResponse.id,
             context_resolution: clientResponse.context_resolution,
             results: ocrItems,
         });

@@ -13,7 +13,7 @@ import { OcrEngineSettingsU } from "../../../infra/types/entity_instance.types";
 describe("Get Supported Languages Use Case tests", () => {
                 
     const ocrTestAdapterResultProps: OcrResult_CreationInput = {
-        id: 1,
+        id: '1',
         context_resolution: {
             width: 1920,
             height: 1080,                        

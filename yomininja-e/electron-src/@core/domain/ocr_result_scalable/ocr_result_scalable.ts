@@ -56,7 +56,7 @@ export interface OcrRegion {
 
 
 export type OcrResultScalable_CreationInput = {
-    id: number;
+    id: string;
     context_resolution?: OcrResultContextResolution;
     results?: OcrItemScalable[];
     ocr_regions?: OcrRegion[];
@@ -65,7 +65,7 @@ export type OcrResultScalable_CreationInput = {
 // Scalable version OcrResult. Uses percentages instead of pixel coordinates
 export class OcrResultScalable {
 
-    public id: number;
+    public id: string;
     public context_resolution: OcrResultContextResolution;
     // public results: OcrItemScalable[];
     public ocr_regions: OcrRegion[];

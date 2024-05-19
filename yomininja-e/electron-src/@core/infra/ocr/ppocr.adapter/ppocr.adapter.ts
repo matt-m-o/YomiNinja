@@ -37,7 +37,7 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
             language_code = 'en';
         
         const requestInput: RecognizeBytesRequest = {
-            id: this.idCounter.toString(),
+            id: this.idCounter.toString()+this.name,
             image_bytes: input.imageBuffer,
             language_code
         };

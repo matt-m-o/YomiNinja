@@ -6,7 +6,7 @@ describe( "OCR Result tests", () => {
     it( "should define an OCR Result without props", () => {
 
         const ocrResult = OcrResult.create({
-            id: 1,
+            id: '1',
         });
 
         expect( ocrResult.id ).toStrictEqual( 1 );
@@ -17,7 +17,7 @@ describe( "OCR Result tests", () => {
     it( "should define an OCR Result with props", () => {
         
         const input: OcrResult_CreationInput = {
-            id: 1,
+            id: '1',
             context_resolution: {
                 width: 1920,
                 height: 1080,
@@ -49,7 +49,7 @@ describe( "OCR Result tests", () => {
     it( "should define an OCR Result without props and set properties", () => {
 
         const input: OcrResult_CreationInput = {
-            id: 1,
+            id: '1',
             context_resolution: {
                 width: 1920,
                 height: 1080,

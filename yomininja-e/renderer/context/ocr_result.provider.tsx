@@ -17,7 +17,7 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
     const [ ocrResult, setOcrResult ] = useState< OcrResultScalable | null >( null );
     const [ showResults, setShowResults ] = useState<boolean>( true );
     const [ processing, setProcessing ] = useState<boolean>(false);
-    let previousResultId: number | undefined = 0;
+    let previousResultId: string | undefined = '0';
   
     const ocrResultHandler = ( _event, data: OcrResultScalable ) => {
 

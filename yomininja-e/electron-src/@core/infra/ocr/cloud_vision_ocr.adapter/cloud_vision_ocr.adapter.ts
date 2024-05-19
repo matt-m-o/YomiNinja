@@ -149,7 +149,7 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
         });
 
         const ocrResult = OcrResult.create({
-            id: this.idCounter,
+            id: this.idCounter.toString() + this.name,
             context_resolution: contextResolution,
             results: ocrResultItems,
         });
