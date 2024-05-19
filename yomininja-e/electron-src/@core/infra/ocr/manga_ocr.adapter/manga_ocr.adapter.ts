@@ -13,6 +13,10 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
     private idCounter: number = 0;
     private recognitionCallOnHold: OcrRecognitionInput | undefined;
 
+    private prevImage: Buffer = Buffer.from('');
+    private prevResult: OcrResultScalable | null = null;
+    private prevResultTime: Date = new Date();
+
     constructor() {}
 
     initialize() {
@@ -32,6 +36,13 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
         }
         
         this.idCounter++;
+
+        const isCacheValid = this.isCacheValid( input.imageBuffer );
+        // console.log({ [`${this.name}_IsCacheValid`]: isCacheValid });
+        if ( isCacheValid )
+            return this.prevResult;
+        else
+            this.prevImage = input.imageBuffer;
       
         console.log('processing recognition input');
         this.status = OcrAdapterStatus.Processing;
@@ -53,14 +64,20 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
         // console.timeEnd('PpOcrAdapter.recognize');
         this.status = OcrAdapterStatus.Enabled;
         
-        // Throwing away current response an returning newest call result
+        // Throwing away current response an returning latest call result
         if ( this.recognitionCallOnHold ){
             return await this.recognize( this.recognitionCallOnHold );
         }
 
-        if ( !result ) return null;
+        if ( !result ) {
+            this.cacheResult(null);
+            return null
+        };
 
-        return OcrResultScalable.createFromOcrResult(result);
+        const resultScalable = OcrResultScalable.createFromOcrResult(result);
+        this.cacheResult( resultScalable );
+
+        return resultScalable;
     }
 
     async getSupportedLanguages(): Promise< string[] > {
@@ -85,4 +102,24 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
     restart( callback: () => void ): void {
     }
 
+    private cacheResult( result: OcrResultScalable | null ) {
+        this.prevResult = result;
+        this.prevResultTime = new Date();
+    }
+
+    private getCacheAge(): number { // seconds
+        return ( Date.now() - this.prevResultTime.getTime() ) / 1000;
+    }
+
+    private isCacheValid( image: Buffer ): boolean {
+
+        if ( this.getCacheAge() > 30 )
+            return false;
+
+        const isSameImage = this.prevImage.equals( image );
+
+        if ( !isSameImage ) return false;
+
+        return true;
+    }
 }
