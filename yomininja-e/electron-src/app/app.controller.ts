@@ -87,8 +87,6 @@ export class AppController {
         // if ( isDev )
             // createDebuggingWindow();
 
-        this.createTrayIcon();
-
         await initializeApp()
             .then( async () => {
             
@@ -148,6 +146,8 @@ export class AppController {
                 return this._handleVideoStream( frame );
             }
         );
+
+        this.createTrayIcon();
     }
 
     registersIpcHandlers() {
