@@ -562,7 +562,7 @@ export class AppController {
         if ( image && runFullScreenImageCheck)
             isFullScreenImage = await this.isFullScreenImage(image);
         this.setOverlayBounds( isFullScreenImage ? 'fullscreen' :  'maximized' );
-        this.showOverlayWindow();
+        // this.showOverlayWindow(); // This can cause problems with JPDBReader extension // Warning: Unknown display value, please report this!
         this.overlayWindow?.webContents.send( 'user_command:toggle_results', false );
 
         if ( this.isEditingOcrTemplate ) {
@@ -640,6 +640,9 @@ export class AppController {
         const appName = app.getName();
 
         const toggleMainWindow = ( show?: boolean ) => {
+
+            if ( !this.mainWindow )
+                return;
 
             if ( show )
                 return this.mainWindow.show();
