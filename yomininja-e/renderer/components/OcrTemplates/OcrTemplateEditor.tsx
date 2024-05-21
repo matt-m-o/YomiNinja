@@ -9,6 +9,8 @@ import OcrSettingsSlider from "../AppSettings/OcrSettings/OcrSettingsSlider";
 import { CustomAccordion } from "../common/CustomAccordion";
 import { TTSContext } from "../../context/text-to-speech.provider";
 import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
+import { CaptureSourceContext } from "../../context/capture_source.provider";
+import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
 
 export type Size = { // Pixels
     width: number;
@@ -58,6 +60,7 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
     } = useContext( OcrTemplatesContext );
     const { getVoices } = useContext( TTSContext );
 
+    const { activeCaptureSource } = useContext( CaptureSourceContext );
     const [ templateSize, setTemplateSize ] = useState< Size >();
     const [ selectedTargetRegion, setSelectedTargetRegion ] = useState< OcrTargetRegionJson | null >();
 
@@ -259,6 +262,18 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                         <strong>Note:</strong> This feature is experimental and will only become active when a <strong>Capture Source</strong> is manually selected.
                         To avoid potential issues, it’s currently recommended to enable this feature for a <strong>single region at a time</strong>.
                     </Typography>
+
+                    { (activeCaptureSource?.type !== 'window') &&
+                        <Typography mb={1}>
+                            <WarningRoundedIcon color="warning" style={{
+                                marginBottom: '-2px',
+                                marginRight: '4px', 
+                                width: '17px',
+                                height: '17px',
+                            }}/>
+                            The selected capture source is not a window! Please select a window as the capture source!
+                        </Typography>
+                    }
 
                     <FormControlLabel label='Enable Auto OCR'
                         sx={{ ml: 0,  mt: 0, mb: 1, width: '100%' }}
