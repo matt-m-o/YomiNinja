@@ -122,7 +122,7 @@ function ScreenCapturerElement() {
 
     useEffect( () => {
         console.log({ activeCaptureSource });
-        if ( !activeCaptureSource ) return;
+        if ( !activeCaptureSource?.id ) return;
 
         if ( capturer.keepStreaming )
             return;
