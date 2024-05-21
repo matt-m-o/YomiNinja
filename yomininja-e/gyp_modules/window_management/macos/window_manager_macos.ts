@@ -1,3 +1,4 @@
+import { systemPreferences } from 'electron';
 import { TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
 import { windowManager } from 'node-window-manager';
 import os from 'os';
@@ -11,6 +12,10 @@ export class WindowManagerMacOS implements WindowManagerNativeInterface {
             // this.hasAccessibilityAccess = windowManager.requestAccessibility();
             console.log({ hasAccessibilityAccess: this.hasAccessibilityAccess });
         }
+    }
+
+    async init() {
+        this.requestAccessibility();
     }
 
     async searchWindowByTitle( title: string ): Promise<WindowProperties[]> {
@@ -142,7 +147,9 @@ export class WindowManagerMacOS implements WindowManagerNativeInterface {
     }
 
     requestAccessibility(): any {
-        this.hasAccessibilityAccess = windowManager.requestAccessibility();
+        this.hasAccessibilityAccess = systemPreferences.isTrustedAccessibilityClient(false);
         return this.hasAccessibilityAccess;
+        // this.hasAccessibilityAccess = windowManager.requestAccessibility();
+        // return this.hasAccessibilityAccess;
     }
 }
