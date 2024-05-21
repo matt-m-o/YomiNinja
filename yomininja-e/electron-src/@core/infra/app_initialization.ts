@@ -86,6 +86,8 @@ export async function initializeApp() {
     
     try {
 
+        const serviceStartupPromise = startServices();
+
         // Initializing database
         await get_MainDataSource().initialize();
         const datasource = await get_DictionaryDataSource().initialize();
@@ -107,12 +109,7 @@ export async function initializeApp() {
 
         await populateLanguagesRepository( languageRepo );
 
-        if ( !isMacOS ) {
-            await new Promise( resolve => paddleOcrService.startProcess( resolve ) );
-            await paddleOcrService.processStatusCheck();
-        }
-        await new Promise( resolve => pyOcrService.startProcess( resolve ) );
-        await pyOcrService.processStatusCheck();
+        await serviceStartupPromise;
 
         // console.log('Initializing settings...');
         let defaultSettingsPreset = await settingsPresetRepo.findOne({ name: SettingsPreset.default_name });
@@ -160,10 +157,8 @@ export async function initializeApp() {
                 }
             });
         }
-        if ( !isMacOS ) {
-            await paddleOcrService.processStatusCheck();
-        }
-        await pyOcrService.processStatusCheck();
+
+        await servicesHealthCheck();
 
         
         // console.log('Initializing languages...');
@@ -207,4 +202,31 @@ export async function initializeApp() {
 
 export function getActiveProfile(): Profile {
     return activeProfile;
+}
+
+async function startServices() {
+
+    const serviceStartupPromises: Promise<unknown>[] = [];
+
+    if ( !isMacOS ) {
+        serviceStartupPromises.push(
+            new Promise( resolve => paddleOcrService.startProcess( resolve ) )
+        );
+    }
+    serviceStartupPromises.push( new Promise( resolve => pyOcrService.startProcess( resolve ) ) );
+
+    await Promise.all( serviceStartupPromises );
+    await servicesHealthCheck();
+}
+
+async function servicesHealthCheck() {
+
+    const serviceHealthCheckPromises: Promise<unknown>[] = [];
+
+    if ( !isMacOS ) {
+        serviceHealthCheckPromises.push( paddleOcrService.processStatusCheck() )
+    }
+    serviceHealthCheckPromises.push( pyOcrService.processStatusCheck() )
+
+    await Promise.all( serviceHealthCheckPromises );
 }
