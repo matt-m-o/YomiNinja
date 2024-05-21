@@ -126,7 +126,7 @@ export default function OcrOverlay() {
   const templateRegions = activeOcrTemplate?.target_regions.map( region => {
     const { position, size } = region;
     return (
-        <OcrTargetRegionDiv className="ocr-region" key={ region.id }
+        <OcrTargetRegionDiv key={ region.id } // className="ocr-region" This class can break JPDBReader
           style={{
             border: 'solid',
             borderColor: overlayFrameVisuals?.border_color || 'red',
