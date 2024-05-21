@@ -76,7 +76,7 @@ export class OverlayController {
 
     private createOverlayWindow() {
 
-        const useFullscreenMode = !isMacOS;
+        const useFullscreenMode = !isMacOS && !isLinux;
 
         let windowOptions: Electron.BrowserWindowConstructorOptions = {
             fullscreen: useFullscreenMode,
