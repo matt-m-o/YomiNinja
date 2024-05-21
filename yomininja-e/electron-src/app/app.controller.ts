@@ -1,4 +1,4 @@
-import { BrowserWindow, IpcMainInvokeEvent, Tray, nativeImage, app, clipboard, globalShortcut, ipcMain, Menu } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, Tray, nativeImage, app, clipboard, globalShortcut, ipcMain, Menu, DisplayBalloonOptions, NativeImage, systemPreferences } from "electron";
 import { UiohookKey, uIOhook } from "uiohook-napi";
 import { CaptureSource, ExternalWindow } from "../ocr_recognition/common/types";
 import { TaskbarProperties } from "../../gyp_modules/window_management/window_manager";
@@ -26,6 +26,7 @@ import { windowManager } from "node-window-manager";
 import { screenCapturerController } from "../screen_capturer/screen_capturer.index";
 import { ICONS_DIR } from "../util/directories.util";
 import { join } from "path";
+import { sleep } from "../util/sleep.util";
 const isMacOS = process.platform === 'darwin';
 
 let startupTimer: NodeJS.Timeout;
@@ -63,20 +64,23 @@ export class AppController {
     }) {
 
         this.appService = input.appService;
-
-        if ( isMacOS && !windowManager.requestAccessibility() )
-            return;
-
-        uIOhook.start();
     }
 
     async init() {
+        console.time('YomiNinja Startup time');
 
         if ( !isDev ) {
             startupTimer = setTimeout( () => {
                 console.log('Initialization took too long. Closing the app.');
-                app.quit();
-            }, 30_000 );
+                this.displayBalloon({
+                    content: 'The app is about to exit in 10 seconds. Please restart the app once it has exited.'
+                });
+                sleep(10_000)
+                    .then( () => {
+                        app.quit();
+                        process.exit();
+                    });
+            }, 45_000 );//
         }
 
         this.mainWindow = await mainController.init();
@@ -94,8 +98,7 @@ export class AppController {
             .then( async () => {
             
                 this.overlayWindow = await overlayController.init( this.mainWindow );
-                
-                
+
                 ocrRecognitionController.init({
                     mainWindow: this.mainWindow,
                     overlayWindow: this.overlayWindow
@@ -152,6 +155,7 @@ export class AppController {
 
         this.destroyTemporaryTrayIcon();
         this.createTrayIcon();
+        console.timeEnd('YomiNinja Startup time');
     }
 
     registersIpcHandlers() {
@@ -645,23 +649,8 @@ export class AppController {
 
     createBaseTrayIcon(): Tray {
 
-        const { platform } = process;
-
-        let appIconFile = 'icon_512x512.png';
-
-        if ( isMacOS )
-            appIconFile = 'icon_64x64@3x.png';
-
-        else if ( platform === 'win32' )
-            appIconFile = 'icon.ico';
-
-        const appName = app.getName();
-
-        const iconPath = join( ICONS_DIR, appIconFile );
-        const trayIcon = nativeImage.createFromPath( iconPath );
-
-        const tray = new Tray( trayIcon );
-        tray.setToolTip( appName );
+        const tray = new Tray( this.getAppIcon() );
+        tray.setToolTip( app.name );
 
         return tray;
     }
@@ -748,6 +737,37 @@ export class AppController {
 
         this.temporaryTray.destroy();
         this.temporaryTray = undefined;
+    }
+
+    displayBalloon( options: Partial<DisplayBalloonOptions> ) {
+
+        if ( options.respectQuietTime !== undefined )
+            options.respectQuietTime = options.respectQuietTime;
+        else
+            options.respectQuietTime = true;
+
+        (this.temporaryTray || this.tray)
+            ?.displayBalloon({
+                ...options,
+                title: 'YomiNinja',
+                content: options.content || '',
+                icon: this.getAppIcon()
+            });
+    }
+
+    getAppIcon(): NativeImage {
+
+        let appIconFile = 'icon_512x512.png';
+
+        if ( isMacOS )
+            appIconFile = 'icon_64x64@3x.png';
+
+        else if ( process.platform === 'win32' )
+            appIconFile = 'icon.ico';
+
+        const iconPath = join( ICONS_DIR, appIconFile );
+        
+        return nativeImage.createFromPath( iconPath );
     }
 }
 
