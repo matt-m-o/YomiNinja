@@ -55,7 +55,8 @@ export class AppController {
 
     private isCaptureSourceUserSelected: boolean = false;
 
-    private tray: Tray;
+    private tray: Tray | undefined;
+    private temporaryTray: Tray | undefined;
 
     constructor( input: {
         appService: AppService
@@ -86,6 +87,8 @@ export class AppController {
 
         // if ( isDev )
             // createDebuggingWindow();
+
+        this.createTemporaryTrayIcon();
 
         await initializeApp()
             .then( async () => {
@@ -147,6 +150,7 @@ export class AppController {
             }
         );
 
+        this.destroyTemporaryTrayIcon();
         this.createTrayIcon();
     }
 
@@ -625,7 +629,21 @@ export class AppController {
         // this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
     }
 
-    createTrayIcon() {
+    toggleMainWindow = ( show?: boolean ) => {
+
+        if ( !this.mainWindow )
+            return;
+
+        if ( show )
+            return this.mainWindow.show();
+
+        if ( this.mainWindow.isVisible() )
+            return this.mainWindow.hide();
+        
+        this.mainWindow.show();
+    }
+
+    createBaseTrayIcon(): Tray {
 
         const { platform } = process;
 
@@ -639,78 +657,97 @@ export class AppController {
 
         const appName = app.getName();
 
-        const toggleMainWindow = ( show?: boolean ) => {
+        const iconPath = join( ICONS_DIR, appIconFile );
+        const trayIcon = nativeImage.createFromPath( iconPath );
 
-            if ( !this.mainWindow )
-                return;
+        const tray = new Tray( trayIcon );
+        tray.setToolTip( appName );
 
-            if ( show )
-                return this.mainWindow.show();
+        return tray;
+    }
 
-            if ( this.mainWindow.isVisible() )
-                return this.mainWindow.hide();
-            
-            this.mainWindow.show();
-        }
-        
+    createTrayIcon() {
 
-            const iconPath = join( ICONS_DIR, appIconFile );
-            const trayIcon = nativeImage.createFromPath( iconPath );
+        this.tray = this.createBaseTrayIcon();
 
-            this.tray = new Tray( trayIcon );
-            this.tray.setToolTip( appName );
-            this.tray.on( 'click', () => toggleMainWindow( true ) );
-            const contextMenu = Menu.buildFromTemplate([
-                {
-                    id: 'ocr',
-                    label: `OCR`,
-                    click: ( item ) => this.handleOcrCommand(),
-                },
-                {
-                    type: 'separator'
-                },
-                {
-                    label: `Hide/Show ${app.getName()}`,
-                    click: ( item ) => toggleMainWindow()
-                },
-                {
-                    type: 'separator'
-                },
-                {
-                    label: 'Hide/Show Overlay',
-                    click: ( item ) => {
-                        if ( this.overlayWindow.isVisible() ) 
-                            return this.overlayWindow.hide();
+        this.tray.on( 'click', () => this.toggleMainWindow( true ) );
 
-                        this.showOverlayWindow();
-                    }
-                },
-                {
-                    label: 'Manually Move/Resize Overlay',
-                    click: ( item ) => {
-                        overlayController.toggleMovable();
-                    },
-                    accelerator: 'Ctrl+Shift+M'
-                },
-                {
-                    label: 'Overlay Automatic Adjustment',
-                    toolTip: 'Overlay Auto Positioning and Resizing',
-                    type: 'checkbox',
-                    checked: !overlayController.isOverlayBoundsLocked,
-                    click: ( event ) => {
-                        overlayController.lockOverlayBounds( !event.checked );
-                        // event.checked = !overlayController.isOverlayBoundsLocked;
-                    },
-                },
-                {
-                    type: 'separator'
-                },
-                {
-                    label: 'Quit',
-                    click: () => app.quit()
+        const contextMenu = Menu.buildFromTemplate([
+            {
+                id: 'ocr',
+                label: `OCR`,
+                click: ( item ) => this.handleOcrCommand(),
+            },
+            {
+                type: 'separator'
+            },
+            {
+                label: `Hide/Show ${app.getName()}`,
+                click: ( item ) => this.toggleMainWindow()
+            },
+            {
+                type: 'separator'
+            },
+            {
+                label: 'Hide/Show Overlay',
+                click: ( item ) => {
+                    if ( this.overlayWindow.isVisible() ) 
+                        return this.overlayWindow.hide();
+
+                    this.showOverlayWindow();
                 }
-            ]);
-            this.tray.setContextMenu(contextMenu);
+            },
+            {
+                label: 'Manually Move/Resize Overlay',
+                click: ( item ) => {
+                    overlayController.toggleMovable();
+                },
+                accelerator: 'Ctrl+Shift+M'
+            },
+            {
+                label: 'Overlay Automatic Adjustment',
+                toolTip: 'Overlay Auto Positioning and Resizing',
+                type: 'checkbox',
+                checked: !overlayController.isOverlayBoundsLocked,
+                click: ( event ) => {
+                    overlayController.lockOverlayBounds( !event.checked );
+                    // event.checked = !overlayController.isOverlayBoundsLocked;
+                },
+            },
+            {
+                type: 'separator'
+            },
+            {
+                label: 'Quit',
+                click: () => app.quit()
+            }
+        ]);
+        this.tray.setContextMenu(contextMenu);
+    }
+
+    createTemporaryTrayIcon() {
+        this.temporaryTray = this.createBaseTrayIcon();
+        this.temporaryTray.setToolTip(`${app.name} - Please wait, the app is loading...`);
+        const contextMenu = Menu.buildFromTemplate([
+            {
+                label: 'Quit',
+                click: () => app.quit()
+            }
+        ]);
+        this.temporaryTray.setContextMenu( contextMenu );
+    }
+
+
+    destroyTemporaryTrayIcon() {
+
+        if (
+            !this.temporaryTray ||
+            this.temporaryTray.isDestroyed()
+        )
+            return;
+
+        this.temporaryTray.destroy();
+        this.temporaryTray = undefined;
     }
 }
 
