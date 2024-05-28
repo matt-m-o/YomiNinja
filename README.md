@@ -10,7 +10,7 @@ https://github.com/matt-m-o/YomiNinja/assets/25914763/2bb02444-fc41-44e7-bc9e-c6
 
 https://github.com/matt-m-o/YomiNinja/assets/25914763/1868db47-5b50-44c1-a5b3-694d46c69e28
 
-The extracted text overlays the original content, allowing for quick look-ups with pop-up dictionaries like [10ten](https://github.com/birchill/10ten-ja-reader), [Yomichan](https://github.com/FooSoft/yomichan) and [Inkah](https://chromewebstore.google.com/detail/inkah-chinese-korean-pop/pcgmedbmchghfgikplcimdmfldfnecec). <br>
+The extracted text overlays the original content, allowing for quick look-ups with pop-up dictionaries like [10ten](https://github.com/birchill/10ten-ja-reader), [Yomitan](https://github.com/themoeway/yomitan) and [Inkah](https://chromewebstore.google.com/detail/inkah-chinese-korean-pop/pcgmedbmchghfgikplcimdmfldfnecec). <br>
 It minimizes distractions and simplifies the process of looking up unfamiliar words. <br>
 This is especially beneficial for language learners who study through videos or games.
 
@@ -24,7 +24,7 @@ Check out this [video](https://www.youtube.com/watch?v=sF1isrgjwZI) by [ganqqwer
 
 ## Dictionary Extensions
 YomiNinja supports web browser dictionary extensions, enabling convenient word lookup without external applications. <br>
-While not all extensions are currently installable, 10Ten (aka Rikaichamp) and Yomitan have been successfully tested and are included as pre-installed options for simplified installation. <br>
+While not all extensions are currently installable, [10Ten](https://github.com/birchill/10ten-ja-reader) and [Yomitan](https://github.com/themoeway/yomitan) have been successfully tested and are included as pre-installed options for simplified installation. <br>
 
 
 ## Installation
