@@ -20,6 +20,8 @@ import { appInfoController } from "../app_info/app_info.index";
 import { profileController } from "../profile/profile.index";
 import { dictionariesController } from "../dictionaries/dictionaries.index";
 import { ocrTemplatesController } from "../ocr_templates/ocr_templates.index";
+import { htmlMouseButtonToUiohook, matchUiohookMouseEventButton } from "../common/mouse_helpers";
+import { debounce } from "lodash";
 
 let startupTimer: NodeJS.Timeout;
 
@@ -62,24 +64,24 @@ export class AppController {
             startupTimer = setTimeout( () => {
                 console.log('Initialization took too long. Closing the app.');
                 app.quit();
-            }, 15_000 );
+            }, 30_000 );
         }
 
         this.mainWindow = await mainController.init();
   
         await browserExtensionsController.init({
             mainWindow: this.mainWindow
-        })
+        });
 
         // if ( isDev )
-        //     createDebuggingWindow();
+            // createDebuggingWindow();
   
 
         await initializeApp()
             .then( async () => {
             
                 this.overlayWindow = await overlayController.init( this.mainWindow );
-                browserExtensionsController.addBrowserWindow( this.overlayWindow, false );
+                
                 
                 ocrRecognitionController.init({
                     mainWindow: this.mainWindow,
@@ -100,10 +102,11 @@ export class AppController {
 
                 await mainController.loadMainPage();
                 
-                setTimeout( () => {
+                // setTimeout( () => { // The timeout seems unnecessary
                     browserExtensionsController.addBrowserWindow( this.mainWindow, true );
-                    browserExtensionsController.loadExtensions();
-                }, 500 );
+                    browserExtensionsController.addBrowserWindow( this.overlayWindow, false );
+                    await browserExtensionsController.loadExtensions();
+                // }, 500 );
 
                 if ( startupTimer ) {
                     clearTimeout( startupTimer );
@@ -208,14 +211,45 @@ export class AppController {
 
         this.unregisterGlobalShortcuts();
 
-        globalShortcut.register( overlayHotkeys.ocr, async () => {
+        // Selected OCR engine hotkey
+        if ( overlayHotkeys.ocr?.includes('Mouse') ) {
+            uIOhook.on( 'mousedown', async ( e ) => {
 
-            this.overlayWindow?.webContents.send( 'user_command:clear_overlay' );
-            this.handleOcrCommand();
-            // await this.ocrRecognitionController.recognize();
-        });
-        this.globalShortcutAccelerators.push( overlayHotkeys.ocr );
+                if ( !matchUiohookMouseEventButton( e, overlayHotkeys.ocr ) )
+                    return;
+
+                await this.handleOcrCommand();
+            });
+        }
+        else if ( overlayHotkeys.ocr ) {
+            globalShortcut.register( overlayHotkeys.ocr, this.handleOcrCommand );
+            this.globalShortcutAccelerators.push( overlayHotkeys.ocr );
+        }
         
+        // OCR engine dedicated hotkeys
+        settingsPresetJson.ocr_engines.forEach( engineSettings => {
+
+            const { hotkey } = engineSettings;
+            const engineName = engineSettings.ocr_adapter_name;
+
+            if ( hotkey?.includes('Mouse') ) {
+                uIOhook.on( 'mousedown', async ( e ) => {
+    
+                    if ( !matchUiohookMouseEventButton( e, hotkey ) )
+                        return;
+    
+                    await this.handleOcrCommand();
+                });
+            }
+            else if ( hotkey ) {
+                globalShortcut.register(
+                    hotkey,
+                    () => this.handleOcrCommand({ engineName })
+                );
+                this.globalShortcutAccelerators.push( hotkey );
+            }
+
+        });
         
         if ( overlayHotkeys.ocr_on_screen_shot ) {
             uIOhook.on( 'keyup', async ( e ) => {
@@ -239,20 +273,28 @@ export class AppController {
                         // return this.ocrRecognitionController.recognize();
                     
                     if ( isWindowImage && this.userSelectedWindowId )
-                        return this.handleOcrCommand( clipboard.readImage().toPNG() );
+                        return this.handleOcrCommand({ image: clipboard.readImage().toPNG() });
                         // return this.ocrRecognitionController.recognize( clipboard.readImage().toPNG() );
 
                     else
-                        return this.handleOcrCommand( clipboard.readImage().toPNG(), runFullScreenImageCheck );
+                        return this.handleOcrCommand({
+                            image: clipboard.readImage().toPNG(),
+                            runFullScreenImageCheck
+                        });
                         // return this.ocrRecognitionController.recognize( clipboard.readImage().toPNG(), runFullScreenImageCheck );
                 }
                 else {
 
                     if ( this.userSelectedWindowId )
-                        return this.handleOcrCommand( clipboard.readImage().toPNG() );
+                        return this.handleOcrCommand({
+                            image: clipboard.readImage().toPNG()
+                        });
                         // return this.ocrRecognitionController.recognize( clipboard.readImage().toPNG() );
 
-                    return this.handleOcrCommand( clipboard.readImage().toPNG(), runFullScreenImageCheck );
+                    return this.handleOcrCommand({
+                        image: clipboard.readImage().toPNG(),
+                        runFullScreenImageCheck
+                    });
                     // return this.ocrRecognitionController.recognize( clipboard.readImage().toPNG(), runFullScreenImageCheck );
                 }
                 
@@ -393,10 +435,29 @@ export class AppController {
         return false
     }
 
-    private async handleOcrCommand( image?: Buffer, runFullScreenImageCheck?: boolean ) {
+    handleOcrCommand = async ( input: OcrCommandInput = {} ) => {
+        await this.debouncedOcrCmdHandler( input );
+    }
+
+    debouncedOcrCmdHandler = debounce( async ( input: OcrCommandInput = {} ) => {
+        await this._handleOcrCommand( input );
+    }, 50 );
+
+    _handleOcrCommand = async (
+        input: OcrCommandInput = {}
+    ) => {
 
         console.log('AppController.handleOcrCommand');
 
+        let {
+            image,
+            runFullScreenImageCheck,
+            engineName
+        } = input;
+
+        this.overlayWindow?.webContents.send( 'user_command:toggle_results', false );
+        this.overlayWindow?.webContents.send( 'ocr:processing_started' );
+        
         await this.handleCaptureSourceSelection();
 
         image = await this.appService.getCaptureSourceImage({
@@ -418,9 +479,14 @@ export class AppController {
             this.mainWindow.show();
         }
         else {
-            await ocrRecognitionController.recognize( image )
+            await ocrRecognitionController.recognize({
+                image,
+                engineName
+            })
                 .catch( console.error );
         }
+
+        this.overlayWindow?.webContents.send( 'ocr:processing_complete' );
 
         let isFullScreenImage = true;
 
@@ -429,5 +495,11 @@ export class AppController {
 
         this.setOverlayBounds( isFullScreenImage ? 'fullscreen' :  'maximized' );
         this.showOverlayWindow();
-    }
+    };
+}
+
+type OcrCommandInput = {
+    image?: Buffer;
+    runFullScreenImageCheck?: boolean;
+    engineName?: string;
 }

@@ -1,7 +1,7 @@
 import { Box, Container, Grid, Paper, Typography, styled } from "@mui/material";
 import { useContext, useEffect } from "react";
 import { SettingsContext } from "../../context/settings.provider";
-import { OverlayHotkeys } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import { OverlayHotkeys } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 
 const KeyActionText = styled( Typography )({
     width: '65%',
@@ -90,6 +90,21 @@ export default function HotkeyHints() {
 
     const overlayHotkeys = activeSettingsPreset?.overlay.hotkeys;
 
+    const ppOcrSettings = activeSettingsPreset?.ocr_engines
+        .find( engineSettings => {
+            return engineSettings.ocr_adapter_name === 'PpOcrAdapter'
+        });
+
+    const cloudVisionSettings = activeSettingsPreset?.ocr_engines
+        .find( engineSettings => {
+            return engineSettings.ocr_adapter_name === 'CloudVisionOcrAdapter'
+        });
+
+    const googleLensSettings = activeSettingsPreset?.ocr_engines
+        .find( engineSettings => {
+            return engineSettings.ocr_adapter_name === 'GoogleLensOcrAdapter'
+        });
+
     function createHotkeyHint( label: string, keyCombinationsStr: string[] ): JSX.Element {
 
         if ( !label || !keyCombinationsStr ) return;
@@ -114,10 +129,16 @@ export default function HotkeyHints() {
                 justifyContent='center'
                 m='auto' width='100%'
             >
-                { createHotkeyHint( 'OCR', ocrHotkeysStrings ) }
-                {/* { createHotkeyHint( 'Copy text', [overlayHotkeys?.copy_text] ) } */}
+                { createHotkeyHint( 'Primary OCR', ocrHotkeysStrings ) }
+                { createHotkeyHint( 'PaddleOCR', [ppOcrSettings?.hotkey] ) }
+                { createHotkeyHint( 'Google Lens', [googleLensSettings?.hotkey] ) }
+                { createHotkeyHint( 'Cloud Vision', [cloudVisionSettings?.hotkey] ) }
+
+                { createHotkeyHint( 'Toggle overlay', [overlayHotkeys?.toggle] ) }
                 { createHotkeyHint( 'Show overlay', [overlayHotkeys?.show] ) }
-                { createHotkeyHint( 'Clear overlay', [overlayHotkeys?.show_and_clear] ) }
+                { createHotkeyHint( 'Hide overlay', [overlayHotkeys?.clear] ) }
+
+                { createHotkeyHint( 'Copy text', [overlayHotkeys?.copy_text] ) }
                 
             </Box>
 

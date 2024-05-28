@@ -20,7 +20,7 @@ export class GithubAppVersionProviderAdapter implements AppVersionProviderAdapte
 
         this.httpClient = axios.create({
             baseURL: repoApiUrl,
-        });;
+        });
     }
     
     getRunningVersion(): string {

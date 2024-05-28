@@ -5,12 +5,13 @@ import { ocrRecognitionController } from "./ocr_recognition/ocr_recognition.inde
 import { overlayController } from "./overlay/overlay.index";
 import { mainController } from "./main/main.index";
 import { uIOhook } from 'uiohook-napi'
+import { PpOcrAdapter } from "./@core/infra/ocr/ppocr.adapter/ppocr.adapter";
 
 // Handlers used by multiple controllers
 
-ipcMain.handle( 'ocr_recognition:restart_engine', async ( event: IpcMainInvokeEvent, message: SettingsPresetJson ) => {
+ipcMain.handle( 'ocr_recognition:restart_engine', async ( event: IpcMainInvokeEvent, engineName: string ) => {
 
-    ocrRecognitionController.restartEngine();
+    ocrRecognitionController.restartEngine( engineName );
 });
 
 ipcMain.handle( 'refresh_all_windows', async () => {

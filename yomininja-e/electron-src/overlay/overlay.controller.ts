@@ -5,11 +5,13 @@ import isDev from 'electron-is-dev';
 import { format } from "url";
 import { PAGES_DIR } from "../util/directories.util";
 import { WindowManager } from "../../gyp_modules/window_management/window_manager";
-import { ClickThroughMode, SettingsPresetJson, ShowWindowOnCopy } from "../@core/domain/settings_preset/settings_preset";
+import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 import { uIOhook } from "uiohook-napi";
 import { windowManager } from "../@core/infra/app_initialization";
 import { getBrowserWindowHandle } from "../util/browserWindow.util";
 import os from 'os';
+import { matchUiohookMouseEventButton } from "../common/mouse_helpers";
+import { ClickThroughMode, ShowWindowOnCopy } from "../@core/domain/settings_preset/settings_preset_overlay";
 
 export class OverlayController {
 
@@ -26,8 +28,13 @@ export class OverlayController {
     };
     private alwaysForwardMouseClicks: boolean = false;
     private showWindowWithoutFocus: boolean = false;
+    private hideResultsOnBlur: boolean = false;
+
+    private showResults: boolean = false;
 
     private globalShortcutAccelerators: string[] = [];
+
+    private hoveredText: string = '';
 
     constructor( input: {
         overlayService: OverlayService
@@ -41,19 +48,14 @@ export class OverlayController {
 
         const settingsJson = (await this.overlayService.getActiveSettingsPreset())
             ?.toJson()
-
-        if ( settingsJson ) {
-
-            this.overlayAlwaysOnTop = Boolean( settingsJson.overlay.behavior.always_on_top );
-            this.showWindowOnCopy = settingsJson.overlay.behavior.show_window_on_copy;
-            this.clickThroughMode = settingsJson.overlay.behavior.click_through_mode;
-            this.alwaysForwardMouseClicks = Boolean( settingsJson.overlay.behavior.always_forward_mouse_clicks );
-            this.showWindowWithoutFocus = Boolean( settingsJson.overlay.behavior.show_window_without_focus );
-        }
-
+            
         this.createOverlayWindow();
         this.registersIpcHandlers();
-        this.registerGlobalShortcuts();
+        // this.registerGlobalShortcuts();
+
+        if ( settingsJson ) {
+            await this.applySettingsPreset( settingsJson );
+        }
 
         this.overlayWindow.on( 'show', ( ) => {
             this.showOverlayWindow();
@@ -87,7 +89,15 @@ export class OverlayController {
 
         this.mainWindow?.on( 'closed', () => {
             this.overlayWindow.destroy();
-        });        
+        });
+
+        this.overlayWindow.on( 'blur', () => {
+            
+            if ( !this.hideResultsOnBlur ) return;
+
+            this.showResults = false;
+            this.overlayWindow.webContents.send( 'user_command:toggle_results', false );
+        });
 
         const url = isDev
         ? 'http://localhost:8000/ocr-overlay'
@@ -123,38 +133,12 @@ export class OverlayController {
 
     private registersIpcHandlers() {
 
+        ipcMain.handle( 'overlay:set_hovered_text', async ( event: IpcMainInvokeEvent, message: string ) => {
+            this.hoveredText = message;
+        });
+
         ipcMain.handle( 'user_command:copy_to_clipboard', async ( event: IpcMainInvokeEvent, message: string ) => {
-
-            try {
-
-                if ( !message || message.length === 0 ) return;
-
-                clipboard.writeText( message );
-                this.overlayService.sendOcrTextTroughWS( message );
-                // console.log({ text_to_copy: message });
-                
-                if ( 
-                    !this.showWindowOnCopy.enabled ||
-                    !this.showWindowOnCopy.title
-                )
-                    return;
-
-                const windows = await windowManager.searchWindow(
-                    this.showWindowOnCopy.title
-                );
-            
-                if ( windows.length === 0 ) 
-                    return;
-            
-                const windowToShow = windows[0];
-                
-                windowManager.setForegroundWindow( windowToShow.handle );
-
-            } catch (error) {
-                console.error( error );
-            }
-            
-          
+            this.copyText( message );
         });
 
         ipcMain.handle( 'overlay:set_ignore_mouse_events', ( event: IpcMainInvokeEvent, value: boolean ) => {
@@ -186,22 +170,67 @@ export class OverlayController {
         const overlayHotkeys = settingsPresetJson.overlay.hotkeys;
 
         this.unregisterGlobalShortcuts();
+
+
+        if ( overlayHotkeys.toggle?.includes('Mouse') ) {
+            uIOhook.on( 'mousedown', e => {
+    
+                if ( !matchUiohookMouseEventButton( e, overlayHotkeys.toggle ) )
+                    return;
+    
+                this.toggleOverlayHotkeyHandler();
+            });
+        }
+        else if ( overlayHotkeys.toggle ) {
+            // View overlay and copy text clipboard
+            globalShortcut.register( overlayHotkeys.toggle, this.toggleOverlayHotkeyHandler );
+            this.globalShortcutAccelerators.push( overlayHotkeys.toggle );
+        }
         
-        // View overlay and copy text clipboard
-        globalShortcut.register( overlayHotkeys.show, () => {
+        if ( overlayHotkeys.show?.includes('Mouse') ) {
+            uIOhook.on( 'mousedown', e => {
+    
+                if ( !matchUiohookMouseEventButton( e, overlayHotkeys.show ) )
+                    return;
+    
+                this.showOverlayHotkeyHandler();
+            });
+        }
+        else if ( overlayHotkeys.show ) {
+            // View overlay and copy text clipboard
+            globalShortcut.register( overlayHotkeys.show, this.showOverlayHotkeyHandler );
+            this.globalShortcutAccelerators.push( overlayHotkeys.show );
+        }
 
-            this.showOverlayWindow();
-            // this.overlayWindow.webContents.send( 'user_command:copy_to_clipboard' );
-        });
-        this.globalShortcutAccelerators.push( overlayHotkeys.show );
+        if ( overlayHotkeys.clear?.includes('Mouse') ) {
+            uIOhook.on( 'mousedown', e => {
+    
+                if ( !matchUiohookMouseEventButton( e, overlayHotkeys.clear ) )
+                    return;
+    
+                this.hideOverlayHotkeyHandler();
+            });
+        }
+        else if ( overlayHotkeys.clear ) {
+            // View overlay and clear
+            globalShortcut.register( overlayHotkeys.clear, this.hideOverlayHotkeyHandler );
+            this.globalShortcutAccelerators.push( overlayHotkeys.clear );
+        }
 
-        // View overlay and clear
-        globalShortcut.register( overlayHotkeys.show_and_clear, () => {
-
-            this.showOverlayWindow();
-            this.overlayWindow.webContents.send( 'user_command:clear_overlay' );
-        });
-        this.globalShortcutAccelerators.push( overlayHotkeys.show_and_clear );
+        if ( overlayHotkeys.copy_text?.includes('Mouse') ) {
+            uIOhook.on( 'mousedown', e => {
+    
+                if ( !matchUiohookMouseEventButton( e, overlayHotkeys.copy_text ) )
+                    return;
+    
+                this.copyHoveredText();
+            });
+        }
+        else if ( overlayHotkeys.copy_text ) {
+            // View overlay and clear
+            globalShortcut.register( overlayHotkeys.copy_text, this.copyHoveredText );
+            this.globalShortcutAccelerators.push( overlayHotkeys.copy_text );
+        }
 
 
         uIOhook.on( 'mousemove', async ( e ) => {
@@ -297,6 +326,8 @@ export class OverlayController {
 
     private showOverlayWindow() {
         // console.log("OverlayController.showOverlayWindow");
+
+        this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
         
         const overlayWindowHandle = getBrowserWindowHandle( this.overlayWindow );
         
@@ -332,6 +363,7 @@ export class OverlayController {
         this.showWindowOnCopy = settingsPresetJson.overlay.behavior.show_window_on_copy;
         this.alwaysForwardMouseClicks = Boolean( settingsPresetJson.overlay.behavior.always_forward_mouse_clicks );
         this.showWindowWithoutFocus = Boolean( settingsPresetJson.overlay.behavior.show_window_without_focus );
+        this.hideResultsOnBlur = Boolean( settingsPresetJson.overlay.behavior.hide_results_on_blur );
 
         this.overlayWindow?.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );
         this.overlayWindow.setIgnoreMouseEvents( this.clickThroughMode !== 'disabled', {
@@ -341,5 +373,69 @@ export class OverlayController {
         this.registerGlobalShortcuts( settingsPresetJson );
 
         this.overlayWindow?.webContents.send( 'settings_preset:active_data', settingsPresetJson );
+    }
+
+    private toggleOverlayHotkeyHandler = () => {        
+
+        this.showResults = !this.showResults;
+        this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
+
+        if ( this.showResults )
+            this.showOverlayWindow();
+
+        else if ( this.overlayWindow.isFocused() ) 
+            this.overlayWindow.blur();
+    }
+
+    private showOverlayHotkeyHandler = () => {
+        this.showOverlayWindow();
+        // this.overlayWindow.webContents.send( 'user_command:copy_to_clipboard' );
+
+        this.showResults = true;
+        this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
+    }
+
+    private hideOverlayHotkeyHandler = () => {
+        // this.showOverlayWindow();
+        this.showResults = false;
+        this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
+        
+        if ( this.overlayWindow.isFocused() )
+            this.overlayWindow.blur();
+    }
+
+    private async copyText( text: string ) {
+        try {
+
+            if ( !text || text.length === 0 ) return;
+
+            clipboard.writeText( text );
+            this.overlayService.sendOcrTextTroughWS( text );
+            // console.log({ text_to_copy: message });
+            
+            if ( 
+                !this.showWindowOnCopy.enabled ||
+                !this.showWindowOnCopy.title
+            )
+                return;
+
+            const windows = await windowManager.searchWindow(
+                this.showWindowOnCopy.title
+            );
+        
+            if ( windows.length === 0 ) 
+                return;
+        
+            const windowToShow = windows[0];
+            
+            windowManager.setForegroundWindow( windowToShow.handle );
+
+        } catch (error) {
+            console.error( error );
+        }
+    }
+
+    private copyHoveredText = () => {
+        this.copyText( this.hoveredText );
     }
 }

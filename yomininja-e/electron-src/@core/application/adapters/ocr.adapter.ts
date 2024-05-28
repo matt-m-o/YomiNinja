@@ -1,4 +1,5 @@
 import { OcrResult } from "../../domain/ocr_result/ocr_result";
+import { OcrResultScalable } from "../../domain/ocr_result_scalable/ocr_result_scalable";
 import { OcrEngineSettings } from "../../domain/settings_preset/settings_preset";
 
 export type OcrRecognitionInput = {    
@@ -13,14 +14,19 @@ export interface OcrEngineSettingsOptions {
     }[]
 }
 
-export interface OcrAdapter {     
+export type UpdateOcrAdapterSettingsOutput< TSettings extends OcrEngineSettings = OcrEngineSettings > = {
+    settings: TSettings;
+    restart: boolean;
+};
+
+export interface OcrAdapter< TSettings extends OcrEngineSettings = OcrEngineSettings > {     
     name: string;
     status: OcrAdapterStatus;
-    initialize: ( serviceAddress?: string ) => void;
-    recognize: ( input: OcrRecognitionInput ) => Promise< OcrResult | null >;
+    initialize: ( input: any ) => void;
+    recognize: ( input: OcrRecognitionInput ) => Promise< OcrResultScalable | null >;
     getSupportedLanguages: () => Promise< string[] >; // Get this by calling the grpc stub or reading it's config files
-    updateSettings: ( input: OcrEngineSettings ) => Promise< boolean >;
-    getDefaultSettings: () => OcrEngineSettings;
+    updateSettings: ( settingsUpdate: TSettings, oldSettings?: TSettings ) => Promise< UpdateOcrAdapterSettingsOutput< TSettings > >;
+    getDefaultSettings: () => TSettings;
     getSettingsOptions: () => OcrEngineSettingsOptions;
     restart: ( callback: () => void ) => void;
 }

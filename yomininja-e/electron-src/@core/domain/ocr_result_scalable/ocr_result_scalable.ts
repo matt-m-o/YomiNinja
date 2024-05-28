@@ -1,4 +1,4 @@
-import { OcrItem, OcrItemBox, OcrResult, OcrResultContextResolution } from "../ocr_result/ocr_result";
+import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrResult, OcrResultContextResolution, OcrTextLineSymbol } from "../ocr_result/ocr_result";
 
 // Position percentages
 export type OcrResultBoxPositionPcts = {
@@ -17,12 +17,28 @@ export type OcrResultBoxScalable = {
     position: OcrResultBoxPositionPcts;
     dimensions?: OcrResultBoxDimensionsPcts;
     angle_degrees?: number;
+    isVertical: boolean;
+    transform_origin?: 'top' | 'bottom' | 'center';
+};
+
+export type OcrTextLineSymbolScalable = {
+    symbol: string;
+    box: OcrResultBoxScalable;
+    letter_spacing: number;
+};
+
+export type OcrTextLineScalable = {
+    content: string;
+    box?: OcrResultBoxScalable;
+    symbols?: OcrTextLineSymbolScalable[];
 };
 
 export interface OcrItemScalable {
-    text: string;
+    text: OcrTextLineScalable[];
     box: OcrResultBoxScalable;
-    score: number;
+    recognition_score: number,
+    classification_score: number,
+    classification_label: number,
 };
 
 export interface OcrRegion {
@@ -132,40 +148,70 @@ export class OcrResultScalable {
 
         ocrResult.results.forEach( item => {
 
-            const verticalDistance = item.box.top_right.y - item.box.top_left.y;
-            const horizontalDistance = item.box.top_right.x - item.box.top_left.x;
+            const { context_resolution } = ocrResult;
 
-            const box_position = OcrResultScalable.calculateBoxPosition(
-                item, ocrResult.context_resolution
-            );
-
-            const angle_degrees = OcrResultScalable.calculateBoxAngle(
-                verticalDistance,
-                horizontalDistance
-            );
-
-            const width = OcrResultScalable.calculateBoxWidth(
-                verticalDistance,
-                horizontalDistance,
+            const itemBox = OcrResultScalable.getBoxScalable(
+                item.box,
                 ocrResult.context_resolution
             );
-
-            const height = OcrResultScalable.calculateBoxHeight(
-                item.box,
-                ocrResult.context_resolution,
-            );
             
-            results.push({
-                box: {
-                    position: box_position,
-                    angle_degrees,
-                    dimensions: {
-                        width,
-                        height,
+            const text = item.text.map( line => {
+
+                const lineScalable: OcrTextLineScalable = {
+                    content: line.content,
+                    symbols: []
+                };
+                
+                // TODO: Calculate position and dimensions
+
+                // Symbols
+                line?.symbols?.forEach( ( symbol, sIdx ) => {
+
+                    if ( !line?.symbols ) return;
+
+                    let nextSymbol: OcrTextLineSymbol | undefined;
+            
+                    if ( line?.symbols.length-1 >= sIdx+1 )
+                        nextSymbol = line.symbols[ sIdx+1 ];
+                    
+                    const box = OcrResultScalable.getBoxScalable(
+                        symbol.box,
+                        context_resolution
+                    );
+
+                    let letterSpacing = 0;
+
+                    if ( nextSymbol ) {
+                        letterSpacing = OcrResultScalable.calculateSymbolLetterSpacing(
+                            symbol, nextSymbol, box.isVertical, context_resolution
+                        );
+                        
+                        if ( itemBox.dimensions ) {
+
+                            if ( !box.isVertical )
+                                letterSpacing = letterSpacing / context_resolution.width;
+                            else
+                                letterSpacing = letterSpacing / context_resolution.height;
+                        }
                     }
-                },
-                text: item.text,
-                score: item.score,
+                    
+                    lineScalable.symbols?.push({
+                        symbol: symbol.symbol,
+                        box,
+                        letter_spacing: letterSpacing
+                    });
+
+                })
+
+                return lineScalable;
+            });
+
+            results.push({
+                box: itemBox,
+                text,
+                recognition_score: item.recognition_score,
+                classification_score: item.classification_score,
+                classification_label: item.classification_label
             });
 
         });
@@ -193,14 +239,14 @@ export class OcrResultScalable {
     }
 
     
-    private static calculateBoxPosition( ocrResultItem: OcrItem, contextResolution: OcrResultContextResolution ): OcrResultBoxPositionPcts {
+    private static calculateBoxPosition( box: OcrItemBox, contextResolution: OcrResultContextResolution ): OcrResultBoxPositionPcts {
 
         const { width, height } = contextResolution;
 
-        const topLeftXPixels = ocrResultItem.box.top_left.x;
+        const topLeftXPixels = box.top_left.x;
         const position_left = ( 1 - ( ( width - topLeftXPixels ) / width ) ) * 100;
 
-        const topLeftYPixels = ocrResultItem.box.top_left.y;
+        const topLeftYPixels = box.top_left.y;
         const position_top = ( 1 - ( ( height - topLeftYPixels ) / height ) ) * 100;
         
         return {
@@ -234,6 +280,19 @@ export class OcrResultScalable {
         return degrees;
     }
 
+    static calculateAngleBetweenVertices( vA: OcrItemBoxVertex, vB: OcrItemBoxVertex ) {
+        
+        const deltaX = vB.x - vA.x;
+        const deltaY = vB.y - vA.y;
+
+        const angleInRadians = Math.atan2( deltaY, deltaX );
+        const angleInDegrees = angleInRadians * (180 / Math.PI);
+
+        // Ensure the angle is positive (between 0 and 360 degrees)
+        const positiveAngle = ( angleInDegrees + 360 ) % 360;
+
+        return positiveAngle;
+    }
     
     private static calculateBoxWidth(
         verticalDistance: number,
@@ -256,12 +315,105 @@ export class OcrResultScalable {
 
         const { top_left, bottom_left } = box;
 
-        const topToBottomVerticalDistance = Math.abs(top_left.y - bottom_left.y);        
+        const topToBottomVerticalDistance = Math.abs( top_left.y - bottom_left.y );
 
-        const topToBottomHorizontalDistance = Math.abs(top_left.x - bottom_left.x);    
+        const topToBottomHorizontalDistance = Math.abs( top_left.x - bottom_left.x );
 
         const topToBottomHypot = Math.hypot( topToBottomVerticalDistance, topToBottomHorizontalDistance ); // Diagonal distance        
 
         return ( topToBottomHypot / contextResolution.height ) * 100;
+    }
+
+    private static getBoxScalable(
+        box: OcrItemBox,
+        contextResolution: OcrResultContextResolution
+    ): OcrResultBoxScalable {
+
+        const verticalDistance = box.top_right.y - box.top_left.y;
+        const horizontalDistance = box.top_right.x - box.top_left.x;
+
+        const position = OcrResultScalable.calculateBoxPosition(
+            box, contextResolution
+        );
+
+
+        const angle_degrees = OcrResultScalable.calculateAngleBetweenVertices(
+            box.bottom_left, // box.top_left,
+            box.bottom_right // box.top_right
+        );
+
+        const width = OcrResultScalable.calculateBoxWidth(
+            verticalDistance,
+            horizontalDistance,
+            contextResolution
+        );
+
+        const height = OcrResultScalable.calculateBoxHeight(
+            box,
+            contextResolution,
+        );
+
+        const boxWidthPx = contextResolution.width * ( width / 100 );
+        const boxHeightPx = contextResolution.height * ( height / 100 );
+
+        const isVertical = boxHeightPx > ( boxWidthPx * 1.40 ) || angle_degrees < -70;
+
+        return {
+            position,
+            angle_degrees,
+            dimensions: {
+                width,
+                height
+            },
+            isVertical
+        }
+    }
+
+    static calculateEuclideanDistance( vertexA: OcrItemBoxVertex, vertexB: OcrItemBoxVertex ): number {
+
+        const deltaX = vertexB.x - vertexA.x;
+        const deltaY = vertexB.y - vertexA.y;
+    
+        const distance = Math.sqrt( deltaX ** 2 + deltaY ** 2) ;
+        
+        return distance;
+    }
+    
+    static calculateSymbolLetterSpacing(
+        symbol: OcrTextLineSymbol,
+        nextSymbol: OcrTextLineSymbol,
+        isVertical: boolean,
+        contextResolution: OcrResultContextResolution
+    ): number {
+
+        if ( !nextSymbol ) return 0;
+
+        let vertexA: OcrItemBoxVertex;
+        let vertexB: OcrItemBoxVertex;
+
+        let symbolLength = 0;
+
+        if ( !isVertical ) {
+
+            const verticalDistance = nextSymbol.box.top_right.y - nextSymbol.box.top_left.y;
+            const horizontalDistance = nextSymbol.box.top_right.x - nextSymbol.box.top_left.x;
+
+            vertexA = symbol.box.top_right;
+            vertexB = nextSymbol.box.top_right;
+
+            symbolLength = OcrResultScalable.calculateBoxWidth(
+                verticalDistance,
+                horizontalDistance,
+                contextResolution
+            );
+        }
+        else {
+            vertexA = symbol.box.bottom_left;
+            vertexB = nextSymbol.box.bottom_left;
+        }
+
+        let distance = OcrResultScalable.calculateEuclideanDistance( vertexA, vertexB );
+
+        return distance - symbolLength;
     }
 }

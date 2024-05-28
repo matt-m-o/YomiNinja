@@ -10,6 +10,7 @@ import { ChangeActiveLanguage_Input, ChangeActiveOcrLanguageUseCase } from "./ch
 import LanguageTypeOrmRepository from "../../../infra/db/typeorm/language/language.typeorm.repository";
 import { OcrTemplateTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_template.schema";
 import { OcrTargetRegionTypeOrmSchema } from "../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.schema";
+import { ppOcrAdapterName } from "../../../infra/ocr/ppocr.adapter/ppocr_settings";
 
 describe("ChangeActiveOcrLanguageUseCase tests", () => {
         
@@ -52,6 +53,7 @@ describe("ChangeActiveOcrLanguageUseCase tests", () => {
         initialProfile = Profile.create({
             active_ocr_language: languageJa,
             active_settings_preset: settingsPreset,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
 
         await profileRepo.insert( initialProfile );

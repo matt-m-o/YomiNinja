@@ -1,7 +1,7 @@
 import { Box, Container, Divider, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Select, Switch, SxProps, TextField, Theme, Typography, styled } from "@mui/material";
 import { SettingsContext } from "../../context/settings.provider";
 import { ChangeEvent, useContext, useEffect, useState } from "react";
-import { ClickThroughMode, OverlayBehavior } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import { ClickThroughMode, OverlayBehavior } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 
 
 // Settings section component
@@ -27,9 +27,9 @@ export default function AppSettingsOthers() {
     }
 
     return (
-        <Box sx={{ flexGrow: 1, margin: 1, }}>
+        <Box sx={{ flexGrow: 1, margin: 1, mt: 0 }}>
 
-            <Typography gutterBottom variant="h6" component="div" margin={2} ml={0}>
+            <Typography gutterBottom variant="h6" component="div" ml={0} mb={3}>
                 Overlay Behavior
             </Typography>
             
@@ -97,6 +97,38 @@ export default function AppSettingsOthers() {
                         }
                     />
 
+                    <FormControlLabel label='Show overlay without stealing focus'
+                        sx={{
+                            ...switchFormControlLabelSx,
+                        }}
+                        control={
+                            <Switch
+                                checked={ Boolean( overlayBehavior?.show_window_without_focus ) }
+                                onChange={ ( event ) => {
+                                    updateActivePresetBehavior({
+                                        show_window_without_focus: event.target.checked
+                                    });
+                                }}
+                            /> 
+                        }
+                    />
+
+                    <FormControlLabel label='Hide boxes on focus loss'
+                        sx={{
+                            ...switchFormControlLabelSx,
+                        }}
+                        control={
+                            <Switch
+                                checked={ Boolean( overlayBehavior?.hide_results_on_blur ) }
+                                onChange={ ( event ) => {
+                                    updateActivePresetBehavior({
+                                        hide_results_on_blur: event.target.checked
+                                    });
+                                }}
+                            /> 
+                        }
+                    />
+
                     <FormControlLabel label='Copy text on click'
                         sx={ switchFormControlLabelSx }
                         control={
@@ -123,32 +155,17 @@ export default function AppSettingsOthers() {
                             /> 
                         }
                     />
-                    <FormControlLabel label='Show overlay without stealing focus'
-                        sx={{
-                            ...switchFormControlLabelSx,
-                            mb: 1
-                        }}
-                        control={
-                            <Switch
-                                checked={ Boolean( overlayBehavior?.show_window_without_focus ) }
-                                onChange={ ( event ) => {
-                                    updateActivePresetBehavior({
-                                        show_window_without_focus: event.target.checked
-                                    });
-                                }}
-                            /> 
-                        }
-                    />
 
                     <FormControlLabel label='Show window on text copy (e.g. Yomichan Search)'
                         title='Use this feature to show popup dictionaries like Yomichan or Yomitan'
                         sx={{
                             ...switchFormControlLabelSx,
+                            mt: 1,
                             mb: 0
                         }}
                         control={
                             <Switch
-                                checked={ Boolean( overlayBehavior?.show_window_on_copy.enabled ) }
+                                checked={ Boolean( overlayBehavior?.show_window_on_copy?.enabled ) }
                                 onChange={ ( event ) => {
                                     updateActivePresetBehavior({
                                         show_window_on_copy: {
@@ -164,7 +181,7 @@ export default function AppSettingsOthers() {
                     <TextField type="text"
                         label="Window title"
                         size="small"
-                        value={ overlayBehavior?.show_window_on_copy.title }
+                        value={ overlayBehavior?.show_window_on_copy?.title }
                         onChange={ (event: ChangeEvent< HTMLInputElement >) => {
                             updateActivePresetBehavior({
                                 show_window_on_copy: {

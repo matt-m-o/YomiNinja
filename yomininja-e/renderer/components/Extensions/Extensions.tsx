@@ -1,19 +1,32 @@
-import { Box, Button, Card, CardContent, Container, Divider, Grid, Typography, styled } from "@mui/material";
-import { CSSProperties, useContext, useEffect, useState } from "react";
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Card, CardContent, Container, Divider, Grid, SxProps, Theme, Typography, styled } from "@mui/material";
+import { CSSProperties, ReactNode, useContext, useEffect, useState } from "react";
 import { ExtensionsContext } from "../../context/extensions.provider";
 import Image  from 'next/image';
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ExtensionItem from "./ExtensionItem";
 import AlertDialog from "../common/AlertDialog";
-import { BrowserExtension } from "../../../electron-src/extensions/browser_extension";
-
+import { BrowserExtensionJson } from "../../../electron-src/@core/domain/browser_extension/browser_extension";
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 const SectionDivider = styled( Divider )({
     marginTop: '30px',
     marginBottom: '30px',
 });
 
+const UL = styled( 'ul' )({
+    fontSize: '1rem',
+    lineHeight: 2,
+    marginTop: 0,
+    marginLeft: 5
+});
+
+const OL = styled( 'ol' )({
+    fontSize: '1rem',
+    lineHeight: 2,
+    marginTop: 0,
+    marginLeft: 5
+});
 
 export default function Extensions() {
 
@@ -22,10 +35,11 @@ export default function Extensions() {
         installExtension,
         uninstallExtension,
         openExtensionOptions,
+        toggleExtension
     } = useContext( ExtensionsContext );
 
     const [ openUninstallDialog, setOpenUninstallDialog ] = useState< boolean >( false );
-    const [ itemToUninstall, setItemToUninstall ] = useState< BrowserExtension | null >();
+    const [ itemToUninstall, setItemToUninstall ] = useState< BrowserExtensionJson | null >();
 
     function handleConfirmation() {
         uninstallExtension( itemToUninstall );
@@ -42,6 +56,7 @@ export default function Extensions() {
                             setItemToUninstall( item );
                             setOpenUninstallDialog( true );
                         }}
+                        onToggle={ toggleExtension }
                     />
                 </Grid>
             )
@@ -78,6 +93,21 @@ export default function Extensions() {
 
     function openLink( link: string ) {
         global.ipcRenderer.invoke( 'open_link', link );
+    }
+
+    function CustomAccordion( props: { summary: any, children: ReactNode, sx?: SxProps<Theme> } ) {
+        return(
+            <Accordion sx={{ backgroundColor: '#202124' }}>
+                <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
+                    <Typography fontSize={'1.1rem'}>
+                        {props.summary}
+                    </Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ pl: 1, ...props.sx }}>
+                    {props.children}
+                </AccordionDetails>
+            </Accordion>
+        );
     }
 
     return (
@@ -142,22 +172,64 @@ export default function Extensions() {
 
                         </Box>
 
-                        <Typography fontSize='1rem' lineHeight={2} mt='56px'>
-                            Important notes:
-                        </Typography>                        
-                        <ul
-                            style={{
-                                fontSize: '1rem',                                
-                                lineHeight: 2,
-                                marginTop: 0,
-                                marginLeft: 5
-                            }}
-                        >
-                            <li> Not all Chrome extensions are currently supported. </li>
-                            <li> Compatibility may improve in the future as Electron development progresses. </li>
-                            <li> Download extensions using {crxExtractorLink} or from {chromeStatsLink} </li>
-                            <li> Clicking on the refresh button might resolve some extension-related problems. </li>
-                        </ul>
+                        <Box m={1} mt={5}>
+                            <CustomAccordion
+                                summary={
+                                    <Typography fontSize={'1.1rem'}>
+                                        Important notes
+                                    </Typography>
+                                }
+                            >
+                                <UL>
+                                    <li> Not all Chrome extensions are currently supported. </li>
+                                    <li> Compatibility may improve in the future as Electron development progresses. </li>
+                                    <li> Download extensions using {crxExtractorLink} or from {chromeStatsLink} </li>
+                                    <li> Clicking on the refresh button might resolve some extension-related problems. </li>
+                                </UL>
+                            </CustomAccordion>
+
+                            <CustomAccordion
+                                summary={
+                                    <Typography fontSize={'1.1rem'}>
+                                        How to open Yomitan/Yomichan options
+                                    </Typography>
+                                }
+                                sx={{ pl: 5 }}
+                            >
+                                To open Yomitan/Yomichan options:
+                                <OL>
+                                    <li> Right-click the Yomitan icon. </li>
+                                    <li> Click on <strong>Options</strong>. </li>
+                                </OL>
+
+                                For a better experience, it's recommended to enable <strong>"Hide popup on cursor exit"</strong>:
+
+                                <OL>
+                                    <li> Open Yomitan/Yomichan settings. </li>
+                                    <li> Go to the <strong>Scanning</strong> section. </li>
+                                    <li> Enable <strong>"Hide popup on cursor exit"</strong>. </li>
+                                </OL>
+                            </CustomAccordion>
+
+                            <CustomAccordion
+                                summary={
+                                    <Typography fontSize={'1.1rem'}>
+                                        How to open JPDBReader options and set the API key
+                                    </Typography>
+                                }
+                                sx={{ }}
+                            >
+                                <OL>
+                                    <li> Make sure JPDB Reader is enabled. </li>
+                                    <li> Click on its icon (upper-right corner). </li>
+                                    <li> Click on <strong>Settings</strong>. </li>
+                                    <li> Paste your JPDB.io API key into the <strong>API Token</strong> field. </li>
+                                    <li> Click on <strong>Save</strong>. </li>
+                                </OL>
+
+                            </CustomAccordion>
+
+                        </Box>
 
                     </Box>
 

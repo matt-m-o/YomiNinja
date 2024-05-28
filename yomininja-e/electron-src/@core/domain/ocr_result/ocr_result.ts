@@ -11,9 +11,22 @@ export type OcrItemBox = {
     top_right: OcrItemBoxVertex;
 };
 
+export type OcrTextLineSymbol = {
+    symbol: string;
+    box: OcrItemBox;
+};
+
+export type OcrTextLine = {
+    content: string;
+    box?: OcrItemBox;
+    symbols?: OcrTextLineSymbol[];
+};
+
 export type OcrItem = {
-    text: string;
-    score: number;
+    text: OcrTextLine[];
+    recognition_score: number; // Text confidence
+    classification_score: number; // Text direction confidence
+    classification_label: number; // Text direction
     box: OcrItemBox;
 };
 

@@ -1,47 +1,56 @@
 import { Box, Card, CardContent, Container, Divider, Grid, TextField, Typography, styled } from "@mui/material";
 import { SettingsContext } from "../../context/settings.provider";
-import { useContext, useEffect } from "react";
+import { ReactNode, useContext, useEffect } from "react";
 import AppSettingsHotkeys from "./AppSettingsHotkeys";
 import AppSettingsVisuals from "./AppSettingsVisuals";
 import AppSettingsOthers from "./AppSettingsOthers";
 import AppSettingsOcrEngine from "./AppSettingsOcrEngine";
 
 
-const SectionDivider = styled( Divider )({
-    marginTop: '30px',
-    marginBottom: '30px',
-});
-
 export default function AppSettingsMenu() {
 
-    const { activeSettingsPreset, updateActivePreset } = useContext( SettingsContext );    
+    function SettingsSection( props:{ children: ReactNode } ) {
+        return (
+            <Card variant="elevation"
+                sx={{
+                    borderRadius: 4,
+                    mb: 2
+                }}
+            >
+                <CardContent>
+                    { props.children }
+                </CardContent>
+            </Card>
+        )
+    }
 
     return (
-        <Card variant="elevation" sx={{ borderRadius: 4 }}>
+        <Container maxWidth='lg'>
 
-            <CardContent>
+            <SettingsSection>
 
-                <Container maxWidth='md'>
-                
-                    <AppSettingsHotkeys/>
-                    
-                    <SectionDivider/>
+                <AppSettingsHotkeys/>
 
-                    <AppSettingsOthers/>
+            </SettingsSection>
 
-                    <SectionDivider/>
+            <SettingsSection>
 
-                    <AppSettingsVisuals/>
+                <AppSettingsOthers/>
 
-                    <SectionDivider/>
+            </SettingsSection>
 
-                    <AppSettingsOcrEngine/>
+            <SettingsSection>
 
-                </Container>
+                <AppSettingsVisuals/>
 
-            </CardContent>
+            </SettingsSection>
 
-        </Card>
-        
+            <SettingsSection>
+
+                <AppSettingsOcrEngine/>
+
+            </SettingsSection>
+
+        </Container>
     )
 }

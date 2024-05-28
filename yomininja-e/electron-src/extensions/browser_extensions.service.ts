@@ -1,14 +1,18 @@
 import { BrowserWindow, app, session } from "electron";
 import buildChromeContextMenu from "electron-chrome-context-menu";
 import { ElectronChromeExtensions } from "electron-chrome-extensions";
+import { PopupView } from "electron-chrome-extensions/dist/browser/popup";
 import path, { join } from "path";
 import fs from 'fs/promises';
-import { BrowserExtension } from "./browser_extension";
 import sharp from 'sharp';
-import { EXTENSIONS_DIR } from "../util/directories.util";
+import { USER_EXTENSIONS_DIR } from "../util/directories.util";
 import isDev from "electron-is-dev";
 import { BrowserExtensionManager } from "./browser_extension_manager/browser_extension_manager";
-
+import { BrowserExtension, BrowserExtensionJson } from "../@core/domain/browser_extension/browser_extension";
+import { UpdateBrowserExtensionUseCase } from "../@core/application/use_cases/browser_extension/update_browser_extension/update_browser_extension.use_case";
+import { CreateBrowserExtensionUseCase } from "../@core/application/use_cases/browser_extension/create_browser_extension/create_browser_extension.use_case";
+import { GetBrowserExtensionsUseCase } from "../@core/application/use_cases/browser_extension/get_browser_extensions/get_browser_extensions.use_case";
+import { handleJPDBReaderPopup } from "./browser_extension_manager/workarounds/jpdb_reader";
 
 export class BrowserExtensionsService {
 
@@ -17,15 +21,36 @@ export class BrowserExtensionsService {
     installedExtensions: Map< string, Electron.Extension > = new Map();
     windows: Map< number, BrowserWindow > = new Map();
     browserExtensionManager: BrowserExtensionManager;
+    createBrowserExtensionUseCase: CreateBrowserExtensionUseCase;
+    updateBrowserExtensionUseCase: UpdateBrowserExtensionUseCase;
+    getBrowserExtensionsUseCase: GetBrowserExtensionsUseCase;
 
     onExtensionButtonClick: () => void = () => {};
 
-    constructor( input: { browserExtensionManager: BrowserExtensionManager } ) {
+    constructor(
+        input: {
+            browserExtensionManager: BrowserExtensionManager,
+            createBrowserExtensionUseCase: CreateBrowserExtensionUseCase,
+            updateBrowserExtensionUseCase: UpdateBrowserExtensionUseCase,
+            getBrowserExtensionsUseCase: GetBrowserExtensionsUseCase,
+        }
+    ) {
 
         this.browserExtensionManager = input.browserExtensionManager;
+        this.createBrowserExtensionUseCase = input.createBrowserExtensionUseCase;
+        this.updateBrowserExtensionUseCase = input.updateBrowserExtensionUseCase;
+        this.getBrowserExtensionsUseCase = input.getBrowserExtensionsUseCase;
 
         // Enable context menu
         app.on('web-contents-created', ( event, webContents ) => {
+
+            webContents.setWindowOpenHandler( details => {
+
+                this.createExtensionWindow( details.url );
+
+                return { action: 'deny' };
+            });
+
             webContents.on('context-menu', (e, params) => {
 
                 const extensionMenuItems = this.extensionsApi.getContextMenuItems(webContents, params);
@@ -34,6 +59,7 @@ export class BrowserExtensionsService {
                 extensionMenuItems.forEach( item => {
                     const { click } = item;
                     item.click = () => {
+                        
                         click();
 
                         if ( !item.label.includes('10ten') )
@@ -50,7 +76,7 @@ export class BrowserExtensionsService {
                     webContents,
                     extensionMenuItems,
                     openLink: (url, disposition) => {
-                        webContents.loadURL(url);
+                        this.createExtensionWindow( url );
                     }
                 });
 
@@ -66,26 +92,23 @@ export class BrowserExtensionsService {
         
         this.extensionsApi = new ElectronChromeExtensions({
             session: this.session,
-            createTab: async ( details ) => {
-                
-                const extensionWindow = new BrowserWindow({
-                    autoHideMenuBar: true,
-                    webPreferences: {
-                      sandbox: true,
-                      nodeIntegration: false,
-                      contextIsolation: true,
-                    }
-                });
+            createTab: async ( details ): Promise< [Electron.WebContents, Electron.BrowserWindow] > => {
 
-                // console.log(details)
-                if (details.url) {                    
-                    extensionWindow.loadURL( details.url );                   
-                }
+                const extensionWindow = this.createExtensionWindow( details.url || '' );
 
-                extensionWindow.show();
+                return [ extensionWindow.webContents, extensionWindow ];
+            },
+            createWindow: async ( details: chrome.tabs.CreateProperties ): Promise< BrowserWindow > => {
+                return this.createExtensionWindow( details.url || '' );
+            },
+        });
 
-                return [ extensionWindow.webContents, extensionWindow];
-            }
+        this.extensionsApi.on( 'browser-action-popup-created', ( popup: PopupView ) => {
+
+            const extension = this.installedExtensions.get( popup.extensionId );
+
+            if ( extension?.name.includes('JPDBreader') )
+                handleJPDBReaderPopup( popup );
         });
         
         // console.log({ EXTENSIONS_DIR });
@@ -119,36 +142,24 @@ export class BrowserExtensionsService {
         });
     }
 
-    getInstalledExtensions = async (): Promise< BrowserExtension[] > => {
+    getInstalledExtensions = async (): Promise< BrowserExtensionJson[] > => {
 
 
-        const extensions: BrowserExtension[] = [];
+        const extensions: BrowserExtensionJson[] = [];
 
         // console.log( this.installedExtensions );
         // console.log( installedExtensions );
 
         for ( const item of Array.from( this.installedExtensions.values() ) ) {
 
-            const optionsUiPage = item.manifest?.options_ui?.page;
+            const extension = await this.electronExtensionToExtensionJson( item );
 
-            let optionsUrl: string | undefined;
-
-            if ( optionsUiPage )
-                optionsUrl = item.url + item.manifest?.options_ui?.page;
-
-            // console.log( item.manifest )
-
-            const extension: BrowserExtension = {
-                id: item.id,
-                name: item.name,
-                description: item.manifest.description,
-                version: item.manifest.version,
-                optionsUrl,
-                icon: await this.getExtensionIcon( item.id ) || ''
-            };
+            extension.enabled = await this.isExtensionEnabled({
+                extensionId: extension.id
+            });
 
             extensions.push( extension );
-        }        
+        }
 
         return extensions;
     }
@@ -160,7 +171,7 @@ export class BrowserExtensionsService {
         });
         this.installedExtensions.clear();
 
-        const subDirectories = await fs.readdir( EXTENSIONS_DIR, {
+        const subDirectories = await fs.readdir( USER_EXTENSIONS_DIR, {
             withFileTypes: true,
         });
       
@@ -169,7 +180,7 @@ export class BrowserExtensionsService {
                 .filter( (dirEnt) => dirEnt.isDirectory() )
                 .map( async (dirEnt) => {
         
-                    const extPath = path.join( EXTENSIONS_DIR, dirEnt.name );
+                    const extPath = path.join( USER_EXTENSIONS_DIR, dirEnt.name );
             
                     if ( await this.manifestExists(extPath) ) {
                         return extPath;
@@ -181,7 +192,7 @@ export class BrowserExtensionsService {
             
                     const versionDirPath =
                         extSubDirs.length === 1 && extSubDirs[0].isDirectory()
-                        ? path.join(extPath, extSubDirs[0].name)
+                        ? path.join( extPath, extSubDirs[0].name )
                         : null;
             
                     if ( !versionDirPath ) return;
@@ -198,16 +209,31 @@ export class BrowserExtensionsService {
             if ( !extPath ) continue;
         
             try {
+
                 const extension = await this.session.loadExtension(
                     extPath,
                     { allowFileAccess: !isDev } // Required in production
                 );
 
                 this.installedExtensions.set( extension.id, extension );
+
+                const enabled = await this.isExtensionEnabled({
+                    extension
+                });
+
+                if ( !enabled )
+                    this.session.removeExtension( extension.id );
+
             } catch ( error ) {
                 console.error( error );
             }
         }
+
+        await this.syncExtensionsRegistry();
+    }
+
+    async handleBuiltinExtensions() {
+        await this.browserExtensionManager.installBuiltinExtensions();
     }
 
     private manifestExists = async ( dirPath: string ): Promise< boolean > => {
@@ -226,12 +252,14 @@ export class BrowserExtensionsService {
 
         const { defaultSession } = session;
           
-        const userAgent = defaultSession
-          .getUserAgent()
-          .replace(/\sElectron\/\S+/, '')
-          .replace(new RegExp(`\\s${app.getName()}/\\S+`), '');
+        // const userAgent = defaultSession
+        //   .getUserAgent()
+        //   .replace(/\sElectron\/\S+/, '')
+        //   .replace(new RegExp(`\\s${app.getName()}/\\S+`), '');
     
-        defaultSession.setUserAgent(userAgent);
+        defaultSession.setUserAgent(
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        );
 
         // const browserPreload = path.join( __dirname, '../preload.js' )
         // defaultSession.setPreloads([ browserPreload ]);
@@ -239,7 +267,10 @@ export class BrowserExtensionsService {
         return defaultSession;
     }
 
-    private getExtensionIcon = async ( extensionId: string ): Promise< string | undefined > => {
+    private getExtensionIcon = async ( extensionId: string ): Promise< {
+        icon: Buffer;
+        icon_base64: string;
+    } | undefined > => {
 
         const extension = this.installedExtensions.get( extensionId );
 
@@ -258,7 +289,10 @@ export class BrowserExtensionsService {
         const imageBuffer = await sharp( iconPath ).toBuffer();
         const imageBase64 = imageBuffer.toString( 'base64' );        
 
-        return imageBase64;        
+        return {
+            icon: imageBuffer,
+            icon_base64: imageBase64
+        };        
     }
 
 
@@ -271,7 +305,14 @@ export class BrowserExtensionsService {
         if ( !extension || !extension?.optionsUrl )
             return;
 
+        this.createExtensionWindow( extension.optionsUrl );
+    }
+
+    createExtensionWindow( url: string ): BrowserWindow {
+
         const extensionWindow = new BrowserWindow({
+            width: 1200,
+            height: 700,
             autoHideMenuBar: true,
             webPreferences: {
               sandbox: true,
@@ -282,21 +323,24 @@ export class BrowserExtensionsService {
 
         extensionWindow.show();
 
-        extensionWindow.loadURL( extension.optionsUrl );
+        if ( url )
+            extensionWindow.loadURL( url );
+
+        return extensionWindow;
     }
 
     installExtension = async ( input: { zipFilePath: string } ) => {
 
         const { zipFilePath } = input;
 
-        await this.browserExtensionManager.install( zipFilePath );
+        await this.browserExtensionManager.installZip( zipFilePath );
 
         await this.loadExtensions();
 
         this.reloadWindows();
     }
 
-    uninstallExtension = async ( extension: BrowserExtension ) => {
+    uninstallExtension = async ( extension: BrowserExtensionJson ) => {
 
         const installedExtension = this.installedExtensions.get( extension.id );
 
@@ -315,5 +359,99 @@ export class BrowserExtensionsService {
         this.windows.forEach( window => {
             window.reload();
         });
+    }
+
+    syncExtensionsRegistry = async () => {
+
+        const installedExtensions = await this.getInstalledExtensions();
+        const extensionsInDb = await this.getBrowserExtensionsUseCase.execute();
+
+        for ( const item of installedExtensions ) {
+
+            const extensionIsRegistered = extensionsInDb.some(
+                extensionInDb => extensionInDb.id === item.id
+            );
+
+            if ( !extensionIsRegistered ) {
+
+                if ( item.name.includes('JPDBreader') )
+                    item.enabled = false;
+                
+                await this.createBrowserExtensionUseCase.execute( item );
+            }
+            else
+                await this.updateBrowserExtensionUseCase.execute( item );
+        }
+    }
+
+    isExtensionEnabled = async (
+        input: {
+            extensionId?: string,
+            extension?: Electron.Extension
+        }
+    ): Promise< boolean > => {
+
+        const extensionId = input?.extensionId || input?.extension?.id;
+
+        if ( !extensionId ) return false;
+
+        const extensionsInDb = await this.getBrowserExtensionsUseCase.execute();
+
+        const extension = extensionsInDb.find(
+            extension => extension.id === extensionId
+        );
+        
+        // Handle JPDBReader first load
+        if ( input?.extension?.name.includes( 'JPDBreader' ) ) {
+            if ( !extension ) return false;
+        }
+
+        if ( !extension ) return true;
+
+        return extension.enabled;
+    }
+
+
+    electronExtensionToExtensionJson = async (
+        electronExtension: Electron.Extension
+    ) => {
+        const optionsUiPage = electronExtension.manifest?.options_ui?.page;
+
+        let optionsUrl: string | undefined;
+
+        if ( optionsUiPage )
+            optionsUrl = electronExtension.url + electronExtension.manifest?.options_ui?.page;
+
+        // console.log( item.manifest )
+
+        const icon = await this.getExtensionIcon( electronExtension.id );
+
+        const extension: BrowserExtensionJson = {
+            id: electronExtension.id,
+            name: electronExtension.name,
+            description: electronExtension.manifest.description,
+            version: electronExtension.manifest.version,
+            optionsUrl,
+            icon: icon?.icon,
+            icon_base64: icon?.icon_base64,
+            enabled: true
+        };
+
+        return extension;
+    }
+
+    toggleExtension = async ( extension: BrowserExtensionJson ) => {
+
+        const enabled = !extension.enabled;
+
+        await this.updateBrowserExtensionUseCase.execute({
+            ...extension,
+            enabled: !extension.enabled
+        });
+
+        if ( !enabled )
+            this.session.removeExtension( extension.id );
+        else
+            await this.loadExtensions();
     }
 }
