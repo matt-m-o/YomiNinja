@@ -17,7 +17,7 @@ export default function Dictionary() {
     } = useContext( DictionaryContext );
 
     const { activeSettingsPreset, updateActivePresetDictionary } = useContext( SettingsContext );
-    const { dictionary } = activeSettingsPreset;
+    const dictionary = activeSettingsPreset?.dictionary;
 
     return (
         <Card variant="elevation" sx={{ borderRadius: 4, userSelect: 'none' }}>

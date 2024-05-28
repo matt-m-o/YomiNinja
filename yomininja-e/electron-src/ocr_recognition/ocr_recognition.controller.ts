@@ -11,17 +11,19 @@ import { CaptureSource, ExternalWindow } from "./common/types";
 import { TaskbarProperties } from "../../gyp_modules/window_management/window_manager";
 import sharp from "sharp";
 import os from 'os';
+import { OcrEngineSettingsU } from "../@core/infra/types/entity_instance.types";
+import { InAppNotification } from "../common/types/in_app_notification";
 
 export class OcrRecognitionController {
     
-    private ocrRecognitionService: OcrRecognitionService;
+    private ocrRecognitionService: OcrRecognitionService<OcrEngineSettingsU>;
     
     private mainWindow: BrowserWindow;
     private overlayWindow: BrowserWindow;
 
 
     constructor( input: {        
-        ocrRecognitionService: OcrRecognitionService;        
+        ocrRecognitionService: OcrRecognitionService< OcrEngineSettingsU >;        
     }) {
         this.ocrRecognitionService = input.ocrRecognitionService;
     }
@@ -52,24 +54,47 @@ export class OcrRecognitionController {
         );
     }
 
-    async recognize( entireScreenImage: Buffer ) {
-        // console.log('');
-        // console.time('controller.recognize');
-
+    async recognize(
+        input: {
+            image: Buffer,
+            engineName?: string;
+        }
+    ) {
+        const { image, engineName } = input;
+        
+        
         try {
+            console.log('');
+            // console.time('controller.recognize');
             // console.log(activeProfile);
             // console.log('OcrRecognitionController.recognize')
 
             const ocrResultScalable = await this.ocrRecognitionService.recognize({
-                imageBuffer: entireScreenImage,
-                profileId: getActiveProfile().id
+                imageBuffer: image,
+                profileId: getActiveProfile().id,
+                engineName
             });
             // console.log({ ocrResultScalable });
 
             // console.timeEnd('controller.recognize');
             // console.log('');
 
-            // console.log( ocrResultScalable );
+            if ( 
+                !ocrResultScalable ||
+                !ocrResultScalable?.ocr_regions?.length ||
+                !ocrResultScalable?.ocr_regions?.some( region => region?.results?.length )
+            ) {
+                const notification: InAppNotification = {
+                    type: 'info',
+                    message: 'No text recognized! Please try again.',
+                    autoHideDuration: 3000
+                };
+
+                this.overlayWindow.webContents.send(
+                    'notifications:show',
+                    notification
+                );
+            }
 
             this.overlayWindow.webContents.send( 'ocr:result', ocrResultScalable );
 
@@ -89,16 +114,19 @@ export class OcrRecognitionController {
             return;
     }
 
-    restartEngine() {
+    restartEngine( engineName: string ) {
 
         // Adding a time gap to make sure it has enough time to complete anything it might be doing
         setTimeout( () => {
-            this.ocrRecognitionService.restartOcrAdapter( () => {
+            this.ocrRecognitionService.restartOcrAdapter(
+                engineName,
+                () => {
 
-                if ( !this.mainWindow ) return;
+                    if ( !this.mainWindow ) return;
 
-                this.mainWindow.webContents.send( 'ocr_recognition:ocr_engine_restarted' );
-            });
+                    this.mainWindow.webContents.send( 'ocr_recognition:ocr_engine_restarted' );
+                }
+            );
         }, 3000 );
     }
 

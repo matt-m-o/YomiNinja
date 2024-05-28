@@ -1,11 +1,11 @@
 import { Autocomplete, FormControlLabel, SxProps, TextField, TextFieldProps, Theme } from "@mui/material";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
-import { useContext } from "react";
+import { CSSProperties, useContext } from "react";
 import CustomTextField from "./CustomTextField";
+import ViewComfyRoundedIcon from '@mui/icons-material/ViewComfyRounded';
 
 
-
-export default function OcrTemplateSelector() {
+export default function OcrTemplateSelector( props: { listBoxCSS?: CSSProperties } ) {
 
     const {
         ocrTemplates,
@@ -43,10 +43,15 @@ export default function OcrTemplateSelector() {
         <Autocomplete autoHighlight
             fullWidth
             renderInput={ (params) => {
-                return <CustomTextField {...params}
+                return <TextField {...params}
                     label='OCR Template'
-                    sx={{
-                        minWidth: '275px',
+                    fullWidth
+                    InputProps={{
+                        ...params.InputProps,
+                        startAdornment: <ViewComfyRoundedIcon sx={{ mr: '10px' }}/>,
+                        style: {
+                            paddingLeft: '14px'
+                        }
                     }}
                 />
             }}
@@ -55,6 +60,8 @@ export default function OcrTemplateSelector() {
                 handleSelectChange( newValue );
             }}
             options={ selectOptions }
+            sx={{ mb: '25px' }}
+            ListboxProps={{ style: props.listBoxCSS }}
         />
     )
 }

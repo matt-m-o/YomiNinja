@@ -20,6 +20,8 @@ import OcrTemplateTypeOrmRepository from "../db/typeorm/ocr_template/ocr_templat
 import { OcrTemplate } from "../../domain/ocr_template/ocr_template";
 import OcrTargetRegionTypeOrmRepository from "../db/typeorm/ocr_template/ocr_target_region/ocr_target_region.typeorm.repository";
 import { OcrTargetRegion } from "../../domain/ocr_template/ocr_target_region/ocr_target_region";
+import BrowserExtensionTypeOrmRepository from "../db/typeorm/browser_extension/browser_extension.typeorm.repository";
+import { BrowserExtension } from "../../domain/browser_extension/browser_extension";
 
 
 container_registry.bind( Registry.SettingsPresetInMemoryRepository )
@@ -73,6 +75,17 @@ container_registry.bind( Registry.OcrTargetRegionTypeOrmRepository )
         );
     })
     .inSingletonScope();
+
+
+container_registry.bind( Registry.BrowserExtensionTypeOrmRepository )
+    .toDynamicValue( context => {
+        return new BrowserExtensionTypeOrmRepository(
+            get_MainDataSource().getRepository( BrowserExtension )
+        );
+    })
+    .inSingletonScope();
+
+
 
 
 // Dictionaries 

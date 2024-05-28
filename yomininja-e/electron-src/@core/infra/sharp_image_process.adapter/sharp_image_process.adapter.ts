@@ -57,6 +57,13 @@ export class SharpImageProcessingAdapter implements ImageProcessingAdapter {
     }
 
     async extract( input: ImageExtractInput ): Promise< Buffer > {
+
+        if ( input.position.left < 0 )
+            input.position.left = 0;
+
+        if ( input.position.top < 0 )
+            input.position.top = 0;
+
         return await sharp( input.image )
             .extract({
                 ...input.position,

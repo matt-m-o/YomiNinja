@@ -1,16 +1,18 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
-import { BrowserExtension } from "../../electron-src/extensions/browser_extension";
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
 import { Button, Divider } from "@mui/material";
+import { BrowserExtensionJson } from "../../electron-src/@core/domain/browser_extension/browser_extension";
+import { setTimeout } from "timers";
 
 
 
 export type ExtensionsContextType = {
     browserActionList: JSX.Element;
-    installedExtensions: BrowserExtension[];
+    installedExtensions: BrowserExtensionJson[];
     installExtension: () => Promise<void>;
-    uninstallExtension: ( extension: BrowserExtension ) => void;
-    openExtensionOptions: ( input: BrowserExtension ) => Promise<void>
+    uninstallExtension: ( extension: BrowserExtensionJson ) => void;
+    openExtensionOptions: ( input: BrowserExtensionJson ) => Promise< void >;
+    toggleExtension: ( extension: BrowserExtensionJson ) => void;
 };
 
 export const ExtensionsContext = createContext( {} as ExtensionsContextType );
@@ -18,7 +20,7 @@ export const ExtensionsContext = createContext( {} as ExtensionsContextType );
 
 export const ExtensionsProvider = ( { children }: PropsWithChildren ) => {
         
-    const [ installedExtensions, setInstalledExtensions ] = useState< BrowserExtension[] >();
+    const [ installedExtensions, setInstalledExtensions ] = useState< BrowserExtensionJson[] >();
     
 
     async function getInstalledExtensions() {
@@ -33,11 +35,11 @@ export const ExtensionsProvider = ( { children }: PropsWithChildren ) => {
         await global.ipcRenderer.invoke( 'extensions:install_extension' );
     }
 
-    async function uninstallExtension( extension: BrowserExtension ) {
+    async function uninstallExtension( extension: BrowserExtensionJson ) {
         await global.ipcRenderer.invoke( 'extensions:uninstall_extension', extension );
     }
 
-    async function openExtensionOptions( browserExtension: BrowserExtension ): Promise< void > {
+    async function openExtensionOptions( browserExtension: BrowserExtensionJson ): Promise< void > {
         await global.ipcRenderer.invoke( 'extensions:open_extension_options', browserExtension );
     }
 
@@ -51,6 +53,14 @@ export const ExtensionsProvider = ( { children }: PropsWithChildren ) => {
             .querySelector("#"+extensionId);
 
         return element;
+    }
+
+    async function toggleExtension( extension: BrowserExtensionJson ) {
+        await global.ipcRenderer.invoke(
+            'extensions:toggle_extension',
+            extension
+        );
+        setTimeout( refreshUI, 750 );
     }
 
     
@@ -105,6 +115,7 @@ export const ExtensionsProvider = ( { children }: PropsWithChildren ) => {
                 installExtension,
                 uninstallExtension,
                 openExtensionOptions,
+                toggleExtension,
                 browserActionList,
             }}
         >

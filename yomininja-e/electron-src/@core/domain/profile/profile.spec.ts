@@ -2,6 +2,7 @@ import { cloneDeep } from 'lodash';
 import { Profile } from './profile';
 import { SettingsPreset } from '../settings_preset/settings_preset';
 import { Language } from '../language/language';
+import { ppOcrAdapterName } from '../../infra/ocr/ppocr.adapter/ppocr_settings';
 
 describe( "Profile tests", () => {
 
@@ -15,7 +16,8 @@ describe( "Profile tests", () => {
 
         const profile = Profile.create({
             active_settings_preset: defaultSettings,
-            active_ocr_language: languageJa
+            active_ocr_language: languageJa,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
 
         expect( profile.id ).toBeDefined();
@@ -32,6 +34,7 @@ describe( "Profile tests", () => {
             name: 'Profile 1',
             active_settings_preset: defaultSettings,
             active_ocr_language: languageJa,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
 
         expect( profile.id ).toBeDefined();

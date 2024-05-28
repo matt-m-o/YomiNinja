@@ -10,6 +10,7 @@ import { DictionaryHeadwordTypeOrmSchema } from './dictionary/dictionary_headwor
 import { OcrTemplateTypeOrmSchema } from './ocr_template/ocr_template.schema';
 import { OcrTargetRegionTypeOrmSchema } from './ocr_template/ocr_target_region/ocr_target_region.schema';
 import { USER_DATA_DIR } from '../../../../util/directories.util';
+import { BrowserExtensionTypeOrmSchema } from './browser_extension/browser_extension.schema';
 
 // Mainly for application settings
 export const mainDataSourceOptions: DataSourceOptions = {
@@ -23,6 +24,7 @@ export const mainDataSourceOptions: DataSourceOptions = {
         ProfileTypeOrmSchema,
         OcrTemplateTypeOrmSchema,
         OcrTargetRegionTypeOrmSchema,
+        BrowserExtensionTypeOrmSchema
     ],
     // entities: [ './main/electron-src/@core/infra/db/typeorm/**/*.schema.js' ],
     // migrations: [ './main/electron-src/@core/infra/db/typeorm/migrations/*.js' ],

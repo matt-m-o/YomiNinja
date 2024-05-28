@@ -1,12 +1,13 @@
 import { Language } from "../../../domain/language/language";
 import { LanguageRepository } from "../../../domain/language/language.repository";
+import { OcrEngineSettings } from "../../../domain/settings_preset/settings_preset";
 import { OcrAdapter } from "../../adapters/ocr.adapter";
 
 
-export class GetSupportedLanguagesUseCase {
+export class GetSupportedLanguagesUseCase< TOcrSettings extends OcrEngineSettings > {
 
     constructor(
-        public ocrAdapters: OcrAdapter[],
+        public ocrAdapters: OcrAdapter< TOcrSettings >[],
         public languagesRepo: LanguageRepository,
     ) {}
 
@@ -14,17 +15,17 @@ export class GetSupportedLanguagesUseCase {
 
         const result: GetSupportedLanguagesOutput[] = [];
 
-        const supportedLanguages: Language[] = [];
-
         for ( const adapter of this.ocrAdapters ) {
-
+            
+            const supportedLanguages: Language[] = [];
+            
             const languageCodes = await adapter.getSupportedLanguages();
 
             for ( const languageCode of languageCodes ) {
 
                 const languageInRepo = await this.languagesRepo.findOne({ two_letter_code: languageCode });
 
-                if ( !languageInRepo ) continue;                
+                if ( !languageInRepo ) continue;
 
                 supportedLanguages.push( languageInRepo );
             }

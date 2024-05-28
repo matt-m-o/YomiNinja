@@ -2,7 +2,7 @@ import { FormControlLabel, SxProps, TextField, TextFieldProps, Theme } from "@mu
 
 export type CustomTextFieldProps = {
     label?: string;
-    sx: SxProps< Theme > ;
+    sx?: SxProps< Theme > ;
 } & TextFieldProps;
 
 export default function CustomTextField( props: CustomTextFieldProps ) {
@@ -17,7 +17,7 @@ export default function CustomTextField( props: CustomTextFieldProps ) {
             control={
                 <TextField {...props } label=''
                     fullWidth 
-                    sx={props.sx}
+                    sx={props?.sx}
                 />
             }
         />

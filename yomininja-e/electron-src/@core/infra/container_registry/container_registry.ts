@@ -13,6 +13,8 @@ export const Registry = {
 
     // Adapters
     PpOcrAdapter: Symbol.for('PpOcrAdapter'),
+    CloudVisionOcrAdapter: Symbol.for('CloudVisionOcrAdapter'),
+    GoogleLensOcrAdapter: Symbol.for('GoogleLensOcrAdapter'),
     SharpImageProcessingAdapter: Symbol.for('SharpImageProcessingAdapter'),
     GithubAppVersionProviderAdapter: Symbol.for('GithubAppVersionProviderAdapter'),
     FakeAppVersionProviderAdapter: Symbol.for('FakeAppVersionProviderAdapter'),
@@ -20,10 +22,10 @@ export const Registry = {
     JapaneseHelper: Symbol.for('JapaneseHelper'),
 
     // Use Cases
-    RecognizeImageUseCase: Symbol.for('RecognizeImageUseCase'),
-    GetSupportedLanguagesUseCase: Symbol.for('GetSupportedLanguagesUseCase'),
+    RecognizeImageUseCaseInstance: Symbol.for('RecognizeImageUseCaseInstance'),
+    GetSupportedLanguagesUseCaseInstance: Symbol.for('GetSupportedLanguagesUseCaseInstance'),
     GetActiveSettingsPresetUseCase: Symbol.for('GetActiveSettingsPresetUseCase'),
-    UpdateSettingsPresetUseCase: Symbol.for('UpdateSettingsPresetUseCase'),
+    UpdateSettingsPresetUseCaseInstance: Symbol.for('UpdateSettingsPresetUseCaseInstance'),
     CheckForAppUpdatesUseCase: Symbol.for('CheckForAppUpdatesUseCase'),
     ChangeActiveOcrLanguageUseCase: Symbol.for('ChangeActiveOcrLanguageUseCase'),
     GetProfileUseCase: Symbol.for('GetProfileUseCase'),
@@ -33,12 +35,16 @@ export const Registry = {
     ImportFuriganaDictionaryUseCase: Symbol.for('ImportFuriganaDictionaryUseCase'),
     GetDictionariesUseCase: Symbol.for('GetDictionariesUseCase'),
     DeleteAllDictionariesUseCase: Symbol.for('DeleteAllDictionariesUseCase'),
-    CreateSettingsPresetUseCase: Symbol.for('CreateSettingsPresetUseCase'),
+    CreateSettingsPresetUseCaseInstance: Symbol.for('CreateSettingsPresetUseCaseInstance'),
     CreateOcrTemplateUseCase: Symbol.for('CreateOcrTemplateUseCase'),
     UpdateOcrTemplateUseCase: Symbol.for('UpdateOcrTemplateUseCase'),
     GetOcrTemplatesUseCase: Symbol.for('GetOcrTemplatesUseCase'),
     DeleteOcrTemplateUseCase: Symbol.for('DeleteOcrTemplatesUseCase'),
     ChangeActiveOcrTemplateUseCase: Symbol.for('ChangeActiveOcrTemplateUseCase'),
+    ChangeSelectedOcrEngineUseCase: Symbol.for('ChangeSelectedOcrEngineUseCase'),
+    CreateBrowserExtensionUseCase: Symbol.for('CreateBrowserExtensionUseCase'),
+    UpdateBrowserExtensionUseCase: Symbol.for('UpdateBrowserExtensionUseCase'),
+    GetBrowserExtensionsUseCase: Symbol.for('GetBrowserExtensionsUseCase'),
 
     // Repositories
     SettingsPresetInMemoryRepository: Symbol.for('SettingsPresetInMemoryRepository'),
@@ -51,6 +57,7 @@ export const Registry = {
     DictionaryHeadwordTypeOrmRepository: Symbol.for('DictionaryHeadwordTypeOrmRepository'),
     OcrTemplateTypeOrmRepository: Symbol.for('OcrTemplateTypeOrmRepository'),
     OcrTargetRegionTypeOrmRepository: Symbol.for('OcrTargetRegionTypeOrmRepository'),
+    BrowserExtensionTypeOrmRepository: Symbol.for('BrowserExtensionTypeOrmRepository')
 }
 
 import "./db_registry";

@@ -8,7 +8,6 @@ import { JmdictImportService } from "./Jmdict/Jmdict_import.service";
 import path from "path";
 import { DictionaryImportProgress } from "./common/dictionary_import_progress";
 import { Dictionary } from "../@core/domain/dictionary/dictionary";
-import { BrowserExtension } from "../extensions/browser_extension";
 
 export type DictionaryFormats = 'yomichan' | 'jmdictFurigana';
 

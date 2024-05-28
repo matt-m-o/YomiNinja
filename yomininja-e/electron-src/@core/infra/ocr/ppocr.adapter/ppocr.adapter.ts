@@ -1,32 +1,46 @@
-import { OcrItem, OcrResult } from "../../domain/ocr_result/ocr_result";
-import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput } from "../../application/adapters/ocr.adapter";
+import { OcrItem, OcrResult } from "../../../domain/ocr_result/ocr_result";
+import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import * as grpc from '@grpc/grpc-js';
-import { OCRServiceClient } from "../../../../grpc/rpc/ocr_service/OCRService";
-import { RecognizeDefaultResponse__Output } from "../../../../grpc/rpc/ocr_service/RecognizeDefaultResponse";
-import { GetSupportedLanguagesResponse__Output } from "../../../../grpc/rpc/ocr_service/GetSupportedLanguagesResponse";
-import { ocrServiceProto } from "../../../../grpc/grpc_protos";
-import { RecognizeBytesRequest } from "../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
+import { OCRServiceClient } from "../../../../../grpc/rpc/ocr_service/OCRService";
+import { RecognizeDefaultResponse__Output } from "../../../../../grpc/rpc/ocr_service/RecognizeDefaultResponse";
+import { GetSupportedLanguagesResponse__Output } from "../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesResponse";
+import { ocrServiceProto } from "../../../../../grpc/grpc_protos";
+import { RecognizeBytesRequest } from "../../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
 import { join } from "path";
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { dialog } from 'electron';
 import isDev from 'electron-is-dev';
-import { BIN_DIR } from "../../../util/directories.util";
-import { OcrEngineSettings } from "../../domain/settings_preset/settings_preset";
-import { UpdateSettingsPresetResponse__Output } from "../../../../grpc/rpc/ocr_service/UpdateSettingsPresetResponse";
-import { UpdateSettingsPresetRequest } from "../../../../grpc/rpc/ocr_service/UpdateSettingsPresetRequest";
+import { BIN_DIR, USER_DATA_DIR } from "../../../../util/directories.util";
+import { OcrEngineSettings } from "../../../domain/settings_preset/settings_preset";
+import { UpdateSettingsPresetResponse__Output } from "../../../../../grpc/rpc/ocr_service/UpdateSettingsPresetResponse";
 import { applyCpuHotfix } from "./hotfix/hardware_compatibility_hotfix";
 import os from 'os';
+import { PpOcrEngineSettings, getPpOcrDefaultSettings, ppOcrAdapterName } from "./ppocr_settings";
+import { UpdatePpOcrSettingsRequest } from "../../../../../grpc/rpc/ocr_service/UpdatePpOcrSettingsRequest";
+import { OcrEngineSettingsU } from "../../types/entity_instance.types";
+import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
+import fs from 'fs';
 
-export class PpOcrAdapter implements OcrAdapter {
+export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
     
-    static _name: string = "PpOcrAdapter";
+    static _name: string = ppOcrAdapterName;
     public readonly name: string = PpOcrAdapter._name;
     public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
     private ocrServiceClient: OCRServiceClient | null = null;
     private idCounter: number = 0;
     private ppocrServiceProcess: ChildProcessWithoutNullStreams;
     private recognitionCallOnHold: OcrRecognitionInput | undefined;
+    private settingsPresetsRoot: string;
+    private binRoot: string;
 
+    constructor() {
+
+        this.binRoot = isDev
+            ? join( BIN_DIR, `/${os.platform()}/ppocr` )
+            : join( process.resourcesPath, '/bin/ppocr/' );
+
+        this.handleSettingsPreset();
+    }
 
     initialize( serviceAddress?: string ) {
 
@@ -44,7 +58,7 @@ export class PpOcrAdapter implements OcrAdapter {
         this.status = OcrAdapterStatus.Enabled;
     }
 
-    async recognize( input: OcrRecognitionInput ): Promise< OcrResult | null > {
+    async recognize( input: OcrRecognitionInput ): Promise< OcrResultScalable | null > {
         
         if ( this.status === OcrAdapterStatus.Processing ) {
             this.recognitionCallOnHold = input;
@@ -95,11 +109,23 @@ export class PpOcrAdapter implements OcrAdapter {
         )
             return null;
         
-        return OcrResult.create({
+        const ocrItems: OcrItem[] = clientResponse.results.map( ( item ) => {
+            return {
+                ...item,
+                text: [{
+                    content: item.text
+                }],
+            } as OcrItem
+        });
+
+        const result = OcrResult.create({
             id: parseInt(clientResponse.id),
             context_resolution: clientResponse.context_resolution,
-            results: clientResponse.results as OcrItem[],
-        });        
+            results: ocrItems,
+        });
+
+
+        return OcrResultScalable.createFromOcrResult( result )
     }
 
     async getSupportedLanguages(): Promise< string[] > {
@@ -129,20 +155,16 @@ export class PpOcrAdapter implements OcrAdapter {
 
         const platform = os.platform();
 
-        const cwd = isDev
-            ? join( BIN_DIR, `/${platform}/ppocr` )
-            : join( process.resourcesPath, '/bin/ppocr/' );
-
         const executableName = platform === 'win32'
             ? 'ppocr_infer_service_grpc.exe'
             : 'start.sh'; // start.sh | ppocr_infer_service_grpc
 
-        const executable = join( cwd + `/${executableName}` );
+        const executable = join( this.binRoot + `/${executableName}` );
         
         this.ppocrServiceProcess = spawn(
             executable,
-            [/*arguments */],
-            { cwd }
+            [ this.settingsPresetsRoot ],
+            { cwd: this.binRoot }
         );
 
         // Handle stdout and stderr data
@@ -200,22 +222,41 @@ export class PpOcrAdapter implements OcrAdapter {
         return true
     }
 
-    async updateSettings( input: OcrEngineSettings ): Promise< boolean > {
+    async updateSettings(
+        _settingsUpdate: OcrEngineSettingsU,
+        _oldSettings?: OcrEngineSettingsU
+    ): Promise< UpdateOcrAdapterSettingsOutput< PpOcrEngineSettings > > {
 
-        const requestInput: UpdateSettingsPresetRequest = {
-            max_image_width: input.max_image_width,
-            cpu_threads: input.cpu_threads,
-            inference_runtime: input.inference_runtime
+        let restart = false;
+
+        let settingsUpdate = _settingsUpdate as PpOcrEngineSettings;
+        let oldSettings = _oldSettings as PpOcrEngineSettings;
+
+        if (
+            !oldSettings ||
+            oldSettings?.cpu_threads != settingsUpdate.cpu_threads ||
+            oldSettings?.max_image_width != settingsUpdate.max_image_width ||
+            oldSettings?.inference_runtime != settingsUpdate.inference_runtime
+        )
+            restart = true;
+
+        settingsUpdate = {
+            ...settingsUpdate,
+            max_image_width: this.maxImageWidthValidation( settingsUpdate.max_image_width )
+        };
+
+        const requestInput: UpdatePpOcrSettingsRequest = {
+            ...settingsUpdate,
         };
 
         const ok = await this.ppocrServiceProcessStatusCheck();
 
-        if ( !ok ) return false;
+        if ( !ok ) return { settings: settingsUpdate, restart: false };
         
         let clientResponse: UpdateSettingsPresetResponse__Output | undefined;
         try {
             clientResponse = await new Promise< UpdateSettingsPresetResponse__Output | undefined >(
-                (resolve, reject) => this.ocrServiceClient?.UpdateSettingsPreset( requestInput, ( error, response ) => {
+                (resolve, reject) => this.ocrServiceClient?.UpdatePpOcrSettings( requestInput, ( error, response ) => {
                     if (error) {
                         return reject(error)
                     }
@@ -225,25 +266,17 @@ export class PpOcrAdapter implements OcrAdapter {
         } catch (error) {
             console.error( error );
             console.log("retrying: PpOcrAdapter.updateSettings");
-            return await this.updateSettings( input );
+            return await this.updateSettings( settingsUpdate, oldSettings );
         }
         
-        return Boolean( clientResponse?.success );
+        return {
+            settings: settingsUpdate,
+            restart,
+        };
     }
 
-    getDefaultSettings(): OcrEngineSettings {
-
-        const defaultSettings: OcrEngineSettings = {
-            image_scaling_factor: 1,
-            max_image_width: 1600,
-            cpu_threads: os.cpus().length,
-            invert_colors: false,
-            inference_runtime: 'Open_VINO'
-        }
-        
-        const result = applyCpuHotfix( defaultSettings );
-
-        return result.ocrEngineSettings;
+    getDefaultSettings(): PpOcrEngineSettings {
+        return getPpOcrDefaultSettings();
     }
 
     getSettingsOptions(): OcrEngineSettingsOptions {
@@ -280,5 +313,37 @@ export class PpOcrAdapter implements OcrAdapter {
         this.status = OcrAdapterStatus.Restarting;
         this.ppocrServiceProcess.kill('SIGTERM');
         this.startProcess();
+    }
+
+    private maxImageWidthValidation( maxImageWidth?: number ) {        
+
+        if ( 
+            !maxImageWidth ||
+            maxImageWidth % 32 != 0 || // Must be multiple of 32
+            maxImageWidth < 0
+        )
+            return 1600;
+
+        return maxImageWidth;
+    }
+
+    handleSettingsPreset() {
+
+        this.settingsPresetsRoot = join( USER_DATA_DIR, "/ppocr/presets/" );
+
+        const dirExists = fs.existsSync( this.settingsPresetsRoot );
+        const fileExists = fs.existsSync( this.settingsPresetsRoot + 'default.json' );
+
+        if ( !dirExists )
+            fs.mkdirSync( this.settingsPresetsRoot, { recursive: true } );
+    
+        if ( !fileExists ) {
+            const baseFilePath = join( this.binRoot, '/presets/default.json' );
+            const dest = join( this.settingsPresetsRoot, 'default.json' );
+            fs.copyFileSync(
+                baseFilePath,
+                dest
+            );
+        }
     }
 }

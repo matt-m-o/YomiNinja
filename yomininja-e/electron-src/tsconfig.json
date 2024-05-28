@@ -8,7 +8,7 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "lib": ["dom", "es2019"],
+    "lib": ["dom", "es2021"],
     "module": "commonjs",
     "moduleResolution": "node",
     "noEmit": false,

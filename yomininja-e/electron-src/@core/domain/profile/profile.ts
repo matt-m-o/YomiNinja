@@ -9,6 +9,7 @@ export interface ProfileProps {
     // app_language: string; // Application display language
     active_ocr_language: Language;
     active_ocr_template: OcrTemplate | null;
+    selected_ocr_adapter_name: string; // OCR engine to be triggered by PrintScreen or default OCR hotkey
     created_at: Date;
     updated_at: Date;
 };
@@ -18,6 +19,7 @@ export interface ProfileProps {
 export interface Profile_CreationInput extends Partial< ProfileProps > {
     active_settings_preset: SettingsPreset;
     active_ocr_language: Language;
+    selected_ocr_adapter_name: string;
 };
 
 // Stores all application configuration
@@ -52,6 +54,9 @@ export class Profile {
     get active_ocr_template(): OcrTemplate | null {
         return this.props.active_ocr_template;
     }
+    get selected_ocr_adapter_name(): string {
+        return this.props.selected_ocr_adapter_name;
+    }
     
     get created_at(){ return this.props.created_at; }
     get updated_at(){ return this.props.updated_at; }
@@ -71,6 +76,10 @@ export class Profile {
     set active_ocr_template( value: OcrTemplate | null ) {        
 
         this.props.active_ocr_template = value;
+    }
+
+    set selected_ocr_adapter_name( value: string ) {
+        this.props.selected_ocr_adapter_name = value;
     }
     
     protected set created_at( date: Date ){ this.props.created_at = date; }

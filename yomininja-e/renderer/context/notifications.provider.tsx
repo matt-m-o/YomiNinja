@@ -41,6 +41,7 @@ export const NotificationsProvider = ( { children }: PropsWithChildren ) => {
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                 onClose={ () => setOpenSnackbar(false) }
                 sx={{ minWidth: '300px', alignItems: 'center' }}
+                autoHideDuration={ notification?.autoHideDuration || null }
                 style={{
                     zIndex: 999999
                 }}
@@ -51,7 +52,7 @@ export const NotificationsProvider = ( { children }: PropsWithChildren ) => {
                         alignItems: 'center',
                         fontSize: '1.2rem'
                     }}
-                    onClose={ () => setOpenSnackbar(false) }                
+                    onClose={ () => setOpenSnackbar(false) }
                 >
                     { notification?.message }
                 </Alert>

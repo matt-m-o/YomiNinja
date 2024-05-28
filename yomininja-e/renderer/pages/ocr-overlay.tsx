@@ -1,10 +1,11 @@
 import { useContext, useEffect, useState } from 'react';
 import { OcrResultContext, OcrResultProvider } from '../context/ocr_result.provider';
-import FullscreenOcrResult from '../components/OcrOverlay/FullscreenOcrResult';
+import FullscreenOcrResult from '../components/OcrOverlay/OcrResults';
 import { SettingsContext, SettingsProvider } from '../context/settings.provider';
 import OcrOverlay from '../components/OcrOverlay/OcrOverlay';
 import { DictionaryProvider } from '../context/dictionary.provider';
 import { OcrTemplatesProvider } from '../context/ocr_templates.provider';
+import { NotificationsProvider } from '../context/notifications.provider';
 
 
 
@@ -22,15 +23,17 @@ export default function OcrOverlayPage() {
   return ( <>
     <title>OCR Overlay - YomiNinja</title>
     <SettingsProvider>
-      <DictionaryProvider>
-        <OcrResultProvider>
-          <OcrTemplatesProvider>
+      <NotificationsProvider>
+        <DictionaryProvider>
+          <OcrResultProvider>
+            <OcrTemplatesProvider>
 
-            <OcrOverlay/>
-            
-          </OcrTemplatesProvider>
-        </OcrResultProvider>
-      </DictionaryProvider>
+              <OcrOverlay/>
+              
+            </OcrTemplatesProvider>
+          </OcrResultProvider>
+        </DictionaryProvider>
+      </NotificationsProvider>
     </SettingsProvider>
   </> );
 }

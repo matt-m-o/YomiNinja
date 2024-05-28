@@ -24,8 +24,10 @@ describe( "OCR Result tests", () => {
             },
             results: [
                 {
-                    text: "text",
-                    score: 0.99,
+                    text: [{ content: "text" }],
+                    recognition_score: 0.99,
+                    classification_score: 0.99,
+                    classification_label: 1,
                     box: {
                         top_left: { x: 0, y: 0 },
                         top_right: { x: 10, y: 0 },
@@ -54,8 +56,10 @@ describe( "OCR Result tests", () => {
             },
             results: [
                 {
-                    text: "text",
-                    score: 0.99,
+                    text:[{ content: "text" }],
+                    recognition_score: 0.99,
+                    classification_score: 0.99,
+                    classification_label: 1,
                     box: {
                         top_left: { x: 0, y: 0 },
                         top_right: { x: 10, y: 0 },

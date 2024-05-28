@@ -11,8 +11,7 @@ export const ROOT_DIR = isDev ?
 export const PAGES_DIR = join( ROOT_DIR, '/renderer/out' ); // Only for production
 export const BIN_DIR = join( ROOT_DIR, '../../bin' ); // Only for development
 
-
-export const EXTENSIONS_DIR = isDev ?
+export const BUILTIN_EXTENSIONS_DIR = isDev ?
     join( __dirname, '../../../extensions' ) :
     join( process.resourcesPath, '/extensions' );
 
@@ -20,12 +19,15 @@ export const USER_DATA_DIR = isDev ?
     join( __dirname, '../../../data' ) :
     app.getPath('userData');
 
+export const USER_EXTENSIONS_DIR = isDev ?
+    join( __dirname, '../../../data/extensions' ) :
+    join( app.getPath('userData'), '/extensions' );
 
 console.log({
     ROOT_DIR,
     PAGES_DIR,
     BIN_DIR,
-    EXTENSIONS_DIR,
+    EXTENSIONS_DIR: USER_EXTENSIONS_DIR,
     USER_DATA_DIR
 })
     

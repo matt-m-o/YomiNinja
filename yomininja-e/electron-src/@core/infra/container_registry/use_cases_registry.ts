@@ -20,13 +20,21 @@ import { UpdateOcrTemplateUseCase } from "../../application/use_cases/ocr_templa
 import { GetOcrTemplatesUseCase } from "../../application/use_cases/ocr_template/get_ocr_template/get_ocr_templates.use_case";
 import { DeleteOcrTemplateUseCase } from "../../application/use_cases/ocr_template/delete_ocr_template/delete_ocr_template.use_case";
 import { ChangeActiveOcrTemplateUseCase } from "../../application/use_cases/change_active_ocr_template/change_active_ocr_template.use_case";
+import { OcrEngineSettingsU } from "../types/entity_instance.types";
+import { CreateSettingsPresetUseCaseInstance, GetSupportedLanguagesUseCaseInstance, RecognizeImageUseCaseInstance, UpdateSettingsPresetUseCaseInstance } from "../types/use_case_instance.types";
+import { ChangeSelectedOcrEngineUseCase } from "../../application/use_cases/change_selected_ocr_engine/change_selected_ocr_engine.use_case";
+import { CreateBrowserExtensionUseCase } from "../../application/use_cases/browser_extension/create_browser_extension/create_browser_extension.use_case";
+import { UpdateBrowserExtensionUseCase } from "../../application/use_cases/browser_extension/update_browser_extension/update_browser_extension.use_case";
+import { GetBrowserExtensionsUseCase } from "../../application/use_cases/browser_extension/get_browser_extensions/get_browser_extensions.use_case";
 
 
-container_registry.bind( Registry.RecognizeImageUseCase )
+container_registry.bind( Registry.RecognizeImageUseCaseInstance )
     .toDynamicValue( (context) => {
-        return new RecognizeImageUseCase(
+        return new RecognizeImageUseCase< OcrEngineSettingsU >(
             [
                 context.container.get( Registry.PpOcrAdapter ),
+                context.container.get( Registry.CloudVisionOcrAdapter ),
+                context.container.get( Registry.GoogleLensOcrAdapter ),
             ],
             context.container.get( Registry.SharpImageProcessingAdapter ),
             context.container.get( Registry.ProfileTypeOrmRepository ),
@@ -34,10 +42,14 @@ container_registry.bind( Registry.RecognizeImageUseCase )
     })
     .inSingletonScope();
 
-container_registry.bind( Registry.GetSupportedLanguagesUseCase )
+container_registry.bind( Registry.GetSupportedLanguagesUseCaseInstance )
     .toDynamicValue( (context) => {
-        return new GetSupportedLanguagesUseCase(
-            [ context.container.get( Registry.PpOcrAdapter ) ],
+        return new GetSupportedLanguagesUseCase< OcrEngineSettingsU >(
+            [ 
+                context.container.get( Registry.PpOcrAdapter ),
+                context.container.get( Registry.CloudVisionOcrAdapter ),
+                context.container.get( Registry.GoogleLensOcrAdapter ),
+            ],
             context.container.get( Registry.LanguageTypeOrmRepository ),
         );
     })
@@ -52,11 +64,15 @@ container_registry.bind( Registry.GetActiveSettingsPresetUseCase )
     })
     .inSingletonScope();
 
-container_registry.bind( Registry.UpdateSettingsPresetUseCase )
+container_registry.bind( Registry.UpdateSettingsPresetUseCaseInstance )
     .toDynamicValue( (context) => {
-        return new UpdateSettingsPresetUseCase(
+        return new UpdateSettingsPresetUseCase< OcrEngineSettingsU >(
             context.container.get( Registry.SettingsPresetTypeOrmRepository ),
-            context.container.get( Registry.PpOcrAdapter ),
+            [
+                context.container.get( Registry.PpOcrAdapter ),
+                context.container.get( Registry.CloudVisionOcrAdapter ),
+                context.container.get( Registry.GoogleLensOcrAdapter ),
+            ],
         );
     })
     .inSingletonScope();
@@ -169,15 +185,17 @@ container_registry.bind( Registry.DeleteAllDictionariesUseCase )
         })
     });
 
-container_registry.bind( Registry.CreateSettingsPresetUseCase )
+container_registry.bind( Registry.CreateSettingsPresetUseCaseInstance )
     .toDynamicValue( (context) => {
-        return new CreateSettingsPresetUseCase({            
+        return new CreateSettingsPresetUseCase< OcrEngineSettingsU >({            
             settingsPresetRepo: context.container.get(
                 Registry.SettingsPresetTypeOrmRepository
             ),
-            ocrAdapter: context.container.get(
-                Registry.PpOcrAdapter
-            ),
+            ocrAdapters: [
+                context.container.get( Registry.PpOcrAdapter ),
+                context.container.get( Registry.CloudVisionOcrAdapter ),
+                context.container.get( Registry.GoogleLensOcrAdapter ),
+            ]
         })
     });
 
@@ -235,21 +253,59 @@ container_registry.bind( Registry.ChangeActiveOcrTemplateUseCase )
         });
     });
 
+container_registry.bind( Registry.ChangeSelectedOcrEngineUseCase )
+    .toDynamicValue( (context) => {
+        return new ChangeSelectedOcrEngineUseCase({
+            profilesRepo: context.container.get(
+                Registry.ProfileTypeOrmRepository
+            ),
+        });
+    });
 
-export function get_RecognizeImageUseCase(): RecognizeImageUseCase {
-    return container_registry.get< RecognizeImageUseCase >( Registry.RecognizeImageUseCase )
+container_registry.bind( Registry.CreateBrowserExtensionUseCase )
+    .toDynamicValue( (context) => {
+        return new CreateBrowserExtensionUseCase({
+            extensionsRepo: context.container.get(
+                Registry.BrowserExtensionTypeOrmRepository
+            ),
+        });
+    });
+
+container_registry.bind( Registry.UpdateBrowserExtensionUseCase )
+    .toDynamicValue( (context) => {
+        return new UpdateBrowserExtensionUseCase({
+            extensionsRepo: context.container.get(
+                Registry.BrowserExtensionTypeOrmRepository
+            ),
+        });
+    });
+
+container_registry.bind( Registry.GetBrowserExtensionsUseCase )
+    .toDynamicValue( (context) => {
+        return new GetBrowserExtensionsUseCase({
+            extensionsRepo: context.container.get(
+                Registry.BrowserExtensionTypeOrmRepository
+            ),
+        });
+    });
+
+
+
+
+export function get_RecognizeImageUseCaseInstance(): RecognizeImageUseCaseInstance {
+    return container_registry.get< RecognizeImageUseCaseInstance >( Registry.RecognizeImageUseCaseInstance )
 }
 
-export function get_GetSupportedLanguagesUseCase(): GetSupportedLanguagesUseCase {    
-    return container_registry.get< GetSupportedLanguagesUseCase >( Registry.GetSupportedLanguagesUseCase );
+export function get_GetSupportedLanguagesUseCaseInstance(): GetSupportedLanguagesUseCaseInstance {    
+    return container_registry.get< GetSupportedLanguagesUseCaseInstance >( Registry.GetSupportedLanguagesUseCaseInstance );
 }
 
 export function get_GetActiveSettingsPresetUseCase(): GetActiveSettingsPresetUseCase {    
     return container_registry.get< GetActiveSettingsPresetUseCase >( Registry.GetActiveSettingsPresetUseCase );
 }
 
-export function get_UpdateSettingsPresetUseCase(): UpdateSettingsPresetUseCase {    
-    return container_registry.get< UpdateSettingsPresetUseCase >( Registry.UpdateSettingsPresetUseCase );
+export function get_UpdateSettingsPresetUseCaseInstance(): UpdateSettingsPresetUseCaseInstance {    
+    return container_registry.get< UpdateSettingsPresetUseCaseInstance >( Registry.UpdateSettingsPresetUseCaseInstance );
 }
 
 export function get_CheckForAppUpdatesUseCase(): CheckForAppUpdatesUseCase {    
@@ -291,8 +347,8 @@ export function get_DeleteAllDictionariesUseCase(): DeleteAllDictionariesUseCase
 }
 
 
-export function get_CreateSettingsPresetUseCase(): CreateSettingsPresetUseCase {    
-    return container_registry.get< CreateSettingsPresetUseCase >( Registry.CreateSettingsPresetUseCase );
+export function get_CreateSettingsPresetUseCaseInstance(): CreateSettingsPresetUseCaseInstance {    
+    return container_registry.get< CreateSettingsPresetUseCaseInstance >( Registry.CreateSettingsPresetUseCaseInstance );
 }
 
 
@@ -314,4 +370,20 @@ export function get_DeleteOcrTemplateUseCase(): DeleteOcrTemplateUseCase {
 
 export function get_ChangeActiveOcrTemplateUseCase(): ChangeActiveOcrTemplateUseCase {    
     return container_registry.get< ChangeActiveOcrTemplateUseCase >( Registry.ChangeActiveOcrTemplateUseCase );
+}
+
+export function get_ChangeSelectedOcrEngineUseCase(): ChangeSelectedOcrEngineUseCase {    
+    return container_registry.get< ChangeSelectedOcrEngineUseCase >( Registry.ChangeSelectedOcrEngineUseCase );
+}
+
+export function get_CreateBrowserExtensionUseCase(): CreateBrowserExtensionUseCase {    
+    return container_registry.get< CreateBrowserExtensionUseCase >( Registry.CreateBrowserExtensionUseCase );
+}
+
+export function get_UpdateBrowserExtensionUseCase(): UpdateBrowserExtensionUseCase {    
+    return container_registry.get< UpdateBrowserExtensionUseCase >( Registry.UpdateBrowserExtensionUseCase );
+}
+
+export function get_GetBrowserExtensionsUseCase(): GetBrowserExtensionsUseCase {    
+    return container_registry.get< GetBrowserExtensionsUseCase >( Registry.GetBrowserExtensionsUseCase );
 }
