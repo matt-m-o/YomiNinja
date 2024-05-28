@@ -155,9 +155,8 @@ class Service( service_grpc.OCRServiceServicer ):
         return Image.open(buffer)
 
 
-def serve():
+def serve( port: str = '23456' ):
 
-    port = "23456"
     server = grpc.server( futures.ThreadPoolExecutor( max_workers=10 ) )
     servicer = Service( server )
     service_grpc.add_OCRServiceServicer_to_server( servicer, server )
@@ -179,4 +178,6 @@ def serve():
 
 if __name__ == "__main__":
     logging.basicConfig()
-    serve()
+
+    port = sys.argv[1]
+    serve( port )
