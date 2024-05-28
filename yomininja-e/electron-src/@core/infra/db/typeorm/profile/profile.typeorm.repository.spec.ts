@@ -12,6 +12,8 @@ import { LanguageTypeOrmSchema } from '../language/language.schema';
 import { OcrTemplate } from '../../../../domain/ocr_template/ocr_template';
 import { OcrTemplateTypeOrmSchema } from '../ocr_template/ocr_template.schema';
 import { OcrTargetRegionTypeOrmSchema } from '../ocr_template/ocr_target_region/ocr_target_region.schema';
+import { getDefaultSettingsPresetProps } from '../../../../domain/settings_preset/default_settings_preset_props';
+import { ppOcrAdapterName } from '../../../ocr/ppocr.adapter/ppocr_settings';
 
 
 describe( "Profile TypeOrm Repository tests", () => {
@@ -49,7 +51,7 @@ describe( "Profile TypeOrm Repository tests", () => {
 
         await dataSource.initialize();
 
-        settingsPreset = SettingsPreset.create();
+        settingsPreset = SettingsPreset.create( getDefaultSettingsPresetProps() );
         await dataSource.getRepository( SettingsPreset ).insert( settingsPreset );
         
         languageJa = Language.create({ name: 'japanese', two_letter_code: 'ja' });
@@ -79,7 +81,8 @@ describe( "Profile TypeOrm Repository tests", () => {
 
         const profile = Profile.create({
             active_settings_preset: settingsPreset,
-            active_ocr_language: languageJa
+            active_ocr_language: languageJa,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
 
         await repo.insert( profile );
@@ -101,6 +104,7 @@ describe( "Profile TypeOrm Repository tests", () => {
             active_settings_preset: settingsPreset,
             active_ocr_language: languageJa,
             active_ocr_template: undefined,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
         await ormRepo.save( profile );
 
@@ -123,12 +127,14 @@ describe( "Profile TypeOrm Repository tests", () => {
 
         const defaultProfile = Profile.create({
             active_settings_preset: settingsPreset,
-            active_ocr_language: languageJa
+            active_ocr_language: languageJa,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
         const customProfile = Profile.create({
             name: 'custom',
             active_settings_preset: settingsPreset,
-            active_ocr_language: languageEn
+            active_ocr_language: languageEn,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
         await ormRepo.save([
             defaultProfile,
@@ -148,12 +154,14 @@ describe( "Profile TypeOrm Repository tests", () => {
 
         const defaultProfile = Profile.create({
             active_settings_preset: settingsPreset,
-            active_ocr_language: languageJa
+            active_ocr_language: languageJa,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
         const customProfile = Profile.create({
             name: 'custom',
             active_settings_preset: settingsPreset,
-            active_ocr_language: languageEn
+            active_ocr_language: languageEn,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
         await ormRepo.save([
             defaultProfile,
@@ -171,12 +179,14 @@ describe( "Profile TypeOrm Repository tests", () => {
 
         const defaultProfile = Profile.create({
             active_settings_preset: settingsPreset,
-            active_ocr_language: languageJa
+            active_ocr_language: languageJa,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
         const customProfile = Profile.create({
             name: 'custom',
             active_settings_preset: settingsPreset,
-            active_ocr_language: languageEn
+            active_ocr_language: languageEn,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
         await ormRepo.save([
             defaultProfile,

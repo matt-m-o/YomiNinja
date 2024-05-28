@@ -1,5 +1,6 @@
 import { Language } from "../../../domain/language/language";
 import { Profile } from "../../../domain/profile/profile";
+import { getDefaultSettingsPresetProps } from "../../../domain/settings_preset/default_settings_preset_props";
 import { SettingsPreset } from "../../../domain/settings_preset/settings_preset";
 import { SettingsPresetInMemoryRepository } from "../../../infra/db/in_memory/settings_preset/settings_preset.in_memory.repository";
 import { LanguageTypeOrmSchema } from "../../../infra/db/typeorm/language/language.schema";
@@ -9,6 +10,7 @@ import { ProfileTypeOrmSchema } from "../../../infra/db/typeorm/profile/profile.
 import ProfileTypeOrmRepository from "../../../infra/db/typeorm/profile/profile.typeorm.repository";
 import { SettingsPresetTypeOrmSchema } from "../../../infra/db/typeorm/settings_preset/settings_preset.schema";
 import SettingsPresetTypeOrmRepository from "../../../infra/db/typeorm/settings_preset/settings_preset.typeorm.repository";
+import { ppOcrAdapterName } from "../../../infra/ocr/ppocr.adapter/ppocr_settings";
 import { GetActiveSettingsPresetUseCase, GetActiveSettingsPreset_Input } from "./get_active_settings_preset.use_case";
 import { DataSource } from 'typeorm';
 
@@ -45,7 +47,7 @@ describe("GetActiveSettingsPresetUseCase tests", () => {
             profileRepo
         );
             
-        defaultPreset = SettingsPreset.create();
+        defaultPreset = SettingsPreset.create( getDefaultSettingsPresetProps() );
         await dataSource.getRepository( SettingsPreset ).insert( defaultPreset );
 
         const language = Language.create({ name: 'japanese', two_letter_code: 'ja' });
@@ -54,6 +56,7 @@ describe("GetActiveSettingsPresetUseCase tests", () => {
         profile = Profile.create({
             active_ocr_language: language,
             active_settings_preset: defaultPreset,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
         await dataSource.getRepository( Profile ).insert( profile );
     });

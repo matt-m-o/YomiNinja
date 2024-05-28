@@ -1,11 +1,12 @@
 import { OcrResult, OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
 import { OcrAdapter, OcrRecognitionInput } from "../../adapters/ocr.adapter";
-import { FakeOcrTestAdapter } from "../../../infra/test/fake_ocr.adapter/fake_ocr.adapter";
+import { FakeOcrEngineSettings, FakeOcrTestAdapter } from "../../../infra/test/fake_ocr.adapter/fake_ocr.adapter";
 import { GetSupportedLanguagesUseCase } from "./get_supported_languages.use_case";
 import { DataSource } from "typeorm";
 import { LanguageTypeOrmSchema } from "../../../infra/db/typeorm/language/language.schema";
 import { Language } from "../../../domain/language/language";
 import LanguageTypeOrmRepository from "../../../infra/db/typeorm/language/language.typeorm.repository";
+import { OcrEngineSettingsU } from "../../../infra/types/entity_instance.types";
 
 
 
@@ -19,8 +20,10 @@ describe("Get Supported Languages Use Case tests", () => {
         },
         results: [
             {
-                text: "recognized_text",
-                score: 0.99,
+                text:[{ content: "recognized_text" }],
+                recognition_score: 0.99,
+                classification_score: 0.99,
+                classification_label: 1,
                 box: {
                     top_left: { x: 0, y: 0 },
                     top_right: { x: 10, y: 0 },
@@ -36,7 +39,7 @@ describe("Get Supported Languages Use Case tests", () => {
 
     let ocrTestAdapter: FakeOcrTestAdapter;
     let languagesRepo: LanguageTypeOrmRepository;
-    let getSupportedLanguages: GetSupportedLanguagesUseCase;
+    let getSupportedLanguages: GetSupportedLanguagesUseCase< FakeOcrEngineSettings >;
 
     beforeEach( async () => {
 
@@ -62,7 +65,7 @@ describe("Get Supported Languages Use Case tests", () => {
 
         ocrTestAdapter = new FakeOcrTestAdapter( ocrTestAdapterResultProps, ocrTestAdapterSupportedLanguages );
         ocrTestAdapter.initialize();
-        getSupportedLanguages = new GetSupportedLanguagesUseCase( [ ocrTestAdapter ], languagesRepo );        
+        getSupportedLanguages = new GetSupportedLanguagesUseCase< FakeOcrEngineSettings >( [ ocrTestAdapter ], languagesRepo );        
     });
 
     it("should check if the use case has an adapter", () => {

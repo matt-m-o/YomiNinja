@@ -11,8 +11,10 @@ describe("OCR Test Adapter tests", () => {
         },
         results: [
             {
-                text: "recognized_text",
-                score: 0.99,
+                text:[{ content: "recognized_text" }],
+                recognition_score: 0.99,
+                classification_score: 0.99,
+                classification_label: 1,
                 box: {
                     top_left: { x: 0, y: 0 },
                     top_right: { x: 10, y: 0 },
@@ -49,11 +51,15 @@ describe("OCR Test Adapter tests", () => {
             languageCode: "en",
         });
 
+        const regionResults = result?.ocr_regions[0].results;
+        expect( regionResults ).toBeDefined();
+
+        if ( !regionResults ) return;
         
         expect( result?.context_resolution ).toStrictEqual( ocrTestAdapterBaseProps.context_resolution );
-        expect( result?.results[0].score ).toStrictEqual( ocrTestAdapterBaseProps.results?.[0].score );
-        expect( result?.results[0].box ).toStrictEqual( ocrTestAdapterBaseProps.results?.[0].box );
-        expect( result?.results[0].text ).toStrictEqual( testText );        
+        expect( regionResults[0].recognition_score ).toStrictEqual( ocrTestAdapterBaseProps.results?.[0].recognition_score );
+        expect( regionResults[0].box ).toStrictEqual( ocrTestAdapterBaseProps.results?.[0].box );
+        expect( regionResults[0].text[0].content ).toStrictEqual( testText );        
     });
     
     it("should get adapter supported languages", async () => {

@@ -1,16 +1,40 @@
 import "reflect-metadata";
 import { Registry, container_registry } from './container_registry';
-import { PpOcrAdapter } from '../ppocr.adapter/ppocr.adapter';
+import { PpOcrAdapter } from '../ocr/ppocr.adapter/ppocr.adapter';
 import { SharpImageProcessingAdapter } from "../sharp_image_process.adapter/sharp_image_process.adapter";
 import { GithubAppVersionProviderAdapter } from "../github_app_version_provider.adapter/github_app_version_provider.adapter";
 import { FakeAppVersionProviderAdapter } from "../test/fake_app_version_provider.adapter/fake_app_version_provider.adapter";
 import { KuromojiTermExtractor } from "../kuromoji_term_extractor.adapter/kuromoji_term_extractor.adapter";
 import { JapaneseHelper } from "../japanese_helper.adapter/japanese_helper.adapter";
+import { CloudVisionOcrAdapter } from "../ocr/cloud_vision_ocr.adapter/cloud_vision_ocr.adapter";
+import { CloudVisionRestAPI } from "../ocr/cloud_vision_ocr.adapter/cloud_vision_rest_api";
+import { CloudVisionNodeAPI } from "../ocr/cloud_vision_ocr.adapter/cloud_vision_node_api";
+import { GoogleLensOcrAdapter } from "../ocr/google_lens_ocr.adapter/google_lens_ocr.adapter";
 
 
 container_registry.bind( Registry.PpOcrAdapter ).toDynamicValue( (context) => {
     return new PpOcrAdapter();
 }).inSingletonScope();
+
+container_registry.bind( Registry.CloudVisionOcrAdapter ).toDynamicValue( (context) => {
+
+    const cloudVisionRestApi = new CloudVisionRestAPI({
+        proxyUrl: 'https://cxl-services.appspot.com/proxy' // Google's proxy
+    });
+
+    const cloudVisionNodeApi = new CloudVisionNodeAPI();
+
+    return new CloudVisionOcrAdapter(
+        cloudVisionNodeApi,
+        cloudVisionRestApi
+    );
+    
+}).inSingletonScope();
+
+container_registry.bind( Registry.GoogleLensOcrAdapter ).toDynamicValue( (context) => {
+    return new GoogleLensOcrAdapter();
+}).inSingletonScope();
+
 
 container_registry.bind( Registry.SharpImageProcessingAdapter ).toDynamicValue( (context) => {
     return new SharpImageProcessingAdapter();
@@ -36,6 +60,15 @@ container_registry.bind( Registry.JapaneseHelper ).toDynamicValue( (context) => 
 export function get_PpOcrAdapter(): PpOcrAdapter {
     return container_registry.get< PpOcrAdapter >( Registry.PpOcrAdapter )
 }
+
+export function get_CloudVisionOcrAdapter(): CloudVisionOcrAdapter {
+    return container_registry.get< CloudVisionOcrAdapter >( Registry.CloudVisionOcrAdapter )
+}
+
+export function get_GoogleLensOcrAdapter(): GoogleLensOcrAdapter {
+    return container_registry.get< GoogleLensOcrAdapter >( Registry.GoogleLensOcrAdapter )
+}
+
 
 export function get_SharpImageProcessingAdapter(): SharpImageProcessingAdapter {
     return container_registry.get< SharpImageProcessingAdapter >( Registry.SharpImageProcessingAdapter )

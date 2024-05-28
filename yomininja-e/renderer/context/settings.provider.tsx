@@ -1,16 +1,24 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
-import { DictionarySettings, OcrEngineSettings, OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
-import { debounce } from "@mui/material";
+import { DictionarySettings, OcrEngineSettings, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
+import { Alert, Backdrop, CircularProgress, Snackbar, debounce } from "@mui/material";
+import { OcrEngineSettingsU } from "../../electron-src/@core/infra/types/entity_instance.types";
+import { OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations } from "../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 
 export type SettingsContextType = {
     activeSettingsPreset: SettingsPresetJson;
     allSettingsPresets: SettingsPresetJson[];
     updateActivePreset: ( input: Partial<SettingsPresetJson> ) => void;
-    updateActivePresetHotkeys: ( newHotkeys: Partial<OverlayHotkeys> ) => void;
+    updateActivePresetHotkeys: ( newHotkeys: Partial< OverlayHotkeys > ) => void;
     updateActivePresetVisuals: ( input: Partial< OverlayVisualCustomizations > ) => void;
     updateActivePresetBehavior: ( input: Partial< OverlayBehavior > ) => void; 
-    updateActivePresetOcrEngine: ( input: Partial< OcrEngineSettings > ) => void; 
-    updateActivePresetDictionary: ( input: Partial< DictionarySettings > ) => void; 
+    updateActivePresetOcrEngine: ( input: Partial< OcrEngineSettingsU > ) => void; 
+    updateActivePresetDictionary: ( input: Partial< DictionarySettings > ) => void;
+    triggerOcrEngineRestart: ( engineName: string ) => void;
+    loadCloudVisionCredentialsFile: () => Promise< void >;
+    openCloudVisionPage: () => void;
+    openGooglePage: () => void;
+    removeGoogleCookies: () => void;
+    hasGoogleCookies: boolean;
 };
 
 
@@ -21,6 +29,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     
     const [ activeSettingsPreset, setActiveSettingsPreset ] = useState< SettingsPresetJson | null >( null );
     const [ allSettingsPresets, setAllSettingsPresets ] = useState< SettingsPresetJson[] >( [] );
+    const [ hasGoogleCookies, setHasGoogleCookies ] = useState(false);
 
     const updateActivePresetIPC = debounce( async ( updatedPreset: SettingsPresetJson ) => {
         const { restartOcrAdapter } = await global.ipcRenderer.invoke( 'settings_preset:update', updatedPreset );
@@ -38,12 +47,20 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         updateActivePreset( activeSettingsPreset );
     }
 
-    function updateActivePresetOcrEngine( newOcrEngine: Partial< OcrEngineSettings > ) {
+    function updateActivePresetOcrEngine( newEngineSettings: Partial< OcrEngineSettingsU > ) {
 
-        activeSettingsPreset.ocr_engine = {
-            ...activeSettingsPreset?.ocr_engine,
-            ...newOcrEngine,
-        };
+        console.log({ newEngineSettings })
+
+        activeSettingsPreset.ocr_engines = activeSettingsPreset?.ocr_engines.map( item => {
+
+
+            if ( newEngineSettings.ocr_adapter_name === item.ocr_adapter_name )
+                return { ...item, ...newEngineSettings };
+
+            return item;
+        });
+
+        // console.log( activeSettingsPreset );
         
         updateActivePreset( activeSettingsPreset );
     }
@@ -103,6 +120,11 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
                 ...activeSettingsPreset.overlay.visuals.mouse,
                 ...newVisuals.mouse,
             },
+
+            indicators: {
+                ...activeSettingsPreset.overlay.visuals.indicators,
+                ...newVisuals.indicators,
+            },
         };
 
         updateActivePreset( activeSettingsPreset );
@@ -130,6 +152,50 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         setActiveSettingsPreset( data );
     }
 
+    async function loadCloudVisionCredentialsFile() {
+        await global.ipcRenderer.invoke( 'settings_preset:load_cloud_vision_cred_file' );
+
+        setTimeout( getActiveSettingsPreset, 1000 );
+    }
+
+    async function openCloudVisionPage() {
+        global.ipcRenderer.invoke( 'settings_preset:open_cloud_vision_page' );
+    }
+
+    async function openGooglePage() {
+        global.ipcRenderer.invoke( 'settings_preset:open_google_page' );
+    }
+
+    async function getGoogleCookies(): Promise< Electron.Cookie[] > {
+
+        const cookies: Electron.Cookie[] = await global.ipcRenderer.invoke( 'settings_preset:get_google_cookies' );
+
+        return cookies;
+    }
+
+    async function checkGoogleCookies() {
+        const hasCookies = ( await getGoogleCookies() ).length > 0 ;
+        setHasGoogleCookies( hasCookies );
+    }
+
+    async function removeGoogleCookies() {
+
+        await global.ipcRenderer.invoke(
+            'settings_preset:remove_google_cookies'
+        );
+        
+        setHasGoogleCookies( false );
+    }
+
+    async function getActiveSettingsPreset(): Promise< SettingsPresetJson > {
+
+        const settings = await global.ipcRenderer.invoke( 'settings_preset:get_active' ) as SettingsPresetJson;
+
+        activeSettingsPresetHandler( settings );
+
+        return settings;
+    }
+
     
     useEffect( () => {
 
@@ -137,13 +203,58 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
             activeSettingsPresetHandler( data );
         });
 
-        global.ipcRenderer.invoke( 'settings_preset:get_active' )
-            .then( ( result: SettingsPresetJson ) => {
-                activeSettingsPresetHandler(result);
-            });
+        global.ipcRenderer.on( 'settings_preset:google_window_closed', ( event ) => {
+            checkGoogleCookies();
+        });
+
+        getActiveSettingsPreset();
+        checkGoogleCookies();
 
         return () => {
             global.ipcRenderer.removeAllListeners( 'settings_preset:active_data' );
+            global.ipcRenderer.removeAllListeners( 'settings_preset:google_window_closed' );
+        }
+    }, [ global.ipcRenderer ] );
+
+    const [ openBackdrop, setOpenBackdrop ] = useState(false);
+    const backdrop = (
+        <Backdrop
+            sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+            open={openBackdrop}            
+        >
+            <CircularProgress color="inherit" />
+        </Backdrop>
+    )
+    
+    const [ openSnackbar, setOpenSnackbar ] = useState(false);
+    const snackbar = (
+        <Snackbar open={openSnackbar} autoHideDuration={6000}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            onClose={ () => setOpenSnackbar(false) }
+            sx={{ minWidth: '300px' }}
+        >
+            <Alert severity="info" sx={{ width: '100%' }}
+                onClose={ () => setOpenSnackbar(false) }
+            >
+                OCR Engine restarted!
+            </Alert>
+        </Snackbar>
+    )
+
+    function triggerOcrEngineRestart( engineName: string ) {
+        global.ipcRenderer.invoke( 'ocr_recognition:restart_engine', engineName );
+        setOpenBackdrop( true );
+    }
+
+    useEffect( () => {
+
+        global.ipcRenderer.on( 'ocr_recognition:ocr_engine_restarted', ( ) => {
+            setOpenBackdrop( false );
+            setOpenSnackbar( true );
+        });
+        
+        return () => {
+            global.ipcRenderer.removeAllListeners( 'ocr_recognition:ocr_engine_restarted' );            
         }
     }, [ global.ipcRenderer ] );
     
@@ -158,10 +269,21 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
                 updateActivePresetVisuals,
                 updateActivePresetBehavior,
                 updateActivePresetOcrEngine,
-                updateActivePresetDictionary
+                updateActivePresetDictionary,
+                triggerOcrEngineRestart,
+                loadCloudVisionCredentialsFile,
+                openCloudVisionPage,
+                openGooglePage,
+                removeGoogleCookies,
+                hasGoogleCookies
             }}
         >
+
+            {backdrop}
+            {snackbar}
+
             {children}
+            
         </SettingsContext.Provider>
     );
 }

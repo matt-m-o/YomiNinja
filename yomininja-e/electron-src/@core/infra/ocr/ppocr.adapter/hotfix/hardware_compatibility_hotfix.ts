@@ -1,12 +1,12 @@
-import { OcrEngineSettings } from "../../../domain/settings_preset/settings_preset";
 import os from 'os';
+import { PpOcrEngineSettings } from "../ppocr_settings";
 
 export type CpuHotfixResult = {
-    ocrEngineSettings: OcrEngineSettings;
+    ocrEngineSettings: PpOcrEngineSettings;
     restartEngine: boolean;
 }
 
-export function applyCpuHotfix( ocrEngineSettings: OcrEngineSettings, cpuModel?: string ): CpuHotfixResult {
+export function applyCpuHotfix( ocrEngineSettings: PpOcrEngineSettings, cpuModel?: string ): CpuHotfixResult {
 
     const cpu = os.cpus()[0];
     // console.log({ cpu });

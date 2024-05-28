@@ -6,10 +6,15 @@ import { get_DictionaryDataSource, get_MainDataSource } from "./container_regist
 import { get_LanguageRepository, get_ProfileRepository, get_SettingsPresetRepository } from "./container_registry/repositories_registry";
 import os from 'os';
 import LanguageTypeOrmRepository from './db/typeorm/language/language.typeorm.repository';
-import { applyCpuHotfix } from './ppocr.adapter/hotfix/hardware_compatibility_hotfix';
-import { get_CreateSettingsPresetUseCase, get_GetActiveSettingsPresetUseCase, get_UpdateSettingsPresetUseCase } from './container_registry/use_cases_registry';
+import { applyCpuHotfix } from './ocr/ppocr.adapter/hotfix/hardware_compatibility_hotfix';
+import { get_CreateSettingsPresetUseCaseInstance, get_GetActiveSettingsPresetUseCase, get_UpdateSettingsPresetUseCaseInstance } from './container_registry/use_cases_registry';
 import { get_PpOcrAdapter } from './container_registry/adapters_registry';
 import { WindowManager } from '../../../gyp_modules/window_management/window_manager';
+import { ppOcrAdapterName } from './ocr/ppocr.adapter/ppocr_settings';
+import { getDefaultSettingsPresetProps } from '../domain/settings_preset/default_settings_preset_props';
+import semver from 'semver';
+import { cloudVisionOcrAdapterName, getCloudVisionDefaultSettings } from './ocr/cloud_vision_ocr.adapter/cloud_vision_ocr_settings';
+import { getGoogleLensDefaultSettings } from './ocr/google_lens_ocr.adapter/google_lens_ocr_settings';
 
 
 export let activeProfile: Profile;
@@ -67,13 +72,42 @@ export async function initializeApp() {
         if ( !defaultSettingsPreset ) {
 
             // Creating default settings preset
-            await get_CreateSettingsPresetUseCase().execute();            
+            await get_CreateSettingsPresetUseCaseInstance().execute();
 
             defaultSettingsPreset = await settingsPresetRepo.findOne({ name: SettingsPreset.default_name }) as SettingsPreset ;
         }
         else {
-            await get_UpdateSettingsPresetUseCase().execute({
-                ...defaultSettingsPreset.toJson(),
+
+            const defaultSettingsProps = getDefaultSettingsPresetProps();
+
+            let settingsPresetUpdateData = defaultSettingsPreset.toJson();
+
+            // const settingsAreTooOld = !semver.gte( settingsPresetUpdateData.version, defaultSettingsProps.version );
+
+            if (
+                !settingsPresetUpdateData?.version ||
+                settingsPresetUpdateData.version !== defaultSettingsProps.version
+            ) {
+                settingsPresetUpdateData = {
+                    ...defaultSettingsProps,
+                    id: settingsPresetUpdateData.id,
+                };
+            }
+
+            /// Migrating from v0.6 to v0.6.1 -----------------------------------
+            const cloudVisionSettings = settingsPresetUpdateData.ocr_engines.find(
+                item => item.ocr_adapter_name === cloudVisionOcrAdapterName
+            );
+
+            const defaultGoogleLensSettings = getGoogleLensDefaultSettings();
+
+            if ( cloudVisionSettings?.hotkey === defaultGoogleLensSettings.hotkey ) {
+                cloudVisionSettings.hotkey = getCloudVisionDefaultSettings().hotkey;
+            }
+            /// ------------------------------------------------------------------
+
+            await get_UpdateSettingsPresetUseCaseInstance().execute({
+                ...settingsPresetUpdateData,
                 options: {
                     restartOcrEngine: true
                 }
@@ -99,8 +133,14 @@ export async function initializeApp() {
             defaultProfile = Profile.create({
                 active_ocr_language: defaultLanguage,
                 active_settings_preset: defaultSettingsPreset,
+                selected_ocr_adapter_name: ppOcrAdapterName
             });
             await profileRepo.insert(defaultProfile);
+        }
+        
+        if ( !defaultProfile?.selected_ocr_adapter_name ) {
+            defaultProfile.selected_ocr_adapter_name = ppOcrAdapterName;
+            await profileRepo.update( defaultProfile );
         }
 
         activeProfile = defaultProfile;

@@ -13,6 +13,7 @@ import { OcrTargetRegionTypeOrmSchema } from "../../../infra/db/typeorm/ocr_temp
 import { OcrTemplate } from "../../../domain/ocr_template/ocr_template";
 import OcrTemplateTypeOrmRepository from "../../../infra/db/typeorm/ocr_template/ocr_template.typeorm.repository";
 import { OcrTargetRegion } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region";
+import { ppOcrAdapterName } from "../../../infra/ocr/ppocr.adapter/ppocr_settings";
 
 describe("ChangeActiveOcrTemplateUseCase tests", () => {
         
@@ -68,6 +69,7 @@ describe("ChangeActiveOcrTemplateUseCase tests", () => {
         initialProfile = Profile.create({
             active_ocr_language: languageJa,
             active_settings_preset: settingsPreset,
+            selected_ocr_adapter_name: ppOcrAdapterName
         });
 
         await profilesRepo.insert( initialProfile );

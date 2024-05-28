@@ -3,12 +3,15 @@ import { SettingsPresetRepository } from '../../../../domain/settings_preset/set
 import { SettingsPresetTypeOrmSchema } from './settings_preset.schema';
 import { SettingsPreset } from '../../../../domain/settings_preset/settings_preset';
 import SettingsPresetTypeOrmRepository from './settings_preset.typeorm.repository';
+import { getDefaultSettingsPresetProps } from '../../../../domain/settings_preset/default_settings_preset_props';
 
 describe( "Settings Preset TypeOrm Repository tests", () => {
     
     let dataSource: DataSource;
     let ormRepo: Repository< SettingsPreset >;
     let repo: SettingsPresetRepository;
+
+    const defaultSettingsProps = getDefaultSettingsPresetProps();
 
     beforeEach( async () => {
         
@@ -31,7 +34,7 @@ describe( "Settings Preset TypeOrm Repository tests", () => {
 
     it('should insert', async () => {
 
-        const settingsPreset = SettingsPreset.create();
+        const settingsPreset = SettingsPreset.create( defaultSettingsProps );
 
         await repo.insert( settingsPreset );
 
@@ -42,7 +45,7 @@ describe( "Settings Preset TypeOrm Repository tests", () => {
 
     it('should update', async () => {
 
-        const settingsPreset = SettingsPreset.create();
+        const settingsPreset = SettingsPreset.create( defaultSettingsProps );
         await ormRepo.save( settingsPreset );
 
         settingsPreset.name = 'custom name';
@@ -55,8 +58,11 @@ describe( "Settings Preset TypeOrm Repository tests", () => {
 
     it('should find ONE by id and name', async () => {
 
-        const defaultPreset = SettingsPreset.create();
-        const customPreset = SettingsPreset.create({ name: 'custom' });
+        const defaultPreset = SettingsPreset.create( defaultSettingsProps );
+        const customPreset = SettingsPreset.create({
+            ...defaultSettingsProps,
+            name: 'custom'
+        });
         await ormRepo.save([
             defaultPreset,
             customPreset
@@ -71,8 +77,11 @@ describe( "Settings Preset TypeOrm Repository tests", () => {
 
     it('should find ALL', async () => {
 
-        const defaultPreset = SettingsPreset.create();
-        const customPreset = SettingsPreset.create({ name: 'custom' });
+        const defaultPreset = SettingsPreset.create( defaultSettingsProps );
+        const customPreset = SettingsPreset.create({
+            ...defaultSettingsProps,
+            name: 'custom'
+        });
         await ormRepo.save([
             defaultPreset,
             customPreset
@@ -87,8 +96,11 @@ describe( "Settings Preset TypeOrm Repository tests", () => {
 
     it('should delete one', async () => {
 
-        const defaultPreset = SettingsPreset.create();
-        const customPreset = SettingsPreset.create({ name: 'custom' });
+        const defaultPreset = SettingsPreset.create( defaultSettingsProps );
+        const customPreset = SettingsPreset.create({
+            ...defaultSettingsProps,
+            name: 'custom'
+        });
         await ormRepo.save([
             defaultPreset,
             customPreset

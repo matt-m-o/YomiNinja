@@ -9,6 +9,10 @@ import { OcrAdapter } from "../@core/application/adapters/ocr.adapter";
 import { Language } from "../@core/domain/language/language";
 import { CaptureSource, ExternalWindow } from "./common/types";
 import sharp from 'sharp';
+import { GetSupportedLanguagesUseCaseInstance, RecognizeImageUseCaseInstance } from "../@core/infra/types/use_case_instance.types";
+import { PpOcrAdapter } from "../@core/infra/ocr/ppocr.adapter/ppocr.adapter";
+import { OcrEngineSettingsU } from "../@core/infra/types/entity_instance.types";
+import { OcrEngineSettings } from "../@core/domain/settings_preset/settings_preset";
 
 
 export const entireScreenAutoCaptureSource: CaptureSource = {
@@ -18,34 +22,35 @@ export const entireScreenAutoCaptureSource: CaptureSource = {
     type: 'screen',
 };
 
-export class OcrRecognitionService {
+export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = OcrEngineSettings > {
 
-    private recognizeImageUseCase: RecognizeImageUseCase;
-    private getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
+    private recognizeImageUseCase: RecognizeImageUseCaseInstance;
+    private getSupportedLanguagesUseCase: GetSupportedLanguagesUseCaseInstance;
     private getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;    
-    private ocrAdapter: OcrAdapter;    
+    private ocrAdapters: OcrAdapter< TOcrSettings >[];    
 
     constructor(
         input: {
-            recognizeImageUseCase: RecognizeImageUseCase;
-            getSupportedLanguagesUseCase: GetSupportedLanguagesUseCase;
+            recognizeImageUseCase: RecognizeImageUseCaseInstance;
+            getSupportedLanguagesUseCase: GetSupportedLanguagesUseCaseInstance;
             getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;            
-            ocrAdapter: OcrAdapter;
+            ocrAdapters: OcrAdapter< TOcrSettings >[];
         }
     ){
         this.recognizeImageUseCase = input.recognizeImageUseCase;
         this.getSupportedLanguagesUseCase = input.getSupportedLanguagesUseCase;
         this.getActiveSettingsPresetUseCase = input.getActiveSettingsPresetUseCase;
-        this.ocrAdapter = input.ocrAdapter;
+        this.ocrAdapters = input.ocrAdapters;
     }
 
     async recognize( input: {
-        imageBuffer?: Buffer,
-        profileId: string,
+        imageBuffer?: Buffer;
+        profileId: string;
+        engineName?: string;
     }): Promise< OcrResultScalable | null > {
         console.log('ocrRecognitionService.recognize');
 
-        let { imageBuffer, profileId } = input;
+        let { imageBuffer, profileId, engineName } = input;
 
 
         // displayImage( imageBuffer as Buffer );
@@ -61,6 +66,7 @@ export class OcrRecognitionService {
         return await this.recognizeImageUseCase.execute({
             imageBuffer,
             profileId: profileId,
+            ocrAdapterName: engineName
         });
     }
 
@@ -70,16 +76,28 @@ export class OcrRecognitionService {
         });
     }
 
-    restartOcrAdapter( callback:() => void ) {
+    restartOcrAdapter( engineName: string, callback:() => void ) {
 
-        this.ocrAdapter.restart( callback );    
+        const engine = this.ocrAdapters.find( item => item.name === engineName );
+
+        if ( !engine ) return;
+
+        engine.restart( callback );
     }    
 
     async getSupportedLanguages( ): Promise<Language[]> {
 
-        const results = await this.getSupportedLanguagesUseCase.execute();       
+        const results = await this.getSupportedLanguagesUseCase.execute();
 
-        return results.map( result => result.languages ).flat(1);
+        const languages: Map< string, Language > = new Map();
+
+        results.map( result => result.languages )
+            .flat(1)
+            .forEach(
+                language => languages.set( language.name, language )
+            );
+
+        return Array.from( languages.values() );
     }
 
 

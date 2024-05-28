@@ -50,6 +50,20 @@ export class ProfileController {
                 return;
             }
         );
+
+        ipcMain.handle( 'profile:change_selected_ocr_engine',
+            async ( event: IpcMainInvokeEvent, ocrEngineAdapterName: string ) => {
+                
+                if ( !ocrEngineAdapterName ) return;
+                    
+                this.profileService.changeSelectedOcrEngine({
+                    ocrEngineAdapterName,
+                    profileId: getActiveProfile().id
+                });
+
+                return;
+            }
+        );
     }
 
 }

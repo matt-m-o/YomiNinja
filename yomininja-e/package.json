@@ -1,6 +1,6 @@
 {
   "name": "yomininja-e",
-  "version": "0.5.1",
+  "version": "0.6.4",
   "private": true,
   "main": "main/electron-src/index.js",
   "productName": "YomiNinja",
@@ -34,6 +34,7 @@
     "types-workaround": "node ./types/types_workaround.js"
   },
   "dependencies": {
+    "@google-cloud/vision": "^4.0.2",
     "@grpc/grpc-js": "^1.9.3",
     "@grpc/proto-loader": "^0.7.9",
     "axios": "^1.5.1",
@@ -51,6 +52,7 @@
     "node-cache": "^5.1.2",
     "node-stream-zip": "^1.15.0",
     "reflect-metadata": "^0.1.13",
+    "sanitize-filename": "^1.6.3",
     "semver": "^7.5.4",
     "sharp": "^0.32.6",
     "sqlite3": "^5.1.6",
@@ -69,6 +71,7 @@
     "@swc/core": "^1.3.85",
     "@swc/jest": "^0.2.29",
     "@types/bindings": "^1.5.2",
+    "@types/chrome": "^0.0.258",
     "@types/imurmurhash": "^0.1.3",
     "@types/inversify": "^2.0.33",
     "@types/jest": "^29.5.5",
@@ -77,6 +80,7 @@
     "@types/lodash": "^4.14.198",
     "@types/node": "^14.14.6",
     "@types/react": "^18.2.0",
+    "@types/react-color": "^3.0.11",
     "@types/react-dom": "^18.2.0",
     "@types/semver": "^7.5.3",
     "@types/wanakana": "^4.0.5",
@@ -88,6 +92,7 @@
     "jest": "^29.7.0",
     "next": "^13.5.5",
     "react": "^18.2.0",
+    "react-color": "^2.19.3",
     "react-dom": "^18.2.0",
     "react-furi": "^2.0.2",
     "react-moveable": "^0.56.0",
@@ -123,8 +128,9 @@
     },
     "forceCodeSigning": true,
     "nsis": {
-      "oneClick": true,
-      "runAfterFinish": true
+      "oneClick": false,
+      "runAfterFinish": true,
+      "allowToChangeInstallationDirectory": true
     },
     "win": {
       "publisherName": "Matt M.",
@@ -149,7 +155,12 @@
           "filter": "**/*"
         }
       ],
-      "target": [ "deb", "rpm", "pacman" ]
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm",
+        "pacman"
+      ]
     }
   },
   "jest": {
