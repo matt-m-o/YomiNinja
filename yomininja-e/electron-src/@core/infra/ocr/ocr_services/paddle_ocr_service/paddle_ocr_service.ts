@@ -18,6 +18,7 @@ import { PpOcrEngineSettings } from "../../ppocr.adapter/ppocr_settings";
 import { UpdateSettingsResponse__Output } from "../../../../../../grpc/rpc/ocr_service/UpdateSettingsResponse";
 import { DetectRequest } from "../../../../../../grpc/rpc/ocr_service/DetectRequest";
 import { DetectResponse__Output } from "../../../../../../grpc/rpc/ocr_service/DetectResponse";
+import { getNextPortAvailable } from "../../../util/port_check";
 
 export class PaddleOcrService {
     
@@ -137,7 +138,7 @@ export class PaddleOcrService {
         return clientResponse.language_codes;
     }
 
-    startProcess( onInitialized?: ( input?: any ) => void ) {
+    async startProcess( onInitialized?: ( input?: any ) => void ) {
 
         this.handleSettingsPreset();
 
@@ -148,10 +149,12 @@ export class PaddleOcrService {
             : 'start.sh'; // start.sh | ppocr_infer_service_grpc
 
         const executable = join( this.binRoot + `/${executableName}` );
-        
+
+        let port: string | number| undefined = (await getNextPortAvailable( 51_000 )) || 12345;
+
         this.serviceProcess = spawn(
             executable,
-            [ this.settingsPresetsRoot ],
+            [ this.settingsPresetsRoot, 'default', port.toString() ],
             { cwd: this.binRoot }
         );
 
@@ -320,4 +323,6 @@ export class PaddleOcrService {
     handleLanguageTags( tag: string ) {
         
     }
+
+    
 }

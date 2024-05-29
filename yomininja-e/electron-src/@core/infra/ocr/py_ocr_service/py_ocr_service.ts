@@ -15,6 +15,7 @@ import { GetSupportedLanguagesResponse__Output } from "../../../../../grpc/rpc/o
 import { MotionDetectionRequest } from "../../../../../grpc/rpc/ocr_service/MotionDetectionRequest";
 import { MotionDetectionResponse__Output } from "../../../../../grpc/rpc/ocr_service/MotionDetectionResponse";
 import { RecognizeBytesRequest } from "../../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
+import { getNextPortAvailable } from "../../util/port_check";
 
 type OcrEnginesName = 'MangaOCR' | 'AppleVision' | string;
 
@@ -158,7 +159,7 @@ export class PyOcrService {
     }
     
 
-    startProcess( onInitialized?: ( input?: any ) => void ) {
+    async startProcess( onInitialized?: ( input?: any ) => void ) {
 
         const platform = os.platform();
 
@@ -168,10 +169,12 @@ export class PyOcrService {
             executableName = 'py_ocr_service';
 
         const executable = join( this.binRoot + `/${executableName}` );
+
+        let port: string | number| undefined = (await getNextPortAvailable( 52_000 )) || 12346;
         
         this.serviceProcess = spawn(
             executable,
-            [],
+            [ port.toString() ],
             { cwd: this.binRoot }
         );
 
