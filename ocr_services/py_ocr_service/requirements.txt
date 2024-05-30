@@ -6,3 +6,12 @@ pyinstaller
 opencv-python
 
 manga-ocr
+
+# comic-text-detector requirements
+torchvision
+tqdm
+torchsummary
+wandb
+#trdg
+pyclipper
+shapely
