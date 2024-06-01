@@ -13,6 +13,7 @@ isMacOs = sys.platform == 'darwin'
 try:
     from manga_ocr_service.manga_ocr_service import MangaOcrService
 except ImportError:
+    print('MangaOcrService ImportError')
     pass
 
 if isMacOs:
@@ -82,28 +83,35 @@ class Service( service_grpc.OCRServiceServicer ):
     
     def HandleRecognizeRequest( self, image: Image.Image, request: service_pb.RecognizeBase64Request ) -> service_pb.RecognizeDefaultResponse :
 
+        self.processing = True
+
         results: List[Result] = []
 
-        match request.ocr_engine:
-            case 'MangaOCR':
-                results = self.manga_ocr_service.recognize(
-                    np.array( image ),
-                    request.boxes
-                )
+        try:
+            match request.ocr_engine:
+                case 'MangaOCR':
+                    results = self.manga_ocr_service.recognize(
+                        np.array( image ),
+                        request.boxes
+                    )
 
-            case 'AppleVision':
-                results = self.apple_vision_service.recognize(
-                    image,
-                    request.language_code
-                )
-                
-            case _:
-                results = MangaOcrService(self.manga_ocr_service).recognize(
-                    np.array( image ),
-                    request.boxes
-                )
-                print(f'{request.ocr_engine} is not supported')
+                case 'AppleVision':
+                    results = self.apple_vision_service.recognize(
+                        image,
+                        request.language_code
+                    )
+                    
+                case _:
+                    results = MangaOcrService(self.manga_ocr_service).recognize(
+                        np.array( image ),
+                        request.boxes
+                    )
+                    print(f'{request.ocr_engine} is not supported')
 
+        except Exception as error:
+            print(error)
+
+        self.processing = False
 
         return service_pb.RecognizeDefaultResponse(
             context_resolution={
@@ -179,5 +187,8 @@ def serve( port: str = '23456' ):
 if __name__ == "__main__":
     logging.basicConfig()
 
-    port = sys.argv[1]
-    serve( port )
+    server_port = '33456'
+
+    if len(sys.argv) > 1:
+        server_port = sys.argv[1]
+    serve( server_port )
