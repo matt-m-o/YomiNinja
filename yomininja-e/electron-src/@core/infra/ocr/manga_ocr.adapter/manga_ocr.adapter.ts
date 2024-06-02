@@ -17,6 +17,8 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
     private prevResult: OcrResultScalable | null = null;
     private prevResultTime: Date = new Date();
 
+    private engineSettings: MangaOcrEngineSettings;
+
     constructor() {}
 
     initialize() {
@@ -53,7 +55,7 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
             result = await mangaOcrPyService.recognize({
                 id: this.idCounter.toString() + this.name,
                 image: input.imageBuffer,
-                boxes: [],
+                text_detector: this.engineSettings.text_detector
             });
             
         } catch (error) {
@@ -88,6 +90,11 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
         settingsUpdate: MangaOcrEngineSettings,
         oldSettings?: MangaOcrEngineSettings | undefined
     ): Promise< UpdateOcrAdapterSettingsOutput <MangaOcrEngineSettings> > {
+
+        this.engineSettings = settingsUpdate;
+
+        this.resetCache();
+
         return {
             settings: settingsUpdate,
             restart: false
@@ -121,5 +128,9 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
         if ( !isSameImage ) return false;
 
         return true;
+    }
+
+    private resetCache() {
+        this.prevImage = Buffer.from('');
     }
 }

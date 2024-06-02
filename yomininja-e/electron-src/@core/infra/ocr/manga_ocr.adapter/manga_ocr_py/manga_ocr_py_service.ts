@@ -8,12 +8,16 @@ export class MangaOcrPyService implements MangaOcrService {
 
     async recognize( input: MangaOcrRecognize_Input ): Promise< OcrResult | null > {
 
-        console.time("paddleOcrDetection");
-        const boxes: OcrItemBox[] = await this.paddleOcrDetection(
-            input.image,
-            input.id
-        );
-        console.timeEnd("paddleOcrDetection");
+        let boxes: OcrItemBox[] | undefined;
+
+        if ( input.text_detector === 'PaddleTextDetector' ) {
+            console.time("PaddleTextDetector");
+            boxes = await this.paddleOcrDetection(
+                input.image,
+                input.id
+            );
+            console.timeEnd("PaddleTextDetector");
+        }
 
         console.time("MangaOCR Recognize");
         const result = await pyOcrService.recognize({
