@@ -49,6 +49,8 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
             return null;
         }
 
+        this.idCounter++;
+
         const result = await api.textDetection( imageBuffer );
 
         if ( !result ) return null;
