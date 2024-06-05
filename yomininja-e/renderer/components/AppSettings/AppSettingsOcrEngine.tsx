@@ -11,6 +11,8 @@ import TabList from "@mui/lab/TabList";
 import Tab from '@mui/material/Tab';
 import GoogleLensSettings from "./OcrSettings/GoogleLensSettings";
 import { GoogleLensOcrEngineSettings } from "../../../electron-src/@core/infra/ocr/google_lens_ocr.adapter/google_lens_ocr_settings";
+import { MangaOcrEngineSettings } from "../../../electron-src/@core/infra/ocr/manga_ocr.adapter/manga_ocr_settings";
+import MangaOcrSettings from "./OcrSettings/MangaOcrSettings";
 
 
 const TabItem = styled(Tab)({
@@ -37,6 +39,9 @@ export default function AppSettingsOcrEngine() {
     const googleLensSettings = activeSettingsPreset?.ocr_engines
         .find( item => item.ocr_adapter_name === 'GoogleLensOcrAdapter' ) as GoogleLensOcrEngineSettings;
 
+    const mangaOcrSettings = activeSettingsPreset?.ocr_engines
+        .find( item => item.ocr_adapter_name === 'MangaOcrAdapter' ) as MangaOcrEngineSettings;
+
     function tabHandleChange(event: React.SyntheticEvent, newValue: string) {
         setTab(newValue);
     };
@@ -59,6 +64,7 @@ export default function AppSettingsOcrEngine() {
                         <TabItem label="PaddleOCR" value="1"/>
                         <TabItem label="Google Cloud Vision" value="2"/>
                         <TabItem label="Google Lens" value="3"/>
+                        <TabItem label="MangaOCR" value="4"/>
                     </TabList>
                 </Box>
 
@@ -77,6 +83,9 @@ export default function AppSettingsOcrEngine() {
                     </TabPanel>
                     <TabPanel value="3" >
                         <GoogleLensSettings ocrEngineSettings={googleLensSettings}/>
+                    </TabPanel>
+                    <TabPanel value="4" >
+                        <MangaOcrSettings ocrEngineSettings={mangaOcrSettings}/>
                     </TabPanel>
                 </Box>
                 
