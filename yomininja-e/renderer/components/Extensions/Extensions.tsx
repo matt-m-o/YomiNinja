@@ -201,7 +201,7 @@ export default function Extensions() {
 
                                 <OL>
                                     <li> Open Yomitan/Yomichan settings. </li>
-                                    <li> Go to the <strong>Scanning</strong> section. </li>
+                                    <li> Go to the <strong>Popup Behavior</strong> section. </li>
                                     <li> Enable <strong>"Hide popup on cursor exit"</strong>. </li>
                                 </OL>
                             </CustomAccordion>
