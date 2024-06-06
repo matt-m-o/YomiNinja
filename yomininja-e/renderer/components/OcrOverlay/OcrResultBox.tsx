@@ -210,6 +210,8 @@ export default function OcrResultBox( props: {
         >
             { ocrItem.text.map( ( line, lIdx ) => {
 
+                const isLastLine = ocrItem.text.length - 1 === lIdx;
+
                 let lineFontSize = 0;
 
                 line?.symbols?.forEach( symbol => {
@@ -223,6 +225,7 @@ export default function OcrResultBox( props: {
                         contentEditable={contentEditable}
                         box={box}
                         line={line}
+                        isLastLine={isLastLine}
                         regionWidthPx={regionWidthPx}
                         regionHeightPx={regionHeightPx}
                         key={lIdx}

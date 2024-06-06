@@ -4,6 +4,12 @@ import { OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/set
 import { CSSProperties } from "react";
 
 
+function isEolCharacter( char: string ): boolean {
+    return [
+        ';', '!', '！', '?', '？', '⁉',
+        '.', '。', '…', '．',
+    ].includes(char);
+}
 
 const SymbolsContainer = styled('span')({
     position: 'absolute',
@@ -20,6 +26,7 @@ export type OcrResultLineProps = {
     sizeExpansionPx: number;
     ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
     contentEditable: boolean;
+    isLastLine: boolean;
     onBlur?: () => void;
 };
 
@@ -56,6 +63,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     const {
         line,
         box,
+        isLastLine,
         regionWidthPx,
         regionHeightPx,
         ocrItemBoxVisuals,
@@ -113,6 +121,8 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     let lineTopOffset = 0;
     let lineLeftOffset = 0;
 
+    let eolSymbol = '';
+
 
     if ( ocrItemBoxVisuals.text.character_positioning && line.symbols?.length ) {
 
@@ -120,6 +130,8 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         lineFontSize = lineFontSize * fontSizeFactor;
 
         symbols = line?.symbols.map( ( symbol, sIdx ) => {
+
+            let isLastSymbol = line?.symbols.length - 1 === sIdx;
 
             // let nextSymbol: OcrTextLineSymbolScalable;
             
@@ -145,6 +157,13 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             const topPx = topOffset + ( ( top / 100 ) * regionHeightPx ) + ( sizeExpansionPx / 2 );
                         
             const lineHeight: string = box.isVertical ? 'unset' : lineFontSize * 1.13 + 'px';
+
+            if (
+                isLastLine &&
+                isLastSymbol &&
+                !isEolCharacter(symbol.symbol)
+            )
+                eolSymbol = '。';
     
             return (
                 <Symbol key={sIdx}
@@ -175,6 +194,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         }
 
         const firstSymbol = line?.content?.[0];
+        const lastSymbol = line?.content?.[ line?.content.length - 1 ];
 
         // Handle some special characters
         const offsets = getPositionOffset({
@@ -185,6 +205,9 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
 
         lineTopOffset = offsets.topOffset;
         lineLeftOffset = offsets.leftOffset;
+
+        if ( isLastLine && !isEolCharacter(lastSymbol) )
+            eolSymbol = '。';
     }
 
     const symbolsContainerRotation = symbols ? -box.angle_degrees : 0;
@@ -243,6 +266,16 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         </span>
     );
 
+    const EOLSymbol = <span
+        style={{
+            width: '0px',
+            height: '0px',
+            color: 'transparent',
+            position: 'absolute'
+        }}>
+            {eolSymbol}
+    </span>
+
     return ( <span>
         { linePositioning === 'absolute' && lineSizeHolder }
         <Line
@@ -267,6 +300,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                 symbolsContainer ||
                 line.content
             }
+            {EOLSymbol}
         </Line>
     </span> )
 }
