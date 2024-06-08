@@ -31,6 +31,10 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                         outline_width: 0,
                         outline_color: '#000000',
                         character_positioning: true,
+                        sentence_ending_punctuation: {
+                            enabled: true,
+                            hidden: true
+                        }
                     },
                     selected_text: {
                         color: '#ffffff', // White

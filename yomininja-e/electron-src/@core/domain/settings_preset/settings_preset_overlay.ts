@@ -16,13 +16,17 @@ export type OverlayOcrItemBoxVisuals = {
         font_weight: number;
         letter_spacing: number;
         outline_width: number; // pixels
-        outline_color: string
+        outline_color: string;
         character_positioning: boolean; // Individual character positioning
+        sentence_ending_punctuation: {
+            enabled: boolean;
+            hidden: boolean;
+        };
     };
     selected_text: {
         color: string;
         background_color: string;
-    }
+    };
 };
 
 export type OverlayMouseVisuals = {
