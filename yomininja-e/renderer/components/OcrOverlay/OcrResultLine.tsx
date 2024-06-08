@@ -266,14 +266,21 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         </span>
     );
 
+    const EOLSymbolStyle: CSSProperties = {
+        color: 'inherit',
+    };
+
+    if ( ocrItemBoxVisuals?.text.sentence_ending_punctuation?.hidden ) {
+        EOLSymbolStyle.width = '0px';
+        EOLSymbolStyle.height = '0px';
+        EOLSymbolStyle.color = 'transparent';
+        EOLSymbolStyle.position = 'absolute';
+    }
+
     const EOLSymbol = <span
-        style={{
-            width: '0px',
-            height: '0px',
-            color: 'transparent',
-            position: 'absolute'
-        }}>
-            {eolSymbol}
+        style={EOLSymbolStyle}
+    >
+        {eolSymbol}
     </span>
 
     return ( <span>
@@ -300,7 +307,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                 symbolsContainer ||
                 line.content
             }
-            {EOLSymbol}
+            { ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled && EOLSymbol }
         </Line>
     </span> )
 }

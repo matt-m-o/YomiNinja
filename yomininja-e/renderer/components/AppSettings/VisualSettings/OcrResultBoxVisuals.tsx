@@ -32,7 +32,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
             Extracted text
         </Typography>
 
-        <Container sx={{ ml: 1.5,  mt: 0, mb: 2 }}>
+        <Container sx={{ ml: 1.5,  mt: 0, mb: 0 }}>
             <FormControlLabel label='Individual character positioning (not supported by all OCR engines)'
                 title="Currently only supported by Google Cloud Vision. Breaks JPDB Reader."
                 control={
@@ -50,6 +50,50 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                 }
             />
         </Container>
+            
+        <Container sx={{ ml: 1.5,  mt: 0, mb: 2 }}>
+            <FormControlLabel label='Add end-of-sentence punctuation'
+                title="Fixes Yomitan sentence mining issues"
+                control={
+                    <Switch
+                        checked={ Boolean( ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled ) }
+                        onChange={ ( event ) => {
+                            updateOcrItemBoxVisuals({
+                                text: {
+                                    ...ocrItemBoxVisuals.text,
+                                    sentence_ending_punctuation: {
+                                        ...ocrItemBoxVisuals.text.sentence_ending_punctuation,
+                                        enabled: event.target.checked
+                                    }
+                                }
+                            });
+                        }}
+                    /> 
+                }
+            />
+
+            <FormControlLabel label='Invisible'
+                title="Hide the added punctuation"
+                control={
+                    <Switch
+                        disabled={ !Boolean( ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled ) }
+                        checked={ Boolean( ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.hidden ) }
+                        onChange={ ( event ) => {
+                            updateOcrItemBoxVisuals({
+                                text: {
+                                    ...ocrItemBoxVisuals.text,
+                                    sentence_ending_punctuation: {
+                                        ...ocrItemBoxVisuals.text.sentence_ending_punctuation,
+                                        hidden: event.target.checked
+                                    }
+                                }
+                            });
+                        }}
+                    /> 
+                }
+            />
+        </Container>
+        
 
         <Container sx={{ mt: 0, mb: 2 }}>
 
