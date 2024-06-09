@@ -20,9 +20,9 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                     background_color_inactive: '#5b7eff00', // transparent
                     inactive_border_color: "#e21212", // Red
                     active_border_color: "#e21212", // Red
-                    border_radius: 10,
+                    border_radius: 7,
                     border_width: 1,
-                    size_factor: 35,
+                    size_factor: 5,
                     text: {
                         color: "#ffffff", // White
                         font_size_factor: 100,
