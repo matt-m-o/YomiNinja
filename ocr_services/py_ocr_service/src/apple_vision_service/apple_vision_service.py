@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from typing import List, Dict, Union, Tuple
-from ocr_service_pb2 import Result, Box, Vertex, GetSupportedLanguagesResponse
+from ocr_service_pb2 import Result, Box, Vertex, TextLine, GetSupportedLanguagesResponse
 from PIL import Image
 import Vision
 import objc
@@ -40,10 +40,17 @@ class AppleVisionService:
             if success:
                 for visionResult in request.results():
 
+                    box = self.CGRectToBox( visionResult, image.size )
+
+                    line = TextLine(
+                        box=box,
+                        content=visionResult.text()
+                    )
+
                     result = Result(
-                        text= visionResult.text(),
+                        text_lines= [line],
                         recognition_score= visionResult.confidence(),
-                        box= self.CGRectToBox( visionResult, image.size )
+                        box= box
                     )
 
                     results.append( result )
