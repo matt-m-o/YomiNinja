@@ -3,7 +3,7 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { ocrServiceProto } from "../../../../../grpc/grpc_protos";
 import * as grpc from '@grpc/grpc-js';
 import { OcrAdapterStatus } from "../../../application/adapters/ocr.adapter";
-import { OcrItem, OcrItemBox, OcrResult } from "../../../domain/ocr_result/ocr_result";
+import { OcrItem, OcrItemBox, OcrResult, OcrTextLine } from "../../../domain/ocr_result/ocr_result";
 import { RecognizeDefaultResponse__Output } from "../../../../../grpc/rpc/ocr_service/RecognizeDefaultResponse";
 import { RecognizeBase64Request } from "../../../../../grpc/rpc/ocr_service/RecognizeBase64Request";
 import os from 'os';
@@ -16,6 +16,7 @@ import { MotionDetectionRequest } from "../../../../../grpc/rpc/ocr_service/Moti
 import { MotionDetectionResponse__Output } from "../../../../../grpc/rpc/ocr_service/MotionDetectionResponse";
 import { RecognizeBytesRequest } from "../../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
 import { getNextPortAvailable } from "../../util/port_check";
+import { sleep } from "../../../../util/sleep.util";
 
 type OcrEnginesName = 'MangaOCR' | 'AppleVision' | string;
 
@@ -94,12 +95,16 @@ export class PyOcrService {
             return null;
         
         const ocrItems: OcrItem[] = clientResponse.results.map( ( item ) => {
+            const textLines: OcrTextLine[] = item.text_lines.map( text_line => {
+                return {
+                    content: text_line.content,
+                    box: text_line.box || undefined
+                } as OcrTextLine;
+            });
             return {
                 ...item,
-                text: [{
-                    content: item.text
-                }],
-            } as OcrItem
+                text: textLines,
+            } as OcrItem;
         });
 
         const result = OcrResult.create({
@@ -179,7 +184,7 @@ export class PyOcrService {
         );
 
         // Handle stdout data
-        this.serviceProcess.stdout.on('data', ( data: string ) => {
+        this.serviceProcess.stdout.on('data', async ( data: string ) => {
 
             console.log(`stdout: ${data.toString()}`);        
 
@@ -189,6 +194,7 @@ export class PyOcrService {
 
                 if ( 'server_address' in jsonData ) {
                     this.serverAddress = jsonData.server_address;
+                    await sleep(5000);
                     this.connect( jsonData.server_address );
                     this.keepAlive();
                     if ( onInitialized )

@@ -117,6 +117,7 @@ class MangaOcrService:
             new_text_block = Result(
                 box=self.coordinates_to_box( block.coordinates ),
                 text_lines=[],
+                is_vertical=block.is_vertical
             )
 
             for line in block.lines:

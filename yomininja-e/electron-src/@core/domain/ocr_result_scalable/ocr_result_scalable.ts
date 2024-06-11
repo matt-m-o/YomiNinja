@@ -157,6 +157,9 @@ export class OcrResultScalable {
                 item.box,
                 ocrResult.context_resolution
             );
+
+            if (typeof item.is_vertical === "boolean" )
+                itemBox.isVertical = Boolean(item.is_vertical);
             
             const text = item.text.map( line => {
 
@@ -164,6 +167,13 @@ export class OcrResultScalable {
                     content: line.content,
                     symbols: []
                 };
+
+                if (line.box) {
+                    lineScalable.box = OcrResultScalable.getBoxScalable(
+                        line.box,
+                        ocrResult.context_resolution
+                    );
+                }
                 
                 // TODO: Calculate position and dimensions
 

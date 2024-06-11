@@ -28,6 +28,7 @@ export type OcrItem = {
     classification_score: number; // Text direction confidence
     classification_label: number; // Text direction
     box: OcrItemBox;
+    is_vertical?: boolean;
 };
 
 export type OcrResultContextResolution = {
