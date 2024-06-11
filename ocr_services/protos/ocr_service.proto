@@ -53,6 +53,7 @@ message Result {
   float classification_score = 3;
   int32 classification_label = 4; // Text direction
   Box box = 5;
+  bool is_vertical = 6;
 }
 message ContextResolution {
   int32 width = 1;
