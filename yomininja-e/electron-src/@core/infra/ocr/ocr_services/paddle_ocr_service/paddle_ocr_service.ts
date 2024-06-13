@@ -1,4 +1,4 @@
-import { OcrItem, OcrItemBox, OcrResult } from "../../../../domain/ocr_result/ocr_result";
+import { OcrItem, OcrItemBox, OcrResult, OcrTextLine } from "../../../../domain/ocr_result/ocr_result";
 import { OcrAdapterStatus, UpdateOcrAdapterSettingsOutput } from "../../../../application/adapters/ocr.adapter";
 import * as grpc from '@grpc/grpc-js';
 import { OCRServiceClient } from "../../../../../../grpc/rpc/ocr_service/OCRService";
@@ -78,12 +78,16 @@ export class PaddleOcrService {
             return null;
         
         const ocrItems: OcrItem[] = clientResponse.results.map( ( item ) => {
+            const textLines: OcrTextLine[] = item.text_lines.map( text_line => {
+                return {
+                    content: text_line.content,
+                    box: text_line.box || undefined
+                } as OcrTextLine;
+            });
             return {
                 ...item,
-                text: [{
-                    content: item.text
-                }],
-            } as OcrItem
+                text: textLines,
+            } as OcrItem;
         });
 
         const result = OcrResult.create({
