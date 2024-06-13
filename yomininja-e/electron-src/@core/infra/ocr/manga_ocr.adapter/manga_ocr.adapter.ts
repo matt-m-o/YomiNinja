@@ -79,7 +79,21 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
         const resultScalable = OcrResultScalable.createFromOcrResult(result);
         this.cacheResult( resultScalable );
 
-        return resultScalable;
+        return this.postProcess(resultScalable);
+    }
+
+    private postProcess( data: OcrResultScalable ): OcrResultScalable {
+        data.ocr_regions.forEach( region => {
+            region.results.forEach( result => {
+                result.text.forEach(
+                    line => { 
+                        line.content = line.content.replaceAll( '．．．', '…' );
+                    }
+                )
+            });
+        });
+
+        return data;
     }
 
     async getSupportedLanguages(): Promise< string[] > {
