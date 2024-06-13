@@ -75,9 +75,14 @@ class ComicTextDetector:
 
         rot_rect = ((center_x, center_y), (w, h), angle)
         
-        box_points = cv2.boxPoints(rot_rect)
+        points = np.int0(cv2.boxPoints(rot_rect))
 
-        return np.int0(box_points)
+        return [
+            points[1],
+            points[2],
+            points[3],
+            points[0]
+        ]
     
     def display_result(self, image, text_blocks: List[TextBlock]):
 
