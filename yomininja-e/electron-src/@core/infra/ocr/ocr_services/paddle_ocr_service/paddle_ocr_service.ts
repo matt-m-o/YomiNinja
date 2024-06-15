@@ -87,6 +87,7 @@ export class PaddleOcrService {
             return {
                 ...item,
                 text: textLines,
+                is_vertical: undefined // Not supported
             } as OcrItem;
         });
 
