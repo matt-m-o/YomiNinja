@@ -262,7 +262,11 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
 
             if ( !blockBoxData ) return;
 
-            // if ( blockIsVertical ) blockLines.reverse();
+            if ( blockIsVertical ) {
+                blockLines.sort( ( a: OcrTextLineScalable, b: OcrTextLineScalable ) => {
+                    return Number(b.box?.position.left) - Number(a.box?.position.left);
+                });
+            }
 
             const block: OcrItemScalable = {
                 text: blockLines,
