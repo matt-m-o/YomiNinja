@@ -2,7 +2,7 @@ import { OcrItem, OcrResult } from "../../../domain/ocr_result/ocr_result";
 import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 import { MangaOcrEngineSettings, getMangaOcrDefaultSettings, mangaOcrAdapterName } from "./manga_ocr_settings";
-import { pyOcrService } from "../py_ocr_service/_temp_index";
+import { pyOcrService } from "../ocr_services/py_ocr_service/_temp_index";
 import { mangaOcrPyService } from "./manga_ocr_py/_temp_index";
 
 export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {

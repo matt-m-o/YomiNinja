@@ -15,7 +15,7 @@ import { getDefaultSettingsPresetProps } from '../domain/settings_preset/default
 import semver from 'semver';
 import { cloudVisionOcrAdapterName, getCloudVisionDefaultSettings } from './ocr/cloud_vision_ocr.adapter/cloud_vision_ocr_settings';
 import { getGoogleLensDefaultSettings, googleLensOcrAdapterName } from './ocr/google_lens_ocr.adapter/google_lens_ocr_settings';
-import { pyOcrService } from './ocr/py_ocr_service/_temp_index';
+import { pyOcrService } from './ocr/ocr_services/py_ocr_service/_temp_index';
 import { paddleOcrService } from './ocr/ocr_services/paddle_ocr_service/_temp_index';
 
 const isMacOS = process.platform === 'darwin';

@@ -1,6 +1,6 @@
 import { OcrItemBox, OcrResult } from "../../../../domain/ocr_result/ocr_result";
 import { paddleOcrService } from "../../ocr_services/paddle_ocr_service/_temp_index";
-import { pyOcrService } from "../../py_ocr_service/_temp_index";
+import { pyOcrService } from "../../ocr_services/py_ocr_service/_temp_index";
 import { MangaOcrRecognize_Input, MangaOcrService } from "../manga_ocr_service";
 
 

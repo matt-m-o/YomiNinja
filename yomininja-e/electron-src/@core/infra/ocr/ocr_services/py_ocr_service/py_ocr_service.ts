@@ -1,22 +1,22 @@
-import { OCRServiceClient } from "../../../../../grpc/rpc/ocr_service/OCRService";
+import { OCRServiceClient } from "../../../../../../grpc/rpc/ocr_service/OCRService";
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
-import { ocrServiceProto } from "../../../../../grpc/grpc_protos";
+import { ocrServiceProto } from "../../../../../../grpc/grpc_protos";
 import * as grpc from '@grpc/grpc-js';
-import { OcrAdapterStatus } from "../../../application/adapters/ocr.adapter";
-import { OcrItem, OcrItemBox, OcrResult, OcrTextLine } from "../../../domain/ocr_result/ocr_result";
-import { RecognizeDefaultResponse__Output } from "../../../../../grpc/rpc/ocr_service/RecognizeDefaultResponse";
-import { RecognizeBase64Request } from "../../../../../grpc/rpc/ocr_service/RecognizeBase64Request";
+import { OcrAdapterStatus } from "../../../../application/adapters/ocr.adapter";
+import { OcrItem, OcrItemBox, OcrResult, OcrTextLine } from "../../../../domain/ocr_result/ocr_result";
+import { RecognizeDefaultResponse__Output } from "../../../../../../grpc/rpc/ocr_service/RecognizeDefaultResponse";
+import { RecognizeBase64Request } from "../../../../../../grpc/rpc/ocr_service/RecognizeBase64Request";
 import os from 'os';
 import { join } from "path";
 import isDev from 'electron-is-dev';
-import { BIN_DIR } from "../../../../util/directories.util";
-import { GetSupportedLanguagesRequest } from "../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesRequest";
-import { GetSupportedLanguagesResponse__Output } from "../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesResponse";
-import { MotionDetectionRequest } from "../../../../../grpc/rpc/ocr_service/MotionDetectionRequest";
-import { MotionDetectionResponse__Output } from "../../../../../grpc/rpc/ocr_service/MotionDetectionResponse";
-import { RecognizeBytesRequest } from "../../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
-import { getNextPortAvailable } from "../../util/port_check";
-import { sleep } from "../../../../util/sleep.util";
+import { BIN_DIR } from "../../../../../util/directories.util";
+import { GetSupportedLanguagesRequest } from "../../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesRequest";
+import { GetSupportedLanguagesResponse__Output } from "../../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesResponse";
+import { MotionDetectionRequest } from "../../../../../../grpc/rpc/ocr_service/MotionDetectionRequest";
+import { MotionDetectionResponse__Output } from "../../../../../../grpc/rpc/ocr_service/MotionDetectionResponse";
+import { RecognizeBytesRequest } from "../../../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
+import { getNextPortAvailable } from "../../../util/port_check";
+import { sleep } from "../../../../../util/sleep.util";
 
 type OcrEnginesName = 'MangaOCR' | 'AppleVision' | string;
 

@@ -1,5 +1,5 @@
 import { OcrResult } from "../../../../domain/ocr_result/ocr_result";
-import { pyOcrService } from "../../py_ocr_service/_temp_index";
+import { pyOcrService } from "../../ocr_services/py_ocr_service/_temp_index";
 import { AppleVisionRecognize_Input, AppleVisionService } from "../apple_vision_service";
 
 

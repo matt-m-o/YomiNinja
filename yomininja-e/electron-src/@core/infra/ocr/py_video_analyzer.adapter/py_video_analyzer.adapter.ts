@@ -1,5 +1,5 @@
 import { DetectMotion_Input, DetectMotion_Output, VideoAnalyzerAdapter, VideoAnalyzerStatus } from "../../../application/adapters/video_analyzer.adapter";
-import { pyOcrService } from "../py_ocr_service/_temp_index";
+import { pyOcrService } from "../ocr_services/py_ocr_service/_temp_index";
 
 
 export class PyVideoAnalyzerAdapter implements VideoAnalyzerAdapter {
