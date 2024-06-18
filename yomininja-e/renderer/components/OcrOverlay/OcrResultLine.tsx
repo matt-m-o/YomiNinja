@@ -91,7 +91,7 @@ function getBestFontSize(
 
     let text = line.content;
 
-    if ( ['。', '．'].includes( text[text.length-1] ) )
+    if ( ['。', '．', '、',].includes( text[text.length-1] ) )
         text = text.slice(0, text.length-1) + '.';
 
     while ( !found ) {
@@ -177,7 +177,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
 
         const charBoxHeightPx = ( regionHeightPx * ( symbol.box.dimensions.height / 100 ) );
         if ( charBoxHeightPx > lineFontSize )
-            lineFontSize = charBoxHeightPx * fontSizeFactor;
+            lineFontSize = charBoxHeightPx;
     });
 
 
@@ -209,6 +209,13 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     if ( ocrItemBoxVisuals.text.character_positioning && line.symbols?.length ) {
 
         setLineHeight = !box.isVertical;
+        lineFontSize = getBestFontSize(
+            line,
+            lineBoxWidthPx,
+            lineBoxHeightPx,
+            lineFontSize,
+            box?.isVertical
+        );
         lineFontSize = lineFontSize * fontSizeFactor;
 
         symbols = line?.symbols.map( ( symbol, sIdx ) => {
@@ -237,8 +244,6 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             
             const leftPx = leftOffset + ( ( left / 100 ) * regionWidthPx ) + ( sizeExpansionPx / 2 );
             const topPx = topOffset + ( ( top / 100 ) * regionHeightPx ) + ( sizeExpansionPx / 2 );
-                        
-            const lineHeight: string = box.isVertical ? 'unset' : lineFontSize * 1.13 + 'px';
 
             if (
                 isLastLine &&
@@ -257,9 +262,10 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                         top: topPx + 'px',
                         fontSize: lineFontSize + 'px',
                         letterSpacing: letterSpacing + 'px',
-                        lineHeight: lineHeight + 'px',
+                        lineHeight: box.isVertical ? 'unset' : lineFontSize + 'px',
                         transform: `rotate( ${ symbol.box.angle_degrees }deg )`,
-                        border: 'none'
+                        // border: 'none',
+                        // border: 'solid 2px red',
                     }}
                 >
                     { symbol.symbol }
@@ -271,23 +277,30 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     else {
 
         if ( box.isVertical ) {
-            [ '．．．', '...', '･･･' ]
+            [ '．．．', '...', '･･･', '・・・' ]
                 .forEach( item => {
                     line.content = line.content.replaceAll(item, '…' );
                 });
         }
-
-        if ( !lineFontSize ) {
-            lineFontSize = box.isVertical ? lineBoxWidthPx : lineBoxHeightPx;
-            lineFontSize = getBestFontSize(
-                line,
-                lineBoxWidthPx,
-                lineBoxHeightPx,
-                lineFontSize,
-                box?.isVertical
-            );
-            lineFontSize *= fontSizeFactor;
+        else {
+            [ '・・・' ]
+                .forEach( item => {
+                    line.content = line.content.replaceAll(item, '...' );
+                });
         }
+
+        if ( !lineFontSize && (lineBoxWidthPx || lineBoxHeightPx) ) {
+            lineFontSize = box.isVertical ? lineBoxWidthPx : lineBoxHeightPx;
+        }
+        lineFontSize = getBestFontSize(
+            line,
+            lineBoxWidthPx,
+            lineBoxHeightPx,
+            lineFontSize,
+            box?.isVertical
+        );
+
+        lineFontSize *= fontSizeFactor;
 
         const firstSymbol = line?.content?.[0];
         const lastSymbol = line?.content?.[ line?.content.length - 1 ];
@@ -383,34 +396,32 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         </span>
     );
 
-    if ( !line.content?.length )
-        console.log('Empty line');
-
     return ( <span>
         { linePositioning === 'absolute' && lineSizeHolder }
-        <Line
-            contentEditable={contentEditable}
-            onBlur={ ( e ) => {
-                line.content = e.target.textContent;
-                props?.onBlur();
-            }}
-            style={{
-                ...lineBaseCSS,
-                position: linePositioning,
-                top: lineTopPx || '0%',
-                left: lineLeftPx || '0%',
-                // transformOrigin: line?.box?.transform_origin || 'left top',
-                // transform: `rotate( ${line?.box?.angle_degrees}deg )`,
-                borderRadius: ocrItemBoxVisuals.border_radius,// '0px',
-                // textAlign: box.isVertical ? 'inherit' : 'left',
-                backgroundColor: ocrItemBoxVisuals.background_color
-            }}
-        >
-            {
-                symbolsContainer ||
-                line.content
-            }
-            { ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled && EOLSymbol }
-        </Line>
+        {
+            symbolsContainer ||
+            <Line
+                contentEditable={contentEditable}
+                onBlur={ ( e ) => {
+                    line.content = e.target.textContent;
+                    props?.onBlur();
+                }}
+                style={{
+                    ...lineBaseCSS,
+                    position: linePositioning,
+                    top: lineTopPx || '0%',
+                    left: lineLeftPx || '0%',
+                    // transformOrigin: line?.box?.transform_origin || 'left top',
+                    // transform: `rotate( ${line?.box?.angle_degrees}deg )`,
+                    borderRadius: ocrItemBoxVisuals.border_radius,// '0px',
+                    // textAlign: box.isVertical ? 'inherit' : 'left',
+                    backgroundColor: ocrItemBoxVisuals.background_color,
+                    // border: 'solid 1px green'
+                }}
+            >
+                { line.content.trim()}
+                { ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled && EOLSymbol }
+            </Line>
+        }
     </span> )
 }

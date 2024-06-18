@@ -337,7 +337,7 @@ export class OcrResultScalable {
         return ( topToBottomHypot / contextResolution.height ) * 100;
     }
 
-    private static getBoxScalable(
+    static getBoxScalable(
         box: OcrItemBox,
         contextResolution: OcrResultContextResolution
     ): OcrResultBoxScalable {

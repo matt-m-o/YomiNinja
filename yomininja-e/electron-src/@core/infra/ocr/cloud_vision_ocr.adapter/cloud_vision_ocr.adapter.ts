@@ -1,6 +1,6 @@
 import { google } from "@google-cloud/vision/build/protos/protos";
 import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
-import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrResult, OcrResultContextResolution, OcrTextLine } from "../../../domain/ocr_result/ocr_result";
+import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrResult, OcrResultContextResolution, OcrTextLine, OcrTextLineSymbol } from "../../../domain/ocr_result/ocr_result";
 import { CloudVisionAPICredentials, CloudVisionApi } from "./cloud_vision_api";
 import { CloudVisionAPIMode, CloudVisionOcrEngineSettings, cloudVisionOcrAdapterName, getCloudVisionDefaultSettings } from "./cloud_vision_ocr_settings";
 import { OcrEngineSettingsU } from "../../types/entity_instance.types";
@@ -80,6 +80,21 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
 
                     const { words, boundingBox } = paragraph;
 
+                    if ( !boundingBox?.vertices ) return;
+
+                    const paragraphOcrBox = this.getOcrItemBox( boundingBox?.vertices );
+
+                    const paragraphOcrBoxScalable =  OcrResultScalable.getBoxScalable(
+                        paragraphOcrBox, contextResolution
+                    );
+
+                    const paragraphDimensions = paragraphOcrBoxScalable.dimensions;
+
+                    const boxWidthPx = contextResolution.width * ( Number(paragraphDimensions?.width) / 100 );
+                    const boxHeightPx = contextResolution.height * ( Number(paragraphDimensions?.height) / 100 );
+
+                    const isVertical = boxHeightPx > boxWidthPx * 1.20 ;
+
                     const lines: OcrTextLine[] = [{
                         content: '',
                         symbols: []
@@ -91,7 +106,7 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
                         word => word.symbols?.forEach( symbol => {
 
                             if ( createNewLine )
-                                lines.push({ content: '', symbols: [] });
+                                lines.push({ content: '', symbols: []  });
 
                             const currentLine = lines[ lines.length - 1 ];
 
@@ -135,6 +150,7 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
                                 box: symbolBox
                             });
 
+                            currentLine.box = this.getLineBox( currentLine.symbols, isVertical );
                         })
                     );
 
@@ -144,7 +160,7 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
                         recognition_score: 1,
                         classification_score: 1,
                         classification_label: 0,
-                        box: this.getOcrItemBox( boundingBox?.vertices ),
+                        box: paragraphOcrBox,
                         text: lines
                     });
                 });
@@ -218,6 +234,30 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
         return {
             x: cloudVisionVertex?.x || 0,
             y: cloudVisionVertex?.y || 0,
+        };
+    }
+
+    private getLineBox( lineSymbols: OcrTextLineSymbol[] | undefined, isVertical = false ): OcrItemBox | undefined {
+
+        if ( !lineSymbols ) return;
+
+        const firstBox = lineSymbols[0].box;
+        const lastBox = lineSymbols[ lineSymbols.length-1 ].box;
+
+        if ( isVertical ) {
+            return {
+                top_left: firstBox.top_left,
+                top_right: firstBox.top_right,
+                bottom_left: lastBox.bottom_left,
+                bottom_right: lastBox.bottom_right
+            }
+        }
+
+        return {
+            top_left: firstBox.top_left,
+            top_right: lastBox.top_right,
+            bottom_left: firstBox.bottom_left,
+            bottom_right: lastBox.bottom_right
         };
     }
 }
