@@ -59,6 +59,73 @@ function getPositionOffset(
     }
 }
 
+function getBestFontSize(
+    line: OcrTextLineScalable,
+    maxWidth: number,
+    maxHeight: number,
+    initialFontSize: number,
+    isVertical = false,
+) {
+    const fontFamily = 'arial';
+
+    let maxSideLength = isVertical ? maxHeight : maxWidth;
+    let maxFontSize = initialFontSize;
+
+    if ( isVertical ) {
+        maxSideLength = maxHeight;
+        maxFontSize = maxWidth;
+    }
+    else {
+        maxSideLength = maxWidth;
+        maxFontSize = maxHeight;
+    }
+
+
+    let fontSize = initialFontSize;
+    let found = false;
+    let increased = false;
+    let decreased = false;
+
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    let text = line.content;
+
+    if ( ['。', '．'].includes( text[text.length-1] ) )
+        text = text.slice(0, text.length-1) + '.';
+
+    while ( !found ) {
+
+        context.font = `${fontSize}px ${fontFamily}`;
+        const metrics = context.measureText(text);
+
+        if ( metrics.width > maxSideLength ) {
+            fontSize -= 1; // 0.5;
+            decreased = true;
+        }
+
+        else if ( metrics.width < maxSideLength * 0.95 ) {
+            fontSize += 1; // 0.5;
+            increased = true;
+        }
+        else
+            found = true;
+
+        if ( fontSize < 0 ) {
+            fontSize = 1;
+            found = true;
+        }
+
+        if (increased && decreased)
+            found = true;
+    }
+
+    if ( fontSize > maxFontSize * 1.12 )
+        fontSize = maxFontSize;
+
+    return fontSize;
+}
+
 export default function OcrResultLine( props: OcrResultLineProps ) {
 
     const {
@@ -104,6 +171,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     let lineFontSize = 0;
     let fontSizeFactor = ocrItemBoxVisuals.text.font_size_factor;
     fontSizeFactor = fontSizeFactor ? fontSizeFactor / 100 : 1;
+    let lineHeight = lineFontSize;
 
     line?.symbols?.forEach( symbol => {
 
@@ -202,8 +270,22 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     }
     else {
 
+        if ( box.isVertical ) {
+            [ '．．．', '...', '･･･' ]
+                .forEach( item => {
+                    line.content = line.content.replaceAll(item, '…' );
+                });
+        }
+
         if ( !lineFontSize ) {
             lineFontSize = box.isVertical ? lineBoxWidthPx : lineBoxHeightPx;
+            lineFontSize = getBestFontSize(
+                line,
+                lineBoxWidthPx,
+                lineBoxHeightPx,
+                lineFontSize,
+                box?.isVertical
+            );
             lineFontSize *= fontSizeFactor;
         }
 
@@ -251,13 +333,16 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         ocrItemBoxVisuals.text.character_positioning
     ) ? 'absolute' : 'unset';
 
+
+    lineHeight = box.isVertical ? lineBoxWidthPx : lineBoxHeightPx;
+
     const lineBaseCSS: CSSProperties = {
         minWidth: lineBoxWidthPx,
         minHeight: lineBoxHeightPx,
         writingMode: box?.isVertical ? 'vertical-rl' :'inherit',
         textOrientation: box?.isVertical ? 'upright' :'inherit',
         fontSize: lineFontSize ? lineFontSize+'px' : 'inherit',
-        lineHeight: setLineHeight && lineFontSize ? lineFontSize+'px' : 'inherit',
+        lineHeight: setLineHeight && lineFontSize ? lineHeight+'px' : 'inherit',
         margin: props.sizeExpansionPx / 2 + 'px',
     };
 
@@ -316,8 +401,8 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                 left: lineLeftPx || '0%',
                 // transformOrigin: line?.box?.transform_origin || 'left top',
                 // transform: `rotate( ${line?.box?.angle_degrees}deg )`,
-                borderRadius: '0px',
-                textAlign: box.isVertical ? 'inherit' : 'left',
+                borderRadius: ocrItemBoxVisuals.border_radius,// '0px',
+                // textAlign: box.isVertical ? 'inherit' : 'left',
                 backgroundColor: ocrItemBoxVisuals.background_color
             }}
         >
