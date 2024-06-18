@@ -194,7 +194,7 @@ export class PyOcrService {
 
                 if ( 'server_address' in jsonData ) {
                     this.serverAddress = jsonData.server_address;
-                    await sleep(5000);
+                    await sleep( isDev ? 5000 : 2500 );
                     this.connect( jsonData.server_address );
                     this.keepAlive();
                     if ( onInitialized )
