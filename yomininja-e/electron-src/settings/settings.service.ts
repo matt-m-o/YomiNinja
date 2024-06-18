@@ -107,8 +107,6 @@ export class SettingsService {
             getAppleVisionDefaultSettings(),
         ]
 
-        console.log(defaultProps);
-
         return SettingsPreset.create( defaultProps );
     }
 }
