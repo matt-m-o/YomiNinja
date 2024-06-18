@@ -321,7 +321,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
         //     })
         // } )
         const enabledEngines = this.ocrAdapters.filter(
-            adapter => adapter.status === OcrAdapterStatus.Enabled
+            adapter => adapter.status !== OcrAdapterStatus.Disabled
         );
         return enabledEngines.map( adapter => adapter.name );
     }
