@@ -14,6 +14,11 @@ export default function AppSettingsHotkeys() {
         updateActivePresetOcrEngine
     } = useContext( SettingsContext );
 
+    const appleVisionSettings = activeSettingsPreset?.ocr_engines
+        .find( engineSettings => {
+            return engineSettings.ocr_adapter_name === 'AppleVisionAdapter'
+        });
+
     const ppOcrSettings = activeSettingsPreset?.ocr_engines
         .find( engineSettings => {
             return engineSettings.ocr_adapter_name === 'PpOcrAdapter'
@@ -46,6 +51,7 @@ export default function AppSettingsHotkeys() {
     // const [ ocrOnPrintScreen, setOcrOnPrintScreen ] = useState< boolean >( Boolean(overlayHotkeys?.ocr_on_screen_shot) );
     const ocrOnPrintScreen = Boolean(overlayHotkeys?.ocr_on_screen_shot);
 
+    const appleVisionKeys = stringToHotkeyCombination( appleVisionSettings?.hotkey );
     const paddleOcrKeys = stringToHotkeyCombination( ppOcrSettings?.hotkey );
     const mangaOcrKeys = stringToHotkeyCombination( mangaOcrSettings?.hotkey );
     const cloudVisionKeys = stringToHotkeyCombination( cloudVisionSettings?.hotkey );
@@ -137,6 +143,20 @@ export default function AppSettingsHotkeys() {
                     }
                 />
                 {ocrOnPrintScreenSwitch}
+                
+                { appleVisionSettings &&
+                    <HotkeyFields
+                        label='Apple Vision'
+                        keyCombination={ appleVisionKeys }
+                        onChangeHandler={ ( input?: string[]  ) => {
+                            if ( !input ) return;
+                            updateActivePresetOcrEngine({
+                                ...appleVisionSettings,
+                                hotkey: hotkeyCombinationToString( input )
+                            });
+                        }}
+                    />
+                }
 
                 <HotkeyFields
                     label='PaddleOCR'
