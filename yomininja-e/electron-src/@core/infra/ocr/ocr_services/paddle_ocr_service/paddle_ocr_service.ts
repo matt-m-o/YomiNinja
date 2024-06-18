@@ -19,6 +19,7 @@ import { UpdateSettingsResponse__Output } from "../../../../../../grpc/rpc/ocr_s
 import { DetectRequest } from "../../../../../../grpc/rpc/ocr_service/DetectRequest";
 import { DetectResponse__Output } from "../../../../../../grpc/rpc/ocr_service/DetectResponse";
 import { getNextPortAvailable } from "../../../util/port_check";
+import { TextLine__Output } from "../../../../../../grpc/rpc/ocr_service/TextLine";
 
 export class PaddleOcrService {
     
@@ -79,19 +80,28 @@ export class PaddleOcrService {
         )
             return null;
         
-        const ocrItems: OcrItem[] = clientResponse.results.map( ( item ) => {
-            const textLines: OcrTextLine[] = item.text_lines.map( text_line => {
-                return {
-                    content: text_line.content,
-                    box: text_line.box || undefined
-                } as OcrTextLine;
-            });
-            return {
+        const ocrItems: OcrItem[] = [];
+
+        for ( const item of clientResponse.results ) {
+
+            const lines: OcrTextLine[] = [];
+
+            if ( !item?.text_lines?.length ) continue;
+            
+            for ( const line of item.text_lines ) {
+                if ( !line?.content?.length ) continue;
+                lines.push({
+                    content: line.content,
+                    box: line.box || undefined
+                } as OcrTextLine );
+            }
+
+            ocrItems.push({
                 ...item,
-                text: textLines,
+                text: lines,
                 is_vertical: undefined // Not supported
-            } as OcrItem;
-        });
+            } as OcrItem);
+        }
 
         const result = OcrResult.create({
             id: clientResponse.id,
