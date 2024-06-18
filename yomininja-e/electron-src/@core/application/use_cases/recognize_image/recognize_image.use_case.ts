@@ -7,7 +7,7 @@ import { Profile } from "../../../domain/profile/profile";
 import { ProfileRepository } from "../../../domain/profile/profile.repository";
 import { OcrEngineSettings, SettingsPreset } from "../../../domain/settings_preset/settings_preset";
 import { ImageProcessingAdapter } from "../../adapters/image_processing.adapter";
-import { OcrAdapter } from "../../adapters/ocr.adapter";
+import { OcrAdapter, OcrAdapterStatus } from "../../adapters/ocr.adapter";
 import { VideoAnalyzerAdapter } from "../../adapters/video_analyzer.adapter";
 
 
@@ -313,7 +313,16 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
         return adapter;
     }
 
-    getSupportedOcrEngines(): string[] {
-        return this.ocrAdapters.map( adapter => adapter.name );
+    getSupportedOcrEngines = (): string[] => {
+        // this.ocrAdapters.forEach( adapter => {
+        //     console.log({
+        //         name: adapter.name,
+        //         status: adapter.status
+        //     })
+        // } )
+        const enabledEngines = this.ocrAdapters.filter(
+            adapter => adapter.status === OcrAdapterStatus.Enabled
+        );
+        return enabledEngines.map( adapter => adapter.name );
     }
 }
