@@ -1,7 +1,8 @@
 import { styled } from "@mui/material";
 import { OcrResultBoxScalable, OcrTextLineScalable, OcrTextLineSymbolScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
-import { CSSProperties } from "react";
+import { CSSProperties, useContext, useEffect } from "react";
+import { ProfileContext } from "../../context/profile.provider";
 
 
 function isEolCharacter( char: string ): boolean {
@@ -71,6 +72,10 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         sizeExpansionPx
     } = props;
 
+    const { profile } = useContext( ProfileContext );
+
+    const { active_ocr_language } = profile;
+
     const textSelectionStyle: CSSProperties = {
         backgroundColor: ocrItemBoxVisuals.selected_text.background_color,
         color: ocrItemBoxVisuals.selected_text.color,
@@ -121,7 +126,16 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     let lineTopOffset = 0;
     let lineLeftOffset = 0;
 
-    let eolSymbol = '';
+    let eolSymbol = '。';
+    let addEolSymbol = false;
+
+    const { bcp47_tag } = active_ocr_language;
+
+    if (
+        !([ 'ja-JP', 'zh-Hans', 'zh-Hant', 'yue-Hans', 'yue-Hant' ]
+        .some( tag => bcp47_tag === tag ))
+    )
+        eolSymbol = '.'
 
 
     if ( ocrItemBoxVisuals.text.character_positioning && line.symbols?.length ) {
@@ -163,7 +177,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                 isLastSymbol &&
                 !isEolCharacter(symbol.symbol)
             )
-                eolSymbol = '。';
+                addEolSymbol = true;
     
             return (
                 <Symbol key={sIdx}
@@ -207,7 +221,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         lineLeftOffset = offsets.leftOffset;
 
         if ( isLastLine && !isEolCharacter(lastSymbol) )
-            eolSymbol = '。';
+            addEolSymbol = true;
     }
 
     const symbolsContainerRotation = symbols ? -box.angle_degrees : 0;
@@ -249,23 +263,6 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
 
     const margin = props.sizeExpansionPx / 2 + 'px';
 
-    const lineSizeHolder = (
-        <span style={{
-            ...lineBaseCSS,
-            visibility: 'hidden',
-            display: 'block',
-            minWidth: box.isVertical ? '0px' : 'max-content',
-            minHeight: !box.isVertical ? '0px' : 'max-content',
-            maxWidth: box.isVertical ? '0px' : 'max-content',
-            maxHeight: !box.isVertical ? '0px' : 'max-content',
-            margin,
-            marginTop: !box.isVertical ? margin : lineTopPx,
-            marginLeft: box.isVertical ? margin : lineLeftPx,
-        }}>
-            {symbolsContainer || line.content}
-        </span>
-    );
-
     const EOLSymbolStyle: CSSProperties = {
         color: 'inherit',
     };
@@ -280,8 +277,29 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     const EOLSymbol = <span
         style={EOLSymbolStyle}
     >
-        {eolSymbol}
+        {addEolSymbol && eolSymbol}
     </span>
+
+    const lineSizeHolder = (
+        <span style={{
+            ...lineBaseCSS,
+            visibility: 'hidden',
+            display: 'block',
+            minWidth: box.isVertical ? '0px' : 'max-content',
+            minHeight: !box.isVertical ? '0px' : 'max-content',
+            maxWidth: box.isVertical ? '0px' : 'max-content',
+            maxHeight: !box.isVertical ? '0px' : 'max-content',
+            margin,
+            marginTop: !box.isVertical ? margin : lineTopPx,
+            marginLeft: box.isVertical ? margin : lineLeftPx,
+        }}>
+            {symbolsContainer || line.content}
+            { ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled && EOLSymbol }
+        </span>
+    );
+
+    if ( !line.content?.length )
+        console.log('Empty line');
 
     return ( <span>
         { linePositioning === 'absolute' && lineSizeHolder }

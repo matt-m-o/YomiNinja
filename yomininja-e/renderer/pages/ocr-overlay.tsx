@@ -7,6 +7,7 @@ import { DictionaryProvider } from '../context/dictionary.provider';
 import { OcrTemplatesProvider } from '../context/ocr_templates.provider';
 import { NotificationsProvider } from '../context/notifications.provider';
 import { TTSProvider } from '../context/text-to-speech.provider';
+import { ProfileProvider } from '../context/profile.provider';
 
 
 
@@ -29,9 +30,11 @@ export default function OcrOverlayPage() {
           <OcrResultProvider>
             <OcrTemplatesProvider>
               <TTSProvider>
+                <ProfileProvider>
 
-                <OcrOverlay/>
+                  <OcrOverlay/>
 
+                </ProfileProvider>
               </TTSProvider>
             </OcrTemplatesProvider>
           </OcrResultProvider>

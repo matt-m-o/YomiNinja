@@ -106,7 +106,10 @@ export class AppController {
                 
                 settingsController.init( this.mainWindow );
                 appInfoController.init( this.mainWindow );
-                profileController.init( this.mainWindow );
+                profileController.init({
+                    mainWindow: this.mainWindow,
+                    overlayWindow: this.overlayWindow
+                });
                 dictionariesController.init({
                     mainWindow: this.mainWindow,
                     overlayWindow: this.overlayWindow

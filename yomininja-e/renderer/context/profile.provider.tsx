@@ -47,6 +47,14 @@ export const ProfileProvider = ( { children }: PropsWithChildren ) => {
 
     useEffect( () => {
         getActiveProfile();
+
+        global.ipcRenderer.on( 'profile:active_profile', ( event, data: ProfileJson ) => {
+            setProfile(data);
+        });
+
+        return () => {
+            global.ipcRenderer.removeAllListeners( 'profile:active_profile' );
+        }
     }, [ global.ipcRenderer ] );
     
     return (
