@@ -21,7 +21,7 @@ export function getMangaOcrDefaultSettings() {
     
     const defaultSettings: MangaOcrEngineSettings = {
         ocr_adapter_name: mangaOcrAdapterName,
-        hotkey: 'Alt+A',
+        hotkey: 'Alt+J',
         image_scaling_factor: 1,
         invert_colors: false,
         text_detector: 'ComicTextDetector',
