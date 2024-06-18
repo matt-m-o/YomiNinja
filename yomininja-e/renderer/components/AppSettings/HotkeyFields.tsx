@@ -3,7 +3,7 @@ import { Dispatch, SetStateAction, KeyboardEvent, MouseEvent, CSSProperties, Rea
 import AddSharpIcon from '@mui/icons-material/AddSharp';
 import BackspaceRoundedIcon from '@mui/icons-material/BackspaceRounded';
 import IconButton from '@mui/material/IconButton';
-
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
 const modifierKeys: string[] = [
     'Command', 'Cmd',
@@ -62,6 +62,7 @@ export type HotkeyFieldsProps = {
     label: string;
     title?: string;
     keyCombination: string;
+    defaultKeys?: string;
     onChangeHandler: ( input?: string[] ) => void; // Dispatch<SetStateAction<HotkeyCombination>>;
     sx?: CSSProperties;
     children?: ReactNode;
@@ -72,6 +73,7 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
 
     const {
         keyCombination,
+        defaultKeys,
         onChangeHandler,
         label,
         title,
@@ -166,8 +168,24 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
                         style={{
                             minWidth: '40px',
                         }}
+                        title={'Clear'}
                     >
                         <BackspaceRoundedIcon 
+                            style={{
+                                width: '25px',
+                                height: '25px'
+                            }}
+                        />
+                    </Button>
+
+                    <Button variant="text"
+                        onClick={ () => onChangeHandler([defaultKeys]) }
+                        style={{
+                            minWidth: '40px',
+                        }}
+                        title={'Default'}
+                    >
+                        <RestartAltIcon 
                             style={{
                                 width: '25px',
                                 height: '25px'

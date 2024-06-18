@@ -1,12 +1,16 @@
 import { session } from "electron";
 import { GetActiveSettingsPresetUseCase } from "../@core/application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
 import { UpdateSettingsPresetUseCase } from "../@core/application/use_cases/update_settings_preset/update_settings_preset.use_case";
-import { SettingsPreset, SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
+import { SettingsPreset, SettingsPresetJson, SettingsPresetProps } from "../@core/domain/settings_preset/settings_preset";
 import { CloudVisionAPICredentials } from "../@core/infra/ocr/cloud_vision_ocr.adapter/cloud_vision_api";
-import { CloudVisionOcrEngineSettings, cloudVisionOcrAdapterName } from "../@core/infra/ocr/cloud_vision_ocr.adapter/cloud_vision_ocr_settings";
+import { CloudVisionOcrEngineSettings, cloudVisionOcrAdapterName, getCloudVisionDefaultSettings } from "../@core/infra/ocr/cloud_vision_ocr.adapter/cloud_vision_ocr_settings";
 import { UpdateSettingsPresetUseCaseInstance } from "../@core/infra/types/use_case_instance.types";
-import { GoogleLensOcrEngineSettings, googleLensOcrAdapterName } from "../@core/infra/ocr/google_lens_ocr.adapter/google_lens_ocr_settings";
+import { GoogleLensOcrEngineSettings, getGoogleLensDefaultSettings, googleLensOcrAdapterName } from "../@core/infra/ocr/google_lens_ocr.adapter/google_lens_ocr_settings";
 import { get_GoogleLensOcrAdapter } from "../@core/infra/container_registry/adapters_registry";
+import { getDefaultSettingsPresetProps } from "../@core/domain/settings_preset/default_settings_preset_props";
+import { getPpOcrDefaultSettings } from "../@core/infra/ocr/ppocr.adapter/ppocr_settings";
+import { getMangaOcrDefaultSettings } from "../@core/infra/ocr/manga_ocr.adapter/manga_ocr_settings";
+import { getAppleVisionDefaultSettings } from "../@core/infra/ocr/apple_vision.adapter/apple_vision_settings";
 
 
 export class SettingsService {
@@ -90,5 +94,21 @@ export class SettingsService {
 
         get_GoogleLensOcrAdapter()
             .removeCookies();
+    }
+
+    getDefaultSettings(): SettingsPreset {
+        const defaultProps = getDefaultSettingsPresetProps();
+
+        defaultProps.ocr_engines = [
+            getPpOcrDefaultSettings(),
+            getGoogleLensDefaultSettings(),
+            getCloudVisionDefaultSettings(),
+            getMangaOcrDefaultSettings(),
+            getAppleVisionDefaultSettings(),
+        ]
+
+        console.log(defaultProps);
+
+        return SettingsPreset.create( defaultProps );
     }
 }

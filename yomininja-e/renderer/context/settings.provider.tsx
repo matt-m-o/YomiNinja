@@ -6,6 +6,7 @@ import { OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations } from "..
 
 export type SettingsContextType = {
     activeSettingsPreset: SettingsPresetJson;
+    defaultSettingsPreset: SettingsPresetJson;
     allSettingsPresets: SettingsPresetJson[];
     updateActivePreset: ( input: Partial<SettingsPresetJson> ) => void;
     updateActivePresetHotkeys: ( newHotkeys: Partial< OverlayHotkeys > ) => void;
@@ -28,6 +29,7 @@ export const SettingsContext = createContext( {} as SettingsContextType );
 export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     
     const [ activeSettingsPreset, setActiveSettingsPreset ] = useState< SettingsPresetJson | null >( null );
+    const [ defaultSettingsPreset, setDefaultSettingsPreset ] = useState< SettingsPresetJson | null >( null );
     const [ allSettingsPresets, setAllSettingsPresets ] = useState< SettingsPresetJson[] >( [] );
     const [ hasGoogleCookies, setHasGoogleCookies ] = useState(false);
 
@@ -196,6 +198,16 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         return settings;
     }
 
+    async function getDefaultSettingsPreset(): Promise< SettingsPresetJson > {
+
+        const settings = await global.ipcRenderer.invoke( 'settings_preset:get_default' ) as SettingsPresetJson;
+
+        setDefaultSettingsPreset( settings );
+        console.log(settings);
+
+        return settings;
+    }
+
     
     useEffect( () => {
 
@@ -208,6 +220,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         });
 
         getActiveSettingsPreset();
+        getDefaultSettingsPreset();
         checkGoogleCookies();
 
         return () => {
@@ -263,6 +276,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         <SettingsContext.Provider
             value={{
                 activeSettingsPreset,
+                defaultSettingsPreset,
                 allSettingsPresets,
                 updateActivePreset,
                 updateActivePresetHotkeys,

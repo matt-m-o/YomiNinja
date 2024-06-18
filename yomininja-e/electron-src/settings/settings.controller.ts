@@ -43,6 +43,13 @@ export class SettingsController {
             return settingsPresetJson;
         });
 
+        ipcMain.handle( 'settings_preset:get_default', async ( event: IpcMainInvokeEvent ): Promise< SettingsPresetJson  > => {
+
+            const settingsPresetJson = await this.settingsService.getDefaultSettings().toJson();
+
+            return settingsPresetJson;
+        });
+
         ipcMain.handle( 'settings_preset:load_cloud_vision_cred_file', async ( event: IpcMainInvokeEvent ) => {
 
             await this.loadCloudVisionCredentialsFile( activeProfile.id );
