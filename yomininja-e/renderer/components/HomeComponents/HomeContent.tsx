@@ -55,11 +55,13 @@ export default function HomeContent() {
             });
     }, [] );
 
-    function handleLanguageSelectChange( languageName: string ) {
+    function handleLanguageSelectChange( selectedName: string ) {
 
-        if (!languageName) return;
+        if (!selectedName) return;
 
-        const language = languages?.find( language => language.name === languageName.toLowerCase() );
+        const language = languages?.find(
+            language => language.name.toLowerCase() === selectedName.toLowerCase()
+        );
 
         if ( !language ) return;
         
@@ -183,6 +185,7 @@ export default function HomeContent() {
                             }}
                             value={ activeOcrLanguage || '' }
                             onChange={( event: any, newValue: string | null ) => {
+                                console.log(newValue)
                                 handleLanguageSelectChange( newValue );
                             }}
                             options={ languageOptions || [] }
