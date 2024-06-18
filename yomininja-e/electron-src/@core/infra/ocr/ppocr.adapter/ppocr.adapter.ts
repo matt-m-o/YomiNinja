@@ -11,12 +11,18 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
     
     static _name: string = ppOcrAdapterName;
     public readonly name: string = PpOcrAdapter._name;
-    public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
+    // public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
     private idCounter: number = 0;
     private recognitionCallOnHold: OcrRecognitionInput | undefined;
 
+    get status(): OcrAdapterStatus {
+        return paddleOcrService.status;
+    }
 
     async recognize( input: OcrRecognitionInput ): Promise< OcrResultScalable | null > {
+
+        if (paddleOcrService.status !== OcrAdapterStatus.Enabled)
+            return null;
         
         if ( this.status === OcrAdapterStatus.Processing ) {
             this.recognitionCallOnHold = input;
@@ -43,9 +49,9 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
         };
 
         console.log('processing recognition input (PaddleOcrAdapter)');
-        this.status = OcrAdapterStatus.Processing;
+        // this.status = OcrAdapterStatus.Processing;
         const result = await paddleOcrService.recognize( requestInput )
-        this.status = OcrAdapterStatus.Enabled;
+        // this.status = OcrAdapterStatus.Enabled;
         
         // Throwing away current response an returning newest call result
         if ( this.recognitionCallOnHold ){

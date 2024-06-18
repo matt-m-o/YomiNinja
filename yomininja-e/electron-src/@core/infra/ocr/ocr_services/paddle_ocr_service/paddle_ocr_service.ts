@@ -28,6 +28,8 @@ export class PaddleOcrService {
     private settingsPresetsRoot: string;
     private binRoot: string;
 
+    private autoRestartCount = 0;
+
     constructor() {
         this.binRoot = isDev
             ? join( BIN_DIR, `/${os.platform()}/ppocr` )
@@ -51,7 +53,7 @@ export class PaddleOcrService {
 
     async recognize( input: RecognizeBytesRequest ): Promise< OcrResult | null > {
         
-        const ok = await this.processStatusCheck();        
+        const ok = await this.processStatusCheck();
         if ( !ok ) return null;
 
         this.status = OcrAdapterStatus.Processing;
@@ -64,7 +66,7 @@ export class PaddleOcrService {
                 }
                 resolve(response);
             })
-        );
+        ).catch( console.error );
         // console.timeEnd('PaddleOcrService.recognize');
         this.status = OcrAdapterStatus.Enabled;
         
@@ -102,6 +104,9 @@ export class PaddleOcrService {
     }
 
     async detect( input: DetectRequest, id: string ): Promise< OcrItemBox[] > {
+
+        const ok = await this.processStatusCheck();
+        if ( !ok ) return [];
 
         const clientResponse = await new Promise< DetectResponse__Output | undefined >(
             (resolve, reject) => this.ocrServiceClient?.Detect( input, ( error, response ) => {
@@ -150,18 +155,28 @@ export class PaddleOcrService {
         const platform = os.platform();
 
         const executableName = platform === 'win32'
-            ? 'ppocr_infer_service_grpc.exe'
+            ? 'ppocr_infer_service_grpc.exe' // !
             : 'start.sh'; // start.sh | ppocr_infer_service_grpc
 
         const executable = join( this.binRoot + `/${executableName}` );
 
         let port: string | number| undefined = (await getNextPortAvailable( 51_000 )) || 12345;
 
+        this.status = OcrAdapterStatus.Starting;
         this.serviceProcess = spawn(
             executable,
             [ this.settingsPresetsRoot, 'default', port.toString() ],
             { cwd: this.binRoot }
         );
+        this.serviceProcess.on('error', error => {
+            console.error(error);
+            if ( this.status === OcrAdapterStatus.Starting ) {
+                this.status = OcrAdapterStatus.Disabled
+                console.log("Warning: PaddleOCR service couldn't be started!")
+            }
+            if (onInitialized) onInitialized();
+        });
+        
 
         // Handle stdout and stderr data
         this.serviceProcess.stdout.on('data', ( data: string ) => {
@@ -188,8 +203,18 @@ export class PaddleOcrService {
         this.serviceProcess.on('close', (code) => {
             console.log(`ppocr_infer_service_grpc.exe process exited with code ${code}`);
 
-            if ( this.status != OcrAdapterStatus.Restarting )
+            if ( 
+                this.status != OcrAdapterStatus.Restarting &&
+                this.status != OcrAdapterStatus.Disabled &&
+                this.autoRestartCount < 5
+            ) {
                 this.restart( () => {} );
+                this.autoRestartCount++;
+            }
+
+            if ( this.autoRestartCount >= 5 ) {
+                this.status = OcrAdapterStatus.Disabled;
+            }
         });
 
         process.on('exit', () => {
@@ -201,6 +226,9 @@ export class PaddleOcrService {
 
     // Checks if the ppocrService is enabled.
     async processStatusCheck(): Promise< boolean > {
+
+        if ( this.status === OcrAdapterStatus.Disabled )
+            return false;
         
         let triesCounter = 0;
 
@@ -212,7 +240,11 @@ export class PaddleOcrService {
 
             console.log('ppocrServiceProcessStatusCheck: '+ triesCounter);
 
-            if ( triesCounter > 15 ) return false;
+            if ( triesCounter > 5 )  {
+                this.status = OcrAdapterStatus.Disabled;
+                console.log('Warning: PaddleOCR service is not running!')
+                return false;
+            }
         }
 
         return true
@@ -280,7 +312,7 @@ export class PaddleOcrService {
         callback();
 
         if ( !ok ) {
-            console.log("PaddleOCR service failed to restart");
+            console.log("PaddleOCR service failed to restart!");
             return;
         }
 
