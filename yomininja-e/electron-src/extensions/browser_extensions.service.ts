@@ -53,7 +53,7 @@ export class BrowserExtensionsService {
 
             webContents.on('context-menu', (e, params) => {
 
-                const extensionMenuItems = this.extensionsApi.getContextMenuItems(webContents, params);
+                let extensionMenuItems = this.extensionsApi.getContextMenuItems(webContents, params);
 
                 // Refreshing every window on extension click
                 extensionMenuItems.forEach( item => {
@@ -74,13 +74,30 @@ export class BrowserExtensionsService {
                 const menu = buildChromeContextMenu({
                     params,
                     webContents,
-                    extensionMenuItems,
+                    extensionMenuItems: [],
                     openLink: (url, disposition) => {
                         this.createExtensionWindow( url );
                     }
                 });
 
+                if (
+                    !isDev &&
+                    webContents.getURL().includes('overlay')
+                ) { 
+
+                    menu.items.forEach( item => {
+                        if ( !item ) return;
+
+                        if ( item.type == 'separator' )
+                            item.visible = false;
+
+                        if ( item.label.toLowerCase() == 'inspect' )
+                            item.visible = false;
+                    });
+                }
+
                 menu.popup();
+
             });
         });
 
