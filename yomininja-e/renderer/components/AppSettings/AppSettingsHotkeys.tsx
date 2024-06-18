@@ -18,6 +18,12 @@ export default function AppSettingsHotkeys() {
         .find( engineSettings => {
             return engineSettings.ocr_adapter_name === 'PpOcrAdapter'
         });
+
+    const mangaOcrSettings = activeSettingsPreset?.ocr_engines
+        .find( engineSettings => {
+            return engineSettings.ocr_adapter_name === 'MangaOcrAdapter'
+        });
+
     const cloudVisionSettings = activeSettingsPreset?.ocr_engines
         .find( engineSettings => {
             return engineSettings.ocr_adapter_name === 'CloudVisionOcrAdapter'
@@ -41,6 +47,7 @@ export default function AppSettingsHotkeys() {
     const ocrOnPrintScreen = Boolean(overlayHotkeys?.ocr_on_screen_shot);
 
     const paddleOcrKeys = stringToHotkeyCombination( ppOcrSettings?.hotkey );
+    const mangaOcrKeys = stringToHotkeyCombination( mangaOcrSettings?.hotkey );
     const cloudVisionKeys = stringToHotkeyCombination( cloudVisionSettings?.hotkey );
     const googleLensKeys = stringToHotkeyCombination( googleLensSettings?.hotkey );
 
@@ -143,6 +150,18 @@ export default function AppSettingsHotkeys() {
                         });
                     }}
                     // sx={{ mb: 0 }}
+                />
+
+                <HotkeyFields
+                    label='MangaOCR'
+                    keyCombination={ mangaOcrKeys }
+                    onChangeHandler={ ( input?: string[]  ) => {
+                        if ( !input ) return;
+                        updateActivePresetOcrEngine({
+                            ...mangaOcrSettings,
+                            hotkey: hotkeyCombinationToString( input )
+                        });
+                    }}
                 />
 
                 <HotkeyFields
