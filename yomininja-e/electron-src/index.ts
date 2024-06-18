@@ -1,4 +1,7 @@
 // Packages
+import os from 'os';
+console.log({ cpu_model: os.cpus()[0].model.trim() });
+
 import { BrowserWindow, app, ipcMain, IpcMainEvent, IpcMainInvokeEvent, clipboard, globalShortcut, systemPreferences } from 'electron';
 import prepareNext from 'electron-next';
 import './shared_handlers';
@@ -18,7 +21,6 @@ else {
     await prepareNext('./renderer');
   
     startUIOhook();
-  
     await appController.init();
   });
   

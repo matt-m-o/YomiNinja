@@ -195,6 +195,7 @@ export async function initializeApp() {
 
         // console.log('Initialization completed!');
     } catch (error) {
+        console.log("Error: App initialization failed!")
         console.error( error )
     }
 }
