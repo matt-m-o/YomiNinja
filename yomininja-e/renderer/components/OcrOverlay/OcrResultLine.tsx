@@ -59,13 +59,24 @@ function getPositionOffset(
     }
 }
 
-function getBestFontSize(
-    line: OcrTextLineScalable,
-    maxWidth: number,
-    maxHeight: number,
-    initialFontSize: number,
-    isVertical = false,
-) {
+function getBestFontStyle( input: {
+    line: OcrTextLineScalable;
+    maxWidth: number;
+    maxHeight: number;
+    initialFontSize: number;
+    initialSpacing?: number;
+    isVertical: boolean;
+}): { fontSize: number, letterSpacing: number } {
+
+    const {
+        line,
+        maxWidth,
+        maxHeight,
+        initialFontSize,
+        initialSpacing,
+        isVertical,
+    } = input;
+
     const fontFamily = 'arial';
 
     let maxSideLength = isVertical ? maxHeight : maxWidth;
@@ -82,48 +93,97 @@ function getBestFontSize(
 
 
     let fontSize = initialFontSize;
-    let found = false;
+    let bestSizeFound = false;
     let increased = false;
     let decreased = false;
 
+    // const canvas = new OffscreenCanvas( 2*maxWidth, 2*maxHeight )
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
 
     let text = line.content;
 
     if ( ['。', '．', '、',].includes( text[text.length-1] ) )
-        text = text.slice(0, text.length-1) + '.';
+        text = text.slice(0, text.length-1) + '';
 
-    while ( !found ) {
+    context.font = `${fontSize}px ${fontFamily}`;
+    let metrics = context.measureText(text);
+
+    fontSize = fontSize * (maxSideLength / metrics.width);
+    
+    while ( !bestSizeFound ) {
 
         context.font = `${fontSize}px ${fontFamily}`;
-        const metrics = context.measureText(text);
+        metrics = context.measureText(text);
 
         if ( metrics.width > maxSideLength ) {
             fontSize -= 1; // 0.5;
             decreased = true;
         }
 
-        else if ( metrics.width < maxSideLength * 0.95 ) {
+        else if ( metrics.width < maxSideLength * 0.99 ) {
             fontSize += 1; // 0.5;
             increased = true;
         }
         else
-            found = true;
+            bestSizeFound = true;
 
         if ( fontSize < 0 ) {
             fontSize = 1;
-            found = true;
+            bestSizeFound = true;
         }
 
         if (increased && decreased)
-            found = true;
+            bestSizeFound = true;
     }
 
-    if ( fontSize > maxFontSize * 1.12 )
-        fontSize = maxFontSize;
+    if ( fontSize > maxFontSize ) // maxFontSize * 1.12
+        fontSize = maxFontSize; // maxFontSize * 1.12;
 
-    return fontSize;
+    context.font = `${fontSize}px ${fontFamily}`;
+
+    if ( typeof initialSpacing === 'undefined'  || isVertical )
+        return { fontSize, letterSpacing: 0 }
+
+    let bestSpacingFound = false;
+    increased = false;
+    decreased = false;
+    let letterSpacing = initialSpacing;
+
+    let spacingIterations = 0;
+
+    while ( !bestSpacingFound ) {
+
+        spacingIterations++;
+        
+        context.letterSpacing = letterSpacing + 'px';
+        const metrics = context.measureText(text);
+
+        if ( metrics.width > maxSideLength ) {
+            letterSpacing -= 1; // 0.5;
+            decreased = true;
+        }
+
+        else if ( metrics.width < maxSideLength * 0.99 ) {
+            letterSpacing += 1; // 0.5;
+            increased = true;
+        }
+        else
+            bestSpacingFound = true;
+
+        if ( letterSpacing < 0 ) {
+            letterSpacing = 0;
+            bestSpacingFound = true;
+        }
+
+        if (increased && decreased)
+            bestSpacingFound = true;
+    }
+
+    return {
+        fontSize,
+        letterSpacing
+    };
 }
 
 export default function OcrResultLine( props: OcrResultLineProps ) {
@@ -172,6 +232,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     let fontSizeFactor = ocrItemBoxVisuals.text.font_size_factor;
     fontSizeFactor = fontSizeFactor ? fontSizeFactor / 100 : 1;
     let lineHeight = lineFontSize;
+    let letterSpacing = ocrItemBoxVisuals.text.letter_spacing;
 
     line?.symbols?.forEach( symbol => {
 
@@ -209,13 +270,14 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     if ( ocrItemBoxVisuals.text.character_positioning && line.symbols?.length ) {
 
         setLineHeight = !box.isVertical;
-        lineFontSize = getBestFontSize(
+        const bestFontStyle = getBestFontStyle({
             line,
-            lineBoxWidthPx,
-            lineBoxHeightPx,
-            lineFontSize,
-            box?.isVertical
-        );
+            maxWidth: lineBoxWidthPx,
+            maxHeight: lineBoxHeightPx,
+            initialFontSize: lineFontSize,
+            isVertical: Boolean(box?.isVertical)
+        });
+        lineFontSize = bestFontStyle.fontSize;
         lineFontSize = lineFontSize * fontSizeFactor;
 
         symbols = line?.symbols.map( ( symbol, sIdx ) => {
@@ -292,15 +354,21 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         if ( !lineFontSize && (lineBoxWidthPx || lineBoxHeightPx) ) {
             lineFontSize = box.isVertical ? lineBoxWidthPx : lineBoxHeightPx;
         }
-        lineFontSize = getBestFontSize(
+        
+        const bestFontStyle = getBestFontStyle({
             line,
-            lineBoxWidthPx,
-            lineBoxHeightPx,
-            lineFontSize,
-            box?.isVertical
-        );
-
+            maxWidth: lineBoxWidthPx,
+            maxHeight: lineBoxHeightPx,
+            initialFontSize: lineFontSize,
+            isVertical: Boolean(box?.isVertical),
+            initialSpacing: 1
+        });
+        
+        lineFontSize = bestFontStyle.fontSize;
         lineFontSize *= fontSizeFactor;
+
+        if ( !box.isVertical )
+            letterSpacing = bestFontStyle.letterSpacing;
 
         const firstSymbol = line?.content?.[0];
         const lastSymbol = line?.content?.[ line?.content.length - 1 ];
@@ -357,6 +425,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         fontSize: lineFontSize ? lineFontSize+'px' : 'inherit',
         lineHeight: setLineHeight && lineFontSize ? lineHeight+'px' : 'inherit',
         margin: props.sizeExpansionPx / 2 + 'px',
+        letterSpacing: letterSpacing+'px'
     };
 
     const margin = props.sizeExpansionPx / 2 + 'px';
