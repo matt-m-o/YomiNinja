@@ -26,6 +26,8 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
 
         if ( testApi )
             this.testApi = testApi;
+
+        this.status = OcrAdapterStatus.Enabled;
     }
 
     initialize( serviceAddress?: string | undefined ) {}

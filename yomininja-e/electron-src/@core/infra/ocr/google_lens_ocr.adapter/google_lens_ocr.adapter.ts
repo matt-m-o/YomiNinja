@@ -24,7 +24,9 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
     private prevResultTime: Date = new Date();
 
 
-    constructor() {}
+    constructor() {
+        this.status = OcrAdapterStatus.Enabled;
+    }
 
     initialize( _?: string | undefined ) {}
 

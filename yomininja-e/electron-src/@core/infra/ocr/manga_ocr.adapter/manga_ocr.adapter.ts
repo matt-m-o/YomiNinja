@@ -9,7 +9,7 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
     
     static _name: string = mangaOcrAdapterName;
     public readonly name: string = MangaOcrAdapter._name;
-    public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
+    // public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
     private idCounter: number = 0;
     private recognitionCallOnHold: OcrRecognitionInput | undefined;
 
@@ -19,11 +19,14 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
 
     private engineSettings: MangaOcrEngineSettings;
 
+    get status(): OcrAdapterStatus {
+        return mangaOcrPyService.status;
+    }
+
     constructor() {}
 
     initialize() {
-
-        this.status = OcrAdapterStatus.Enabled;
+        // this.status = OcrAdapterStatus.Enabled;
     }
 
     async recognize( input: OcrRecognitionInput ): Promise< OcrResultScalable | null > {
@@ -47,7 +50,7 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
             this.prevImage = input.imageBuffer;
       
         console.log('processing recognition input');
-        this.status = OcrAdapterStatus.Processing;
+        // this.status = OcrAdapterStatus.Processing;
         // console.time('MangaOcrAdapter.recognize');
 
         let result: OcrResult | null = null;
@@ -60,11 +63,11 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
             
         } catch (error) {
             console.error( error );
-            this.status = OcrAdapterStatus.Enabled
+            // this.status = OcrAdapterStatus.Enabled
         }
 
         // console.timeEnd('PpOcrAdapter.recognize');
-        this.status = OcrAdapterStatus.Enabled;
+        // this.status = OcrAdapterStatus.Enabled;
         
         // Throwing away current response an returning latest call result
         if ( this.recognitionCallOnHold ){

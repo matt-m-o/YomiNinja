@@ -81,7 +81,7 @@ export class PyOcrService {
                 }
                 resolve(response);
             })
-        );
+        ).catch( console.error );
         // console.timeEnd('PpOcrAdapter.recognize');
         this.status = OcrAdapterStatus.Enabled;
 
