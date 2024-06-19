@@ -51,7 +51,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
             />
         </Container>
             
-        <Container sx={{ ml: 1.5,  mt: 0, mb: 2 }}>
+        <Container sx={{ ml: 1.5,  mt: 0, mb: 0 }}>
             <FormControlLabel label='Add end-of-sentence punctuation'
                 title="Fixes Yomitan sentence mining issues"
                 control={
@@ -85,6 +85,28 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                                     sentence_ending_punctuation: {
                                         ...ocrItemBoxVisuals.text.sentence_ending_punctuation,
                                         hidden: event.target.checked
+                                    }
+                                }
+                            });
+                        }}
+                    /> 
+                }
+            />
+        </Container>
+
+        <Container sx={{ ml: 1.5,  mt: 0, mb: 2 }}>
+            <FormControlLabel label='Filter out furigana'
+                title='Removes pieces of text that can potentially be furigana (experiemental)'
+                control={
+                    <Switch
+                        checked={ Boolean( ocrItemBoxVisuals?.text?.furigana_filter?.enabled ) }
+                        onChange={ ( event ) => {
+                            updateOcrItemBoxVisuals({
+                                text: {
+                                    ...ocrItemBoxVisuals.text,
+                                    furigana_filter: {
+                                        ...ocrItemBoxVisuals.text.furigana_filter,
+                                        enabled: event.target.checked
                                     }
                                 }
                             });

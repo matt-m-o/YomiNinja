@@ -22,6 +22,10 @@ export type OverlayOcrItemBoxVisuals = {
             enabled: boolean;
             hidden: boolean;
         };
+        furigana_filter: {
+            enabled: boolean;
+            threshold: number;
+        };
     };
     selected_text: {
         color: string;

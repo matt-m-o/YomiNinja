@@ -8,6 +8,7 @@ import OcrResultBox from "./OcrResultBox";
 import { TTSContext } from "../../context/text-to-speech.provider";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
+import { removeFurigana } from "../../utils/text_utils";
 
 export type FullscreenOcrResultProps = {
     ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
@@ -122,6 +123,10 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
             ( ocrRegion, regionIdx ) => {
 
                 const ocrTemplateRegion = getOcrTemplateTargetRegion( ocrRegion.id );
+
+                if ( Boolean(ocrItemBoxVisuals.text.furigana_filter?.enabled) ) {
+                    removeFurigana(ocrRegion.results);
+                }
             
                 return (
                     <div className="ocr-region" key={regionIdx}

@@ -34,6 +34,10 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                         sentence_ending_punctuation: {
                             enabled: true,
                             hidden: true
+                        },
+                        furigana_filter: {
+                            enabled: false,
+                            threshold: 0.6
                         }
                     },
                     selected_text: {
