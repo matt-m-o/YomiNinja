@@ -13,7 +13,7 @@ function isEolCharacter( char: string ): boolean {
     ].includes(char);
 }
 
-const SymbolsContainer = styled('span')({
+const TextFragmentsContainer = styled('span')({
     position: 'absolute',
     left: '0px',
     top: '0px'
@@ -109,17 +109,36 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     let lineHeight = lineFontSize;
     let letterSpacing = ocrItemBoxVisuals.text.letter_spacing;
 
-    line?.symbols?.forEach( symbol => {
 
-        const charBoxHeightPx = ( regionHeightPx * ( symbol.box.dimensions.height / 100 ) );
-        if ( charBoxHeightPx > lineFontSize )
-            lineFontSize = charBoxHeightPx;
-    });
+    if ( line?.symbols?.length ) {
+        line?.symbols?.forEach( symbol => {
+    
+            const charBoxHeightPx = ( regionHeightPx * ( symbol.box.dimensions.height / 100 ) );
+            if ( charBoxHeightPx > lineFontSize )
+                lineFontSize = charBoxHeightPx;
+        });
+    }
+    else if ( line?.words?.length ) {
+        let avg = 0;
+        let max = 0;
+        line?.words?.forEach( word => {
+
+            const wordBoxHeightPx = ( regionHeightPx * ( word.box.dimensions.height / 100 ) );
+            if ( wordBoxHeightPx > max )
+                max = wordBoxHeightPx;
+
+            avg += wordBoxHeightPx;
+        });
+
+        avg = avg / line.words.length;
+        lineFontSize = ( avg + max ) / 2;
+    }
 
 
     let setLineHeight = true;
 
     let symbols: JSX.Element[];
+    let words: JSX.Element[];
 
     const lineBoxWidthPx = regionWidthPx * ( line?.box?.dimensions.width / 100 );
     const lineBoxHeightPx = regionHeightPx * ( line?.box?.dimensions.height / 100 );
@@ -141,12 +160,11 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     )
         eolSymbol = '.'
 
-
     if ( ocrItemBoxVisuals.text.character_positioning && line.symbols?.length ) {
 
         setLineHeight = !box.isVertical;
         const bestFontStyle = getBestFontStyle({
-            line,
+            text: line.content,
             maxWidth: lineBoxWidthPx,
             maxHeight: lineBoxHeightPx,
             initialFontSize: lineFontSize,
@@ -211,6 +229,73 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         });
 
     }
+    else if ( ocrItemBoxVisuals.text.character_positioning && line.words?.length ) {
+
+        setLineHeight = !box.isVertical;
+
+        words = line?.words.map( ( word, sIdx ) => {
+
+            let isLastWord = line?.words.length - 1 === sIdx;
+    
+            const wordBoxWidthPx = regionWidthPx * ( word.box.dimensions.width / 100 );
+            const wordBoxHeightPx = regionHeightPx * ( word.box.dimensions.height / 100 );
+
+            const bestFontStyle = getBestFontStyle({
+                text: word.word,
+                maxWidth: wordBoxWidthPx,
+                maxHeight: wordBoxHeightPx,
+                initialFontSize: box.isVertical ? wordBoxWidthPx : wordBoxHeightPx,
+                initialSpacing: 0,
+                isVertical: Boolean(box?.isVertical)
+            });
+            let fontSize = bestFontStyle.fontSize * fontSizeFactor;
+    
+            let left = word.box.position.left - box.position.left;
+            let top = word.box.position.top - box.position.top;
+
+            // Handle some special characters
+            const { topOffset, leftOffset } = getPositionOffset({
+                symbol: word.word,
+                fontSize: fontSize,
+                vertical: box.isVertical,
+            });
+            
+            const leftPx = leftOffset + ( ( left / 100 ) * regionWidthPx ) + ( sizeExpansionPx / 2 );
+            const topPx = topOffset + ( ( top / 100 ) * regionHeightPx ) + ( sizeExpansionPx / 2 );
+
+            if (
+                isLastLine &&
+                isLastWord &&
+                !isEolCharacter(word.word)
+            )
+                addEolSymbol = true;
+    
+            if ( fontSize < lineFontSize * 0.90 && word.word.length === 1)
+                fontSize = (fontSize + lineFontSize) / 2; //  * 0.95;
+            
+            return (
+                <Symbol key={sIdx}
+                    style={{
+                        position: 'absolute',
+                        display: 'flex',
+                        alignItems: 'center',
+                        width: wordBoxWidthPx + 'px',
+                        height: wordBoxHeightPx + 'px',
+                        left: leftPx + 'px',
+                        top: topPx + 'px',
+                        fontSize: fontSize + 'px',
+                        letterSpacing: bestFontStyle.letterSpacing + 'px',
+                        lineHeight: box.isVertical ? 'unset' : fontSize + 'px',
+                        transform: `rotate( ${ word.box.angle_degrees }deg )`,
+                        // border: 'none',
+                        border: 'solid 2px red',
+                    }}
+                >
+                    { word.word }
+                </Symbol>
+            )
+        });
+    }
     else {
 
         if ( box.isVertical ) {
@@ -231,7 +316,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         }
         
         const bestFontStyle = getBestFontStyle({
-            line,
+            text: line.content,
             maxWidth: lineBoxWidthPx,
             maxHeight: lineBoxHeightPx,
             initialFontSize: lineFontSize,
@@ -263,16 +348,28 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     }
 
     const symbolsContainerRotation = symbols ? -box.angle_degrees : 0;
+    const wordsContainerRotation = words ? -box.angle_degrees : 0;
 
     const symbolsContainer = symbols ? ( 
-        <SymbolsContainer
+        <TextFragmentsContainer
             style={{
                 transform: `rotate( ${symbolsContainerRotation}deg )`,
                 fontSize: lineFontSize
             }}
         >
             {symbols}
-        </SymbolsContainer>
+        </TextFragmentsContainer>
+    ) : undefined;
+
+    const wordsContainer = words ? ( 
+        <TextFragmentsContainer
+            style={{
+                transform: `rotate( ${wordsContainerRotation}deg )`,
+                fontSize: lineFontSize
+            }}
+        >
+            {words}
+        </TextFragmentsContainer>
     ) : undefined;
     
     
@@ -344,6 +441,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         { linePositioning === 'absolute' && lineSizeHolder }
         {
             symbolsContainer ||
+            wordsContainer ||
             <Line
                 contentEditable={contentEditable}
                 onBlur={ ( e ) => {

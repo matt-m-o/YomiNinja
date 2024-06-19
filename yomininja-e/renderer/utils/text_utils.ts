@@ -1,5 +1,14 @@
 import { OcrItemScalable, OcrTextLineScalable } from "../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 
+export function symbolIncludesSpacing( symbol: string ): boolean {
+    return [
+        '。', '．', '、', '，', 
+        '「', '」', '『', '』',  '（', '）', '〔', '〕', '［', '］', '｛', '｝',
+        '｟', '｠', '〈', '〉', '《', '》', '【', '】', '〖', '〗', '〘', '〙', '〚', '〛',
+        '〝', '〟'
+    ].includes(symbol);
+}
+
 export function removeFurigana( input: OcrItemScalable[] ) {
 
     input.forEach( item => {
@@ -58,7 +67,7 @@ export function removeFurigana( input: OcrItemScalable[] ) {
 }
 
 export function getBestFontStyle( input: {
-    line: OcrTextLineScalable;
+    text: string;
     maxWidth: number;
     maxHeight: number;
     initialFontSize: number;
@@ -66,8 +75,9 @@ export function getBestFontStyle( input: {
     isVertical: boolean;
 }): { fontSize: number, letterSpacing: number } {
 
+    let { text } = input;
+
     const {
-        line,
         maxWidth,
         maxHeight,
         initialFontSize,
@@ -99,17 +109,35 @@ export function getBestFontStyle( input: {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
 
-    let text = line.content;
 
-    if ( ['。', '．', '、',].includes( text[text.length-1] ) )
+    if ( 
+        text.length > 1 &&
+        symbolIncludesSpacing( text[text.length-1] )
+    ){
         text = text.slice(0, text.length-1) + '';
+    }
+
+    else if (
+        text.length == 1 &&
+        symbolIncludesSpacing( text )
+    ) {
+        text = text.slice(0, text.length-1) + '.';
+    }
 
     context.font = `${fontSize}px ${fontFamily}`;
     let metrics = context.measureText(text);
 
     fontSize = fontSize * (maxSideLength / metrics.width);
+
+    let sizeIterations = 0;
     
     while ( !bestSizeFound ) {
+
+        sizeIterations++;
+        if (sizeIterations > 50) {
+            console.log(`Breaking size iterations | text: "${text}"`);
+            break;
+        }
 
         context.font = `${fontSize}px ${fontFamily}`;
         metrics = context.measureText(text);
@@ -153,6 +181,10 @@ export function getBestFontStyle( input: {
     while ( !bestSpacingFound ) {
 
         spacingIterations++;
+        if (spacingIterations > 50) {
+            console.log(`Breaking spacing iterations | text: "${text}"`);
+            break;
+        }
         
         context.letterSpacing = letterSpacing + 'px';
         const metrics = context.measureText(text);
