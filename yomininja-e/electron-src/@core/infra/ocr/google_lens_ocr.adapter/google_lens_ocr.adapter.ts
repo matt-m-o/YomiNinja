@@ -219,7 +219,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                 const lineTextData = lineData[0];
                 const lineBoxData = lineData[1];
 
-                const text: string = lineTextData.map( ( word: any[] ) => word[0] + ( word[3] || '' )  ).join('');
+                let text: string = lineTextData.map( ( word: any[] ) => word[0] + ( word[3] || '' )  ).join('');
 
                 // console.log( lineTextData );
                 // console.log( lineBoxData );
@@ -232,6 +232,18 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                     heightPx > ( widthPx * 1.20 ) &&
                     text?.length > 1
                 );
+                
+                if (!isVertical) {
+                    text = lineTextData
+                        .sort( ( a: any, b: any ) => {
+                            const aPositionLeft = a[1][1];
+                            const bPositionLeft = b[1][1];
+                            return aPositionLeft - bPositionLeft;
+                        })
+                        .map(
+                            ( word: any[] ) => word[0] + ( word[3] || '' )
+                        ).join('');
+                }
 
                 blockIsVertical =  blockIsVertical || isVertical;
 
