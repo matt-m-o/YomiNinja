@@ -145,6 +145,9 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     let eolSymbol = '。';
     let addEolSymbol = false;
 
+    const firstSymbol = line?.content?.[0];
+    const lastSymbol = line?.content?.[ line?.content.length - 1 ];
+
     const { bcp47_tag } = active_ocr_language;
 
     if (
@@ -322,9 +325,6 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
 
         if ( !box.isVertical )
             letterSpacing = bestFontStyle.letterSpacing;
-
-        const firstSymbol = line?.content?.[0];
-        const lastSymbol = line?.content?.[ line?.content.length - 1 ];
 
         // Handle some special characters
         const offsets = getPositionOffset({
