@@ -3,7 +3,7 @@ import { OcrResultBoxScalable, OcrTextLineScalable, OcrTextLineSymbolScalable } 
 import { OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import { CSSProperties, useContext, useEffect } from "react";
 import { ProfileContext } from "../../context/profile.provider";
-import { getBestFontStyle, isEolCharacter } from "../../utils/text_utils";
+import { getBestFontStyle, getSymbolPositionOffset, isEolCharacter } from "../../utils/text_utils";
 
 
 const TextFragmentsContainer = styled('span')({
@@ -25,33 +25,7 @@ export type OcrResultLineProps = {
     onBlur?: () => void;
 };
 
-function getPositionOffset(
-    input: {
-        symbol: string;
-        vertical: boolean;
-        fontSize: number;
-    }
-): {
-    topOffset: number;
-    leftOffset: number;
-} {
 
-    let topOffset = 0;
-    let leftOffset = 0;
-
-    if ( [ '【', '『', '「' ].includes( input.symbol ) ) {
-
-        if ( !input.vertical )
-            leftOffset = -input.fontSize * 0.5;
-        else
-            topOffset = -input.fontSize * 0.5;
-    }
-
-    return {
-        topOffset,
-        leftOffset
-    }
-}
 
 
 export default function OcrResultLine( props: OcrResultLineProps ) {
@@ -187,7 +161,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             let letterSpacing = 1;
 
             // Handle some special characters
-            const { topOffset, leftOffset } = getPositionOffset({
+            const { topOffset, leftOffset } = getSymbolPositionOffset({
                 symbol: symbol.symbol,
                 fontSize: lineFontSize,
                 vertical: box.isVertical,
@@ -250,7 +224,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             let top = word.box.position.top - box.position.top;
 
             // Handle some special characters
-            const { topOffset, leftOffset } = getPositionOffset({
+            const { topOffset, leftOffset } = getSymbolPositionOffset({
                 symbol: word.word,
                 fontSize: fontSize,
                 vertical: box.isVertical,
@@ -327,7 +301,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             letterSpacing = bestFontStyle.letterSpacing;
 
         // Handle some special characters
-        const offsets = getPositionOffset({
+        const offsets = getSymbolPositionOffset({
             symbol: firstSymbol,
             fontSize: lineFontSize,
             vertical: box.isVertical,

@@ -223,3 +223,32 @@ export function getBestFontStyle( input: {
         letterSpacing
     };
 }
+
+
+export function getSymbolPositionOffset(
+    input: {
+        symbol: string;
+        vertical: boolean;
+        fontSize: number;
+    }
+): {
+    topOffset: number;
+    leftOffset: number;
+} {
+
+    let topOffset = 0;
+    let leftOffset = 0;
+
+    if ( [ '【', '『', '「' ].includes( input.symbol ) ) {
+
+        if ( !input.vertical )
+            leftOffset = -input.fontSize * 0.5;
+        else
+            topOffset = -input.fontSize * 0.5;
+    }
+
+    return {
+        topOffset,
+        leftOffset
+    }
+}
