@@ -2,6 +2,8 @@ export type OverlayOcrRegionVisuals = {
     border_width: number;
 };
 
+export type TextPositioningMode = 'line-based' | 'word-based' | 'character-based';
+
 export type OverlayOcrItemBoxVisuals = {
     inactive_border_color: string;
     active_border_color: string;
@@ -18,6 +20,9 @@ export type OverlayOcrItemBoxVisuals = {
         outline_width: number; // pixels
         outline_color: string;
         character_positioning: boolean; // Individual character positioning
+        positioning?: {
+            mode: TextPositioningMode,
+        },
         sentence_ending_punctuation: {
             enabled: boolean;
             hidden: boolean;
@@ -26,6 +31,7 @@ export type OverlayOcrItemBoxVisuals = {
             enabled: boolean;
             threshold: number;
         };
+
     };
     selected_text: {
         color: string;

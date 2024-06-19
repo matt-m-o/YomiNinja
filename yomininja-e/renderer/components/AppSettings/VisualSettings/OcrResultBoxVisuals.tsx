@@ -1,7 +1,7 @@
-import { Container, FormControlLabel, Switch, SxProps, TextField, Theme, Typography, debounce } from "@mui/material";
+import { Container, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, SxProps, TextField, Theme, Typography, debounce } from "@mui/material";
 import { useContext } from "react";
 import { SettingsContext } from "../../../context/settings.provider";
-import { OverlayOcrItemBoxVisuals } from "../../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
+import { OverlayOcrItemBoxVisuals, TextPositioningMode } from "../../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import ColorPicker from "../../common/ColorPicker";
 
 
@@ -32,23 +32,49 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
             Extracted text
         </Typography>
 
-        <Container sx={{ ml: 1.5,  mt: 0, mb: 0 }}>
-            <FormControlLabel label='Individual character positioning (not supported by all OCR engines)'
-                title="Currently only supported by Google Cloud Vision. Breaks JPDB Reader."
-                control={
-                    <Switch
-                        checked={ Boolean( ocrItemBoxVisuals?.text.character_positioning ) }
-                        onChange={ ( event ) => {
+        <Container sx={{ ml: 1.5,  mt: 2, mb: 1 }}>
+            <FormControl fullWidth 
+                sx={{
+                    display:'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    width: 300
+                }}>
+                
+                <Select
+                    value={ ocrItemBoxVisuals?.text?.positioning?.mode || '' }
+                    label="Positioning Mode"
+                    onChange={ ( event ) => {
+                        const { value } = event.target;
+                        if (typeof value === 'string') {
                             updateOcrItemBoxVisuals({
                                 text: {
                                     ...ocrItemBoxVisuals.text,
-                                    character_positioning: event.target.checked
+                                    positioning: {
+                                        ...ocrItemBoxVisuals.text?.positioning,
+                                        mode: value as TextPositioningMode
+                                    }
                                 }
                             });
-                        }}
-                    /> 
-                }
-            />
+                        }
+                    }}
+                    sx={{ minWidth: 150 }}
+                >
+                    <MenuItem value='line-based'>
+                        Line-based
+                    </MenuItem>
+                    <MenuItem value='word-based'>
+                        Word-based
+                    </MenuItem>
+                    <MenuItem value='character-based'>
+                        Character-based
+                    </MenuItem>
+                </Select>
+
+                <InputLabel>Positioning Mode</InputLabel>
+
+            </FormControl>
+            
         </Container>
             
         <Container sx={{ ml: 1.5,  mt: 0, mb: 0 }}>

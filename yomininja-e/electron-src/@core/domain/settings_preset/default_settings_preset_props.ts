@@ -31,6 +31,9 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                         outline_width: 0,
                         outline_color: '#000000',
                         character_positioning: true,
+                        positioning: {
+                            mode: 'line-based',
+                        },
                         sentence_ending_punctuation: {
                             enabled: true,
                             hidden: true

@@ -160,7 +160,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     )
         eolSymbol = '.'
 
-    if ( ocrItemBoxVisuals.text.character_positioning && line.symbols?.length ) {
+    if ( ocrItemBoxVisuals.text?.positioning.mode === 'character-based' && line.symbols?.length ) {
 
         setLineHeight = !box.isVertical;
         const bestFontStyle = getBestFontStyle({
@@ -229,7 +229,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         });
 
     }
-    else if ( ocrItemBoxVisuals.text.character_positioning && line.words?.length ) {
+    else if ( ocrItemBoxVisuals.text?.positioning.mode === 'word-based' && line.words?.length ) {
 
         setLineHeight = !box.isVertical;
 
