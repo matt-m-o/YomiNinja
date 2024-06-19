@@ -1,4 +1,4 @@
-import { OcrItemScalable } from "../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
+import { OcrItemScalable, OcrTextLineScalable } from "../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 
 export function removeFurigana( input: OcrItemScalable[] ) {
 
@@ -55,4 +55,131 @@ export function removeFurigana( input: OcrItemScalable[] ) {
     });
 
     return input;
+}
+
+export function getBestFontStyle( input: {
+    line: OcrTextLineScalable;
+    maxWidth: number;
+    maxHeight: number;
+    initialFontSize: number;
+    initialSpacing?: number;
+    isVertical: boolean;
+}): { fontSize: number, letterSpacing: number } {
+
+    const {
+        line,
+        maxWidth,
+        maxHeight,
+        initialFontSize,
+        initialSpacing,
+        isVertical,
+    } = input;
+
+    const fontFamily = 'arial';
+
+    let maxSideLength = isVertical ? maxHeight : maxWidth;
+    let maxFontSize = initialFontSize;
+
+    if ( isVertical ) {
+        maxSideLength = maxHeight;
+        maxFontSize = maxWidth;
+    }
+    else {
+        maxSideLength = maxWidth;
+        maxFontSize = maxHeight;
+    }
+
+
+    let fontSize = initialFontSize;
+    let bestSizeFound = false;
+    let increased = false;
+    let decreased = false;
+
+    // const canvas = new OffscreenCanvas( 2*maxWidth, 2*maxHeight )
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    let text = line.content;
+
+    if ( ['。', '．', '、',].includes( text[text.length-1] ) )
+        text = text.slice(0, text.length-1) + '';
+
+    context.font = `${fontSize}px ${fontFamily}`;
+    let metrics = context.measureText(text);
+
+    fontSize = fontSize * (maxSideLength / metrics.width);
+    
+    while ( !bestSizeFound ) {
+
+        context.font = `${fontSize}px ${fontFamily}`;
+        metrics = context.measureText(text);
+
+        if ( metrics.width > maxSideLength ) {
+            fontSize -= 1; // 0.5;
+            decreased = true;
+        }
+
+        else if ( metrics.width < maxSideLength * 0.99 ) {
+            fontSize += 1; // 0.5;
+            increased = true;
+        }
+        else
+            bestSizeFound = true;
+
+        if ( fontSize < 0 ) {
+            fontSize = 1;
+            bestSizeFound = true;
+        }
+
+        if (increased && decreased)
+            bestSizeFound = true;
+    }
+
+    if ( fontSize > maxFontSize ) // maxFontSize * 1.12
+        fontSize = maxFontSize; // maxFontSize * 1.12;
+
+    context.font = `${fontSize}px ${fontFamily}`;
+
+    if ( typeof initialSpacing === 'undefined'  || isVertical )
+        return { fontSize, letterSpacing: 0 }
+
+    let bestSpacingFound = false;
+    increased = false;
+    decreased = false;
+    let letterSpacing = initialSpacing;
+
+    let spacingIterations = 0;
+
+    while ( !bestSpacingFound ) {
+
+        spacingIterations++;
+        
+        context.letterSpacing = letterSpacing + 'px';
+        const metrics = context.measureText(text);
+
+        if ( metrics.width > maxSideLength ) {
+            letterSpacing -= 1; // 0.5;
+            decreased = true;
+        }
+
+        else if ( metrics.width < maxSideLength * 0.99 ) {
+            letterSpacing += 1; // 0.5;
+            increased = true;
+        }
+        else
+            bestSpacingFound = true;
+
+        if ( letterSpacing < 0 ) {
+            letterSpacing = 0;
+            bestSpacingFound = true;
+        }
+
+        if (increased && decreased)
+            bestSpacingFound = true;
+    }
+
+    return {
+        fontSize,
+        letterSpacing
+    };
 }
