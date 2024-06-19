@@ -1,5 +1,13 @@
 import { OcrItemScalable, OcrTextLineScalable } from "../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 
+
+export function isEolCharacter( char: string ): boolean {
+    return [
+        ';', '!', '！', '?', '？', '⁉',
+        '.', '。', '…', '．',
+    ].includes(char);
+}
+
 export function symbolIncludesSpacing( symbol: string ): boolean {
     return [
         '。', '．', '、', '，', 

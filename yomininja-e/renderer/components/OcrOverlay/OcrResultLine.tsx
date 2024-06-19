@@ -3,15 +3,8 @@ import { OcrResultBoxScalable, OcrTextLineScalable, OcrTextLineSymbolScalable } 
 import { OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import { CSSProperties, useContext, useEffect } from "react";
 import { ProfileContext } from "../../context/profile.provider";
-import { getBestFontStyle } from "../../utils/text_utils";
+import { getBestFontStyle, isEolCharacter } from "../../utils/text_utils";
 
-
-function isEolCharacter( char: string ): boolean {
-    return [
-        ';', '!', '！', '?', '？', '⁉',
-        '.', '。', '…', '．',
-    ].includes(char);
-}
 
 const TextFragmentsContainer = styled('span')({
     position: 'absolute',
@@ -22,7 +15,7 @@ const TextFragmentsContainer = styled('span')({
 
 export type OcrResultLineProps = {
     line: OcrTextLineScalable;
-    box: OcrResultBoxScalable;
+    box: OcrResultBoxScalable; // Text block bounding box
     regionWidthPx: number;
     regionHeightPx: number;
     sizeExpansionPx: number;
