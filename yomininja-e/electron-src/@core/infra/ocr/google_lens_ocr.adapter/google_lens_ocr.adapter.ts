@@ -5,7 +5,7 @@ import { googleLensOcrAdapterName, GoogleLensOcrEngineSettings, getGoogleLensDef
 import { OcrEngineSettingsU } from "../../types/entity_instance.types";
 import FormData from 'form-data';
 import axios from 'axios';
-import { OcrItemScalable, OcrResultBoxScalable, OcrResultScalable, OcrTextLineScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
+import { OcrItemScalable, OcrResultBoxScalable, OcrResultScalable, OcrTextLineScalable, OcrTextWordScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 import sharp from "sharp";
 import fs from 'fs';
 import vm from 'vm';
@@ -219,6 +219,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                 const lineTextData = lineData[0];
                 const lineBoxData = lineData[1];
 
+                let words: OcrTextWordScalable[] = [];
                 let text: string = lineTextData.map( ( word: any[] ) => word[0] + ( word[3] || '' )  ).join('');
 
                 // console.log( lineTextData );
@@ -241,7 +242,29 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                             return aPositionLeft - bPositionLeft;
                         })
                         .map(
-                            ( word: any[] ) => word[0] + ( word[3] || '' )
+                            ( word: any[] ) =>  {
+                                const wordScalable: OcrTextWordScalable  = {
+                                    word: word[0],
+                                    box: {
+                                        position: {
+                                            top: word[1][0] * 100,
+                                            left: word[1][1] * 100,
+                                        },
+                                        dimensions: {
+                                            width: word[1][2] * 100,
+                                            height: word[1][3] * 100
+                                        },
+                                        angle_degrees: word[1][5],
+                                        isVertical,
+                                        transform_origin: 'center'
+                                    },
+                                    letter_spacing: 0
+                                }
+
+                                words.push(wordScalable);
+
+                                return word[0] + ( word[3] || '' );
+                            } 
                         ).join('');
                 }
 
@@ -265,6 +288,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                 const line: OcrTextLineScalable = {
                     content: text,
                     box,
+                    words
                 };
 
                 // console.log( line );
