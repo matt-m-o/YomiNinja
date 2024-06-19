@@ -21,8 +21,15 @@ export type OcrResultBoxScalable = {
     transform_origin?: 'top' | 'bottom' | 'center';
 };
 
+// TODO: Rename to OcrTextSymbolScalable and add to OcrTextWordScalable
 export type OcrTextLineSymbolScalable = {
     symbol: string;
+    box: OcrResultBoxScalable;
+    letter_spacing: number;
+};
+
+export type OcrTextWordScalable = {
+    word: string; // OcrTextLineSymbolScalable[]
     box: OcrResultBoxScalable;
     letter_spacing: number;
 };
@@ -30,6 +37,7 @@ export type OcrTextLineSymbolScalable = {
 export type OcrTextLineScalable = {
     content: string;
     box?: OcrResultBoxScalable;
+    words?: OcrTextWordScalable[];
     symbols?: OcrTextLineSymbolScalable[];
 };
 
@@ -174,8 +182,8 @@ export class OcrResultScalable {
                         ocrResult.context_resolution
                     );
                 }
-                
-                // TODO: Calculate position and dimensions
+
+                // TODO: Words
 
                 // Symbols
                 line?.symbols?.forEach( ( symbol, sIdx ) => {
@@ -214,7 +222,7 @@ export class OcrResultScalable {
                         letter_spacing: letterSpacing
                     });
 
-                })
+                });
 
                 return lineScalable;
             });
