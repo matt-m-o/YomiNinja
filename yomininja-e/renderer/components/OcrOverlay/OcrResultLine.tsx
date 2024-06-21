@@ -4,6 +4,8 @@ import { OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/set
 import { CSSProperties, useContext, useEffect } from "react";
 import { ProfileContext } from "../../context/profile.provider";
 import { getBestFontStyle, getSymbolPositionOffset, isEolCharacter } from "../../utils/text_utils";
+import OcrWordsContainer from "./OcrWordsContainer";
+import OcrSymbolsContainer from "./OcrSymbolsContainer";
 
 
 const TextFragmentsContainer = styled('span')({
@@ -76,6 +78,8 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     let lineHeight = lineFontSize;
     let letterSpacing = ocrItemBoxVisuals.text.letter_spacing;
 
+    const positioningMode = ocrItemBoxVisuals.text?.positioning?.mode;
+
 
     if ( line?.symbols?.length ) {
         line?.symbols?.forEach( symbol => {
@@ -122,6 +126,31 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     const firstSymbol = line?.content?.[0];
     const lastSymbol = line?.content?.[ line?.content.length - 1 ];
 
+    addEolSymbol = (
+        ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled &&
+        isLastLine &&
+        !isEolCharacter(lastSymbol)
+    );
+
+    const EOLSymbolStyle: CSSProperties = {
+        color: 'inherit',
+    };
+
+    if ( ocrItemBoxVisuals?.text.sentence_ending_punctuation?.hidden ) {
+        EOLSymbolStyle.width = '0px';
+        EOLSymbolStyle.height = '0px';
+        EOLSymbolStyle.color = 'transparent';
+        EOLSymbolStyle.position = 'absolute';
+    }
+
+    const EOLSymbol = addEolSymbol ? (
+        <span
+            style={EOLSymbolStyle}
+        >
+            {eolSymbol}
+        </span>
+    ) : undefined;
+
     const { bcp47_tag } = active_ocr_language;
 
     if (
@@ -130,143 +159,50 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     )
         eolSymbol = '.'
 
-    if ( ocrItemBoxVisuals.text?.positioning.mode === 'character-based' && line.symbols?.length ) {
 
-        setLineHeight = !box.isVertical;
-        const bestFontStyle = getBestFontStyle({
-            text: line.content,
-            maxWidth: lineBoxWidthPx,
-            maxHeight: lineBoxHeightPx,
-            initialFontSize: lineFontSize,
-            isVertical: Boolean(box?.isVertical)
-        });
-        lineFontSize = bestFontStyle.fontSize;
-        lineFontSize = lineFontSize * fontSizeFactor;
+    const symbolsContainer = positioningMode === 'character-based' && line.symbols?.length ? ( 
+        <OcrSymbolsContainer
+            isVertical={Boolean(box?.isVertical)}
+            line={line}
+            lineFontSize={lineFontSize}
+            lineBoxWidthPx={lineBoxWidthPx}
+            lineBoxHeightPx={lineBoxHeightPx}
+            ocrItemBoxVisuals={ocrItemBoxVisuals}
+            regionWidthPx={regionWidthPx}
+            regionHeightPx={regionHeightPx}
+            sizeExpansionPx={sizeExpansionPx}
+            textBlockBox={box}
+            textSelectionStyle={textSelectionStyle}
+            isLastLine={isLastLine}
+            EOLSymbol={EOLSymbol}
+            style={{
+                transform: `rotate( ${-box.angle_degrees}deg )`,
+                fontSize: lineFontSize
+            }}
+        />
+    ) : undefined;
 
-        symbols = line?.symbols.map( ( symbol, sIdx ) => {
-
-            let isLastSymbol = line?.symbols.length - 1 === sIdx;
-
-            // let nextSymbol: OcrTextLineSymbolScalable;
-            
-            // if ( line?.symbols.length-1 >= sIdx+1 )
-            //     nextSymbol = line?.symbols[ sIdx+1 ];
+    const wordsContainer = positioningMode === 'word-based' && line.words?.length ? ( 
+        <OcrWordsContainer
+            isVertical={Boolean(box?.isVertical)}
+            line={line}
+            lineFontSize={lineFontSize}
+            ocrItemBoxVisuals={ocrItemBoxVisuals}
+            regionWidthPx={regionWidthPx}
+            regionHeightPx={regionHeightPx}
+            sizeExpansionPx={sizeExpansionPx}
+            textBlockBox={box}
+            textSelectionStyle={textSelectionStyle}
+            isLastLine={isLastLine}
+            EOLSymbol={EOLSymbol}
+            style={{
+                transform: `rotate( ${-line.box.angle_degrees}deg )`,
+                fontSize: lineFontSize
+            }}
+        />
+    ) : undefined;
     
-            const symbolBoxWidthPx = regionWidthPx * ( symbol.box.dimensions.width / 100 );
-            const symbolBoxHeightPx = regionHeightPx * ( symbol.box.dimensions.height / 100 );
-    
-            let left = symbol.box.position.left - box.position.left;
-            let top = symbol.box.position.top - box.position.top;
-
-            let letterSpacing = 1;
-
-            // Handle some special characters
-            const { topOffset, leftOffset } = getSymbolPositionOffset({
-                symbol: symbol.symbol,
-                fontSize: lineFontSize,
-                vertical: box.isVertical,
-            });
-            
-            const leftPx = leftOffset + ( ( left / 100 ) * regionWidthPx ) + ( sizeExpansionPx / 2 );
-            const topPx = topOffset + ( ( top / 100 ) * regionHeightPx ) + ( sizeExpansionPx / 2 );
-
-            if (
-                isLastLine &&
-                isLastSymbol &&
-                !isEolCharacter(symbol.symbol)
-            )
-                addEolSymbol = true;
-    
-            return (
-                <Symbol key={sIdx}
-                    style={{
-                        position: 'absolute',
-                        width: symbolBoxWidthPx + 'px',
-                        height: symbolBoxHeightPx + 'px',
-                        left: leftPx + 'px',
-                        top: topPx + 'px',
-                        fontSize: lineFontSize + 'px',
-                        letterSpacing: letterSpacing + 'px',
-                        lineHeight: box.isVertical ? 'unset' : lineFontSize + 'px',
-                        transform: `rotate( ${ symbol.box.angle_degrees }deg )`,
-                        // border: 'none',
-                        // border: 'solid 2px red',
-                    }}
-                >
-                    { symbol.symbol }
-                </Symbol>
-            )
-        });
-
-    }
-    else if ( ocrItemBoxVisuals.text?.positioning.mode === 'word-based' && line.words?.length ) {
-
-        setLineHeight = !box.isVertical;
-
-        words = line?.words.map( ( word, sIdx ) => {
-
-            let isLastWord = line?.words.length - 1 === sIdx;
-    
-            const wordBoxWidthPx = regionWidthPx * ( word.box.dimensions.width / 100 );
-            const wordBoxHeightPx = regionHeightPx * ( word.box.dimensions.height / 100 );
-
-            const bestFontStyle = getBestFontStyle({
-                text: word.word,
-                maxWidth: wordBoxWidthPx,
-                maxHeight: wordBoxHeightPx,
-                initialFontSize: box.isVertical ? wordBoxWidthPx : wordBoxHeightPx,
-                initialSpacing: 0,
-                isVertical: Boolean(box?.isVertical)
-            });
-            let fontSize = bestFontStyle.fontSize * fontSizeFactor;
-    
-            let left = word.box.position.left - box.position.left;
-            let top = word.box.position.top - box.position.top;
-
-            // Handle some special characters
-            const { topOffset, leftOffset } = getSymbolPositionOffset({
-                symbol: word.word,
-                fontSize: fontSize,
-                vertical: box.isVertical,
-            });
-            
-            const leftPx = leftOffset + ( ( left / 100 ) * regionWidthPx ) + ( sizeExpansionPx / 2 );
-            const topPx = topOffset + ( ( top / 100 ) * regionHeightPx ) + ( sizeExpansionPx / 2 );
-
-            if (
-                isLastLine &&
-                isLastWord &&
-                !isEolCharacter(word.word)
-            )
-                addEolSymbol = true;
-    
-            if ( fontSize < lineFontSize * 0.90 && word.word.length === 1)
-                fontSize = (fontSize + lineFontSize) / 2; //  * 0.95;
-            
-            return (
-                <Symbol key={sIdx}
-                    style={{
-                        position: 'absolute',
-                        display: 'flex',
-                        alignItems: 'center',
-                        width: wordBoxWidthPx + 'px',
-                        height: wordBoxHeightPx + 'px',
-                        left: leftPx + 'px',
-                        top: topPx + 'px',
-                        fontSize: fontSize + 'px',
-                        letterSpacing: bestFontStyle.letterSpacing + 'px',
-                        lineHeight: box.isVertical ? 'unset' : fontSize + 'px',
-                        transform: `rotate( ${ word.box.angle_degrees }deg )`,
-                        // border: 'none',
-                        border: 'solid 2px red',
-                    }}
-                >
-                    { word.word }
-                </Symbol>
-            )
-        });
-    }
-    else {
+    if ( !symbolsContainer && !wordsContainer ) {
 
         if ( box.isVertical ) {
             [ '．．．', '...', '･･･', '・・・' ]
@@ -309,36 +245,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
 
         lineTopOffset = offsets.topOffset;
         lineLeftOffset = offsets.leftOffset;
-
-        if ( isLastLine && !isEolCharacter(lastSymbol) )
-            addEolSymbol = true;
     }
-
-    const symbolsContainerRotation = symbols ? -box.angle_degrees : 0;
-    const wordsContainerRotation = words ? -box.angle_degrees : 0;
-
-    const symbolsContainer = symbols ? ( 
-        <TextFragmentsContainer
-            style={{
-                transform: `rotate( ${symbolsContainerRotation}deg )`,
-                fontSize: lineFontSize
-            }}
-        >
-            {symbols}
-        </TextFragmentsContainer>
-    ) : undefined;
-
-    const wordsContainer = words ? ( 
-        <TextFragmentsContainer
-            style={{
-                transform: `rotate( ${wordsContainerRotation}deg )`,
-                fontSize: lineFontSize
-            }}
-        >
-            {words}
-        </TextFragmentsContainer>
-    ) : undefined;
-    
     
     let lineLeftPx: number;
     let lineTopPx: number;
@@ -369,22 +276,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
 
     const margin = props.sizeExpansionPx / 2 + 'px';
 
-    const EOLSymbolStyle: CSSProperties = {
-        color: 'inherit',
-    };
-
-    if ( ocrItemBoxVisuals?.text.sentence_ending_punctuation?.hidden ) {
-        EOLSymbolStyle.width = '0px';
-        EOLSymbolStyle.height = '0px';
-        EOLSymbolStyle.color = 'transparent';
-        EOLSymbolStyle.position = 'absolute';
-    }
-
-    const EOLSymbol = <span
-        style={EOLSymbolStyle}
-    >
-        {addEolSymbol && eolSymbol}
-    </span>
+    { ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled && EOLSymbol }
 
     const lineSizeHolder = (
         <span style={{
@@ -400,7 +292,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             marginLeft: box.isVertical ? margin : lineLeftPx,
         }}>
             {symbolsContainer || line.content}
-            { ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled && EOLSymbol }
+            { EOLSymbol }
         </span>
     );
 
