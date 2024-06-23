@@ -173,7 +173,8 @@ export class OcrResultScalable {
 
                 const lineScalable: OcrTextLineScalable = {
                     content: line.content,
-                    symbols: []
+                    symbols: [],
+                    words: []
                 };
 
                 if (line.box) {
@@ -184,6 +185,20 @@ export class OcrResultScalable {
                 }
 
                 // TODO: Words
+                line?.words?.forEach( ( word, idx ) => {
+                    if ( !line?.words?.length ) return;
+
+                    const box = OcrResultScalable.getBoxScalable(
+                        word.box,
+                        context_resolution
+                    );
+
+                    lineScalable.words?.push({
+                        word: word.word,
+                        box,
+                        letter_spacing: 0
+                    });
+                });
 
                 // Symbols
                 line?.symbols?.forEach( ( symbol, sIdx ) => {

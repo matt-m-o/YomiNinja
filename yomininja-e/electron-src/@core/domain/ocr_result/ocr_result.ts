@@ -11,6 +11,13 @@ export type OcrItemBox = {
     top_right: OcrItemBoxVertex;
 };
 
+// TODO: Rename
+export type OcrTextLineWord = {
+    word: string;
+    box: OcrItemBox;
+};
+
+// TODO: Rename
 export type OcrTextLineSymbol = {
     symbol: string;
     box: OcrItemBox;
@@ -20,6 +27,7 @@ export type OcrTextLine = {
     content: string;
     box?: OcrItemBox;
     symbols?: OcrTextLineSymbol[];
+    words?: OcrTextLineWord[];
 };
 
 export type OcrItem = {
