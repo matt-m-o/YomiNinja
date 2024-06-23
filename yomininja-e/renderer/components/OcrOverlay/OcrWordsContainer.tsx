@@ -53,12 +53,12 @@ export default function OcrWordsContainer( props: OcrWordsContainerProps ) {
         const wordBoxHeightPx = regionHeightPx * ( word.box.dimensions.height / 100 );
 
         const bestFontStyle = getBestFontStyle({
-            text: word.word,
+            text: word.word.trim(),
             maxWidth: wordBoxWidthPx / 100,
             maxHeight: wordBoxHeightPx / 100,
             initialFontSize: textBlockBox.isVertical ? wordBoxWidthPx : wordBoxHeightPx,
             initialSpacing: 0,
-            isVertical: textBlockBox.isVertical
+            isVertical: isVertical
         });
         
         let fontSize = bestFontStyle.fontSize * fontSizeFactor;
@@ -85,6 +85,7 @@ export default function OcrWordsContainer( props: OcrWordsContainerProps ) {
                     position: 'absolute',
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     width: wordBoxWidthPx + 'px',
                     height: wordBoxHeightPx + 'px',
                     left: leftPx + 'px',

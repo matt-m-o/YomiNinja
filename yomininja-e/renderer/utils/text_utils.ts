@@ -117,6 +117,12 @@ export function getBestFontStyle( input: {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
 
+    if ( !text ) {
+        return {
+            fontSize: initialFontSize,
+            letterSpacing: initialSpacing
+        }
+    }
 
     if ( 
         text.length > 1 &&
@@ -124,7 +130,6 @@ export function getBestFontStyle( input: {
     ){
         text = text.slice(0, text.length-1) + '';
     }
-
     else if (
         text.length == 1 &&
         symbolIncludesSpacing( text )
