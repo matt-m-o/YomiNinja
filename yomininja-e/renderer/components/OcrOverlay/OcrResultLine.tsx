@@ -8,13 +8,6 @@ import OcrWordsContainer from "./OcrWordsContainer";
 import OcrSymbolsContainer from "./OcrSymbolsContainer";
 
 
-const TextFragmentsContainer = styled('span')({
-    position: 'absolute',
-    left: '0px',
-    top: '0px'
-});
-
-
 export type OcrResultLineProps = {
     line: OcrTextLineScalable;
     box: OcrResultBoxScalable; // Text block bounding box
@@ -65,13 +58,6 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         }
     });
 
-    const Symbol = styled('span')({
-        transformOrigin: 'top left',
-        whiteSpace: 'pre',
-        textAlign: 'center',
-        '&::selection': textSelectionStyle,
-    });
-
     let lineFontSize = 0;
     let fontSizeFactor = ocrItemBoxVisuals.text.font_size_factor;
     fontSizeFactor = fontSizeFactor ? fontSizeFactor / 100 : 1;
@@ -105,11 +91,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         lineFontSize = ( avg + max ) / 2;
     }
 
-
     let setLineHeight = true;
-
-    let symbols: JSX.Element[];
-    let words: JSX.Element[];
 
     const lineBoxWidthPx = regionWidthPx * ( line?.box?.dimensions.width / 100 );
     const lineBoxHeightPx = regionHeightPx * ( line?.box?.dimensions.height / 100 );
@@ -227,7 +209,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             maxHeight: lineBoxHeightPx,
             initialFontSize: lineFontSize,
             isVertical: Boolean(box?.isVertical),
-            initialSpacing: 1
+            initialSpacing: 0
         });
         
         lineFontSize = bestFontStyle.fontSize;
