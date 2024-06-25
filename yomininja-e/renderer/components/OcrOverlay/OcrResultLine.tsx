@@ -204,7 +204,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         }
         
         const bestFontStyle = getBestFontStyle({
-            text: line.content,
+            text: line.content.trim(),
             maxWidth: lineBoxWidthPx,
             maxHeight: lineBoxHeightPx,
             initialFontSize: lineFontSize,

@@ -1,7 +1,7 @@
 import { styled } from "@mui/material";
 import { OcrResultBoxScalable, OcrTextLineScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
-import { getBestFontStyle, getSymbolPositionOffset, isEolCharacter } from "../../utils/text_utils";
+import { getBestFontStyle, getSymbolPositionOffset, getSymbolSpacingSide, isEolCharacter } from "../../utils/text_utils";
 import { CSSProperties } from "react";
 
 
@@ -48,6 +48,8 @@ export default function OcrWordsContainer( props: OcrWordsContainerProps ) {
     const words = line?.words.map( ( word, sIdx ) => {
 
         let isLastWord = line?.words.length - 1 === sIdx;
+        const includesRightSpacing = word.word.length === 1 && getSymbolSpacingSide( word.word ) == 'right';
+        // const includesLeftSpacing = word.word.length === 1 && getSymbolSpacingSide( word.word ) == 'left';
     
         const wordBoxWidthPx = regionWidthPx * ( word.box.dimensions.width / 100 );
         const wordBoxHeightPx = regionHeightPx * ( word.box.dimensions.height / 100 );
@@ -78,25 +80,30 @@ export default function OcrWordsContainer( props: OcrWordsContainerProps ) {
 
         if ( fontSize < lineFontSize * 0.90 && word.word.length === 1)
             fontSize = (fontSize + lineFontSize) / 2; //  * 0.95;
+
+        const style: CSSProperties = {
+            position: 'absolute',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: wordBoxWidthPx + 'px',
+            height: wordBoxHeightPx + 'px',
+            left: leftPx + 'px',
+            top: topPx + 'px',
+            fontSize: fontSize + 'px',
+            letterSpacing: bestFontStyle.letterSpacing + 'px',
+            lineHeight: textBlockBox.isVertical ? 'unset' : fontSize + 'px',
+            transform: `rotate( ${ word.box.angle_degrees }deg )`,
+            // border: 'none',
+            // border: 'solid 2px red',
+        };
+
+        if ( includesRightSpacing )
+            style.justifyContent = 'left';
         
         return (
             <Word key={sIdx}
-                style={{
-                    position: 'absolute',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: wordBoxWidthPx + 'px',
-                    height: wordBoxHeightPx + 'px',
-                    left: leftPx + 'px',
-                    top: topPx + 'px',
-                    fontSize: fontSize + 'px',
-                    letterSpacing: bestFontStyle.letterSpacing + 'px',
-                    lineHeight: textBlockBox.isVertical ? 'unset' : fontSize + 'px',
-                    transform: `rotate( ${ word.box.angle_degrees }deg )`,
-                    // border: 'none',
-                    // border: 'solid 2px red',
-                }}
+                style={style}
             >
                 { word.word }
                 { isLastWord && EOLSymbol }
