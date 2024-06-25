@@ -60,7 +60,8 @@ export class SettingsService {
                 // if ( !electronIsDev ) {
                     app.setLoginItemSettings({
                         openAtLogin: general.run_at_system_startup !== 'no',
-                        path: app.getPath("exe")
+                        path: app.getPath("exe"),
+                        args: [`--systemStartup`]
                     });
                 // }
             }

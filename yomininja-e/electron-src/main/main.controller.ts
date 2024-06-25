@@ -166,7 +166,7 @@ export class MainController {
         
     }
 
-    async loadMainPage(): Promise< void >  {
+    async loadMainPage( showWindow = true ): Promise< void >  {
         this.mainWindowUrl = isDev ?
             'http://localhost:8000/' :
             format({
@@ -177,7 +177,8 @@ export class MainController {
 
         await this.mainWindow.loadURL (this.mainWindowUrl );
 
-        this.mainWindow.show();
+        if ( showWindow )
+            this.mainWindow.show();
     }
 
     refreshPage(): void {

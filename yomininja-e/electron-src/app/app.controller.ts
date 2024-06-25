@@ -119,7 +119,7 @@ export class AppController {
                     overlayWindow: this.overlayWindow
                 });
 
-                await mainController.loadMainPage();
+                await mainController.loadMainPage( false );
                 
                 // setTimeout( () => { // The timeout seems unnecessary
                     browserExtensionsController.addBrowserWindow( this.mainWindow, true );
@@ -137,6 +137,21 @@ export class AppController {
         const settings = await this.appService.getActiveSettingsPreset();
         if ( !settings )
             throw new Error('no-active-settings-preset');
+
+
+        const isSystemStartup = process.argv.some( arg =>
+            arg.includes('systemStartup')
+        );
+
+        const startMinimized =  (
+            isSystemStartup &&
+            settings.general?.run_at_system_startup === 'minimized'
+        );
+        
+        if ( startMinimized )
+            overlayController.minimizeOverlayWindowToTray();
+        else 
+            this.mainWindow.show();
 
         this.showOverlayWindowWithoutFocus = Boolean( settings.overlay.behavior.show_window_without_focus );
 
