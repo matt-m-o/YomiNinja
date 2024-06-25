@@ -3,12 +3,14 @@ import { DictionarySettings, OcrEngineSettings, SettingsPresetJson, SettingsPres
 import { Alert, Backdrop, CircularProgress, Snackbar, debounce } from "@mui/material";
 import { OcrEngineSettingsU } from "../../electron-src/@core/infra/types/entity_instance.types";
 import { OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations } from "../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
+import { GeneralSettings } from "../../electron-src/@core/domain/settings_preset/settings_preset_general";
 
 export type SettingsContextType = {
     activeSettingsPreset: SettingsPresetJson;
     defaultSettingsPreset: SettingsPresetJson;
     allSettingsPresets: SettingsPresetJson[];
     updateActivePreset: ( input: Partial<SettingsPresetJson> ) => void;
+    updateActivePresetGeneral: ( input: Partial< GeneralSettings > ) => void;
     updateActivePresetHotkeys: ( newHotkeys: Partial< OverlayHotkeys > ) => void;
     updateActivePresetVisuals: ( input: Partial< OverlayVisualCustomizations > ) => void;
     updateActivePresetBehavior: ( input: Partial< OverlayBehavior > ) => void; 
@@ -127,6 +129,16 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
                 ...activeSettingsPreset.overlay.visuals.indicators,
                 ...newVisuals.indicators,
             },
+        };
+
+        updateActivePreset( activeSettingsPreset );
+    }
+
+    function updateActivePresetGeneral( newGeneral: Partial< GeneralSettings > ) {
+
+        activeSettingsPreset.general = {
+            ...activeSettingsPreset.general,
+            ...newGeneral,
         };
 
         updateActivePreset( activeSettingsPreset );
@@ -279,6 +291,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
                 defaultSettingsPreset,
                 allSettingsPresets,
                 updateActivePreset,
+                updateActivePresetGeneral,
                 updateActivePresetHotkeys,
                 updateActivePresetVisuals,
                 updateActivePresetBehavior,

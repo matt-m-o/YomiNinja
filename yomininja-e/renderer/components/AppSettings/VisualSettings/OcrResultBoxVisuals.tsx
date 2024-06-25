@@ -59,7 +59,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                             });
                         }
                     }}
-                    sx={{ minWidth: 150 }}
+                    sx={{ minWidth: !ocrItemBoxVisuals?.text?.positioning?.mode ? 220 : 150 }}
                 >
                     <MenuItem value='line-based'
                         title="Supported by all OCR Engines."
