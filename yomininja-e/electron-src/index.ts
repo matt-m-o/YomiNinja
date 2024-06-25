@@ -90,10 +90,13 @@ function preInitialization() {
       filePath,
       JSON.stringify( launchConfig, null, '\t' )
     );
+
+    return;
   }
 
-  if ( !launchConfig.hardware_acceleration === false ) {
+  if ( launchConfig.hardware_acceleration === false ) {
     app.disableHardwareAcceleration();
+    console.log("Hardware Acceleration is disabled!");
   }
   
 }
