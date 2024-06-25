@@ -9,12 +9,28 @@ export function isEolCharacter( char: string ): boolean {
 }
 
 export function symbolIncludesSpacing( symbol: string ): boolean {
-    return [
+    return Boolean( getSymbolSpacingSide(symbol) );
+}
+
+export function getSymbolSpacingSide( symbol: string ): 'left' | 'right' | undefined {
+    const left = [
+        '「', '『', '（', '〔', '［', '｛',
+        '｟', '〈', '《', '【', '〖', '〘', '〚',
+        '〝',
+    ];
+
+    const right = [
         '。', '．', '、', '，', 
-        '「', '」', '『', '』',  '（', '）', '〔', '〕', '［', '］', '｛', '｝',
-        '｟', '｠', '〈', '〉', '《', '》', '【', '】', '〖', '〗', '〘', '〙', '〚', '〛',
-        '〝', '〟'
-    ].includes(symbol);
+        '」', '』', '）', '〕', '］', '｝',
+        '｠', '〉', '》', '】', '〗', '〙', '〛',
+        '〟'
+    ];
+    
+    if ( left.includes(symbol) ) 
+        return "left";
+
+    if ( right.includes(symbol) ) 
+        return "right";
 }
 
 export function removeFurigana( input: OcrItemScalable[] ) {
@@ -128,7 +144,7 @@ export function getBestFontStyle( input: {
         text.length > 1 &&
         symbolIncludesSpacing( text[text.length-1] )
     ){
-        text = text.slice(0, text.length-1) + '';
+        text = text.slice(0, text.length-1) + '.';
     }
     else if (
         text.length == 1 &&
@@ -181,13 +197,26 @@ export function getBestFontStyle( input: {
 
     context.font = `${fontSize}px ${fontFamily}`;
 
-    if ( typeof initialSpacing === 'undefined'  || isVertical )
+    if (
+        typeof initialSpacing === 'undefined' ||
+        text.length <= 1 ||
+        isVertical
+    )
         return { fontSize, letterSpacing: 0 }
 
     let bestSpacingFound = false;
     increased = false;
     decreased = false;
     let letterSpacing = initialSpacing;
+
+    context.letterSpacing = letterSpacing + 'px';
+    metrics = context.measureText(text);
+    const totalExtraSpace = maxSideLength - metrics.width;
+    const numberOfGaps = text.length - 1;
+    letterSpacing = totalExtraSpace / numberOfGaps;
+    
+    // const predictedLetterSpacing = letterSpacing;
+    
 
     let spacingIterations = 0;
 
@@ -200,15 +229,15 @@ export function getBestFontStyle( input: {
         }
         
         context.letterSpacing = letterSpacing + 'px';
-        const metrics = context.measureText(text);
+        metrics = context.measureText(text);
 
         if ( metrics.width > maxSideLength ) {
-            letterSpacing -= 1; // 0.5;
+            letterSpacing -= 0.5; // 0.5 | 1;
             decreased = true;
         }
 
-        else if ( metrics.width < maxSideLength * 0.99 ) {
-            letterSpacing += 1; // 0.5;
+        else if ( metrics.width < maxSideLength * 0.98 ) {
+            letterSpacing += 0.5; // 0.5 | 1;
             increased = true;
         }
         else
@@ -222,6 +251,10 @@ export function getBestFontStyle( input: {
         if (increased && decreased)
             bestSpacingFound = true;
     }
+
+    // console.log('\nspacingIterations: '+spacingIterations);
+    // console.log('Predicted letterSpacing: '+predictedLetterSpacing);
+    // console.log('Final letterSpacing: '+letterSpacing);
 
     return {
         fontSize,
