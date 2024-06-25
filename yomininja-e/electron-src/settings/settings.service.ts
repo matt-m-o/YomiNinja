@@ -1,4 +1,4 @@
-import { session } from "electron";
+import { app, session } from "electron";
 import { GetActiveSettingsPresetUseCase } from "../@core/application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
 import { UpdateSettingsPresetUseCase } from "../@core/application/use_cases/update_settings_preset/update_settings_preset.use_case";
 import { SettingsPreset, SettingsPresetJson, SettingsPresetProps } from "../@core/domain/settings_preset/settings_preset";
@@ -11,6 +11,11 @@ import { getDefaultSettingsPresetProps } from "../@core/domain/settings_preset/d
 import { getPpOcrDefaultSettings } from "../@core/infra/ocr/ppocr.adapter/ppocr_settings";
 import { getMangaOcrDefaultSettings } from "../@core/infra/ocr/manga_ocr.adapter/manga_ocr_settings";
 import { getAppleVisionDefaultSettings } from "../@core/infra/ocr/apple_vision.adapter/apple_vision_settings";
+import { activeProfile } from "../@core/infra/app_initialization";
+import { USER_DATA_DIR } from "../util/directories.util";
+import path from "path";
+import fs from 'fs';
+import electronIsDev from "electron-is-dev";
 
 
 export class SettingsService {
@@ -36,6 +41,47 @@ export class SettingsService {
     }
 
     async updateSettingsPreset( settingsPresetJson: SettingsPresetJson ) {
+
+        const activePreset = await this.getActiveSettings({
+            profileId: activeProfile.id
+        });
+
+        
+
+        if ( activePreset?.id === settingsPresetJson.id ) {
+
+            const { general } = settingsPresetJson;
+
+            if ( general?.run_at_system_startup ) {
+                console.log({
+                    general
+                })
+
+                // if ( !electronIsDev ) {
+                    app.setLoginItemSettings({
+                        openAtLogin: general.run_at_system_startup !== 'no',
+                        path: app.getPath("exe")
+                    });
+                // }
+            }
+
+            if ( typeof general?.hardware_acceleration !== 'undefined') {
+                const launchConfigPath = path.join(USER_DATA_DIR, 'launch_config.json');
+                const launchConfigRaw = fs.readFileSync(
+                    path.join(USER_DATA_DIR, 'launch_config.json'),
+                    'utf8'
+                );
+                const launchConfig = JSON.parse(launchConfigRaw);
+
+                launchConfig.hardware_acceleration = Boolean( general.hardware_acceleration );
+
+                fs.writeFileSync(
+                    launchConfigPath,
+                    JSON.stringify( launchConfig, null, '\t' )
+                );
+            }
+        }
+
 
         return await this.updateSettingsPresetUseCase.execute( settingsPresetJson );
     }

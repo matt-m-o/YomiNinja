@@ -6,6 +6,10 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
     return {
         name: SettingsPreset.default_name,
         version: "0.6.0",
+        general: {
+            run_at_system_startup: 'no',
+            hardware_acceleration: true,
+        },
         overlay: {
             visuals: {
                 frame: {

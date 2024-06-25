@@ -1,5 +1,7 @@
 import { randomUUID } from "crypto";
 import { OverlaySettings } from "./settings_preset_overlay";
+import { GeneralSettings } from "./settings_preset_general";
+import { getDefaultSettingsPresetProps } from "./default_settings_preset_props";
 
 export type DictionarySettings = {
     enabled: boolean;
@@ -14,6 +16,7 @@ export interface OcrEngineSettings {
 
 export interface SettingsPresetProps < TOcrSettings extends OcrEngineSettings = OcrEngineSettings > {
     name: string;
+    general?: GeneralSettings;
     overlay: OverlaySettings;
     ocr_engines: TOcrSettings[];
     dictionary: DictionarySettings;
@@ -67,7 +70,8 @@ export class SettingsPreset < TProps extends SettingsPresetProps = SettingsPrese
         return new SettingsPreset<TProps>( input );
     }
     
-    get name(){ return this.props.name; }    
+    get name(){ return this.props.name; }
+    get general(){ return this.props.general; }
     get overlay(){ return this.props.overlay; }
     get ocr_engines() { return this.props.ocr_engines; }
     get version() { return this.props.version; }
@@ -78,6 +82,7 @@ export class SettingsPreset < TProps extends SettingsPresetProps = SettingsPrese
 
     set name( value: string ){ this.props.name = value; }
 
+    protected set general( data: GeneralSettings | undefined ){ this.props.general = data; }
     protected set overlay( update: OverlaySettings ) {
 
         this.props.overlay = {
@@ -190,6 +195,18 @@ export class SettingsPreset < TProps extends SettingsPresetProps = SettingsPrese
             ...this.props.dictionary,
             ...update,
         };
+    }
+
+    updateGeneralSettings( update: Partial< GeneralSettings > ) {
+
+        if ( !this.props.general ) {
+            this.props.general = getDefaultSettingsPresetProps().general as GeneralSettings;
+        }
+
+        this.props.general = {
+            ...this.props.general,
+            ...update
+        }
     }
 
     // Move to another layer
