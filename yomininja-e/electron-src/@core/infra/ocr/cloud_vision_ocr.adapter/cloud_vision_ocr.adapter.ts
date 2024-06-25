@@ -106,7 +106,7 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
                     words?.forEach(
                         word => {
 
-                            const currentLine = lines[ lines.length - 1 ];
+                            let currentLine = lines[ lines.length - 1 ];
 
                             const wordBox = this.getOcrItemBox(
                                 word?.boundingBox?.vertices || []
@@ -122,7 +122,9 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
                             word.symbols?.forEach( symbol => {
 
                                 if ( createNewLine )
-                                    lines.push({ content: '', symbols: []  });                                
+                                    lines.push({ content: '', symbols: []  });
+                                
+                                currentLine = lines[ lines.length - 1 ];
 
                                 const breakType = symbol.property?.detectedBreak?.type;
 
