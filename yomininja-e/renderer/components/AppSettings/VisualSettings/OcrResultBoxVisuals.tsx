@@ -44,6 +44,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                 <Select
                     value={ ocrItemBoxVisuals?.text?.positioning?.mode || '' }
                     label="Positioning Mode"
+                    title="In case the selected mode is not supported by the OCR engine, 'line-based' mode will be used"
                     onChange={ ( event ) => {
                         const { value } = event.target;
                         if (typeof value === 'string') {
@@ -60,13 +61,19 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                     }}
                     sx={{ minWidth: 150 }}
                 >
-                    <MenuItem value='line-based'>
+                    <MenuItem value='line-based'
+                        title="Supported by all OCR Engines."
+                    >
                         Line-based
                     </MenuItem>
-                    <MenuItem value='word-based'>
+                    <MenuItem value='word-based'
+                        title="Supported by Google Lens and Cloud Vision."
+                    >
                         Word-based
                     </MenuItem>
-                    <MenuItem value='character-based'>
+                    <MenuItem value='character-based'
+                        title="Supported by Cloud Vision. Breaks JPDB Reader."
+                    >
                         Character-based
                     </MenuItem>
                 </Select>
