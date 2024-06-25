@@ -134,6 +134,7 @@ export function getBestFontStyle( input: {
     const context = canvas.getContext('2d');
 
     if ( !text ) {
+        canvas.remove();
         return {
             fontSize: initialFontSize,
             letterSpacing: initialSpacing
@@ -151,6 +152,12 @@ export function getBestFontStyle( input: {
         symbolIncludesSpacing( text )
     ) {
         text = text.slice(0, text.length-1) + '.';
+    }
+
+    if (isVertical) {
+        canvas.style.textOrientation = 'upright';
+        canvas.style.writingMode = 'vertical-rl';
+        document.body.appendChild(canvas);
     }
 
     context.font = `${fontSize}px ${fontFamily}`;
@@ -199,16 +206,18 @@ export function getBestFontStyle( input: {
 
     if (
         typeof initialSpacing === 'undefined' ||
-        text.length <= 1 ||
-        isVertical
-    )
+        text.length <= 1
+    ) {
+        canvas.remove();
         return { fontSize, letterSpacing: 0 }
+    }
 
     let bestSpacingFound = false;
     increased = false;
     decreased = false;
     let letterSpacing = initialSpacing;
-
+    
+    // @ts-ignore
     context.letterSpacing = letterSpacing + 'px';
     metrics = context.measureText(text);
     const totalExtraSpace = maxSideLength - metrics.width;
@@ -217,7 +226,6 @@ export function getBestFontStyle( input: {
     
     // const predictedLetterSpacing = letterSpacing;
     
-
     let spacingIterations = 0;
 
     while ( !bestSpacingFound ) {
@@ -228,6 +236,7 @@ export function getBestFontStyle( input: {
             break;
         }
         
+        // @ts-ignore
         context.letterSpacing = letterSpacing + 'px';
         metrics = context.measureText(text);
 
@@ -255,6 +264,8 @@ export function getBestFontStyle( input: {
     // console.log('\nspacingIterations: '+spacingIterations);
     // console.log('Predicted letterSpacing: '+predictedLetterSpacing);
     // console.log('Final letterSpacing: '+letterSpacing);
+
+    canvas.remove();
 
     return {
         fontSize,

@@ -214,9 +214,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         
         lineFontSize = bestFontStyle.fontSize;
         lineFontSize *= fontSizeFactor;
-
-        if ( !box.isVertical )
-            letterSpacing = bestFontStyle.letterSpacing;
+        letterSpacing = bestFontStyle.letterSpacing;
 
         // Handle some special characters
         const offsets = getSymbolPositionOffset({
