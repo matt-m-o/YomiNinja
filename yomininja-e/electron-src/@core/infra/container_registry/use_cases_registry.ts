@@ -31,12 +31,12 @@ import { PyVideoAnalyzerAdapter } from "../ocr/py_video_analyzer.adapter/py_vide
 export let enabledOcrEngines: symbol[] = [
     Registry.CloudVisionOcrAdapter,
     Registry.GoogleLensOcrAdapter,
+    Registry.MangaOcrAdapter
 ];
 if ( process.platform !== 'darwin' ) {
     enabledOcrEngines = [
         ...enabledOcrEngines,
         Registry.PpOcrAdapter,
-        Registry.MangaOcrAdapter
     ];
 }
 if ( process.platform === 'darwin' ) {
