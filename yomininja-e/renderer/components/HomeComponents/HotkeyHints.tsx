@@ -141,13 +141,14 @@ export default function HotkeyHints() {
             >
                 { createHotkeyHint( 'Primary OCR', ocrHotkeysStrings ) }
 
+                { appleVisionSettings &&
+                  createHotkeyHint( 'Apple Vision', [appleVisionSettings?.hotkey] ) }
+
                 { ppOcrSettings && 
-                createHotkeyHint( 'PaddleOCR', [ppOcrSettings?.hotkey] ) }
+                  createHotkeyHint( 'PaddleOCR', [ppOcrSettings?.hotkey] ) }
                 
                 { createHotkeyHint( 'MangaOCR', [mangaOcrSettings?.hotkey] ) }
 
-                { appleVisionSettings &&
-                createHotkeyHint( 'Apple Vision', [appleVisionSettings?.hotkey] ) }
 
                 { createHotkeyHint( 'Google Lens', [googleLensSettings?.hotkey] ) }
                 { createHotkeyHint( 'Cloud Vision', [cloudVisionSettings?.hotkey] ) }

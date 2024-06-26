@@ -164,19 +164,21 @@ export default function AppSettingsHotkeys() {
                     />
                 }
 
-                <HotkeyFields
-                    label='PaddleOCR'
-                    keyCombination={ paddleOcrKeys }
-                    defaultKeys={ppOcrDefaultSettings?.hotkey}
-                    // setStateAction={ setOcrKeys }
-                    onChangeHandler={ ( input?: string[]  ) => {
-                        if ( !input ) return;
-                        updateActivePresetOcrEngine({
-                            ...ppOcrSettings,
-                            hotkey: hotkeyCombinationToString( input )
-                        });
-                    }}
-                />
+                { ppOcrSettings &&
+                    <HotkeyFields
+                        label='PaddleOCR'
+                        keyCombination={ paddleOcrKeys }
+                        defaultKeys={ppOcrDefaultSettings?.hotkey}
+                        // setStateAction={ setOcrKeys }
+                        onChangeHandler={ ( input?: string[]  ) => {
+                            if ( !input ) return;
+                            updateActivePresetOcrEngine({
+                                ...ppOcrSettings,
+                                hotkey: hotkeyCombinationToString( input )
+                            });
+                        }}
+                    />
+                }
 
                 <HotkeyFields
                     label='MangaOCR'

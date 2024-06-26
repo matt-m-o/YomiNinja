@@ -15,11 +15,17 @@ export default function MangaOcrSettings( props: MangaOcrSettingsProps ) {
     const { ocrEngineSettings } = props;
 
     const {
+        activeSettingsPreset,
         updateActivePresetOcrEngine,
-
     } = useContext( SettingsContext );
 
     const [ textDetector, setTextDetector ] = useState( ocrEngineSettings?.text_detector || 'ComicTextDetector' );
+
+
+    const paddleOcrSettings = activeSettingsPreset?.ocr_engines
+            .find( engineSettings => {
+                return engineSettings.ocr_adapter_name === 'PpOcrAdapter'
+            });
 
     useEffect( () => {
 
@@ -108,9 +114,11 @@ export default function MangaOcrSettings( props: MangaOcrSettingsProps ) {
                         <MenuItem value='ComicTextDetector'>
                             Comic Text Detector
                         </MenuItem>
-                        <MenuItem value='PaddleTextDetector'>
-                            Paddle Text Detector
-                        </MenuItem>
+                        { paddleOcrSettings &&
+                            <MenuItem value='PaddleTextDetector'>
+                                Paddle Text Detector
+                            </MenuItem>
+                        }
                     </Select>
 
                     <InputLabel>Text Detector</InputLabel>
