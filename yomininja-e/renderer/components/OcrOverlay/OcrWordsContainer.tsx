@@ -44,6 +44,8 @@ export default function OcrWordsContainer( props: OcrWordsContainerProps ) {
     });
 
     const fontSizeFactor = ocrItemBoxVisuals.text.font_size_factor;
+    const letterSpacingFactor = typeof ocrItemBoxVisuals.text?.letter_spacing_factor === 'number' ?
+        ocrItemBoxVisuals.text?.letter_spacing_factor / 100 : 1;
 
     const words = line?.words.map( ( word, sIdx ) => {
 
@@ -64,6 +66,7 @@ export default function OcrWordsContainer( props: OcrWordsContainerProps ) {
         });
         
         let fontSize = bestFontStyle.fontSize * fontSizeFactor;
+        const letterSpacing = bestFontStyle.letterSpacing * letterSpacingFactor;
 
         const left = word.box.position.left - textBlockBox.position.left;
         const top = word.box.position.top - textBlockBox.position.top;
@@ -91,7 +94,7 @@ export default function OcrWordsContainer( props: OcrWordsContainerProps ) {
             left: leftPx + 'px',
             top: topPx + 'px',
             fontSize: fontSize + 'px',
-            letterSpacing: bestFontStyle.letterSpacing + 'px',
+            letterSpacing: letterSpacing + 'px',
             lineHeight: textBlockBox.isVertical ? 'unset' : fontSize + 'px',
             transform: `rotate( ${ word.box.angle_degrees }deg )`,
             // border: 'none',

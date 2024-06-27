@@ -209,19 +209,23 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                 sx={{ ...textFieldSx, width: 'min-content'}}
             />
 
-            <TextField label="Letter Spacing" sx={textFieldSx}                      
+            <TextField label="Letter Spacing (%)"
                 size='small'
                 type="number"
                 inputProps={{ style: { textAlign: 'center' } }}
-                value={ ocrItemBoxVisuals?.text.letter_spacing || 0 }
+                value={
+                    typeof ocrItemBoxVisuals?.text?.letter_spacing_factor === 'number' ? 
+                    ocrItemBoxVisuals?.text?.letter_spacing_factor : 100 
+                }
                 onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
                     updateOcrItemBoxVisuals({                                
                         text: {
                             ...ocrItemBoxVisuals?.text,
-                            letter_spacing: Number( event.target.value )
+                            letter_spacing_factor: Number( event.target.value )
                         }
                     });
                 }}
+                sx={{ ...textFieldSx, minWidth: '126px' }}
             />
 
             <TextField label="Outline Width" sx={textFieldSx}                      

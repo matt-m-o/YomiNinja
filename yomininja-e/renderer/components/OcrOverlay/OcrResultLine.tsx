@@ -62,7 +62,10 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     let fontSizeFactor = ocrItemBoxVisuals.text.font_size_factor;
     fontSizeFactor = fontSizeFactor ? fontSizeFactor / 100 : 1;
     let lineHeight = lineFontSize;
-    let letterSpacing = ocrItemBoxVisuals.text.letter_spacing;
+    const letterSpacingFactor = typeof ocrItemBoxVisuals.text?.letter_spacing_factor === 'number' ?
+        ocrItemBoxVisuals.text?.letter_spacing_factor / 100 : 1;
+    let letterSpacing = 0;
+
 
     const positioningMode = ocrItemBoxVisuals.text?.positioning?.mode;
 
@@ -214,7 +217,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         
         lineFontSize = bestFontStyle.fontSize;
         lineFontSize *= fontSizeFactor;
-        letterSpacing = bestFontStyle.letterSpacing;
+        letterSpacing = bestFontStyle.letterSpacing * letterSpacingFactor;
 
         // Handle some special characters
         const offsets = getSymbolPositionOffset({

@@ -51,6 +51,8 @@ export default function OcrSymbolsContainer( props: OcrSymbolsContainerProps ) {
     });
 
     const fontSizeFactor = ocrItemBoxVisuals.text.font_size_factor;
+    const letterSpacingFactor = typeof ocrItemBoxVisuals.text?.letter_spacing_factor === 'number' ?
+        ocrItemBoxVisuals.text?.letter_spacing_factor / 100 : 1;
 
     const bestFontStyle = getBestFontStyle({
         text: line.content,
@@ -61,6 +63,7 @@ export default function OcrSymbolsContainer( props: OcrSymbolsContainerProps ) {
     });
     lineFontSize = bestFontStyle.fontSize;
     lineFontSize = lineFontSize * fontSizeFactor;
+    const letterSpacing = bestFontStyle.letterSpacing * letterSpacingFactor;
 
     const symbols = line?.symbols.map( ( symbol, sIdx ) => {
 
@@ -77,7 +80,7 @@ export default function OcrSymbolsContainer( props: OcrSymbolsContainerProps ) {
         let left = symbol.box.position.left - textBlockBox.position.left;
         let top = symbol.box.position.top - textBlockBox.position.top;
 
-        let letterSpacing = bestFontStyle.letterSpacing;
+        
 
         // Handle some special characters
         const { topOffset, leftOffset } = getSymbolPositionOffset({
