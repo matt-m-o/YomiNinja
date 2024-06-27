@@ -252,6 +252,27 @@ export default function HomeContent() {
                         <li>
                             <strong> Added PaddleOCR languages: </strong> Chinese (traditional), Latin, and Cyrillic. 
                         </li>
+
+                        <li>
+                            <strong> Added Comic Text Detector (MangaOCR only). </strong>
+                        </li>
+
+                        <li>
+                            <strong> Improved text rendering. </strong>
+                        </li>
+
+                        <li>
+                            <strong> Added option to filter out furigana. </strong>
+                        </li>
+
+                        <li>
+                            <strong> Added option to include ending punctuation marks to solve potential sentence mining issues. </strong>
+                        </li>
+
+                        <li>
+                            <strong> Added option to switch text positioning modes (Line-based, Word-based, or Character-based). </strong>
+                        </li>
+
                         {/* <li> Clipboard options menu (WIP) </li> */}
                     </ul>
 
