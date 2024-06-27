@@ -14,9 +14,10 @@ export type OverlayOcrItemBoxVisuals = {
     size_factor: number; // % 0 .. 100
     text: {
         color: string;
-        font_size_factor: number; // %
+        font_size_factor: number; // % 0 .. 100
         font_weight: number;
-        letter_spacing: number;
+        letter_spacing?: number; 
+        letter_spacing_factor: number; // % 0 .. 100
         outline_width: number; // pixels
         outline_color: string;
         character_positioning: boolean; // Individual character positioning

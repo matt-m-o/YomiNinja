@@ -32,6 +32,7 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                         font_size_factor: 100,
                         font_weight: 500,
                         letter_spacing: 1,
+                        letter_spacing_factor: 100,
                         outline_width: 0,
                         outline_color: '#000000',
                         character_positioning: true,
