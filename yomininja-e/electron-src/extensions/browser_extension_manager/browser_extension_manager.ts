@@ -158,6 +158,9 @@ export class BrowserExtensionManager {
 
     async installBuiltinExtensions() {
 
+        if ( !fs.existsSync( this.builtinExtensionsPath ) )
+            fs.mkdirSync( this.builtinExtensionsPath ) ;
+        
         const files = fs.readdirSync( this.builtinExtensionsPath );
         
         for ( const fileName of files ) {
