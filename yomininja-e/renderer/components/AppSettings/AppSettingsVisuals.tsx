@@ -127,6 +127,30 @@ export default function AppSettingsVisuals() {
         }
     });
 
+    const EOLSymbolStyle: CSSProperties = {
+        color: 'inherit',
+    };
+
+    if ( ocrItemBoxVisuals?.text.sentence_ending_punctuation?.hidden ) {
+        EOLSymbolStyle.width = '0px';
+        EOLSymbolStyle.height = '0px';
+        EOLSymbolStyle.color = 'transparent';
+        EOLSymbolStyle.position = 'absolute';
+    }
+
+    const addEolSymbol = (
+        ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled
+    );
+
+    const EOLSymbol = addEolSymbol ? (
+        <span
+            style={EOLSymbolStyle}
+        >
+            {'。'}
+        </span>
+    ) : undefined;
+
+
     return (
         <Box sx={{ flexGrow: 1, margin: 1, mt:0 }}>
 
@@ -265,8 +289,9 @@ export default function AppSettingsVisuals() {
 
                     <OcrItemBox>
                         {overlayPreviewText}
+                        {EOLSymbol}
                     </OcrItemBox>
-
+                    
                 </OverlayFrame>
             
             </Container>            
