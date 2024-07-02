@@ -275,7 +275,7 @@ export class BrowserExtensionsService {
         //   .replace(new RegExp(`\\s${app.getName()}/\\S+`), '');
     
         defaultSession.setUserAgent(
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'
         );
 
         // const browserPreload = path.join( __dirname, '../preload.js' )
@@ -339,6 +339,22 @@ export class BrowserExtensionsService {
         });
 
         extensionWindow.show();
+
+        const mozillaUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0';
+
+        
+        if ( url.includes('jpdb') )
+            extensionWindow.webContents.setUserAgent(mozillaUserAgent);
+        
+
+        extensionWindow.webContents.on( 'will-navigate', event => {
+            if ( event.url.includes('google') ) {;
+                if ( extensionWindow.webContents.userAgent !== mozillaUserAgent ) {
+                    extensionWindow.webContents.setUserAgent(mozillaUserAgent);
+                    extensionWindow.webContents.reload();
+                }
+            }
+        })
 
         if ( url )
             extensionWindow.loadURL( url );
