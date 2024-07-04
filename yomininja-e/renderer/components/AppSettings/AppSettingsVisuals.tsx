@@ -135,7 +135,7 @@ export default function AppSettingsVisuals() {
         EOLSymbolStyle.width = '0px';
         EOLSymbolStyle.height = '0px';
         EOLSymbolStyle.color = 'transparent';
-        EOLSymbolStyle.position = 'absolute';
+        // EOLSymbolStyle.position = 'absolute'; // This causes causes scroll issues
     }
 
     const addEolSymbol = (
