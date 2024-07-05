@@ -44,6 +44,9 @@ else {
       uIOhook.removeAllListeners();
       uIOhook.stop();
     }
+    else {
+      setTimeout( process.exit, 2000 );
+    }
     
     app.quit();
   });
