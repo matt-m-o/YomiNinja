@@ -37,6 +37,11 @@
     "@google-cloud/vision": "^4.0.2",
     "@grpc/grpc-js": "^1.9.3",
     "@grpc/proto-loader": "^0.7.9",
+    "@img/sharp-darwin-arm64": "^0.33.4",
+    "@img/sharp-darwin-x64": "^0.33.4",
+    "@img/sharp-libvips-darwin-arm64": "^1.0.2",
+    "@img/sharp-libvips-darwin-x64": "^1.0.2",
+    "@img/sharp-libvips-win32-x64": "^1.0.2",
     "@types/language-tags": "^1.0.4",
     "axios": "^1.5.1",
     "bindings": "^1.5.0",
@@ -60,7 +65,7 @@
     "reflect-metadata": "^0.1.13",
     "sanitize-filename": "^1.6.3",
     "semver": "^7.5.4",
-    "sharp": "^0.32.6",
+    "sharp": "^0.33.4",
     "sqlite3": "^5.1.6",
     "typeorm": "^0.3.17",
     "uiohook-napi": "^1.5.2",
@@ -94,7 +99,7 @@
     "@types/wanakana": "^4.0.5",
     "@types/ws": "^8.5.8",
     "commander": "^11.1.0",
-    "electron": "^26.6.1",
+    "electron": "^30.1.2",
     "electron-builder": "^23.0.3",
     "generate-license-file": "^3.0.1",
     "jest": "^29.7.0",
@@ -149,6 +154,10 @@
     "win": {
       "publisherName": "Matt M.",
       "compression": "maximum",
+      "asarUnpack": [
+        "**/node_modules/sharp/**/*",
+        "**/node_modules/@img/**/*"
+      ],
       "extraResources": [
         {
           "from": "../bin/win32",
@@ -160,7 +169,8 @@
     "linux": {
       "icon": "./electron_resources/icon.icns",
       "asarUnpack": [
-        "**/node_modules/sharp/**",
+        "**/node_modules/sharp/**/*",
+        "**/node_modules/@img/**/*",
         "**/node_modules/x11/**"
       ],
       "extraResources": [
@@ -180,8 +190,8 @@
     "mac": {
       "icon": "./electron_resources/icon.icns",
       "asarUnpack": [
-        "**/node_modules/sharp/**",
-        "**/node_modules/x11/**"
+        "**/node_modules/sharp/**/*",
+        "**/node_modules/@img/**/*"
       ],
       "extraResources": [
         {
