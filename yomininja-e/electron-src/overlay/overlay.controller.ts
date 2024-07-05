@@ -66,7 +66,7 @@ export class OverlayController {
         }
 
         this.overlayWindow.on( 'show', ( ) => {
-            this.showOverlayWindow();
+            this.showOverlayWindow({ isElectronEvent: true });
         });
 
         this.overlayService.initWebSocket();
@@ -364,12 +364,27 @@ export class OverlayController {
         this.globalShortcutAccelerators = [];
     }
 
-    private showOverlayWindow() {
+    showOverlayWindow = (
+        options?: {
+            isElectronEvent: boolean;
+            showInactive?: boolean;
+        }
+    ) => {
         // console.log("OverlayController.showOverlayWindow");
+
+        if ( !options?.isElectronEvent ) {
+            if ( this.showWindowWithoutFocus || options?.showInactive )
+                this.overlayWindow.showInactive();
+            else
+                this.overlayWindow.show();
+
+            return;
+        }
 
         if ( this.isOverlayWindowInTray ) {
             this.isOverlayWindowInTray = false
             this.overlayWindow.showInactive();
+            return;
         }
 
         this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );

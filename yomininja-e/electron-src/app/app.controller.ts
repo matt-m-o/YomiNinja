@@ -399,11 +399,7 @@ export class AppController {
     }
 
     private showOverlayWindow() {
-
-        if ( this.showOverlayWindowWithoutFocus )
-            this.overlayWindow.showInactive();
-        else
-            this.overlayWindow.show();
+        overlayController.showOverlayWindow();
     }
 
     async applySettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
