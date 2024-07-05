@@ -220,45 +220,11 @@ export default function HomeContent() {
                         }}
                     >
                         <li>
-                            <strong> MangaOCR integration. </strong>
-                        </li>
-
-                        <li>
-                            <strong> Initial support for macOS. </strong>
-                        </li>
-
-                        <li>
-                            <strong> Apple's Vision Framework OCR engine integration (macOS only). </strong>
-                        </li>
-
-                        <li>
-                            <strong> Auto OCR (OCR Templates): </strong>
-                            Monitors your screen and automatically runs OCR whenever it detects meaningful changes.
-                        </li>
-
-                        <li>
-                            <strong> Text-to-Speech (OCR Templates). </strong>
-                        </li>
-
-                        <li>
-                            <strong> System tray icon. </strong>
-                        </li>
-
-                        <li> 
-                            <strong> Overlay Adjustment Option: </strong>
-                            You can now manually move or resize the overlay either from the tray icon or by pressing <strong>Ctrl+Shift+M</strong>. 
-                        </li>
-
-                        <li>
-                            <strong> Added PaddleOCR languages: </strong> Chinese (traditional), Latin, and Cyrillic. 
-                        </li>
-
-                        <li>
                             <strong> Added Comic Text Detector (MangaOCR only). </strong>
                         </li>
 
                         <li>
-                            <strong> Improved text rendering. </strong>
+                            <strong> Improved text overlay positioning. </strong>
                         </li>
 
                         <li>
@@ -271,6 +237,10 @@ export default function HomeContent() {
 
                         <li>
                             <strong> Added option to switch text positioning modes (Line-based, Word-based, or Character-based). </strong>
+                        </li>
+
+                        <li>
+                            <strong> Added option to run YomiNinja at system startup. </strong>
                         </li>
 
                         {/* <li> Clipboard options menu (WIP) </li> */}
