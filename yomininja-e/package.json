@@ -23,7 +23,9 @@
     "copy-assets": "node ./copy_assets.js",
     "install-app-deps": "npx @electron/rebuild install-app-deps",
     "pack-app": "npm run build && electron-builder --dir",
-    "dist": "npm run generate-licenses && npm run build && electron-builder",
+    "dist": "npm run generate-licenses && npm run build && npm run dist:arm64 && npm run dist:x64",
+    "dist:x64": "cross-env TARGET_ARCH=x64 electron-builder --config electron-builder.config.js",
+    "dist:arm64": "cross-env TARGET_ARCH=arm64 electron-builder --config electron-builder.config.js",
     "type-check": "tsc -p ./renderer/tsconfig.json && tsc -p ./electron-src/tsconfig.json",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -99,6 +101,7 @@
     "@types/wanakana": "^4.0.5",
     "@types/ws": "^8.5.8",
     "commander": "^11.1.0",
+    "cross-env": "^7.0.3",
     "electron": "^30.1.2",
     "electron-builder": "^23.0.3",
     "generate-license-file": "^3.0.1",
@@ -116,101 +119,6 @@
     "webpack-cli": "^5.1.4"
   },
   "gypfile": true,
-  "build": {
-    "asar": true,
-    "files": [
-      "main",
-      "renderer/out",
-      "**/*.proto",
-      "build"
-    ],
-    "extraResources": [
-      {
-        "from": "third-party-licenses.txt",
-        "to": "./"
-      },
-      {
-        "from": "extensions",
-        "to": "extensions",
-        "filter": "**/*"
-      },
-      {
-        "from": "electron_resources",
-        "to": "./",
-        "filter": "**/*"
-      }
-    ],
-    "directories": {
-      "buildResources": "electron_resources",
-      "output": "dist"
-    },
-    "forceCodeSigning": false,
-    "nsis": {
-      "oneClick": false,
-      "runAfterFinish": true,
-      "allowToChangeInstallationDirectory": true,
-      "include": "./electron_resources/uninstaller.nsh"
-    },
-    "win": {
-      "publisherName": "Matt M.",
-      "compression": "maximum",
-      "asarUnpack": [
-        "**/node_modules/sharp/**/*",
-        "**/node_modules/@img/**/*"
-      ],
-      "extraResources": [
-        {
-          "from": "../bin/win32",
-          "to": "bin",
-          "filter": "**/*"
-        }
-      ]
-    },
-    "linux": {
-      "icon": "./electron_resources/icon.icns",
-      "asarUnpack": [
-        "**/node_modules/sharp/**/*",
-        "**/node_modules/@img/**/*",
-        "**/node_modules/x11/**"
-      ],
-      "extraResources": [
-        {
-          "from": "../bin/linux",
-          "to": "bin",
-          "filter": "**/*"
-        }
-      ],
-      "target": [
-        "AppImage",
-        "deb",
-        "rpm",
-        "pacman"
-      ]
-    },
-    "mac": {
-      "icon": "./electron_resources/icon.icns",
-      "asarUnpack": [
-        "**/node_modules/sharp/**/*",
-        "**/node_modules/@img/**/*"
-      ],
-      "extraResources": [
-        {
-          "from": "../bin/darwin",
-          "to": "bin",
-          "filter": "**/*"
-        }
-      ],
-      "target": [
-        {
-          "target": "default",
-          "arch": [
-            "arm64",
-            "x64"
-          ]
-        }
-      ]
-    }
-  },
   "jest": {
     "moduleFileExtensions": [
       "js",
