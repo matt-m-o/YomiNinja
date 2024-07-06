@@ -170,7 +170,7 @@ export class PaddleOcrService {
 
         const executable = join( this.binRoot + `/${executableName}` );
 
-        let port: string | number| undefined = (await getNextPortAvailable( 51_000 )) || 12345;
+        let port: string | number| undefined = (await getNextPortAvailable( 52_000 )) || 22345;
 
         this.status = OcrAdapterStatus.Starting;
         this.serviceProcess = spawn(

@@ -181,7 +181,7 @@ export class PyOcrService {
 
         const executable = join( this.binRoot + `/${executableName}` );
 
-        let port: string | number| undefined = (await getNextPortAvailable( 52_000 )) || 12346;
+        let port: string | number| undefined = (await getNextPortAvailable( 53_000 )) || 32346;
         
         this.serviceProcess = spawn(
             executable,
