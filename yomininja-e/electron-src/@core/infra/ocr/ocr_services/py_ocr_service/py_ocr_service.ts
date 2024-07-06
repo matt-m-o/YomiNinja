@@ -30,8 +30,14 @@ export class PyOcrService {
     private serviceKeepAlive: NodeJS.Timeout;
 
     constructor() {
+
+        let arch = '';
+
+        if ( process.platform === 'darwin' )
+            arch = `/${process.arch}`;
+
         this.binRoot = isDev
-            ? join( BIN_DIR, `/${os.platform()}/py_ocr_service/service` )
+            ? join( BIN_DIR, `/${os.platform()}${arch}/py_ocr_service/service` )
             : join( process.resourcesPath, '/bin/py_ocr_service/service' );
     }
 
