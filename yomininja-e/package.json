@@ -1,6 +1,6 @@
 {
   "name": "yomininja-e",
-  "version": "0.7.3",
+  "version": "0.8.0",
   "private": true,
   "main": "main/electron-src/index.js",
   "productName": "YomiNinja",
