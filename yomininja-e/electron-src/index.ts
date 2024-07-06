@@ -10,6 +10,7 @@ import { appController } from './app/app.index';
 import { USER_DATA_DIR } from './util/directories.util';
 import fs from 'fs';
 import path from 'path';
+import { getLaunchConfig } from './@core/infra/app_initialization';
 const isMacOS = process.platform === 'darwin';
 
 
@@ -66,36 +67,7 @@ function startUIOhook(){
 
 function preInitialization() {
 
-  const filePath = path.join(USER_DATA_DIR, 'launch_config.json');
-  const fileExists = fs.existsSync(filePath);
-
-  let fileData: string | undefined;
-  
-  if (fileExists) {
-    fileData = fs.readFileSync(
-      path.join(USER_DATA_DIR, 'launch_config.json'),
-      'utf8'
-    );
-  }
-
-  let launchConfig;
-
-  if ( fileData )
-    launchConfig = JSON.parse(fileData);
-
-  console.log({ launchConfig });
-
-  if ( !launchConfig ) {
-    launchConfig = {
-      hardware_acceleration: true
-    };
-    fs.writeFileSync(
-      filePath,
-      JSON.stringify( launchConfig, null, '\t' )
-    );
-
-    return;
-  }
+  const launchConfig = getLaunchConfig();
 
   if ( launchConfig.hardware_acceleration === false ) {
     app.disableHardwareAcceleration();

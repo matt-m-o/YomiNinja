@@ -13,7 +13,7 @@ import { UpdateBrowserExtensionUseCase } from "../@core/application/use_cases/br
 import { CreateBrowserExtensionUseCase } from "../@core/application/use_cases/browser_extension/create_browser_extension/create_browser_extension.use_case";
 import { GetBrowserExtensionsUseCase } from "../@core/application/use_cases/browser_extension/get_browser_extensions/get_browser_extensions.use_case";
 import { handleJPDBReaderPopup } from "./browser_extension_manager/workarounds/jpdb_reader";
-import { windowManager } from "../@core/infra/app_initialization";
+import { launchConfig, windowManager } from "../@core/infra/app_initialization";
 import { getBrowserWindowHandle } from "../util/browserWindow.util";
 
 export class BrowserExtensionsService {
@@ -83,8 +83,8 @@ export class BrowserExtensionsService {
                 });
 
                 if (
-                    !isDev &&
-                    webContents.getURL().includes('overlay')
+                    webContents.getURL().includes('overlay') &&
+                    !launchConfig.enable_devtools
                 ) { 
 
                     menu.items.forEach( item => {
