@@ -1,10 +1,12 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { Alert, Link, Snackbar, SxProps, Theme, debounce } from "@mui/material";
 import { CheckForAppUpdates_Output } from '../../electron-src/@core/application/use_cases/check_for_app_updates/check_for_app_updates.use_case'
+import { SystemInfo } from '../../electron-src/app_info/app_info.service';
 
 
 export type AppInfoContextType = {
     versionInfo: CheckForAppUpdates_Output;
+    systemInfo: SystemInfo;
     runUpdateCheck: () => Promise< CheckForAppUpdates_Output>;
     openGithubRepoPage: () => void;
     openPatreonPage: () => void;
@@ -31,6 +33,7 @@ export const AppInfoContext = createContext( {} as AppInfoContextType );
 export const AppInfoProvider = ( { children }: PropsWithChildren ) => {
     
     const [ versionInfo, setVersionInfo ] = useState<CheckForAppUpdates_Output>();
+    const [ systemInfo, setSystemInfo ] = useState<SystemInfo>();
 
 
     async function runUpdateCheck() {
@@ -44,10 +47,18 @@ export const AppInfoProvider = ( { children }: PropsWithChildren ) => {
         return result;
     }
 
+    async function getSystemInfo(): Promise< SystemInfo > {
+        const systemInfo: SystemInfo = await global.ipcRenderer.invoke( 'app_info:get_system_info' );
+        setSystemInfo(systemInfo);
+        console.log({ systemInfo });
+        return systemInfo;
+    }
+
     
     useEffect( () => {
 
         runUpdateCheck();
+        getSystemInfo();
         
     }, [ global.ipcRenderer ] );
 
@@ -96,6 +107,7 @@ export const AppInfoProvider = ( { children }: PropsWithChildren ) => {
         <AppInfoContext.Provider
             value={{
                 versionInfo,
+                systemInfo,
                 runUpdateCheck,
                 openPatreonPage,
                 openGithubRepoPage

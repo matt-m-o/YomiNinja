@@ -1,6 +1,6 @@
-import { PropsWithChildren, ReactNode, useContext, useEffect } from "react";
+import { PropsWithChildren, ReactNode, useContext, useEffect, useState } from "react";
 import { AppInfoContext, GithubReleasesLink } from "../../context/app_info.provider";
-import { Box, Grid, Typography, styled } from "@mui/material";
+import { Box, Fade, Grid, Modal, Paper, Popover, Popper, PopperPlacementType, Typography, styled } from "@mui/material";
 import Image  from 'next/image';
 import Link from "next/link";
 import { Stick, Sirin_Stencil } from 'next/font/google'
@@ -8,6 +8,9 @@ import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import patreonIcon from "../../public/logos/PATREON_SYMBOL_1_WHITE_RGB.svg";
 import githubIcon from "../../public/logos/github-mark-white.svg";
 import supporters from './supporters.json';
+import React from "react";
+import Backdrop from '@mui/material/Backdrop';
+
 
 const AppNameFont = Stick({ // Stick | Sirin_Stencil
     weight: '400',
@@ -22,7 +25,8 @@ const AboutText = styled(Typography)({
     marginTop: '0.5rem',
     marginBottom: '0.5rem',
     lineHeight: '1.9rem',
-    fontSize: '1.2rem'
+    fontSize: '1.2rem',
+    position: 'relative',
 });
 
 const LinkWithoutDecoration = styled(Link)({
@@ -34,6 +38,7 @@ export default function AppInfo() {
 
     const {
         versionInfo,
+        systemInfo,
         runUpdateCheck,
         openGithubRepoPage,
         openPatreonPage
@@ -44,6 +49,12 @@ export default function AppInfo() {
 
     let newVersionText: string | undefined = versionInfo?.isUpToDate ? undefined : 'Newer version available on ';    
 
+    let systemPlatform = systemInfo.platform;
+
+    if ( systemInfo.platform === 'darwin' )
+        systemPlatform += ` (macOS)`;
+    else if ( systemInfo.platform === 'win32' )
+        systemPlatform += ` (Windows)`;
 
     const AppName = ( props ) => (
         <Typography variant="h4" mb={1} {...props}>
@@ -62,6 +73,74 @@ export default function AppInfo() {
             </Box>
         </LinkWithoutDecoration>
     );
+
+    const [ openInfoDetails, setOpenInfoDetails ] = useState(false);
+    const handleOpenInfoDetails = () => setOpenInfoDetails(true);
+    const handleCloseInfoDetails = () => setOpenInfoDetails(false);
+
+    const infoDetails = (
+        <Modal
+            aria-labelledby="transition-modal-title"
+            aria-describedby="transition-modal-description"
+            open={openInfoDetails}
+            onClose={handleCloseInfoDetails}
+            closeAfterTransition
+            slots={{ backdrop: Backdrop }}
+            slotProps={{
+                backdrop: {
+                    timeout: 500,
+                },
+            }}
+        >
+            <Fade in={openInfoDetails}>
+                <Box
+                    sx={{
+                        position: 'absolute' as 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: 500,
+                        bgcolor: 'background.paper',
+                        border: '0px solid #000',
+                        outline: 'solid black',
+                        // boxShadow: 24,
+                        p: 4,
+                    }}
+                >
+                    <Typography id="transition-modal-title" variant="h6" component="h2">
+                        App and System Information
+                    </Typography>
+                        <Typography sx={{ p: 2 }}>
+                            <Typography sx={{ pb: 1 }}>
+                                <strong>App Version: </strong>
+                                {versionInfo?.runningVersion}
+                            </Typography>
+                            <Typography sx={{ pb: 1 }}>
+                                <strong>App Arch: </strong>
+                                {systemInfo.appArch}
+                            </Typography>
+
+                            <Typography sx={{ pb: 1 }}>
+                                <strong>OS Platform: </strong>
+                                { systemPlatform } 
+                            </Typography>
+
+                            <Typography sx={{ pb: 1 }}>
+                                <strong>OS Version: </strong>
+                                { systemInfo.osVersion } 
+                            </Typography>
+
+                            <Typography sx={{ pb: 1 }}>
+                                <strong>CPU: </strong>
+                                {systemInfo.cpuModel.trim() + ` (${systemInfo.cpuArch})` } 
+                            </Typography>
+                            
+                        </Typography>
+                </Box>
+            </Fade>
+        </Modal>
+    )
+
     
 
     return(
@@ -79,7 +158,19 @@ export default function AppInfo() {
 
                     <Box>
                         <AppName/>
-                        <AboutText sx={{ mb: 0 }} >
+                        <AboutText
+                            aria-owns={openInfoDetails ? 'mouse-over-popover' : undefined}
+                            aria-haspopup="true"
+                            title="Click for more information"
+                            onClick={ handleOpenInfoDetails }
+                            sx={{
+                                mb: 0,
+                                textDecoration: 'underline',
+                                ':hover': {
+                                    cursor: 'pointer',
+                                }
+                            }}
+                        >
                             {versionText}
                         </AboutText>
 
@@ -88,6 +179,8 @@ export default function AppInfo() {
                                 ✨{newVersionText} <GithubReleasesLink />
                             </AboutText>
                         }
+
+                        {infoDetails}
                     </Box>
 
                     <Box mt={2}>

@@ -1,5 +1,5 @@
 import { BrowserWindow, ipcMain, shell } from "electron";
-import { AppInfoService } from "./app_info.service";
+import { AppInfoService, SystemInfo } from "./app_info.service";
 import { get_AppGithubUrl } from "../@core/infra/container_registry/adapters_registry";
 
 
@@ -26,6 +26,9 @@ export class AppInfoController {
         ipcMain.handle( 'app_info:open_releases_page', this.openAppReleasesPage );
         ipcMain.handle( 'app_info:open_patreon_page', this.openPatreonPage );
         ipcMain.handle( 'app_info:open_github_repo_page', this.openGithubRepoPage );
+        ipcMain.handle( 'app_info:get_system_info', (): SystemInfo => {
+            return this.appInfoService.getSystemInfo();
+        });
     }
 
     openAppReleasesPage() {
