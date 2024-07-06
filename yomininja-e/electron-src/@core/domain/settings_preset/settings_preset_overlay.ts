@@ -2,7 +2,7 @@ export type OverlayOcrRegionVisuals = {
     border_width: number;
 };
 
-export type TextPositioningMode = 'line-based' | 'word-based' | 'character-based';
+export type TextPositioningMode = 'block-based' | 'line-based' | 'word-based' | 'character-based';
 
 export type OverlayOcrItemBoxVisuals = {
     inactive_border_color: string;

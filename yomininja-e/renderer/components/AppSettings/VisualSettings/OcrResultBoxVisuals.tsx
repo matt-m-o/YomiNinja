@@ -61,18 +61,23 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                     }}
                     sx={{ minWidth: !ocrItemBoxVisuals?.text?.positioning?.mode ? 220 : 150 }}
                 >
+                    <MenuItem value='block-based'
+                        title="Supported by all OCR Engines; Position text based on the detected text block position/size."
+                    >
+                        Block-based
+                    </MenuItem>
                     <MenuItem value='line-based'
-                        title="Supported by all OCR Engines."
+                        title="Supported by all OCR Engines; Might break JPDB Reader."
                     >
                         Line-based
                     </MenuItem>
                     <MenuItem value='word-based'
-                        title="Supported by Google Lens and Cloud Vision."
+                        title="Supported by Google Lens and Cloud Vision; Might break JPDB Reader."
                     >
                         Word-based
                     </MenuItem>
                     <MenuItem value='character-based'
-                        title="Supported by Cloud Vision. Breaks JPDB Reader."
+                        title="Supported by Cloud Vision; Breaks JPDB Reader."
                     >
                         Character-based
                     </MenuItem>

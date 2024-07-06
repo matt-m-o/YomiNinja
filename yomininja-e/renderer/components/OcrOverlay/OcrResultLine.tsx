@@ -240,7 +240,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
 
     const linePositioning = (
         lineTopPx !== undefined &&
-        ocrItemBoxVisuals.text.character_positioning
+        positioningMode !== 'block-based'
     ) ? 'absolute' : 'unset';
 
 
