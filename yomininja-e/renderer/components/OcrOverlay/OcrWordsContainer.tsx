@@ -1,4 +1,4 @@
-import { styled } from "@mui/material";
+import { styled, SxProps } from "@mui/material";
 import { OcrResultBoxScalable, OcrTextLineScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import { getBestFontStyle, getSymbolPositionOffset, getSymbolSpacingSide, isEolCharacter } from "../../utils/text_utils";
@@ -18,6 +18,7 @@ type OcrWordsContainerProps = {
     textSelectionStyle: CSSProperties;
     style?: CSSProperties;
     EOLSymbol?: JSX.Element;
+    includesGeneratedFurigana: boolean;
 }
 
 export default function OcrWordsContainer( props: OcrWordsContainerProps ) {
@@ -33,7 +34,8 @@ export default function OcrWordsContainer( props: OcrWordsContainerProps ) {
         sizeExpansionPx,
         isLastLine,
         textSelectionStyle,
-        EOLSymbol
+        EOLSymbol,
+        includesGeneratedFurigana
     } = props;
 
     const Word = styled('span')({
@@ -80,26 +82,37 @@ export default function OcrWordsContainer( props: OcrWordsContainerProps ) {
         
         const leftPx = leftOffset + ( ( left / 100 ) * regionWidthPx ) + ( sizeExpansionPx / 2 );
         const topPx = topOffset + ( ( top / 100 ) * regionHeightPx ) + ( sizeExpansionPx / 2 );
+        const bottomPx = ( ( top / 100 ) - topPx - wordBoxHeightPx ) ;
 
         if ( fontSize < lineFontSize * 0.90 && word.word.length === 1)
             fontSize = (fontSize + lineFontSize) / 2; //  * 0.95;
 
-        const style: CSSProperties = {
+        const style: SxProps = {
             position: 'absolute',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             width: wordBoxWidthPx + 'px',
-            height: wordBoxHeightPx + 'px',
             left: leftPx + 'px',
-            top: topPx + 'px',
             fontSize: fontSize + 'px',
             letterSpacing: letterSpacing + 'px',
             lineHeight: textBlockBox.isVertical ? 'unset' : fontSize + 'px',
             transform: `rotate( ${ word.box.angle_degrees }deg )`,
             // border: 'none',
             // border: 'solid 2px red',
+            "&:hover": {
+                backgroundColor: ocrItemBoxVisuals?.background_color
+            }
         };
+        
+        if ( textBlockBox.isVertical ) {
+            style.top = topPx || '0%';
+            style.height = wordBoxHeightPx + 'px';
+        }
+        else {
+            style.bottom = bottomPx || '0%';
+            style.minHeight = wordBoxHeightPx + 'px';
+        }
 
         if ( includesRightSpacing )
             style.justifyContent = 'left';

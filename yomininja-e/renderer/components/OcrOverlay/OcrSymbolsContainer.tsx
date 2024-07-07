@@ -20,6 +20,7 @@ type OcrSymbolsContainerProps = {
     textSelectionStyle: CSSProperties;
     style?: CSSProperties;
     EOLSymbol?: JSX.Element;
+    includesGeneratedFurigana: boolean;
 }
 
 export default function OcrSymbolsContainer( props: OcrSymbolsContainerProps ) {
@@ -36,7 +37,8 @@ export default function OcrSymbolsContainer( props: OcrSymbolsContainerProps ) {
         sizeExpansionPx,
         isLastLine,
         textSelectionStyle,
-        EOLSymbol
+        EOLSymbol,
+        includesGeneratedFurigana
     } = props;
 
     let {
@@ -91,22 +93,33 @@ export default function OcrSymbolsContainer( props: OcrSymbolsContainerProps ) {
 
         const leftPx = leftOffset + ( ( left / 100 ) * regionWidthPx ) + ( sizeExpansionPx / 2 );
         const topPx = topOffset + ( ( top / 100 ) * regionHeightPx ) + ( sizeExpansionPx / 2 );
+        const bottomPx = ( ( top / 100 ) - topPx - symbolBoxHeightPx ) ;
+
+
+        const style: CSSProperties = {
+            position: 'absolute',
+            width: symbolBoxWidthPx + 'px',
+            left: leftPx + 'px',
+            fontSize: lineFontSize + 'px',
+            letterSpacing: letterSpacing + 'px',
+            lineHeight: textBlockBox.isVertical ? 'unset' : lineFontSize + 'px',
+            transform: `rotate( ${ symbol.box.angle_degrees }deg )`,
+            // border: 'none',
+            // border: 'solid 2px red',
+        }
+
+        if ( textBlockBox.isVertical ) {
+            style.top = topPx || '0%';
+            style.height = symbolBoxHeightPx + 'px';
+        }
+        else {
+            style.bottom = bottomPx || '0%';
+            style.minHeight = symbolBoxHeightPx + 'px';
+        }
         
         return (
             <Symbol key={sIdx}
-                style={{
-                    position: 'absolute',
-                    width: symbolBoxWidthPx + 'px',
-                    height: symbolBoxHeightPx + 'px',
-                    left: leftPx + 'px',
-                    top: topPx + 'px',
-                    fontSize: lineFontSize + 'px',
-                    letterSpacing: letterSpacing + 'px',
-                    lineHeight: textBlockBox.isVertical ? 'unset' : lineFontSize + 'px',
-                    transform: `rotate( ${ symbol.box.angle_degrees }deg )`,
-                    // border: 'none',
-                    // border: 'solid 2px red',
-                }}
+                style={style}
             >
                 { symbol.symbol }
                 { isLastSymbol && EOLSymbol }

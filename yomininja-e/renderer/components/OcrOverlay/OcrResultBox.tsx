@@ -54,8 +54,10 @@ export default function OcrResultBox( props: {
 
     const lineCount = ocrItem.text.length;
     const isMultiline = lineCount > 1;
+    const generatedFuriganaSettings = ocrItemBoxVisuals.text?.generated_furigana;
     
     const [ alignItems, setAlignItems ] = useState( 'center' );
+    const [ includesGeneratedFurigana, setIncludesGeneratedFurigana ] = useState( false );
 
     useEffect( () => {
 
@@ -79,13 +81,14 @@ export default function OcrResultBox( props: {
 
                 const addedNodes = Array.from( mutation.addedNodes );
                 
-                if ( !addedNodes.some( node => node.nodeName === 'RUBY' ) ) 
+                if ( !addedNodes.some( node => node.nodeName === 'RUBY' ) )
                     return;
 
                 console.log('A <ruby> child was added!');
+                setIncludesGeneratedFurigana(true);
 
                 if ( alignItems !== 'flex-start' )
-                    setAlignItems( 'flex-start' );                                        
+                    setAlignItems( 'flex-start' );
             });
         });
     
@@ -134,7 +137,37 @@ export default function OcrResultBox( props: {
         // @ts-expect-error
         '-webkit-text-stroke-width': ocrItemBoxVisuals?.text?.outline_width,
         '-webkit-text-stroke-color': ocrItemBoxVisuals?.text?.outline_color,
+        '& ruby': {
+            backgroundColor: ocrItemBoxVisuals.background_color
+        },
+        '& ruby rt': {
+            backgroundColor: ocrItemBoxVisuals.background_color
+        }
     };
+
+    
+
+    if ( 
+        generatedFuriganaSettings &&
+        generatedFuriganaSettings?.visibility !== 'visible'
+    ) {
+        activeBoxCss['& rt'] = {
+            display: 'none'
+        };
+
+        if ( generatedFuriganaSettings.visibility === 'visible-on-word-hover' ) {
+            activeBoxCss['& ruby:hover rt'] = {
+                display: 'ruby-text',
+                backgroundColor: ocrItemBoxVisuals?.background_color
+            };
+        }
+        else if ( generatedFuriganaSettings.visibility === 'visible-on-line-hover' ) {
+            activeBoxCss['& .ocr-line-container:hover rt'] = {
+                display: 'ruby-text',
+                backgroundColor: ocrItemBoxVisuals?.background_color
+            };
+        }
+    }
 
     const Box = styled( BaseOcrResultBox )({
         "&:hover": activeBoxCss,
@@ -224,6 +257,7 @@ export default function OcrResultBox( props: {
                     <OcrResultLine
                         contentEditable={contentEditable}
                         box={box}
+                        textBlockBoxHeightPx={boxHeightPx}
                         line={line}
                         isLastLine={isLastLine}
                         regionWidthPx={regionWidthPx}
@@ -232,6 +266,7 @@ export default function OcrResultBox( props: {
                         onBlur={props.onBlur}
                         ocrItemBoxVisuals={ocrItemBoxVisuals}
                         sizeExpansionPx={sizeExpansionPx}
+                        includesGeneratedFurigana={includesGeneratedFurigana}
                     />
                 )
             }) }

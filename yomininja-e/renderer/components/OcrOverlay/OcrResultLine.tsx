@@ -1,4 +1,4 @@
-import { styled } from "@mui/material";
+import { styled, SxProps } from "@mui/material";
 import { OcrResultBoxScalable, OcrTextLineScalable, OcrTextLineSymbolScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import { CSSProperties, useContext, useEffect } from "react";
@@ -11,12 +11,14 @@ import OcrSymbolsContainer from "./OcrSymbolsContainer";
 export type OcrResultLineProps = {
     line: OcrTextLineScalable;
     box: OcrResultBoxScalable; // Text block bounding box
+    textBlockBoxHeightPx: number;
     regionWidthPx: number;
     regionHeightPx: number;
     sizeExpansionPx: number;
     ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
     contentEditable: boolean;
     isLastLine: boolean;
+    includesGeneratedFurigana: boolean;
     onBlur?: () => void;
 };
 
@@ -29,34 +31,45 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         line,
         box,
         isLastLine,
+        textBlockBoxHeightPx,
         regionWidthPx,
         regionHeightPx,
         ocrItemBoxVisuals,
         contentEditable,
-        sizeExpansionPx
+        sizeExpansionPx,
+        includesGeneratedFurigana
     } = props;
 
     const { profile } = useContext( ProfileContext );
 
     const active_ocr_language = profile?.active_ocr_language;
 
+    const generatedFuriganaSettings = ocrItemBoxVisuals.text?.generated_furigana;
+
     const textSelectionStyle: CSSProperties = {
         backgroundColor: ocrItemBoxVisuals.selected_text.background_color,
         color: ocrItemBoxVisuals.selected_text.color,
     };
 
-    const Line = styled('div')({
-        transformOrigin: 'top left',
-        whiteSpace: 'pre',
-        width: 'max-content',
+    const containerStyle = {
         '&::selection': textSelectionStyle,
         '& ruby': {
             '::selection': textSelectionStyle
         },
         '&:hover': {
-            zIndex: '1000000'
+            zIndex: '9000000',
         }
+    }
+    
+
+    const Container = styled('span')(containerStyle);
+
+    const Line = styled('div')({
+        transformOrigin: 'top left',
+        whiteSpace: 'pre',
+        width: 'max-content',
     });
+
 
     let lineFontSize = 0;
     let fontSizeFactor = ocrItemBoxVisuals.text.font_size_factor;
@@ -160,6 +173,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             textSelectionStyle={textSelectionStyle}
             isLastLine={isLastLine}
             EOLSymbol={EOLSymbol}
+            includesGeneratedFurigana={includesGeneratedFurigana}
             style={{
                 transform: `rotate( ${-box.angle_degrees}deg )`,
                 fontSize: lineFontSize
@@ -180,6 +194,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             textSelectionStyle={textSelectionStyle}
             isLastLine={isLastLine}
             EOLSymbol={EOLSymbol}
+            includesGeneratedFurigana={includesGeneratedFurigana}
             style={{
                 transform: `rotate( ${-line.box.angle_degrees}deg )`,
                 fontSize: lineFontSize
@@ -232,10 +247,12 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     
     let lineLeftPx: number;
     let lineTopPx: number;
+    let lineBottomPx: number;
 
     if ( lineTop !== undefined && lineLeft !== undefined ) {
         lineLeftPx = lineLeftOffset + ( ( lineLeft / 100 ) * regionWidthPx );
         lineTopPx = lineTopOffset + ( ( lineTop / 100 ) * regionHeightPx );
+        lineBottomPx = textBlockBoxHeightPx - lineTopPx - lineBoxHeightPx;
     }
 
     const linePositioning = (
@@ -256,6 +273,11 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         margin: props.sizeExpansionPx / 2 + 'px',
         letterSpacing: letterSpacing+'px'
     };
+
+    if ( box.isVertical )
+        lineBaseCSS.top = lineTopPx || '0%';
+    else
+        lineBaseCSS.bottom = lineBottomPx || '0%';
 
     const margin = props.sizeExpansionPx / 2 + 'px';
 
@@ -279,7 +301,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         </span>
     );
 
-    return ( <span>
+    return ( <Container className="ocr-line-container">
         { linePositioning === 'absolute' && lineSizeHolder }
         {
             symbolsContainer ||
@@ -293,7 +315,6 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                 style={{
                     ...lineBaseCSS,
                     position: linePositioning,
-                    top: lineTopPx || '0%',
                     left: lineLeftPx || '0%',
                     // transformOrigin: line?.box?.transform_origin || 'left top',
                     // transform: `rotate( ${line?.box?.angle_degrees}deg )`,
@@ -307,5 +328,5 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                 { ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled && EOLSymbol }
             </Line>
         }
-    </span> )
+    </Container> )
 }
