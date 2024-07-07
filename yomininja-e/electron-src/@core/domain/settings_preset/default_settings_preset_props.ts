@@ -46,6 +46,9 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                         furigana_filter: {
                             enabled: false,
                             threshold: 0.6
+                        },
+                        generated_furigana: {
+                            visibility: 'visible-on-line-hover'
                         }
                     },
                     selected_text: {

@@ -3,6 +3,7 @@ export type OverlayOcrRegionVisuals = {
 };
 
 export type TextPositioningMode = 'block-based' | 'line-based' | 'word-based' | 'character-based';
+export type GeneratedFuriganaVisibility = 'visible' | 'hidden' | 'visible-on-line-hover' | 'visible-on-word-hover';
 
 export type OverlayOcrItemBoxVisuals = {
     inactive_border_color: string;
@@ -32,7 +33,9 @@ export type OverlayOcrItemBoxVisuals = {
             enabled: boolean;
             threshold: number;
         };
-
+        generated_furigana: {
+            visibility: GeneratedFuriganaVisibility
+        }
     };
     selected_text: {
         color: string;
