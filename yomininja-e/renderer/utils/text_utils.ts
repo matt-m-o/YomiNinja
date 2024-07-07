@@ -33,7 +33,7 @@ export function getSymbolSpacingSide( symbol: string ): 'left' | 'right' | undef
         return "right";
 }
 
-export function removeFurigana( input: OcrItemScalable[] ) {
+export function removeFurigana( input: OcrItemScalable[], threshold = 0.6 ) {
 
     input.forEach( item => {
 
@@ -61,7 +61,7 @@ export function removeFurigana( input: OcrItemScalable[] ) {
 
         averageFontSize = averageFontSize / item.text.length;
 
-        const minFontSize = ( ( averageFontSize + maxFontSize ) / 2 ) * 0.6;
+        const minFontSize = ( ( averageFontSize + maxFontSize ) / 2 ) * threshold;
 
         item.text = item.text.filter( line => {
 

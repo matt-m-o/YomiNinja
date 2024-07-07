@@ -124,8 +124,10 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
                 const ocrTemplateRegion = getOcrTemplateTargetRegion( ocrRegion.id );
 
-                if ( Boolean(ocrItemBoxVisuals.text.furigana_filter?.enabled) ) {
-                    removeFurigana(ocrRegion.results);
+                const furiganaFilterThreshold = ocrItemBoxVisuals.text?.furigana_filter?.threshold;
+
+                if ( Boolean( ocrItemBoxVisuals.text.furigana_filter?.enabled ) ) {
+                    removeFurigana(ocrRegion.results, furiganaFilterThreshold || 0.6);
                 }
             
                 return (
