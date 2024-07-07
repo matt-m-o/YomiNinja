@@ -149,9 +149,9 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
                                 if ( ocrTemplateRegion?.text_to_speech_options?.automatic ) {
                                     const { voice_uri, volume, speed, pitch } = ocrTemplateRegion.text_to_speech_options;
-                                    const text = item.text.map( line => line.content ).join(' ');
+                                    const text = item.text.map( line => line.content ).join('');
                                     speak({
-                                        text: item.text.map( line => line.content ).join(' '),
+                                        text,
                                         voiceURI: voice_uri,
                                         volume, 
                                         speed,
