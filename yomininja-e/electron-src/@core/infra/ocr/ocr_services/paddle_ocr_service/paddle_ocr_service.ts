@@ -42,7 +42,7 @@ export class PaddleOcrService {
         if ( !serviceAddress )
             return;
     
-        console.log("initializing wih address: "+ serviceAddress );
+        console.log("initializing PaddleOcrService | Address: "+ serviceAddress );
 
         this.ocrServiceClient = new ocrServiceProto.ocr_service.OCRService(
             serviceAddress,
