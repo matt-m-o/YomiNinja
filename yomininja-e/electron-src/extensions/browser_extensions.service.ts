@@ -340,20 +340,20 @@ export class BrowserExtensionsService {
             }
         });
 
-        const mozillaUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0';
+        const alternativeUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 YomiNinja";
 
         if ( url.includes('jpdb') )
-            extensionWindow.webContents.setUserAgent(mozillaUserAgent);
+            extensionWindow.webContents.setUserAgent(alternativeUserAgent);
         
 
         extensionWindow.webContents.on( 'will-navigate', event => {
             if ( event.url.includes('google') ) {;
-                if ( extensionWindow.webContents.userAgent !== mozillaUserAgent ) {
-                    extensionWindow.webContents.setUserAgent(mozillaUserAgent);
+                if ( extensionWindow.webContents.userAgent !== alternativeUserAgent ) {
+                    extensionWindow.webContents.setUserAgent(alternativeUserAgent);
                     extensionWindow.webContents.reload();
                 }
             }
-        })
+        });
 
         if ( url )
             extensionWindow.loadURL( url );
