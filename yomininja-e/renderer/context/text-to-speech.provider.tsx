@@ -28,7 +28,7 @@ export const TTSProvider = ( { children }: PropsWithChildren ) => {
 
         window.speechSynthesis.onvoiceschanged = ( voicesChangedEvent ) => {
             const voices = window.speechSynthesis.getVoices();
-            setVoices( window.speechSynthesis.getVoices() );
+            setVoices( voices );
             console.log({ voicesChangedEvent });
             console.log({ voices });
         }
