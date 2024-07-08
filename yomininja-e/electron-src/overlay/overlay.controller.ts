@@ -372,11 +372,16 @@ export class OverlayController {
     ) => {
         // console.log("OverlayController.showOverlayWindow");
 
+        const overlayWindowHandle = getBrowserWindowHandle( this.overlayWindow );
+
         if ( !options?.isElectronEvent ) {
             if ( this.showWindowWithoutFocus || options?.showInactive )
                 this.overlayWindow.showInactive();
-            else
+            else {
                 this.overlayWindow.show();
+                if (process.platform === 'darwin')
+                    windowManager.setForegroundWindow( overlayWindowHandle );
+            }
 
             return;
         }
@@ -388,8 +393,6 @@ export class OverlayController {
         }
 
         this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
-        
-        const overlayWindowHandle = getBrowserWindowHandle( this.overlayWindow );
         
         console.log({ overlayWindowHandle });
         
