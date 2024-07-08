@@ -27,6 +27,7 @@ import { screenCapturerController } from "../screen_capturer/screen_capturer.ind
 import { ICONS_DIR } from "../util/directories.util";
 import { join } from "path";
 import { sleep } from "../util/sleep.util";
+import electronIsDev from "electron-is-dev";
 const isMacOS = process.platform === 'darwin';
 
 let startupTimer: NodeJS.Timeout;
@@ -268,7 +269,9 @@ export class AppController {
     registerEventHandlers() {
         ocrTemplateEvents.on( 'active_template', async (template) => {
             const isAutoOcrEnabled = template?.isAutoOcrEnabled() || false;
-            console.log({ isAutoOcrEnabled });
+
+            if ( electronIsDev )
+                console.log({ isAutoOcrEnabled });
 
             if ( !isAutoOcrEnabled )
                 await screenCapturerController.destroyScreenCapturer();
