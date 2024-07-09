@@ -183,7 +183,7 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
                         style={{
                             minWidth: '40px',
                         }}
-                        title={'Default'}
+                        title={'Restore default'}
                     >
                         <RestartAltIcon 
                             style={{
