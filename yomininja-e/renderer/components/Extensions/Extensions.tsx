@@ -197,12 +197,17 @@ export default function Extensions() {
                                     <li> Click on <strong>Options</strong>. </li>
                                 </OL>
 
-                                For a better experience, it's recommended to enable <strong>"Hide popup on cursor exit"</strong>:
-
+                                For a better experience, it's recommended to change some settings:
                                 <OL>
                                     <li> Open Yomitan/Yomichan settings. </li>
                                     <li> Go to the <strong>Popup Behavior</strong> section. </li>
                                     <li> Enable <strong>"Hide popup on cursor exit"</strong>. </li>
+                                    <li> Go to the <strong>"Scanning"</strong> section. </li>
+                                    <li> Disable <strong>"Layout-aware scanning"</strong>. </li>
+                                    <li> Go to YomiNinja settings screen. </li>
+                                    <li> Go to the <strong>"Overlay Appearance"</strong> section. </li>
+                                    <li> Enable <strong>"Add end-of-sentence punctuation"</strong>. </li>
+                                    <li> Check the <strong>"Invisible"</strong> option. </li>
                                 </OL>
                             </CustomAccordion>
 
