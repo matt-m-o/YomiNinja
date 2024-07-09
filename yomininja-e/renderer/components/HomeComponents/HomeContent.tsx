@@ -229,19 +229,19 @@ export default function HomeContent() {
                         }
 
                         <li>
-                            <strong> Added Comic Text Detector (MangaOCR only). </strong>
+                            <strong> Comic Text Detector (MangaOCR only). </strong>
                         </li>
 
                         <li>
-                            <strong> Improved text overlay positioning. </strong>
+                            <strong> The positioning and sizing of extracted text have been improved. </strong>
                         </li>
 
                         <li>
-                            <strong> Option to filter out furigana. </strong>
+                            <strong> Option to filter out extracted furigana. </strong>
                         </li>
 
                         <li>
-                            <strong> Option to include ending punctuation marks to solve potential sentence mining issues. </strong>
+                            <strong> Option to automatically append ending punctuation marks to the extracted text to avoid potential sentence-mining issues. </strong>
                         </li>
 
                         <li>
@@ -257,7 +257,11 @@ export default function HomeContent() {
                         </li>
 
                         <li>
-                            <strong> Option to run disable hardware acceleration. </strong>
+                            <strong> Option to disable hardware acceleration, potentially solving the issue where the overlay turns black.</strong>
+                        </li>
+
+                        <li>
+                            <strong> Button to restore default hotkeys. </strong>
                         </li>
 
                         {/* <li> Clipboard options menu (WIP) </li> */}
@@ -285,11 +289,12 @@ export default function HomeContent() {
                             marginTop: 56,
                         }}
                     >
-                        <li>Achieve the lowest latency by using the "PrintScreen" key.</li>
+                        <li>Achieve the lowest latency by using the <strong>PrintScreen</strong> key.</li>
                         <li>Customize hotkeys, text auto-copy, and more in the settings menu.</li>
                         <li>The copied text is also transmitted via WebSockets on port 6677.</li>
                         <li>If the game hides the mouse cursor, enable the custom cursor in the settings menu.</li>
-                        <li>Edit extracted text with Ctrl + Double Click. </li>
+                        <li>Edit extracted text with <strong>Ctrl + Double Click</strong>. </li>
+                        <li>Manually move or resize the overlay with <strong> Ctrl + Shift + M </strong></li>
                     </ul>
 
                 </CardContent>
