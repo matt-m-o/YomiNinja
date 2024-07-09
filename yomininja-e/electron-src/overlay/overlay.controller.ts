@@ -93,6 +93,7 @@ export class OverlayController {
                 nodeIntegration: false, // false
                 contextIsolation: false,
                 preload: join(__dirname, '../preload.js'),
+                backgroundThrottling: false // potential fix for the black overlay issue
             },
             titleBarStyle: 'hidden',
             titleBarOverlay: false,
