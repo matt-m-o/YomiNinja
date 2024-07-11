@@ -1,4 +1,4 @@
-import { BrowserWindow, IpcMainInvokeEvent, Tray, nativeImage, app, clipboard, globalShortcut, ipcMain, Menu, DisplayBalloonOptions, NativeImage, systemPreferences } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, Tray, nativeImage, app, clipboard, globalShortcut, Menu, DisplayBalloonOptions, NativeImage, systemPreferences } from "electron";
 import { UiohookKey, uIOhook } from "uiohook-napi";
 import { CaptureSource, ExternalWindow } from "../ocr_recognition/common/types";
 import { TaskbarProperties } from "../../gyp_modules/window_management/window_manager";
@@ -28,6 +28,7 @@ import { ICONS_DIR } from "../util/directories.util";
 import { join } from "path";
 import { sleep } from "../util/sleep.util";
 import electronIsDev from "electron-is-dev";
+import { ipcMain } from "../common/ipc_main";
 const isMacOS = process.platform === 'darwin';
 
 let startupTimer: NodeJS.Timeout;

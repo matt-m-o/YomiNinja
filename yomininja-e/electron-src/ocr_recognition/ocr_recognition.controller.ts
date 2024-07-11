@@ -1,4 +1,4 @@
-import { BrowserWindow, globalShortcut, screen, desktopCapturer, clipboard, ipcMain, IpcMainInvokeEvent } from "electron";
+import { BrowserWindow, globalShortcut, screen, desktopCapturer, clipboard, IpcMainInvokeEvent } from "electron";
 import isDev from 'electron-is-dev';
 import { join } from "path";
 import { format } from 'url';
@@ -13,6 +13,7 @@ import sharp from "sharp";
 import os from 'os';
 import { OcrEngineSettingsU } from "../@core/infra/types/entity_instance.types";
 import { InAppNotification } from "../common/types/in_app_notification";
+import { ipcMain } from "../common/ipc_main";
 
 export class OcrRecognitionController {
     
@@ -100,13 +101,18 @@ export class OcrRecognitionController {
                     autoHideDuration: 3000
                 };
 
-                this.overlayWindow.webContents.send(
+                ipcMain.send(
+                    this.overlayWindow,
                     'notifications:show',
                     notification
                 );
             }
 
-            this.overlayWindow.webContents.send( 'ocr:result', ocrResultScalable );
+            ipcMain.send(
+                this.overlayWindow,
+                'ocr:result',
+                ocrResultScalable
+            );
 
         } catch (error) {
             console.error( error );

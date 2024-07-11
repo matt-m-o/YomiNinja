@@ -1,7 +1,6 @@
 import { BrowserWindow, IpcMainInvokeEvent, dialog, session } from "electron";
 import { SettingsService } from "./settings.service";
 import { activeProfile } from "../@core/infra/app_initialization";
-import { ipcMain } from 'electron';
 import { SettingsPreset, SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 import path from "path";
 import fs from 'fs';
@@ -9,6 +8,7 @@ import { pushInAppNotification } from "../common/notification_helpers";
 import { InAppNotification } from "../common/types/in_app_notification";
 import { timingSafeEqual } from "crypto";
 import { UnorderedBulkOperation } from "typeorm";
+import { ipcMain } from "../common/ipc_main";
 
 
 

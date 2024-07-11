@@ -1,4 +1,4 @@
-import { BrowserWindow, IpcMainInvokeEvent, MouseInputEvent, clipboard, globalShortcut, ipcMain } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, MouseInputEvent, clipboard, globalShortcut } from "electron";
 import { OverlayService } from "./overlay.service";
 import { join } from "path";
 import isDev from 'electron-is-dev';
@@ -11,6 +11,7 @@ import { getBrowserWindowHandle } from "../util/browserWindow.util";
 import { matchUiohookMouseEventButton } from "../common/mouse_helpers";
 import { ClickThroughMode, ShowWindowOnCopy } from "../@core/domain/settings_preset/settings_preset_overlay";
 import { screen } from 'electron';
+import { ipcMain } from "../common/ipc_main";
 
 const isMacOS = process.platform === 'darwin';
 const isLinux = process.platform === 'linux';
@@ -124,7 +125,7 @@ export class OverlayController {
             if ( !this.hideResultsOnBlur ) return;
 
             this.showResults = false;
-            this.overlayWindow.webContents.send( 'user_command:toggle_results', false );
+            ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
         });
 
         const url = isDev
@@ -393,7 +394,7 @@ export class OverlayController {
             return;
         }
 
-        this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
+        ipcMain.send( this.overlayWindow, 'user_command:toggle_results', true );
         
         console.log({ overlayWindowHandle });
         
@@ -440,13 +441,13 @@ export class OverlayController {
 
         this.registerGlobalShortcuts( settingsPresetJson );
 
-        this.overlayWindow?.webContents.send( 'settings_preset:active_data', settingsPresetJson );
+        ipcMain.send( this.overlayWindow, 'settings_preset:active_data', settingsPresetJson );
     }
 
     private toggleOverlayHotkeyHandler = () => {        
 
         this.showResults = !this.showResults;
-        this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
+        ipcMain.send( this.overlayWindow, 'user_command:toggle_results', this.showResults );
 
         if ( this.showResults )
             this.showOverlayWindow();
@@ -457,16 +458,15 @@ export class OverlayController {
 
     private showOverlayHotkeyHandler = () => {
         this.showOverlayWindow();
-        // this.overlayWindow.webContents.send( 'user_command:copy_to_clipboard' );
 
         this.showResults = true;
-        this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
+        ipcMain.send( this.overlayWindow, 'user_command:toggle_results', this.showResults );
     }
 
     private hideOverlayHotkeyHandler = () => {
         // this.showOverlayWindow();
         this.showResults = false;
-        this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
+        ipcMain.send( this.overlayWindow, 'user_command:toggle_results', this.showResults );
         
         if ( this.overlayWindow.isFocused() )
             this.overlayWindow.blur();
@@ -528,7 +528,7 @@ export class OverlayController {
             }
         );
 
-        this.overlayWindow.webContents.send( 'set_movable', newMovableState );
+        ipcMain.send( this.overlayWindow, 'set_movable', newMovableState );
         this.overlayWindow.show();
 
         if ( newMovableState ) {
@@ -555,4 +555,5 @@ export class OverlayController {
         this.overlayWindow.hide();
         this.isOverlayWindowInTray = true;
     }
+
 }

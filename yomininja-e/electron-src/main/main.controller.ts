@@ -2,7 +2,7 @@
 import { join } from 'path';
 import { format } from 'url';
 
-import { BrowserWindow, IpcMainInvokeEvent, Menu, MenuItem, app, dialog, ipcMain } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, Menu, MenuItem, app, dialog } from "electron";
 import isDev from 'electron-is-dev';
 import { PAGES_DIR } from '../util/directories.util';
 import { WindowManager } from '../../gyp_modules/window_management/window_manager';
@@ -10,6 +10,7 @@ import { windowManager } from '../@core/infra/app_initialization';
 import { getBrowserWindowHandle } from '../util/browserWindow.util';
 import { overlayController } from '../overlay/overlay.index';
 import { uIOhook } from 'uiohook-napi';
+import { ipcMain } from '../common/ipc_main';
 
 export class MainController {
 

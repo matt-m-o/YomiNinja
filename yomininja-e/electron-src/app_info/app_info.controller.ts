@@ -1,6 +1,7 @@
-import { BrowserWindow, ipcMain, shell } from "electron";
+import { BrowserWindow, shell } from "electron";
 import { AppInfoService, SystemInfo } from "./app_info.service";
 import { get_AppGithubUrl } from "../@core/infra/container_registry/adapters_registry";
+import { ipcMain } from "../common/ipc_main";
 
 
 export class AppInfoController {

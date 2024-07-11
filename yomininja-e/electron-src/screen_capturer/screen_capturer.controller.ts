@@ -1,6 +1,7 @@
-import { ipcMain, IpcMainInvokeEvent, screen } from "electron";
+import { IpcMainInvokeEvent, screen } from "electron";
 import { screenCapturerService } from "./screen_capturer.index";
 import { CaptureSource } from "../app/types";
+import { ipcMain } from "../common/ipc_main";
 
 export class ScreenCapturerController {
 

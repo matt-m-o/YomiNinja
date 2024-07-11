@@ -1,9 +1,10 @@
-import { BrowserWindow, IpcMainInvokeEvent, ipcMain, shell } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, shell } from "electron";
 import { get_AppGithubUrl } from "../@core/infra/container_registry/adapters_registry";
 import { ProfileService } from "./profile.service";
 import { LanguageJson } from "../@core/domain/language/language";
 import { getActiveProfile } from "../@core/infra/app_initialization";
 import { Profile } from "../@core/domain/profile/profile";
+import { ipcMain } from "../common/ipc_main";
 
 
 export class ProfileController {
