@@ -1,5 +1,5 @@
 import electron, { BrowserWindow } from "electron";
-import io from 'socket.io';
+import { socketServer } from '../common/server';
 
 
 export class IpcMainUniversal implements electron.IpcMain {
@@ -90,7 +90,7 @@ export class IpcMainUniversal implements electron.IpcMain {
     // Send an asynchronous message to the renderer process ( webContents.send... )
     send( window: BrowserWindow, channel: string, data: any ) {
         window?.webContents?.send( channel, data );
-        // this.websocket...
+        socketServer.sockets.emit( channel, undefined, data );
     }
 }
 

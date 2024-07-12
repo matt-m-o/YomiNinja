@@ -21,6 +21,7 @@ import fs from 'fs';
 import path from 'path';
 import { USER_DATA_DIR } from '../../util/directories.util';
 import { LaunchConfig } from './types/launch_config';
+import { createServer, httpServer } from '../../common/server';
 
 const isMacOS = process.platform === 'darwin';
 export let activeProfile: Profile;
@@ -90,6 +91,8 @@ async function populateLanguagesRepository( languageRepo: LanguageTypeOrmReposit
 export async function initializeApp() {
     
     try {
+
+        createServer();
 
         const serviceStartupPromise = startServices();
 
