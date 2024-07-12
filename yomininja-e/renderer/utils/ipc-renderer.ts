@@ -1,16 +1,11 @@
 import { IpcRenderer } from "electron";
-import { reject } from "lodash";
+import io, { Socket } from 'socket.io-client';
 
-type Listener = {
-    channel: string;
-    handler: ( event: any, data: any ) => any;
-}
 
 export class IpcRendererUniversal implements IpcRenderer {
 
     electronIpcRenderer: IpcRenderer | undefined;;
-    webSocket: WebSocket | undefined;
-    private wsListeners: Map< string, Listener[] > = new Map();
+    socket: Socket;
 
     constructor() {
 
@@ -18,28 +13,26 @@ export class IpcRendererUniversal implements IpcRenderer {
             return;
 
         if ( !global?.ipcRenderer ) {
-            this.webSocket = new WebSocket('ws://localhost:6677');
-            this.webSocket.addEventListener( 'message', this.handleWebSocketEvent );
+            this.socket = io('http://localhost:9000');
+            
+            this.socket.on('connect', () => {
+                console.log('IPC Socket Connected!');
+            });
         }
         else
             this.electronIpcRenderer = global?.ipcRenderer;
     }
 
     async invoke( channel: string, ...args: any[] ): Promise<any> {
-
-        // console.log(`Invoking channel: ${channel}`);
-        // console.log({
-        //     data: args[0]
-        // })
         
         if ( this.electronIpcRenderer ) {
             return await this.electronIpcRenderer.invoke( channel, ...args );   
         }
 
-        if ( this.webSocket ) {
+        if ( this.socket ) {
 
             await new Promise( ( resolve, reject ) => {
-                this.webSocket.send( 
+                this.socket.send( 
                     JSON.stringify({
                         channel,
                         data: args[0]
@@ -52,36 +45,10 @@ export class IpcRendererUniversal implements IpcRenderer {
 
     on(channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void): this {
 
-        // console.log(`Invoking channel: ${channel}`);
-
         this.electronIpcRenderer?.on(channel, listener);
-
-        if ( !this.wsListeners.get(channel) )
-            this.wsListeners.set(channel, []);
-
-        this.wsListeners.get(channel).push({
-            channel,
-            handler: listener
-        });
+        this.socket?.on( channel, listener );
 
         return this;
-    }
-
-    handleWebSocketEvent = ( message: MessageEvent ) => {
-
-        if ( typeof message.data !== 'object' )
-            return;
-
-        if ( !('channel' in message.data) )
-            return;
-
-        const channel = message.data.channel;
-
-        for ( const listener of this.wsListeners.get(channel) ) {
-            if ( listener.channel === listener.channel ) {
-                listener.handler( '', message.data.data );
-            }
-        }
     }
 
     addListener(channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void): this {
@@ -98,19 +65,12 @@ export class IpcRendererUniversal implements IpcRenderer {
     }
     removeAllListeners(channel: string): this {
         this.electronIpcRenderer?.removeAllListeners(channel);
-        this.wsListeners.delete(channel);
+        this.socket?.removeAllListeners(channel);
         return this;
     }
     removeListener(channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void): this {
-        this.electronIpcRenderer?.removeListener(channel, listener);
-        this.wsListeners.set(
-            channel,
-            this.wsListeners.get(channel)
-                .filter(
-                    l => l.channel !== channel && 
-                    l.handler !== listener
-                )
-        );
+        this.electronIpcRenderer?.removeListener( channel, listener );
+        this.socket?.removeListener( channel, listener );
 
         return this;
     }
