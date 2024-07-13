@@ -11,6 +11,7 @@ import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { AppInfoContext } from "../../context/app_info.provider";
+import { ipcRenderer } from "../../utils/ipc-renderer";
 
 const ButtonInput = styled(TextField)({
     minWidth: '500px',
@@ -71,11 +72,11 @@ export default function HomeContent() {
     }
 
     function openCaptureSourceSelectionWindow() {
-        global.ipcRenderer.invoke('main:show_capture_source_selection');
+        ipcRenderer.invoke('main:show_capture_source_selection');
     }
 
     async function getSupportedOcrEngines(): Promise< { [key: string]: string; } > {
-        const result = await global.ipcRenderer.invoke( 'ocr_recognition:get_supported_ocr_engines' ) as { [key: string]: string; };
+        const result = await ipcRenderer.invoke( 'ocr_recognition:get_supported_ocr_engines' ) as { [key: string]: string; };
         return result;
     }
 

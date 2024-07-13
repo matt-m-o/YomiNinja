@@ -9,6 +9,7 @@ import AlertDialog from "../common/AlertDialog";
 import { BrowserExtensionJson } from "../../../electron-src/@core/domain/browser_extension/browser_extension";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { CustomAccordion } from "../common/CustomAccordion";
+import { ipcRenderer } from "../../utils/ipc-renderer";
 
 const SectionDivider = styled( Divider )({
     marginTop: '30px',
@@ -93,7 +94,7 @@ export default function Extensions() {
     );
 
     function openLink( link: string ) {
-        global.ipcRenderer.invoke( 'open_link', link );
+        ipcRenderer.invoke( 'open_link', link );
     }
 
     const accordionStyle: CSSProperties = {

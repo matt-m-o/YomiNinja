@@ -3,6 +3,7 @@ import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
 import { Button, Divider } from "@mui/material";
 import { BrowserExtensionJson } from "../../electron-src/@core/domain/browser_extension/browser_extension";
 import { setTimeout } from "timers";
+import { ipcRenderer } from "../utils/ipc-renderer";
 
 
 
@@ -25,26 +26,26 @@ export const ExtensionsProvider = ( { children }: PropsWithChildren ) => {
 
     async function getInstalledExtensions() {
 
-        const extensions = await global.ipcRenderer.invoke( 'extensions:get_all_extensions' );
+        const extensions = await ipcRenderer.invoke( 'extensions:get_all_extensions' );
 
         // console.log({ extensions })
         setInstalledExtensions( extensions );
     }
 
     async function installExtension() {
-        await global.ipcRenderer.invoke( 'extensions:install_extension' );
+        await ipcRenderer.invoke( 'extensions:install_extension' );
     }
 
     async function uninstallExtension( extension: BrowserExtensionJson ) {
-        await global.ipcRenderer.invoke( 'extensions:uninstall_extension', extension );
+        await ipcRenderer.invoke( 'extensions:uninstall_extension', extension );
     }
 
     async function openExtensionOptions( browserExtension: BrowserExtensionJson ): Promise< void > {
-        await global.ipcRenderer.invoke( 'extensions:open_extension_options', browserExtension );
+        await ipcRenderer.invoke( 'extensions:open_extension_options', browserExtension );
     }
 
     function refreshUI() {
-        global.ipcRenderer.invoke( 'refresh_all_windows' );
+        ipcRenderer.invoke( 'refresh_all_windows' );
     }
 
     function getExtensionActionButton( extensionId: string ): Element {
@@ -56,7 +57,7 @@ export const ExtensionsProvider = ( { children }: PropsWithChildren ) => {
     }
 
     async function toggleExtension( extension: BrowserExtensionJson ) {
-        await global.ipcRenderer.invoke(
+        await ipcRenderer.invoke(
             'extensions:toggle_extension',
             extension
         );

@@ -424,7 +424,7 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                         }}
                         onChangeCommitted={ () => {
                             const intervalBetweenFrames = 1000 / maximumFrameRate;
-                            global.ipcRenderer.invoke('screen_capturer:set_interval', intervalBetweenFrames );
+                            ipcRenderer.invoke('screen_capturer:set_interval', intervalBetweenFrames );
                             updateOcrTemplate({
                                 ...activeOcrTemplate,
                                 capturer_options: {
@@ -442,7 +442,7 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                                     interval_between_frames
                                 }
                             });
-                            global.ipcRenderer.invoke('screen_capturer:set_interval', interval_between_frames );
+                            ipcRenderer.invoke('screen_capturer:set_interval', interval_between_frames );
                             setMaximumFrameRate(3);
                         }}
                     />

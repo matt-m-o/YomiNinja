@@ -9,6 +9,7 @@ import { TTSContext } from "../../context/text-to-speech.provider";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
 import { removeFurigana } from "../../utils/text_utils";
+import { ipcRenderer } from "../../utils/ipc-renderer";
 
 export type FullscreenOcrResultProps = {
     ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
@@ -64,11 +65,11 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
     }
 
     const sendHoveredText = ( hoveredText: string ) => {
-        global.ipcRenderer.invoke( 'overlay:set_hovered_text', hoveredText );
+        ipcRenderer.invoke( 'overlay:set_hovered_text', hoveredText );
     }
 
     const copyText = ( text: string ) => {
-        global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', text );
+        ipcRenderer.invoke( 'user_command:copy_to_clipboard', text );
     }
 
 

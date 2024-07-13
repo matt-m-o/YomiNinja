@@ -2,6 +2,7 @@ import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { Alert, Link, Snackbar, SxProps, Theme, debounce } from "@mui/material";
 import { CheckForAppUpdates_Output } from '../../electron-src/@core/application/use_cases/check_for_app_updates/check_for_app_updates.use_case'
 import { SystemInfo } from '../../electron-src/app_info/app_info.service';
+import { ipcRenderer } from "../utils/ipc-renderer";
 
 
 export type AppInfoContextType = {
@@ -19,7 +20,7 @@ export const GithubReleasesLink = ( props?: { sx?: SxProps<Theme> } ) => (
             position: 'relative',
             zIndex: 10
         }}
-        onClick={ () => global.ipcRenderer.invoke('app_info:open_releases_page') }
+        onClick={ () => ipcRenderer.invoke('app_info:open_releases_page') }
     >
         GitHub
     </Link>
@@ -38,7 +39,7 @@ export const AppInfoProvider = ( { children }: PropsWithChildren ) => {
 
     async function runUpdateCheck() {
 
-        const result: CheckForAppUpdates_Output = await global.ipcRenderer.invoke( 'app_info:get_update_check' );
+        const result: CheckForAppUpdates_Output = await ipcRenderer.invoke( 'app_info:get_update_check' );
 
         // console.log( result );
 
@@ -48,7 +49,7 @@ export const AppInfoProvider = ( { children }: PropsWithChildren ) => {
     }
 
     async function getSystemInfo(): Promise< SystemInfo > {
-        const systemInfo: SystemInfo = await global.ipcRenderer.invoke( 'app_info:get_system_info' );
+        const systemInfo: SystemInfo = await ipcRenderer.invoke( 'app_info:get_system_info' );
         setSystemInfo(systemInfo);
         console.log({ systemInfo });
         return systemInfo;
@@ -60,7 +61,7 @@ export const AppInfoProvider = ( { children }: PropsWithChildren ) => {
         runUpdateCheck();
         getSystemInfo();
         
-    }, [ global.ipcRenderer ] );
+    }, [ ipcRenderer ] );
 
     const [ openSnackbar, setOpenSnackbar ] = useState(false);
 
@@ -95,11 +96,11 @@ export const AppInfoProvider = ( { children }: PropsWithChildren ) => {
     }, [versionInfo] );
 
     function openGithubRepoPage(){
-        global.ipcRenderer.invoke('app_info:open_github_repo_page');
+        ipcRenderer.invoke('app_info:open_github_repo_page');
     }
 
     function openPatreonPage(){
-        global.ipcRenderer.invoke('app_info:open_patreon_page');
+        ipcRenderer.invoke('app_info:open_patreon_page');
     }
     
     

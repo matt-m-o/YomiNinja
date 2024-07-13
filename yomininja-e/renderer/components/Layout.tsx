@@ -18,6 +18,7 @@ import { defaultTheme } from './Theme';
 import { ExtensionsContext } from '../context/extensions.provider';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { ipcRenderer } from '../utils/ipc-renderer';
 
 
 
@@ -77,7 +78,7 @@ export default function Layout( { contents }: LayoutProps) {
   const [ activeTab, setActiveTab ] = React.useState('0');
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setActiveTab(newValue);
-    global.ipcRenderer.invoke( 'main:set_active_tab', newValue );
+    ipcRenderer.invoke( 'main:set_active_tab', newValue );
   }; 
   const router = useRouter();
 
@@ -111,7 +112,7 @@ export default function Layout( { contents }: LayoutProps) {
     // const tabIdx = hashToTabIdx( location.hash );
     // setActiveTab( tabIdx );
 
-    global.ipcRenderer.invoke( 'main:get_active_tab' )
+    ipcRenderer.invoke( 'main:get_active_tab' )
       .then( ( tabId: string ) => {
         console.log({ tabId });
 

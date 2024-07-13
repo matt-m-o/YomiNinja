@@ -1,5 +1,6 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { OcrResultScalable } from "../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
+import { ipcRenderer } from "../utils/ipc-renderer";
 
 
 export type OcrResultContextType = {    
@@ -30,31 +31,31 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
     
     useEffect( () => {
 
-        global.ipcRenderer.on( 'ocr:result', ocrResultHandler );
+        ipcRenderer.on( 'ocr:result', ocrResultHandler );
         
-        global.ipcRenderer.on( 'user_command:toggle_results', ( e, value ) => {
+        ipcRenderer.on( 'user_command:toggle_results', ( e, value ) => {
             // if ( showResults === value ) return;
             setShowResults( value );
         });
 
-        global.ipcRenderer.on( 'ocr:processing_started', ( e, value ) => {
+        ipcRenderer.on( 'ocr:processing_started', ( e, value ) => {
             // if ( processing === value ) return;
             setProcessing( true );
         });
 
-        global.ipcRenderer.on( 'ocr:processing_complete', ( e, value ) => {
+        ipcRenderer.on( 'ocr:processing_complete', ( e, value ) => {
             // if ( processing === value ) return;
             setProcessing( false );
         });
 
         return () => {
-            global.ipcRenderer.removeAllListeners( 'ocr:result' );
-            global.ipcRenderer.removeAllListeners( 'ocr:processing_started' );
-            global.ipcRenderer.removeAllListeners( 'ocr:processing_complete' );
-            global.ipcRenderer.removeAllListeners( 'user_command:toggle_results' );
+            ipcRenderer.removeAllListeners( 'ocr:result' );
+            ipcRenderer.removeAllListeners( 'ocr:processing_started' );
+            ipcRenderer.removeAllListeners( 'ocr:processing_complete' );
+            ipcRenderer.removeAllListeners( 'user_command:toggle_results' );
         }
 
-    }, [ global.ipcRenderer ] );
+    }, [ ipcRenderer ] );
     
     
     return (

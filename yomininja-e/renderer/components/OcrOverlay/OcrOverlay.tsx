@@ -19,6 +19,7 @@ import { OcrTemplateJson } from "../../../electron-src/@core/domain/ocr_template
 import { OcrTargetRegionDiv, toCssPercentage } from "../OcrTemplates/OcrTargetRegion";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 import ProcessingIndicator from "./ProcessingIndicator";
+import { ipcRenderer } from "../../utils/ipc-renderer";
 
 
 const OverlayFrame = styled('div')({
@@ -101,7 +102,7 @@ export default function OcrOverlay() {
     // console.log( currentElement );
     // console.log( value );
 
-    global.ipcRenderer.invoke( 'overlay:set_ignore_mouse_events', value );
+    ipcRenderer.invoke( 'overlay:set_ignore_mouse_events', value );
   };
 
   useEffect( () => {
@@ -110,14 +111,14 @@ export default function OcrOverlay() {
     
     if ( !window ) return;
 
-    global.ipcRenderer.on( 'set_movable', ( event, value ) => {
+    ipcRenderer.on( 'set_movable', ( event, value ) => {
       console.log({ value })
       setShowDragArea( value );
     });
 
     return () => {
       document.removeEventListener( 'mousemove', handleClickThrough );
-      global.ipcRenderer.removeAllListeners( 'set_movable' );
+      ipcRenderer.removeAllListeners( 'set_movable' );
     };
 
   }, [] );

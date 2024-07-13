@@ -4,6 +4,7 @@ import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 import { OcrTemplate, OcrTemplateJson } from "../../../electron-src/@core/domain/ocr_template/ocr_template";
 import { CaptureSourceContext } from "../../context/capture_source.provider";
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
+import { ipcRenderer } from "../../utils/ipc-renderer";
 
 const style = {
     position: 'absolute',
@@ -84,7 +85,7 @@ export default function EditOcrTemplateModal( props: EditOcrTemplateModalProps )
     }
 
     function setEditingState( isEditing: boolean ) {
-        global.ipcRenderer.invoke( 'app:editing_ocr_template', isEditing );
+        ipcRenderer.invoke( 'app:editing_ocr_template', isEditing );
     }
 
     function handleNameChange( newName: string ) {

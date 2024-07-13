@@ -3,6 +3,7 @@ import { SettingsContext } from "../../../context/settings.provider";
 import { ChangeEvent, useContext, useEffect, useState } from "react";
 import { MangaOcrEngineSettings } from "../../../../electron-src/@core/infra/ocr/manga_ocr.adapter/manga_ocr_settings";
 import CommonOcrSettings from "./CommonOcrSettings";
+import { ipcRenderer } from "../../../utils/ipc-renderer";
 
 
 type MangaOcrSettingsProps = {
@@ -47,7 +48,7 @@ export default function MangaOcrSettings( props: MangaOcrSettingsProps ) {
         return (
             <Link href="#"
                 title={input.link}
-                onClick={ () => global.ipcRenderer.invoke( 'open_link', input.link )  }
+                onClick={ () => ipcRenderer.invoke( 'open_link', input.link )  }
                 style={{
                     textDecoration: 'none'
                 }}

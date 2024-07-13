@@ -8,6 +8,7 @@ import { useContext, useEffect, useState } from "react";
 
 import { CaptureSource } from '../../../electron-src/ocr_recognition/common/types';
 import { CaptureSourceContext } from "../../context/capture_source.provider";
+import { ipcRenderer } from "../../utils/ipc-renderer";
 
 const defaultTheme = createTheme({
     palette: {
@@ -39,7 +40,7 @@ export default function CaptureSourceMenu() {
         updateActiveCaptureSource( source );
 
         setTimeout( () => {
-            global.ipcRenderer.invoke( 'main:close_capture_source_selection' );            
+            ipcRenderer.invoke( 'main:close_capture_source_selection' );            
         }, 500 );
     }
 

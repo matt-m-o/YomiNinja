@@ -2,6 +2,7 @@ import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { Alert, AlertColor, Button, Divider, Snackbar } from "@mui/material";
 import { GithubReleasesLink } from "./app_info.provider";
 import { InAppNotification } from '../../electron-src/common/types/in_app_notification'
+import { ipcRenderer } from "../utils/ipc-renderer";
 
 
 export type NotificationsContextType = {
@@ -20,15 +21,15 @@ export const NotificationsProvider = ( { children }: PropsWithChildren ) => {
     
     
     useEffect( () => {
-        global.ipcRenderer.on( 'notifications:show', ( event, data: InAppNotification ) => {
+        ipcRenderer.on( 'notifications:show', ( event, data: InAppNotification ) => {
             setNotification( data );
             setOpenSnackbar( true );
         });
     
         return () => {
-            global.ipcRenderer.removeAllListeners( 'notifications:show' );
+            ipcRenderer.removeAllListeners( 'notifications:show' );
         }
-    }, [ global.ipcRenderer ] );
+    }, [ ipcRenderer ] );
     
     
     return (

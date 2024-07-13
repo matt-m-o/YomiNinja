@@ -7,6 +7,7 @@ import { CloudVisionAPIMode, CloudVisionOcrEngineSettings } from "../../../../el
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import PasswordField from "../../common/PasswordField";
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
+import { ipcRenderer } from "../../../utils/ipc-renderer";
 
 const ModeToggleButton = styled( ToggleButton )({
     // borderRadius: '30px'
@@ -96,7 +97,7 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
     
 
     function openLink( link: string ) {
-        global.ipcRenderer.invoke( 'open_link', link );
+        ipcRenderer.invoke( 'open_link', link );
     }
 
     return (
