@@ -8,6 +8,12 @@ export class IpcMainUniversal implements electron.IpcMain {
 
     handle( channel: string, listener: (event: Electron.IpcMainInvokeEvent, ...args: any[]) => (Promise<any>) | (any) ): void {
         this.ipcMain.handle( channel, listener );
+
+        socketServer.on('connect', ( socket ) => {
+            socket.on( channel, async ( data, callback ) => {
+                callback( await listener( {} as Electron.IpcMainEvent, data ) );
+            });
+        });
     }
     
     handleOnce(channel: string, listener: (event: Electron.IpcMainInvokeEvent, ...args: any[]) => (Promise<any>) | (any)): void {
@@ -88,7 +94,7 @@ export class IpcMainUniversal implements electron.IpcMain {
     }
 
     // Send an asynchronous message to the renderer process ( webContents.send... )
-    send( window: BrowserWindow, channel: string, data: any ) {
+    send( window: BrowserWindow, channel: string, data?: any ) {
         window?.webContents?.send( channel, data );
         socketServer.sockets.emit( channel, undefined, data );
     }

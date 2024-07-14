@@ -1,6 +1,7 @@
 // Packages
 import os from 'os';
 console.log({ cpu_model: os.cpus()[0].model.trim() });
+import { httpServer } from './common/server';
 
 import { BrowserWindow, app, ipcMain, IpcMainEvent, IpcMainInvokeEvent, clipboard, globalShortcut, systemPreferences } from 'electron';
 import prepareNext from 'electron-next';

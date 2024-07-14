@@ -21,7 +21,7 @@ import fs from 'fs';
 import path from 'path';
 import { USER_DATA_DIR } from '../../util/directories.util';
 import { LaunchConfig } from './types/launch_config';
-import { createServer, httpServer } from '../../common/server';
+import { httpServer } from '../../common/server';
 
 const isMacOS = process.platform === 'darwin';
 export let activeProfile: Profile;
@@ -92,7 +92,7 @@ export async function initializeApp() {
     
     try {
 
-        createServer();
+        // createServer();
 
         const serviceStartupPromise = startServices();
 
