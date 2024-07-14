@@ -216,7 +216,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         const settings = await ipcRenderer.invoke( 'settings_preset:get_default' ) as SettingsPresetJson;
 
         setDefaultSettingsPreset( settings );
-        console.log(settings);
+        // console.log(settings );
 
         return settings;
     }
@@ -240,7 +240,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
             ipcRenderer.removeAllListeners( 'settings_preset:active_data' );
             ipcRenderer.removeAllListeners( 'settings_preset:google_window_closed' );
         }
-    }, [ ipcRenderer ] );
+    }, [] );
 
     const [ openBackdrop, setOpenBackdrop ] = useState(false);
     const backdrop = (
@@ -282,7 +282,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         return () => {
             ipcRenderer.removeAllListeners( 'ocr_recognition:ocr_engine_restarted' );            
         }
-    }, [ ipcRenderer ] );
+    }, [] );
     
     
     return (

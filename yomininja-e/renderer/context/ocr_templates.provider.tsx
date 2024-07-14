@@ -169,7 +169,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
     }
 
     function handleActiveOcrTemplateChange( event, template: OcrTemplateJson | null ) {
-        console.log( template );
+        // console.log( template );
         setActiveOcrTemplate( template );
     }
     

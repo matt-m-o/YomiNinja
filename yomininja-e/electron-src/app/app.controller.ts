@@ -570,8 +570,8 @@ export class AppController {
         if ( overlayController.isOverlayMovableResizable )
             return;
 
-        this.overlayWindow?.webContents.send( 'user_command:toggle_results', false );
-        this.overlayWindow?.webContents.send( 'ocr:processing_started' );
+        ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
+        ipcMain.send( this.overlayWindow, 'ocr:processing_started' );
         
         await this.handleCaptureSourceSelection();
 
@@ -589,7 +589,7 @@ export class AppController {
             isFullScreenImage = await this.isFullScreenImage(image);
         this.setOverlayBounds( isFullScreenImage ? 'fullscreen' :  'maximized' );
         // this.showOverlayWindow(); // This can cause problems with JPDBReader extension // Warning: Unknown display value, please report this!
-        this.overlayWindow?.webContents.send( 'user_command:toggle_results', false );
+        ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
 
         if ( this.isEditingOcrTemplate ) {
             this.mainWindow.webContents.send(
@@ -609,9 +609,9 @@ export class AppController {
                 .catch( console.error );
         }
 
-        this.overlayWindow?.webContents.send( 'ocr:processing_complete' );
+        ipcMain.send( this.overlayWindow, 'ocr:processing_complete' );
         this.showOverlayWindow();
-        this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
+        ipcMain.send( this.overlayWindow, 'user_command:toggle_results', true );
     };
 
     async _handleVideoStream( image: Buffer ) {
@@ -619,7 +619,7 @@ export class AppController {
         if ( isDev )
             console.log('AppController._handleVideoStream');
 
-        // this.overlayWindow?.webContents.send( 'ocr:processing_started' );
+        // ipcMain.send( this.overlayWindow, 'ocr:processing_started' );
         
         // await this.handleCaptureSourceSelection();
 
@@ -646,9 +646,9 @@ export class AppController {
                 .catch( console.error );
         }
 
-        // this.overlayWindow?.webContents.send( 'ocr:processing_complete' );
+        // ipcMain.send( this.overlayWindow, 'ocr:processing_complete' );
         // this.showOverlayWindow();
-        // this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
+        // ipcMain.send( this.overlayWindow, 'user_command:toggle_results', true );
     }
 
     toggleMainWindow = ( show?: boolean ) => {

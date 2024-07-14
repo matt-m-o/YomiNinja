@@ -61,10 +61,7 @@ export class ProfileController {
                 const profile = await this.getActiveProfile();
 
                 if ( profile ) {
-                    this.overlayWindow?.webContents.send(
-                        'profile:active_profile',
-                        profile.toJson()
-                    );
+                    ipcMain.send( this.overlayWindow, 'profile:active_profile', profile.toJson() );
                 }
 
                 return;
