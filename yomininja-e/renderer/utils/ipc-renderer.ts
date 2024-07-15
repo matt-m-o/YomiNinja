@@ -13,7 +13,7 @@ export class IpcRendererUniversal implements IpcRenderer {
             return;
 
         if ( !global?.ipcRenderer ) {
-            this.socket = io('http://localhost:9000');
+            this.socket = io('http://localhost:49990');
             
             this.socket.on('connect', () => {
                 console.log('IPC Socket Connected!');
@@ -31,14 +31,13 @@ export class IpcRendererUniversal implements IpcRenderer {
 
         if ( this.socket ) {
 
-            await new Promise( ( resolve, reject ) => {
-                this.socket.send( 
-                    JSON.stringify({
-                        channel,
-                        data: args[0]
-                    })
+            return await new Promise( ( resolve, reject ) => {
+                this.socket.emit(
+                    channel,
+                    args[0],
+                    resolve
                 );
-            })
+            });
             
         }
     }
