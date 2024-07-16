@@ -20,6 +20,7 @@ import { OcrTargetRegionDiv, toCssPercentage } from "../OcrTemplates/OcrTargetRe
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 import ProcessingIndicator from "./ProcessingIndicator";
 import { ipcRenderer } from "../../utils/ipc-renderer";
+import { isElectronBrowser } from '../../utils/environment';
 
 
 const OverlayFrame = styled('div')({
@@ -68,6 +69,7 @@ export default function OcrOverlay() {
   const overlayBehavior: OverlayBehavior = activeSettingsPreset?.overlay?.behavior;
 
   let [ showDragArea, setShowDragArea ] = useState(false);
+  const isElectron = isElectronBrowser();
 
   useEffect( () => {
 
@@ -87,10 +89,7 @@ export default function OcrOverlay() {
 
     let value = false;
 
-    if (
-      element.id === 'overlay-frame' ||
-      element.classList.contains('ocr-region')
-    )
+    if ( element.classList.contains('ignore-mouse') )
       value = true;
       
     else
@@ -106,8 +105,9 @@ export default function OcrOverlay() {
   };
 
   useEffect( () => {
-
-    document.addEventListener( 'mousemove', handleClickThrough );
+    
+    if ( isElectron )
+      document.addEventListener( 'mousemove', handleClickThrough );
     
     if ( !window ) return;
 
@@ -145,7 +145,7 @@ export default function OcrOverlay() {
   
 
   return ( <>
-    <OverlayFrame id='overlay-frame'
+    <OverlayFrame id='overlay-frame' className="ignore-mouse"
       sx={{
         borderColor: overlayFrameVisuals?.border_color || 'red',
         borderWidth: overlayFrameVisuals?.border_width + 'px',

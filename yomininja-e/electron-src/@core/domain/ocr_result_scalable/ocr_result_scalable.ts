@@ -52,6 +52,7 @@ export interface OcrItemScalable {
 export interface OcrRegion {
     id?: string,
     results: OcrItemScalable[],
+    image?: Buffer | string,
     position: { // Percentages
         top: number; 
         left: number;
@@ -113,6 +114,8 @@ export class OcrResultScalable {
     ) {
         const { regionResult, regionPosition, regionSize, globalScaling } = input;
 
+        let regionImage = regionResult.ocr_regions[0].image;
+
         const rescaledRegionResults = regionResult.ocr_regions[0].results.map( result => {
 
             if ( !globalScaling )
@@ -144,7 +147,8 @@ export class OcrResultScalable {
             results: rescaledRegionResults,
             position: regionPosition,
             size: regionSize,
-            id: input.regionId
+            id: input.regionId,
+            image: regionImage
         });
 
         // this.results = [ ...this.results, ...rescaledRegionResults ];
@@ -263,7 +267,8 @@ export class OcrResultScalable {
             size: {
                 height: 1,
                 width: 1
-            }
+            },
+            image: ocrResult.image
         });
 
         return OcrResultScalable.create({

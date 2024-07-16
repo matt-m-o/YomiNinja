@@ -194,7 +194,7 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
                 <PasswordField
                     label="Private key"
                     required
-                    value={ ocrEngineSettings.private_key }
+                    value={ ocrEngineSettings?.private_key }
                     onChange={ ( event: ChangeEvent< HTMLInputElement > ) => {
                         // console.log(event.target.value);
                         updateActivePresetOcrEngine({
@@ -208,7 +208,7 @@ export default function CloudVisionSettings( props: CloudVisionSettingsProps ) {
                 <PasswordField
                     label="Client email"
                     required
-                    value={ ocrEngineSettings.client_email }
+                    value={ ocrEngineSettings?.client_email }
                     onChange={ ( event: ChangeEvent< HTMLInputElement > ) => {
                         console.log(event.target.value);
                         updateActivePresetOcrEngine({

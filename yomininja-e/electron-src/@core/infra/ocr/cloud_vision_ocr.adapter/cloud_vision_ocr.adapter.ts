@@ -191,6 +191,7 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
             id: this.idCounter.toString() + this.name,
             context_resolution: contextResolution,
             results: ocrResultItems,
+            image: input.imageBuffer
         });
 
         return OcrResultScalable.createFromOcrResult( ocrResult );

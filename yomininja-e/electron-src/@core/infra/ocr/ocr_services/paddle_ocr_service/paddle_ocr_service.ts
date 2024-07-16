@@ -107,6 +107,7 @@ export class PaddleOcrService {
             id: clientResponse.id,
             context_resolution: clientResponse.context_resolution,
             results: ocrItems,
+            image: input.image_bytes as Buffer
         });
 
 

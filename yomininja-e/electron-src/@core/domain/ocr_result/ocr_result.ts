@@ -48,6 +48,7 @@ export type OcrResult_CreationInput = {
     id: string;
     context_resolution?: OcrResultContextResolution;
     results?: OcrItem[];
+    image?: Buffer | string;
 };
 
 
@@ -55,7 +56,8 @@ export class OcrResult {
 
     public readonly id: string;
     public context_resolution: OcrResultContextResolution;
-    public results: OcrItem[];    
+    public results: OcrItem[];
+    public image?: Buffer | string;
     
     private constructor( input: OcrResult_CreationInput ) {
 
@@ -65,6 +67,8 @@ export class OcrResult {
             width: input?.context_resolution?.width || 0,
             height: input?.context_resolution?.height || 0,
         };
+
+        this.image = input.image;
 
         this.results = input.results ? [ ...input?.results ] : [];
 

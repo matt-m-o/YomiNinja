@@ -117,6 +117,7 @@ export class PyOcrService {
             id: clientResponse.id,
             context_resolution: clientResponse.context_resolution,
             results: ocrItems,
+            image: input.image
         });
 
         return result;

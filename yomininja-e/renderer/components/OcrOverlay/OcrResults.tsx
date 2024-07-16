@@ -10,6 +10,7 @@ import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
 import { removeFurigana } from "../../utils/text_utils";
 import { ipcRenderer } from "../../utils/ipc-renderer";
+import { isElectronBrowser } from "../../utils/environment";
 
 export type FullscreenOcrResultProps = {
     ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
@@ -27,6 +28,8 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
     const { speak, getVoices } = useContext( TTSContext );
     
     const [ editableBoxId, setEditableBoxId ] = useState< string | undefined >(undefined);
+
+    const isElectron = isElectronBrowser();
 
 
     const handleBoxMouseEnter = ( item: OcrItemScalable, ocrRegionId?: string ) => {
@@ -130,9 +133,13 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                 if ( Boolean( ocrItemBoxVisuals.text.furigana_filter?.enabled ) ) {
                     removeFurigana(ocrRegion.results, furiganaFilterThreshold || 0.6);
                 }
+
+                const regionStyle: CSSProperties ={
+                    
+                }
             
                 return (
-                    <div className="ocr-region" key={regionIdx}
+                    <div className="ocr-region ignore-mouse" key={regionIdx}
                         style={{
                             // border: 'solid 2px yellow',
                             position: 'absolute',
@@ -143,6 +150,16 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                             boxSizing: 'border-box'
                         }}
                     >
+                        { typeof ocrRegion.image === 'string' && !isElectron &&
+                            <img className="ignore-mouse"
+                                src={ocrRegion.image}
+                                style={{
+                                    width: '100%',
+                                    height: '99.8%',
+                                    marginLeft: -1,
+                                }}
+                            />
+                        }
                         {
 
                             ocrRegion.results.map( ( item, resultIdx ) => {

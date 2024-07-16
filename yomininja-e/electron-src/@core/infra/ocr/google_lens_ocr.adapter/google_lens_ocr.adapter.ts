@@ -82,7 +82,8 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                         width: 1,
                         height: 1
                     },
-                    results: ocrResultItems
+                    results: ocrResultItems,
+                    image: input.imageBuffer
                 }
             ]
         });

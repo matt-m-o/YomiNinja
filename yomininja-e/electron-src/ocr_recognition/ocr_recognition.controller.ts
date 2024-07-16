@@ -14,6 +14,8 @@ import os from 'os';
 import { OcrEngineSettingsU } from "../@core/infra/types/entity_instance.types";
 import { InAppNotification } from "../common/types/in_app_notification";
 import { ipcMain } from "../common/ipc_main";
+import { bufferToDataURL } from "../util/image.util";
+import { OcrResultScalable } from "../@core/domain/ocr_result_scalable/ocr_result_scalable";
 
 export class OcrRecognitionController {
     
@@ -108,10 +110,16 @@ export class OcrRecognitionController {
                 );
             }
 
+            let resultJson = ocrResultScalable;
+
+            if ( ocrResultScalable ) {
+                resultJson = await this.ocrResultToJson( ocrResultScalable );
+            }
+
             ipcMain.send(
                 this.overlayWindow,
                 'ocr:result',
-                ocrResultScalable
+                resultJson || null
             );
 
         } catch (error) {
@@ -151,4 +159,16 @@ export class OcrRecognitionController {
         return this.recognizing;
     }
 
+    async ocrResultToJson( result: OcrResultScalable ): Promise<OcrResultScalable > {
+
+        for ( const region of result.ocr_regions ) {
+            if ( !region.image || !Buffer.isBuffer(region.image) )
+                continue;
+            region.image = await bufferToDataURL({
+                image: region.image
+            });
+        }
+
+        return result;
+    }
 }
