@@ -11,6 +11,7 @@ import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_temp
 import { removeFurigana } from "../../utils/text_utils";
 import { ipcRenderer } from "../../utils/ipc-renderer";
 import { isElectronBrowser } from "../../utils/environment";
+import { ProfileContext } from "../../context/profile.provider";
 
 export type FullscreenOcrResultProps = {
     ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
@@ -23,6 +24,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
     const { ocrItemBoxVisuals, overlayHotkeys, overlayBehavior } = props;
 
+    const { profile } = useContext( ProfileContext );
     const { ocrResult } = useContext( OcrResultContext );
     const { activeOcrTemplate } = useContext( OcrTemplatesContext );
     const { speak, getVoices } = useContext( TTSContext );
@@ -31,6 +33,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
     const isElectron = isElectronBrowser();
 
+    const activeLang = profile?.active_ocr_language;
 
     const handleBoxMouseEnter = ( item: OcrItemScalable, ocrRegionId?: string ) => {
         
@@ -97,9 +100,9 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         if ( !overlayBehavior.copy_text_on_click || !item?.text )
             return;
 
-        const text = item.text.map( line => line.content ).join(' ');
+        const text = getOcrItemText(item);
 
-        copyText( text );;
+        copyText( text );
     }
 
     function handleBoxDoubleClick( id: string | undefined ) {
@@ -119,7 +122,14 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
     }
 
     function getOcrItemText( item: OcrItemScalable ) {
-        return item.text.map( line => line.content ).join(' ');
+        let sep = '';
+        if (
+            !([ 'ja-JP', 'zh-Hans', 'zh-Hant', 'yue-Hans', 'yue-Hant' ]
+            .some( tag => activeLang?.bcp47_tag === tag ))
+        )
+            sep = ' ';
+
+        return item.text.map( line => line.content ).join(sep);
     }
 
     return ( <>
@@ -167,7 +177,7 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
                                 if ( ocrTemplateRegion?.text_to_speech_options?.automatic ) {
                                     const { voice_uri, volume, speed, pitch } = ocrTemplateRegion.text_to_speech_options;
-                                    const text = item.text.map( line => line.content ).join('');
+                                    const text = getOcrItemText( item );
                                     speak({
                                         text,
                                         voiceURI: voice_uri,
