@@ -181,6 +181,7 @@ export class PaddleOcrService {
         );
         this.serviceProcess.on('error', error => {
             console.error(error);
+            this.killServiceProcess();
             if ( this.status === OcrAdapterStatus.Starting ) {
                 this.status = OcrAdapterStatus.Disabled
                 console.log("Warning: PaddleOCR service couldn't be started!")
@@ -212,27 +213,26 @@ export class PaddleOcrService {
 
         // Handle process exit
         this.serviceProcess.on('close', (code) => {
-            console.log(`ppocr_infer_service_grpc.exe process exited with code ${code}`);
+            console.log(`ppocr_infer_service_grpc process exited with code ${code}`);
+            this.killServiceProcess();
 
             if ( 
                 this.status != OcrAdapterStatus.Restarting &&
                 this.status != OcrAdapterStatus.Disabled &&
-                this.autoRestartCount < 5
+                this.autoRestartCount < 1
             ) {
                 this.restart( () => {} );
                 this.autoRestartCount++;
             }
-
-            if ( this.autoRestartCount >= 5 ) {
+            if ( this.autoRestartCount >= 1 ) {
                 this.status = OcrAdapterStatus.Disabled;
+                if (onInitialized) onInitialized();
             }
         });
 
-        process.on('exit', () => {
-            // Ensure the child process is killed before exiting
-            this.serviceProcess.kill('SIGTERM'); // You can use 'SIGINT' or 'SIGKILL' as well
-        });
-          
+        process.on( 'exit', this.killServiceProcess );
+        process.on( 'SIGINT', this.killServiceProcess );
+        process.on( 'SIGTERM', this.killServiceProcess );
     }
 
     // Checks if the ppocrService is enabled.
@@ -332,7 +332,7 @@ export class PaddleOcrService {
 
     private restartProcess() {
         this.status = OcrAdapterStatus.Restarting;
-        this.serviceProcess.kill('SIGTERM');
+        this.killServiceProcess();
         this.startProcess();
     }
 
@@ -372,5 +372,8 @@ export class PaddleOcrService {
         
     }
 
-    
+    private killServiceProcess = () => {
+        // Ensure the child process is killed before exiting
+        this.serviceProcess.kill('SIGTERM'); // You can use 'SIGINT' or 'SIGKILL' as well
+    }
 }
