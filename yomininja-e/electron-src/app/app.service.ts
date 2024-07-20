@@ -5,6 +5,7 @@ import { getActiveProfile, windowManager } from "../@core/infra/app_initializati
 import { CaptureSource, ExternalWindow } from "./types";
 import { screen } from 'electron';
 import sharp from "sharp";
+const isMacOs = process.platform === 'darwin';
 
 
 export const entireScreenAutoCaptureSource: CaptureSource = {
@@ -158,7 +159,8 @@ export class AppService {
     private async takeScreenshot( input: { display?: Electron.Display, window?: ExternalWindow }): Promise< Buffer | undefined > {
         // console.time('takeScreenshot');        
 
-        const { display, window } = input;
+        const { window } = input;
+        let { display } = input;
 
         let sourceTypes: ( 'window' | 'screen' )[] = [];          
 
@@ -198,9 +200,22 @@ export class AppService {
         if ( !source )
             return;
 
-        if ( display ) {
-            
-            return source.thumbnail.toPNG()
+        if ( isMacOs ) {
+            display = screen.getAllDisplays()
+                .find( display => display.id == Number(source?.display_id) );
+            display = display || this.getCurrentDisplay();
+
+            const imageSize = source.thumbnail.getSize();
+
+            if (
+                display && 
+                (imageSize.height > display.workArea.height ||
+                  imageSize.width > display.workArea.width)
+
+            ) {
+                const workAreaImage = source.thumbnail.crop(display.workArea);
+                return workAreaImage.toPNG();
+            }
         }
 
         return source.thumbnail.toPNG();
