@@ -295,7 +295,6 @@ export default function HomeContent() {
                         <li>The copied text is also transmitted via WebSockets on port 6677.</li>
                         <li>If the game hides the mouse cursor, enable the custom cursor in the settings menu.</li>
                         <li>Edit extracted text with <strong>Ctrl + Double Click</strong>. </li>
-                        <li>Manually move or resize the overlay with <strong> Ctrl + Shift + M </strong></li>
                     </ul>
 
                 </CardContent>
