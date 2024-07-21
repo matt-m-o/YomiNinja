@@ -11,6 +11,7 @@ import { TTSContext } from "../../context/text-to-speech.provider";
 import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
 import { CaptureSourceContext } from "../../context/capture_source.provider";
 import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
+import { ipcRenderer } from "../../utils/ipc-renderer";
 
 export type Size = { // Pixels
     width: number;
