@@ -5,6 +5,7 @@ export interface CaptureSource {
     displayId?: number;
     name: string;
     type: 'screen' | 'window';
+    window?: ExternalWindow;
 }
 
 export type ExternalWindow = {

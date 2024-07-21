@@ -6,6 +6,7 @@ type ResetParameterButtonProps = {
     onClick: () => void;
     boxStyle?: CSSProperties;
     buttonStyle?: CSSProperties;
+    disabled?: boolean;
 };
 
 export default function ResetParameterButton( props: ResetParameterButtonProps ) {
@@ -25,6 +26,7 @@ export default function ResetParameterButton( props: ResetParameterButtonProps )
                 size="small"
                 variant="outlined"
                 onClick={ props.onClick }
+                disabled={props?.disabled}
                 style={{
                     borderRadius: '1000px',
                     textTransform: 'none',

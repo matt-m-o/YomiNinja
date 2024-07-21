@@ -1,0 +1,8 @@
+grpcio
+grpcio-tools
+numpy
+Pillow
+pyinstaller
+opencv-python
+
+manga-ocr

@@ -42,6 +42,7 @@ export interface OcrItemScalable {
 };
 
 export interface OcrRegion {
+    id?: string,
     results: OcrItemScalable[],
     position: { // Percentages
         top: number; 
@@ -55,7 +56,7 @@ export interface OcrRegion {
 
 
 export type OcrResultScalable_CreationInput = {
-    id: number;
+    id: string;
     context_resolution?: OcrResultContextResolution;
     results?: OcrItemScalable[];
     ocr_regions?: OcrRegion[];
@@ -64,7 +65,7 @@ export type OcrResultScalable_CreationInput = {
 // Scalable version OcrResult. Uses percentages instead of pixel coordinates
 export class OcrResultScalable {
 
-    public id: number;
+    public id: string;
     public context_resolution: OcrResultContextResolution;
     // public results: OcrItemScalable[];
     public ocr_regions: OcrRegion[];
@@ -99,6 +100,7 @@ export class OcrResultScalable {
                 height: number;
             },
             globalScaling?: boolean; // true => Use global context resolution instead of region resolution
+            regionId?: string;
         }
     ) {
         const { regionResult, regionPosition, regionSize, globalScaling } = input;
@@ -133,7 +135,8 @@ export class OcrResultScalable {
         this.ocr_regions.push({
             results: rescaledRegionResults,
             position: regionPosition,
-            size: regionSize
+            size: regionSize,
+            id: input.regionId
         });
 
         // this.results = [ ...this.results, ...rescaledRegionResults ];

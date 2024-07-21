@@ -11,6 +11,7 @@ export interface CreateOcrTemplate_Input extends Omit<
     'updated_at' |
     'target_regions' |
     'capture_source_name' |
+    'capturer_options' |
     'image_base64'
 > {
     target_regions?: OcrTargetRegionJson[],

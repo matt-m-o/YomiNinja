@@ -2,12 +2,14 @@
 import { join } from 'path';
 import { format } from 'url';
 
-import { BrowserWindow, IpcMainInvokeEvent, Menu, MenuItem, ipcMain } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, Menu, MenuItem, app, dialog, ipcMain } from "electron";
 import isDev from 'electron-is-dev';
 import { PAGES_DIR } from '../util/directories.util';
 import { WindowManager } from '../../gyp_modules/window_management/window_manager';
 import { windowManager } from '../@core/infra/app_initialization';
 import { getBrowserWindowHandle } from '../util/browserWindow.util';
+import { overlayController } from '../overlay/overlay.index';
+import { uIOhook } from 'uiohook-napi';
 
 export class MainController {
 
@@ -43,9 +45,64 @@ export class MainController {
         if ( !isDev )
             this.mainWindow.removeMenu();
 
-        this.mainWindow.on( 'close', () => {
-            if ( this.captureSourceWindow )
-                this.captureSourceWindow.close();
+        // this.mainWindow.on( 'close', () => {
+        //     if ( this.captureSourceWindow )
+        //         this.captureSourceWindow.close();
+
+        //     app.quit();
+        // });
+        this.mainWindow.on( 'close', async ( event ) => {
+
+            if (
+                !this.mainWindow.isVisible() ||
+                !this.mainWindow.isFocused()
+            ) {
+                this.mainWindow.destroy()
+                uIOhook.stop();
+                this.captureSourceWindow?.close();
+                return;
+            }
+
+            event.preventDefault();
+
+            const dialogButtons = ['Yes', 'No', 'Cancel'];
+
+            const result = await dialog.showMessageBox(
+                this.mainWindow,
+                {
+                    type: 'question',
+                    buttons: dialogButtons,
+                    defaultId: 1,
+                    cancelId: 2,
+                    title: `Minimize to Tray? - ${app.getName()}`,
+                    message: `Minimize to Tray?`,
+                    checkboxLabel: 'Hide Overlay',
+                    checkboxChecked: false
+                }
+            );
+
+            const hideOverlay = result.checkboxChecked;
+            
+            const button = dialogButtons[ result.response ];
+                
+            if ( button === 'Cancel' )
+                return;
+
+            if ( button === 'No' ) {
+                this.mainWindow.destroy();
+                uIOhook.stop();
+                return app.quit();
+            }
+
+            this.mainWindow.hide();
+            this.captureSourceWindow?.close();
+
+            if ( hideOverlay )
+                overlayController.minimizeOverlayWindowToTray();
+        });
+
+        this.mainWindow.on('closed', () => {
+            app.quit();
         });
 
         this.mainWindow.on( 'show', () => {   

@@ -29,6 +29,12 @@ export const BrowserExtensionTypeOrmSchema = new EntitySchema< BrowserExtension 
             length: 100,
         },
 
+        author: {
+            type: String,
+            length: 100,
+            nullable: true,
+        },
+
         version: {
             type: String,
             length: 50

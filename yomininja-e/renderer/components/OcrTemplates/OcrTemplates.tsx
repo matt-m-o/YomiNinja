@@ -216,7 +216,7 @@ export default function OcrTemplates() {
                             {/* This should be in the settings but will stay here for convenience */}
                             <FormControlLabel label='Show region borders in the overlay'
                                 title='This helps you verify if the regions are correctly positioned'
-                                sx={{ mt: 2 }}
+                                sx={{ mt: 4 }}
                                 control={
                                     <Switch
                                         checked={ Boolean( overlayRegionVisuals?.border_width ) }

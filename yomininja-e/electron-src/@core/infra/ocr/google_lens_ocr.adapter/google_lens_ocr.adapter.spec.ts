@@ -1,11 +1,14 @@
 import sharp from 'sharp';
 import { base64Image } from '../cloud_vision_ocr.adapter/test/base64_image';
 import { GoogleLensOcrAdapter } from './google_lens_ocr.adapter';
+import { Language } from '../../../domain/language/language';
 
 describe('CloudVisionOcrAdapter tests', () => {
 
     // let cloudVisionAPI: CloudVisionRestAPI;
     let ocrAdapter: GoogleLensOcrAdapter;
+
+    const language = Language.create({ name: 'japanese', two_letter_code: '' });
 
     beforeEach( () => {
 
@@ -17,7 +20,7 @@ describe('CloudVisionOcrAdapter tests', () => {
 
         const result = await ocrAdapter.recognize({
             imageBuffer: Buffer.from( base64Image, 'base64' ),
-            languageCode: 'ja'
+            language
         });
 
         expect( result?.ocr_regions ).toHaveLength( 1 );
@@ -37,7 +40,7 @@ describe('CloudVisionOcrAdapter tests', () => {
 
         const result = await ocrAdapter.recognize({
             imageBuffer,
-            languageCode: 'ja'
+            language
         });
 
         expect( result?.ocr_regions ).toHaveLength( 1 );

@@ -1,7 +1,7 @@
 import { ChangeActiveOcrLanguageUseCase } from "../@core/application/use_cases/change_active_ocr_language/change_active_ocr_language.use_case";
 import { ChangeSelectedOcrEngineUseCase } from "../@core/application/use_cases/change_selected_ocr_engine/change_selected_ocr_engine.use_case";
 import { GetProfileUseCase } from "../@core/application/use_cases/get_profile/get_profile.use_case";
-import { Language } from "../@core/domain/language/language";
+import { Language, LanguageJson } from "../@core/domain/language/language";
 import { Profile } from "../@core/domain/profile/profile";
 
 export class ProfileService {
@@ -33,10 +33,12 @@ export class ProfileService {
         return profile?.active_ocr_language || null;
     }
 
-    changeActiveOcrLanguage( input: { languageCode: string, profileId: string }): void {        
+    changeActiveOcrLanguage( input: { language: LanguageJson, profileId: string }): void {
+
+        const { language } = input
     
         this.changeActiveOcrLanguageUseCase.execute({
-            languageCode: input.languageCode,
+            languageBcp47Tag: language.bcp47_tag || language.two_letter_code,
             profileId: input.profileId,
         });
     }

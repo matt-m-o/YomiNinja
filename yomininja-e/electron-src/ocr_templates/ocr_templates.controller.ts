@@ -3,6 +3,7 @@ import { OcrTemplatesService } from "./ocr_templates.service";
 import { OcrTemplate, OcrTemplateId, OcrTemplateJson } from "../@core/domain/ocr_template/ocr_template";
 import { GetOcrTemplates_Input } from "../@core/application/use_cases/ocr_template/get_ocr_template/get_ocr_templates.use_case";
 import { InAppNotification } from "../common/types/in_app_notification";
+import { ocrTemplateEvents } from "./ocr_templates.index";
 
 
 export class OcrTemplatesController {
@@ -11,6 +12,7 @@ export class OcrTemplatesController {
     mainWindow: BrowserWindow;
     overlayWindow: BrowserWindow;
     activeOcrTemplateId: OcrTemplateId | null;
+    isAutoOcrEnabled = false;
 
     constructor( input: {
         ocrTemplatesService: OcrTemplatesService
@@ -45,6 +47,8 @@ export class OcrTemplatesController {
 
                 const template = await this.ocrTemplatesService.getActiveOcrTemplate();
 
+                this.emitActiveTemplate( template );
+
                 return template?.toJson() || null;
             }
         );
@@ -55,7 +59,7 @@ export class OcrTemplatesController {
 
                 const template = await this.ocrTemplatesService.changeActiveOcrTemplate( message );
 
-                this.broadcastActiveTemplate( template );
+                this.emitActiveTemplate( template );
 
                 this.activeOcrTemplateId = template?.id || null;
 
@@ -88,7 +92,7 @@ export class OcrTemplatesController {
 
                 if ( message === this.activeOcrTemplateId ) {
                     this.activeOcrTemplateId = null;
-                    this.broadcastActiveTemplate( null );
+                    this.emitActiveTemplate( null );
                 }
 
                 await this.ocrTemplatesService.deleteOcrTemplate( message );
@@ -108,7 +112,7 @@ export class OcrTemplatesController {
                 const json = updatedTemplate?.toJson();
 
                 if ( updatedTemplate?.id === this.activeOcrTemplateId )
-                    this.broadcastActiveTemplate( updatedTemplate );
+                    this.emitActiveTemplate( updatedTemplate );
                 
                 // console.log( json?.image_base64 );
 
@@ -117,18 +121,16 @@ export class OcrTemplatesController {
         );
     }
 
-    private broadcastActiveTemplate( template: OcrTemplate | null ) {
+    private emitActiveTemplate( template: OcrTemplate | null ) {
+
+        this.isAutoOcrEnabled = template?.isAutoOcrEnabled() || false;
 
         const json = template?.toJson();
 
-        this.overlayWindow.webContents.send(
-            'ocr_templates:active_template',
-            json
-        );
+        this.overlayWindow.webContents.send( 'ocr_templates:active_template', json );
+        // this.mainWindow.webContents.send( eventName, json );
+        ocrTemplateEvents.emit( 'active_template', template );
 
-        // this.mainWindow.webContents.send(
-        //     'ocr_templates:active_template',
-        //     json
-        // );
+        // console.log( json?.target_regions );
     }
 }

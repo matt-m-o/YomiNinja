@@ -6,6 +6,7 @@ export interface BrowserExtensionConstructorProps {
     id: BrowserExtensionId;
     name: string;
     description: string;
+    author?: string;
     version: string;
     icon?: Buffer; //  Base64 encode image
     optionsUrl?: string;
@@ -25,6 +26,7 @@ export class BrowserExtension {
     id: BrowserExtensionId; // ID
     name: string;
     description: string;
+    author?: string;
     version: string;
     icon?: Buffer; //  Base64 encode image
     optionsUrl?: string;
@@ -53,7 +55,8 @@ export class BrowserExtension {
         return new BrowserExtension({
             ...input,
             enabled,
-            description: ''
+            description: input.description || '',
+            author: input.author || ''
         });
     }
 
@@ -62,6 +65,7 @@ export class BrowserExtension {
             id: this.id,
             name: this.name,
             description: this.description,
+            author: this.author,
             version: this.version,
             icon: this.icon,
             icon_base64: this.icon?.toString('base64'),

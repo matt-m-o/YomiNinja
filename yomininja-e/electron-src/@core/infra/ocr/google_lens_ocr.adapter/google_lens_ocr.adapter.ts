@@ -19,11 +19,25 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
     private idCounter: number = 0;
     private cookie: string = '';
 
+    private prevImage: Buffer = Buffer.from('');
+    private prevResult: OcrResultScalable | null = null;
+    private prevResultTime: Date = new Date();
+
+
     constructor() {}
 
     initialize( _?: string | undefined ) {}
 
     async recognize( input: OcrRecognitionInput ): Promise< OcrResultScalable | null > {
+
+        this.idCounter++;
+
+        const isCacheValid = this.isCacheValid( input.imageBuffer );
+        // console.log({ [`${this.name}_IsCacheValid`]: isCacheValid });
+        if ( isCacheValid )
+            return this.prevResult;
+        else
+            this.prevImage = input.imageBuffer;
 
         const imageBuffer = await this.rescaleImage( input.imageBuffer );
 
@@ -36,7 +50,10 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
 
         const data = await this.sendRequest( imageBuffer );
 
-        if ( !data ) return null;
+        if ( !data ) {
+            this.cacheResult( null );
+            return null;
+        }
 
         const contextResolution: OcrResultContextResolution  = {
             width: imageMetadata?.width || 0,
@@ -51,7 +68,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
        
 
         const result = OcrResultScalable.create({
-            id: this.idCounter,
+            id: this.idCounter.toString() + this.name,
             context_resolution: contextResolution,
             ocr_regions: [
                 {
@@ -67,6 +84,8 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                 }
             ]
         });
+
+        this.cacheResult( result );
 
         return result;
     }
@@ -336,5 +355,26 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
     restart = async ( callback: () => void ) => {
         callback();
     };
+
+    private cacheResult( result: OcrResultScalable | null ) {
+        this.prevResult = result;
+        this.prevResultTime = new Date();
+    }
+
+    private getCacheAge(): number { // seconds
+        return ( Date.now() - this.prevResultTime.getTime() ) / 1000;
+    }
+
+    private isCacheValid( image: Buffer ): boolean {
+
+        if ( this.getCacheAge() > 30 )
+            return false;
+
+        const isSameImage = this.prevImage.equals( image );
+
+        if ( !isSameImage ) return false;
+
+        return true;
+    }
 
 }

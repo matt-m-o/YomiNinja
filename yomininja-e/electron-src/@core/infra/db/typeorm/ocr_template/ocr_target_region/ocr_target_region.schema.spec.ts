@@ -43,6 +43,11 @@ describe( 'OcrTargetRegion Entity Schema tests', () => {
             size: {
                 width: 0.25,
                 height: 0.10,
+            },
+            auto_ocr_options: {
+                enabled: false,
+                motion_sensitivity: 300_000,
+                refresh_all_regions: false
             }
         });
 

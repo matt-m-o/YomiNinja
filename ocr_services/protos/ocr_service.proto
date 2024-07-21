@@ -5,21 +5,33 @@ package ocr_service;
 service OCRService {
   rpc RecognizeBytes( RecognizeBytesRequest ) returns ( RecognizeDefaultResponse ) {}
   rpc RecognizeBase64( RecognizeBase64Request ) returns ( RecognizeDefaultResponse ) {}
+  rpc Detect( DetectRequest ) returns ( DetectResponse ) {}
   rpc GetSupportedLanguages( GetSupportedLanguagesRequest ) returns ( GetSupportedLanguagesResponse ) {}
   rpc UpdatePpOcrSettings( UpdatePpOcrSettingsRequest ) returns ( UpdateSettingsResponse ) {}
+  rpc KeepAlive( KeepAliveRequest ) returns ( KeepAliveResponse ) {}
+  rpc MotionDetection( MotionDetectionRequest ) returns ( MotionDetectionResponse ) {}
 }
+
+message KeepAliveRequest {
+  bool keep_alive = 1;
+  int32 timeout_seconds = 2;
+}
+message KeepAliveResponse {}
 
 message RecognizeBytesRequest {
   string id = 1;
   string language_code = 2;
   bytes image_bytes = 3;
+  repeated Box boxes = 4;
+  string ocr_engine = 5; // MangaOCR | PaddleOCR
 }
 message RecognizeBase64Request {
   string id = 1;
   string language_code = 2;
   string base64_image = 3;
+  repeated Box boxes = 4;
+  string ocr_engine = 5; // MangaOCR | PaddleOCR | AppleVision
 }
-
 
 message Vertex {
   int32 x = 1;
@@ -50,9 +62,41 @@ message RecognizeDefaultResponse {
 
 
 message GetSupportedLanguagesRequest {
+  string ocr_engine = 1; // MangaOCR | PaddleOCR | AppleVision
 }
 message GetSupportedLanguagesResponse {
   repeated string language_codes = 1;
+}
+
+
+message DetectRequest {
+  string id = 1;
+  string language_code = 2;
+  bool crop_image = 3;
+  bytes image_bytes = 4;
+  string ocr_engine = 5; // MangaOCR | PaddleOCR | AppleVision
+}
+
+message DetectResult {
+  bytes image_bytes = 1;
+  Box box = 2;
+}
+message DetectResponse {
+  string id = 1;
+  repeated DetectResult results = 2;
+  ContextResolution context_resolution = 3;
+}
+
+message MotionDetectionRequest {
+  string stream_id = 1;
+  bytes frame = 2;
+  int32 threshold_min = 3;
+  int32 threshold_max = 4;
+  int32 stream_length = 5;
+}
+message MotionDetectionResponse {
+  int32 frame_diff_sum = 1;
+  int32 frame_threshold_non_zero_count = 2;
 }
 
 

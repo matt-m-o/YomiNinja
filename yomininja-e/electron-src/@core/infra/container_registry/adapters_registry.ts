@@ -10,6 +10,8 @@ import { CloudVisionOcrAdapter } from "../ocr/cloud_vision_ocr.adapter/cloud_vis
 import { CloudVisionRestAPI } from "../ocr/cloud_vision_ocr.adapter/cloud_vision_rest_api";
 import { CloudVisionNodeAPI } from "../ocr/cloud_vision_ocr.adapter/cloud_vision_node_api";
 import { GoogleLensOcrAdapter } from "../ocr/google_lens_ocr.adapter/google_lens_ocr.adapter";
+import { MangaOcrAdapter } from "../ocr/manga_ocr.adapter/manga_ocr.adapter";
+import { AppleVisionAdapter } from "../ocr/apple_vision.adapter/apple_vision.adapter";
 
 
 container_registry.bind( Registry.PpOcrAdapter ).toDynamicValue( (context) => {
@@ -33,6 +35,14 @@ container_registry.bind( Registry.CloudVisionOcrAdapter ).toDynamicValue( (conte
 
 container_registry.bind( Registry.GoogleLensOcrAdapter ).toDynamicValue( (context) => {
     return new GoogleLensOcrAdapter();
+}).inSingletonScope();
+
+container_registry.bind( Registry.MangaOcrAdapter ).toDynamicValue( (context) => {
+    return new MangaOcrAdapter();
+}).inSingletonScope();
+
+container_registry.bind( Registry.AppleVisionAdapter ).toDynamicValue( (context) => {
+    return new AppleVisionAdapter();
 }).inSingletonScope();
 
 
@@ -67,6 +77,14 @@ export function get_CloudVisionOcrAdapter(): CloudVisionOcrAdapter {
 
 export function get_GoogleLensOcrAdapter(): GoogleLensOcrAdapter {
     return container_registry.get< GoogleLensOcrAdapter >( Registry.GoogleLensOcrAdapter )
+}
+
+export function get_MangaOcrAdapter(): MangaOcrAdapter {
+    return container_registry.get< MangaOcrAdapter >( Registry.MangaOcrAdapter )
+}
+
+export function get_AppleVisionAdapter(): AppleVisionAdapter {
+    return container_registry.get< AppleVisionAdapter >( Registry.AppleVisionAdapter )
 }
 
 
