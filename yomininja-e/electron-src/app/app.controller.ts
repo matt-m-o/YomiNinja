@@ -243,6 +243,8 @@ export class AppController {
                 await this.handleCaptureSourceSelection()
                     .catch( console.error );
 
+                overlayController.activeCaptureSource = this.activeCaptureSource;
+
                 this.setOverlayBounds( 'maximized' );
                 
                 // console.log({
@@ -588,7 +590,7 @@ export class AppController {
         if ( image && runFullScreenImageCheck)
             isFullScreenImage = await this.isFullScreenImage(image);
         this.setOverlayBounds( isFullScreenImage ? 'fullscreen' :  'maximized' );
-        // this.showOverlayWindow(); // This can cause problems with JPDBReader extension // Warning: Unknown display value, please report this!
+        this.showOverlayWindow(); // This can cause problems with JPDBReader extension // Warning: Unknown display value, please report this!
         ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
 
         if ( this.isEditingOcrTemplate ) {

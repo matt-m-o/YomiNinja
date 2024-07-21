@@ -12,6 +12,7 @@ import { matchUiohookMouseEventButton } from "../common/mouse_helpers";
 import { ClickThroughMode, ShowWindowOnCopy } from "../@core/domain/settings_preset/settings_preset_overlay";
 import { screen } from 'electron';
 import { ipcMain } from "../common/ipc_main";
+import { CaptureSource } from "../app/types";
 
 const isMacOS = process.platform === 'darwin';
 const isLinux = process.platform === 'linux';
@@ -44,6 +45,8 @@ export class OverlayController {
     isOverlayWindowInTray: boolean = false;
 
     isOverlayMovableResizable: boolean = false;
+
+    activeCaptureSource?: CaptureSource;
 
     constructor( input: {
         overlayService: OverlayService
@@ -96,7 +99,7 @@ export class OverlayController {
                 preload: join(__dirname, '../preload.js'),
                 backgroundThrottling: false // potential fix for the black overlay issue
             },
-            titleBarStyle: 'hidden',
+            titleBarStyle: 'customButtonsOnHover',
             titleBarOverlay: false,
             title: 'OCR Overlay - YomiNinja'
         };
@@ -111,6 +114,9 @@ export class OverlayController {
         }
 
         this.overlayWindow = new BrowserWindow( windowOptions );
+
+        if ( isMacOS )
+            this.overlayWindow.setWindowButtonVisibility(false);
 
         this.overlayWindow.on( 'close', ( e ) => {
             e.preventDefault();
@@ -370,6 +376,7 @@ export class OverlayController {
         options?: {
             isElectronEvent: boolean;
             showInactive?: boolean;
+            forceActivation?: boolean;
         }
     ) => {
         // console.log("OverlayController.showOverlayWindow");
@@ -377,13 +384,24 @@ export class OverlayController {
         const overlayWindowHandle = getBrowserWindowHandle( this.overlayWindow );
 
         if ( !options?.isElectronEvent ) {
+
+            if ( isMacOS && this.overlayWindow.isFocused() )
+                this.overlayWindow.blur();
+
             if ( this.showWindowWithoutFocus || options?.showInactive )
                 this.overlayWindow.showInactive();
             else {
-                this.overlayWindow.show();
-                if (process.platform === 'darwin')
+                if ( isMacOS )
+                    this.overlayWindow.showInactive();
+                else
+                    this.overlayWindow.show();
+
+                if ( options?.forceActivation )
                     windowManager.setForegroundWindow( overlayWindowHandle );
+                else if ( isMacOS && this.activeCaptureSource?.type === "window" )
+                    this.overlayWindow.moveAbove( this.activeCaptureSource.id );
             }
+
 
             return;
         }
@@ -407,15 +425,18 @@ export class OverlayController {
                     skipTransformProcessType: true
                 }
             );
-            // if ( process.platform !== 'linux' ) {
-            windowManager.setForegroundWindow( overlayWindowHandle );
-            // }
+            
+            if ( !isMacOS || options?.forceActivation ) {
+                windowManager.setForegroundWindow( overlayWindowHandle );
+            }
         }
 
+        const level = isMacOS ? 'pop-up-menu' : 'screen-saver';
+
         this.overlayWindow.setAlwaysOnTop( false, "normal" );
-        this.overlayWindow.setAlwaysOnTop( true, "screen-saver" ); // normal, pop-up-menu, och, screen-saver
-        
-        this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop, "screen-saver" );
+        this.overlayWindow.setAlwaysOnTop( true, level ); // normal, pop-up-menu, och, screen-saver
+
+        this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop, level ); 
     }
 
     async applySettingsPreset( settingsPresetJson?: SettingsPresetJson ) {

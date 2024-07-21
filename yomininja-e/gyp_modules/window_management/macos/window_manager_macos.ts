@@ -129,6 +129,7 @@ export class WindowManagerMacOS implements WindowManagerNativeInterface {
                     return;
 
                 window.bringToTop();
+                // window.show();
 
                 return true;
             });
