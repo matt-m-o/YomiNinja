@@ -43,8 +43,15 @@ YomiNinja currently offers support for distros using the X11 window system. Wayl
     ```commandline
     sudo dpkg -i yomininja-e_x.x.x_amd64.deb
     ```
-### macOS (in progress)
-The macOS version of YomiNinja is in development. Stay tuned for updates!
+### macOS
+[Download](https://github.com/matt-m-o/YomiNinja/releases) and install the latest YomiNinja release (.dmg file). <br>
+
+Notes:
+- The list of available languages for the Apple Vision OCR engine depends on your macOS version.
+- Manga OCR will be supported in version 0.8 and above.
+- Native support for ARM64 (Apple Silicon) is coming in version 0.8 and above.
+
+
 
 ## Current features
 
@@ -52,17 +59,19 @@ The macOS version of YomiNinja is in development. Stay tuned for updates!
 - Built-in pop-up dictionaries.
 - Chrome Extensions (partial support).
 - OCR Templates (predefined text areas, optimizing OCR efficiency).
+- Auto OCR.
+- Text to speech.
 - WebSocket for Texthookers.
 
 
 ## Planned Features
 
-- Auto OCR.
 - Text extraction from snip.
 - Anki integration.
 - History.
 - Text translation.
 - Support for more OCR engines.
+- Support for more TTS voices.
 
 
 ## Supported Languages
@@ -83,24 +92,34 @@ The macOS version of YomiNinja is in development. Stay tuned for updates!
     ```commandline
     git clone https://github.com/matt-m-o/YomiNinja.git && cd YomiNinja
     ```
-2. Based on your platform, download and extract the latest build of [PPOCR-Inference-Service](https://github.com/matt-m-o/PPOCR-Inference-Service/releases) into the appropriate directory:
+
+2. Build OCR services:
+    ```commandline
+    cd ./ocr_services/py_ocr_service
+    ./gen_grpc_service.bat
+    ./build.bat
+    cd ../..
+    ./copy_py_ocr_service_build.bat
+    ```
+   
+3. Based on your platform, download and extract the latest build of [PPOCR-Inference-Service](https://github.com/matt-m-o/PPOCR-Inference-Service/releases) into the appropriate directory:
 
     - Windows: `./bin/win32/ppocr`
     - Linux: `./bin/linux/ppocr`
 
-3. (optional) Download [10ten v1.15.1](https://github.com/birchill/10ten-ja-reader/releases/tag/v1.15.1) for Chrome, extract the contents, and place them into the following directory:
+4. (optional) Download [10ten v1.15.1](https://github.com/birchill/10ten-ja-reader/releases/tag/v1.15.1) for Chrome, and place the zip file into the following directory:
        
-       ./yomininja-e/extensions/10ten
+       ./yomininja-e/extensions/
 
-4. Install node modules. Note: `--force` is used due to outdated react-furi peerDependencies, but it should function normally.
+5. Install node modules. Note: `--force` is used due to outdated react-furi peerDependencies, but it should function normally.
     ```commandline
     cd yomininja-e && npm install --force
     ```
-5. Generate gRPC Protobuf types
+6. Generate gRPC Protobuf types
     ```commandline
     npm run grpc-types
     ```
-6. Build
+7. Build
     ```commandline
     npm run dist
     ```
