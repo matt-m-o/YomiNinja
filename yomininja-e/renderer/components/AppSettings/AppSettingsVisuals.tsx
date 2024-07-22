@@ -95,12 +95,15 @@ export default function AppSettingsVisuals() {
     
         
 
-    const overlayPreviewText = {
+    let overlayPreviewText = {
         en: 'Extracted text',
         ja: '抽出されたテキスト',
-        ch: '提取的文本',
+        zh: '提取的文本',
         ko: '추출된 텍스트',
     }[ profile?.active_ocr_language.two_letter_code ];
+
+    if ( !overlayPreviewText )
+        overlayPreviewText = 'Extracted text';
 
     const OcrItemBox = styled( BaseOcrResultBox )({
         outline: `solid ${ocrItemBoxVisuals?.border_width}px`,

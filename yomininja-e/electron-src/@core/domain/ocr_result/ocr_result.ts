@@ -36,7 +36,7 @@ export type OcrResultContextResolution = {
 }
 
 export type OcrResult_CreationInput = {
-    id: number;
+    id: string;
     context_resolution?: OcrResultContextResolution;
     results?: OcrItem[];
 };
@@ -44,7 +44,7 @@ export type OcrResult_CreationInput = {
 
 export class OcrResult {
 
-    public readonly id: number;
+    public readonly id: string;
     public context_resolution: OcrResultContextResolution;
     public results: OcrItem[];    
     

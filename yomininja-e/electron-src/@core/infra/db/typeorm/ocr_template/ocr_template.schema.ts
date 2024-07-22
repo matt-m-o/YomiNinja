@@ -33,6 +33,11 @@ export const OcrTemplateTypeOrmSchema = new EntitySchema< OcrTemplate >({
             nullable: true
         },
 
+        capturer_options: {
+            type: 'json',
+            nullable: true
+        },
+
         created_at: {
             type: 'datetime',
         },

@@ -23,11 +23,17 @@ export const USER_EXTENSIONS_DIR = isDev ?
     join( __dirname, '../../../data/extensions' ) :
     join( app.getPath('userData'), '/extensions' );
 
+
+export const ICONS_DIR = isDev ?
+    join( __dirname, '../../../electron_resources' ) :
+    process.resourcesPath;
+
 console.log({
     ROOT_DIR,
     PAGES_DIR,
     BIN_DIR,
     EXTENSIONS_DIR: USER_EXTENSIONS_DIR,
-    USER_DATA_DIR
+    USER_DATA_DIR,
+    ICONS_DIR
 })
     

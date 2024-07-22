@@ -1,6 +1,6 @@
 {
   "name": "yomininja-e",
-  "version": "0.6.4",
+  "version": "0.7.2",
   "private": true,
   "main": "main/electron-src/index.js",
   "productName": "YomiNinja",
@@ -21,14 +21,14 @@
     "build-electron": "npm run types-workaround && tsc -p electron-src && webpack --mode production && npm run copy-assets",
     "build": "npm run build-renderer && npm run build-electron",
     "copy-assets": "node ./copy_assets.js",
-    "install-app-deps": "npx electron-rebuild install-app-deps",
+    "install-app-deps": "npx @electron/rebuild install-app-deps",
     "pack-app": "npm run build && electron-builder --dir",
     "dist": "npm run generate-licenses && npm run build && electron-builder",
     "type-check": "tsc -p ./renderer/tsconfig.json && tsc -p ./electron-src/tsconfig.json",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "grpc-types": "proto-loader-gen-types --longs=String --enums=String --defaults --keep-case --oneofs --grpcLib=@grpc/grpc-js --outDir=./grpc/rpc ./grpc/protos/ocr_service.proto",
+    "grpc-types": "proto-loader-gen-types --longs=String --enums=String --defaults --keep-case --oneofs --grpcLib=@grpc/grpc-js --outDir=./grpc/rpc ../ocr_services/protos/ocr_service.proto",
     "gyp-build": "node-gyp clean && node-gyp configure && node-gyp build",
     "generate-licenses": "npx generate-license-file --input package.json --output third-party-licenses.txt --overwrite",
     "types-workaround": "node ./types/types_workaround.js"
@@ -37,6 +37,7 @@
     "@google-cloud/vision": "^4.0.2",
     "@grpc/grpc-js": "^1.9.3",
     "@grpc/proto-loader": "^0.7.9",
+    "@types/language-tags": "^1.0.4",
     "axios": "^1.5.1",
     "bindings": "^1.5.0",
     "date-fns": "^2.30.0",
@@ -45,12 +46,17 @@
     "electron-is-dev": "^1.1.0",
     "electron-next": "^3.1.5",
     "imurmurhash": "^0.1.4",
-    "inversify": "^6.0.1",
+    "inversify": "^6.0.2",
+    "jimp": "^0.22.12",
     "kuromoji": "^0.1.2",
+    "language-tags": "^1.0.9",
     "lodash": "^4.17.21",
     "node-addon-api": "^7.0.0",
     "node-cache": "^5.1.2",
     "node-stream-zip": "^1.15.0",
+    "node-window-manager": "^2.2.4",
+    "obs-websocket-js": "^5.0.5",
+    "onnxruntime-node": "^1.17.0",
     "reflect-metadata": "^0.1.13",
     "sanitize-filename": "^1.6.3",
     "semver": "^7.5.4",
@@ -79,10 +85,12 @@
     "@types/kuromoji": "^0.1.2",
     "@types/lodash": "^4.14.198",
     "@types/node": "^14.14.6",
+    "@types/offscreencanvas": "^2019.7.3",
     "@types/react": "^18.2.0",
     "@types/react-color": "^3.0.11",
     "@types/react-dom": "^18.2.0",
     "@types/semver": "^7.5.3",
+    "@types/w3c-image-capture": "^1.0.10",
     "@types/wanakana": "^4.0.5",
     "@types/ws": "^8.5.8",
     "commander": "^11.1.0",
@@ -120,20 +128,27 @@
         "from": "extensions",
         "to": "extensions",
         "filter": "**/*"
+      },
+      {
+        "from": "electron_resources",
+        "to": "./",
+        "filter": "**/*"
       }
     ],
     "directories": {
       "buildResources": "electron_resources",
       "output": "dist"
     },
-    "forceCodeSigning": true,
+    "forceCodeSigning": false,
     "nsis": {
       "oneClick": false,
       "runAfterFinish": true,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "include": "./electron_resources/uninstaller.nsh"
     },
     "win": {
       "publisherName": "Matt M.",
+      "compression": "maximum",
       "extraResources": [
         {
           "from": "../bin/win32",
@@ -160,6 +175,29 @@
         "deb",
         "rpm",
         "pacman"
+      ]
+    },
+    "mac": {
+      "icon": "./electron_resources/icon.icns",
+      "asarUnpack": [
+        "**/node_modules/sharp/**",
+        "**/node_modules/x11/**"
+      ],
+      "extraResources": [
+        {
+          "from": "../bin/darwin",
+          "to": "bin",
+          "filter": "**/*"
+        }
+      ],
+      "target": [
+        {
+          "target": "default",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
       ]
     }
   },

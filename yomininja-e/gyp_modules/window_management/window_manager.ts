@@ -2,6 +2,7 @@ import os from 'os';
 import { WindowManagerLinuxX11 } from './linux/window_manager_linux_x11';
 import { WindowManagerWin32 } from './win32/window_manager_win32';
 import { WindowManagerLinuxXDoTool } from './linux/window_manager_linux_xdotool';
+import { WindowManagerMacOS } from './macos/window_manager_macos';
 
 type Size = {
     width: number;
@@ -47,6 +48,9 @@ export class WindowManager {
         else if ( os.platform() === 'linux' )
             this.windowManager = new WindowManagerLinuxXDoTool();
             // this.windowManager = new WindowManagerLinuxX11();
+
+        else if ( os.platform() === 'darwin' )
+            this.windowManager = new WindowManagerMacOS()
     }
 
     async init(): Promise< void > {

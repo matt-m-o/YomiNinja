@@ -15,12 +15,17 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
 
     // const [ ocrResult, setOcrResult ] = useState< OcrResult >();
     const [ ocrResult, setOcrResult ] = useState< OcrResultScalable | null >( null );
-    const [ showResults, setShowResults ] = useState<boolean>();
+    const [ showResults, setShowResults ] = useState<boolean>( true );
     const [ processing, setProcessing ] = useState<boolean>(false);
+    let previousResultId: string | undefined = '0';
   
-    function ocrResultHandler ( _event, data: OcrResultScalable ) {
-        console.log( data );
+    const ocrResultHandler = ( _event, data: OcrResultScalable ) => {
+
+        if ( previousResultId == data?.id )
+            return;
+
         setOcrResult(data);
+        previousResultId = data?.id;
     }
     
     useEffect( () => {
@@ -28,14 +33,17 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
         global.ipcRenderer.on( 'ocr:result', ocrResultHandler );
         
         global.ipcRenderer.on( 'user_command:toggle_results', ( e, value ) => {
+            // if ( showResults === value ) return;
             setShowResults( value );
         });
 
         global.ipcRenderer.on( 'ocr:processing_started', ( e, value ) => {
+            // if ( processing === value ) return;
             setProcessing( true );
         });
 
         global.ipcRenderer.on( 'ocr:processing_complete', ( e, value ) => {
+            // if ( processing === value ) return;
             setProcessing( false );
         });
 

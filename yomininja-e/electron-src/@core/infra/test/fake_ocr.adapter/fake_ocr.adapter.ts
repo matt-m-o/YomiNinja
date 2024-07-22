@@ -5,7 +5,7 @@ import { PpOcrEngineSettings, getPpOcrDefaultSettings } from "../../ocr/ppocr.ad
 import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 
 const ocrTestAdapterResultProps: OcrResult_CreationInput = {
-    id: 1,
+    id: '1',
     context_resolution: {
         width: 1920,
         height: 1080,                        
@@ -53,7 +53,7 @@ export class FakeOcrTestAdapter implements OcrAdapter< FakeOcrEngineSettings > {
 
         const result = OcrResult.create({
             ...this.baseResultProps,
-            id: this.idCounter,
+            id: this.idCounter.toString(),
         });
 
         result.results[0].text =[

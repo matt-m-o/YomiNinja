@@ -1,4 +1,4 @@
-import { BrowserWindow, IpcMainInvokeEvent, app, clipboard, globalShortcut, ipcMain } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, Tray, nativeImage, app, clipboard, globalShortcut, ipcMain, Menu, DisplayBalloonOptions, NativeImage, systemPreferences } from "electron";
 import { UiohookKey, uIOhook } from "uiohook-napi";
 import { CaptureSource, ExternalWindow } from "../ocr_recognition/common/types";
 import { TaskbarProperties } from "../../gyp_modules/window_management/window_manager";
@@ -19,9 +19,15 @@ import { settingsController } from "../settings/settings.index";
 import { appInfoController } from "../app_info/app_info.index";
 import { profileController } from "../profile/profile.index";
 import { dictionariesController } from "../dictionaries/dictionaries.index";
-import { ocrTemplatesController } from "../ocr_templates/ocr_templates.index";
+import { ocrTemplateEvents, ocrTemplatesController } from "../ocr_templates/ocr_templates.index";
 import { htmlMouseButtonToUiohook, matchUiohookMouseEventButton } from "../common/mouse_helpers";
 import { debounce } from "lodash";
+import { windowManager } from "node-window-manager";
+import { screenCapturerController } from "../screen_capturer/screen_capturer.index";
+import { ICONS_DIR } from "../util/directories.util";
+import { join } from "path";
+import { sleep } from "../util/sleep.util";
+const isMacOS = process.platform === 'darwin';
 
 let startupTimer: NodeJS.Timeout;
 
@@ -48,23 +54,33 @@ export class AppController {
 
     private isEditingOcrTemplate: boolean = false;
 
+    private isCaptureSourceUserSelected: boolean = false;
+
+    private tray: Tray | undefined;
+    private temporaryTray: Tray | undefined;
 
     constructor( input: {
         appService: AppService
     }) {
 
         this.appService = input.appService;
-
-        uIOhook.start();
     }
 
     async init() {
+        console.time('YomiNinja Startup time');
 
         if ( !isDev ) {
             startupTimer = setTimeout( () => {
                 console.log('Initialization took too long. Closing the app.');
-                app.quit();
-            }, 30_000 );
+                this.displayBalloon({
+                    content: 'The app is about to exit in 10 seconds. Please restart the app once it has exited.'
+                });
+                sleep(10_000)
+                    .then( () => {
+                        app.quit();
+                        process.exit();
+                    });
+            }, 45_000 );//
         }
 
         this.mainWindow = await mainController.init();
@@ -75,14 +91,14 @@ export class AppController {
 
         // if ( isDev )
             // createDebuggingWindow();
-  
+
+        this.createTemporaryTrayIcon();
 
         await initializeApp()
             .then( async () => {
             
                 this.overlayWindow = await overlayController.init( this.mainWindow );
-                
-                
+
                 ocrRecognitionController.init({
                     mainWindow: this.mainWindow,
                     overlayWindow: this.overlayWindow
@@ -123,11 +139,23 @@ export class AppController {
 
         this.registerGlobalShortcuts( settings.toJson() );
         this.registersIpcHandlers();
+        this.registerEventHandlers();
         this.handleCaptureSourceSelection();
 
         this.taskbar = this.appService.getTaskbar();
 
         this.activeCaptureSource = entireScreenAutoCaptureSource;
+        
+        screenCapturerController.init();
+        screenCapturerController.onCapture( 
+            async ( frame: Buffer ) => {
+                return this._handleVideoStream( frame );
+            }
+        );
+
+        this.destroyTemporaryTrayIcon();
+        this.createTrayIcon();
+        console.timeEnd('YomiNinja Startup time');
     }
 
     registersIpcHandlers() {
@@ -180,19 +208,60 @@ export class AppController {
 
                 this.activeCaptureSource = message;
 
+                if ( this.userSelectedWindowId ) {
+                    this.captureSourceWindow = await this.appService.getExternalWindow(
+                        this.userSelectedWindowId
+                    );
+                    this.activeCaptureSource.window = this.captureSourceWindow;
+                }
+
                 this.mainWindow.webContents.send(
                     'app:active_capture_source',
                     this.activeCaptureSource
-                ); 
+                );
+                
+                await this.handleCaptureSourceSelection()
+                    .catch( console.error );
+
+                this.setOverlayBounds( 'maximized' );
+                
+                // console.log({
+                //     isAutoOcrEnabled: ocrTemplatesController.isAutoOcrEnabled
+                // });
+                if ( ocrTemplatesController.isAutoOcrEnabled ) {
+                    screenCapturerController.createCaptureStream({
+                        captureSource: this.activeCaptureSource,
+                        force: true
+                    });
+                }
+
+                this.isCaptureSourceUserSelected = true;
             }
         );
 
         ipcMain.handle( 'app:editing_ocr_template',
             async ( event: IpcMainInvokeEvent, message: boolean ): Promise< void > => {
                 this.isEditingOcrTemplate = message;
-                console.log( 'app:editing_ocr_template: '+message );
+                // console.log( 'app:editing_ocr_template: '+message );
             }
         );
+    }
+
+    registerEventHandlers() {
+        ocrTemplateEvents.on( 'active_template', async (template) => {
+            const isAutoOcrEnabled = template?.isAutoOcrEnabled() || false;
+            console.log({ isAutoOcrEnabled });
+
+            if ( !isAutoOcrEnabled )
+                await screenCapturerController.destroyScreenCapturer();
+
+            if ( isAutoOcrEnabled && this.isCaptureSourceUserSelected ) {
+                screenCapturerController.createCaptureStream({
+                    captureSource: this.activeCaptureSource,
+                    force: true
+                });
+            }
+        });
     }
 
     async registerGlobalShortcuts( settingsPresetJson?: SettingsPresetJson ) {
@@ -279,7 +348,7 @@ export class AppController {
                     else
                         return this.handleOcrCommand({
                             image: clipboard.readImage().toPNG(),
-                            runFullScreenImageCheck
+                            runFullScreenImageCheck //: false
                         });
                         // return this.ocrRecognitionController.recognize( clipboard.readImage().toPNG(), runFullScreenImageCheck );
                 }
@@ -335,17 +404,40 @@ export class AppController {
     }
 
     setOverlayBounds( entireScreenMode: 'fullscreen' | 'maximized' = 'fullscreen' ) {
-        // console.time("setOverlayBounds");        
+        // console.time("setOverlayBounds");
+
+        if ( overlayController.isOverlayBoundsLocked )
+            return;
+
+        const isFullscreen = entireScreenMode === 'fullscreen';
         
-        if ( this.captureSourceDisplay ) {            
+        if ( this.captureSourceDisplay ) {
+
+            if ( isMacOS ) {
+                this.overlayWindow.setVisibleOnAllWorkspaces(
+                    true,
+                    {
+                        visibleOnFullScreen: true,
+                        skipTransformProcessType: true
+                    }
+                );
+            }
             
             this.overlayWindow.setBounds({                
                 ...this.captureSourceDisplay?.workArea,
             });
-            
-            if ( entireScreenMode === 'fullscreen' )
-                this.overlayWindow.setFullScreen( entireScreenMode === 'fullscreen' );
 
+            if ( isFullscreen ) {
+                if ( !isMacOS ) {
+                    this.overlayWindow.setFullScreen( true );
+                }
+                else {
+                    this.overlayWindow.setBounds(
+                        screen.getPrimaryDisplay().bounds
+                    );
+                }
+            }
+            
             if ( entireScreenMode === 'maximized' )
                 this.overlayWindow.maximize();
         }
@@ -398,9 +490,10 @@ export class AppController {
 
     async handleWindowSource() {      
         
-        if ( this.userSelectedWindowId )
+        if ( this.userSelectedWindowId ) {
             this.captureSourceWindow = await this.appService.getExternalWindow( this?.userSelectedWindowId );
-
+            this.activeCaptureSource.window = this.captureSourceWindow;
+        }
         else 
             this.captureSourceWindow = undefined;
 
@@ -412,6 +505,7 @@ export class AppController {
         this.handleDisplaySource();
         await this.handleWindowSource();
         // console.timeEnd('handleCaptureSourceSelection');
+        await screenCapturerController.setCaptureSource( this.activeCaptureSource );
     }
 
     private async isFullScreenImage( imageBuffer: Buffer ): Promise<boolean> {
@@ -447,13 +541,16 @@ export class AppController {
         input: OcrCommandInput = {}
     ) => {
 
-        console.log('AppController.handleOcrCommand');
+        // console.log('AppController.handleOcrCommand');
 
         let {
             image,
             runFullScreenImageCheck,
             engineName
         } = input;
+
+        if ( overlayController.isOverlayMovableResizable )
+            return;
 
         this.overlayWindow?.webContents.send( 'user_command:toggle_results', false );
         this.overlayWindow?.webContents.send( 'ocr:processing_started' );
@@ -467,6 +564,14 @@ export class AppController {
         });
 
         if ( !image ) return;
+
+        // Setting overlay bounds
+        let isFullScreenImage = true;
+        if ( image && runFullScreenImageCheck)
+            isFullScreenImage = await this.isFullScreenImage(image);
+        this.setOverlayBounds( isFullScreenImage ? 'fullscreen' :  'maximized' );
+        // this.showOverlayWindow(); // This can cause problems with JPDBReader extension // Warning: Unknown display value, please report this!
+        this.overlayWindow?.webContents.send( 'user_command:toggle_results', false );
 
         if ( this.isEditingOcrTemplate ) {
             this.mainWindow.webContents.send(
@@ -487,15 +592,183 @@ export class AppController {
         }
 
         this.overlayWindow?.webContents.send( 'ocr:processing_complete' );
-
-        let isFullScreenImage = true;
-
-        if ( image && runFullScreenImageCheck)
-            isFullScreenImage = await this.isFullScreenImage(image);
-
-        this.setOverlayBounds( isFullScreenImage ? 'fullscreen' :  'maximized' );
         this.showOverlayWindow();
+        this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
     };
+
+    async _handleVideoStream( image: Buffer ) {
+
+        if ( isDev )
+            console.log('AppController._handleVideoStream');
+
+        // this.overlayWindow?.webContents.send( 'ocr:processing_started' );
+        
+        // await this.handleCaptureSourceSelection();
+
+        if ( overlayController.isOverlayMovableResizable )
+            return;
+
+        if ( !image ) return;
+
+        // this.setOverlayBounds( 'maximized' );
+        // this.showOverlayWindow();
+
+        if ( this.isEditingOcrTemplate ) {
+            return;
+        }
+        else {
+            
+            if ( ocrRecognitionController.isRecognizing() )
+                return;
+
+            await ocrRecognitionController.recognize({
+                    image,
+                    autoOcr: true
+                })
+                .catch( console.error );
+        }
+
+        // this.overlayWindow?.webContents.send( 'ocr:processing_complete' );
+        // this.showOverlayWindow();
+        // this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
+    }
+
+    toggleMainWindow = ( show?: boolean ) => {
+
+        if ( !this.mainWindow )
+            return;
+
+        if ( show )
+            return this.mainWindow.show();
+
+        if ( this.mainWindow.isVisible() )
+            return this.mainWindow.hide();
+        
+        this.mainWindow.show();
+    }
+
+    createBaseTrayIcon(): Tray {
+
+        const tray = new Tray( this.getAppIcon() );
+        tray.setToolTip( app.name );
+
+        return tray;
+    }
+
+    createTrayIcon() {
+
+        this.tray = this.createBaseTrayIcon();
+
+        this.tray.on( 'click', () => this.toggleMainWindow( true ) );
+
+        const contextMenu = Menu.buildFromTemplate([
+            {
+                id: 'ocr',
+                label: `OCR`,
+                click: ( item ) => this.handleOcrCommand(),
+            },
+            {
+                type: 'separator'
+            },
+            {
+                label: `Hide/Show ${app.getName()}`,
+                click: ( item ) => this.toggleMainWindow()
+            },
+            {
+                type: 'separator'
+            },
+            {
+                label: 'Hide/Show Overlay',
+                click: ( item ) => {
+                    if ( this.overlayWindow.isVisible() ) 
+                        return this.overlayWindow.hide();
+
+                    this.showOverlayWindow();
+                }
+            },
+            {
+                label: 'Manually Move/Resize Overlay',
+                click: ( item ) => {
+                    overlayController.toggleMovable();
+                },
+                accelerator: 'Ctrl+Shift+M'
+            },
+            {
+                label: 'Overlay Automatic Adjustment',
+                toolTip: 'Overlay Auto Positioning and Resizing',
+                type: 'checkbox',
+                checked: !overlayController.isOverlayBoundsLocked,
+                click: ( event ) => {
+                    overlayController.lockOverlayBounds( !event.checked );
+                    // event.checked = !overlayController.isOverlayBoundsLocked;
+                },
+            },
+            {
+                type: 'separator'
+            },
+            {
+                label: 'Quit',
+                click: () => app.quit()
+            }
+        ]);
+        this.tray.setContextMenu(contextMenu);
+    }
+
+    createTemporaryTrayIcon() {
+        this.temporaryTray = this.createBaseTrayIcon();
+        this.temporaryTray.setToolTip(`${app.name} - Please wait, the app is loading...`);
+        const contextMenu = Menu.buildFromTemplate([
+            {
+                label: 'Quit',
+                click: () => app.quit()
+            }
+        ]);
+        this.temporaryTray.setContextMenu( contextMenu );
+    }
+
+
+    destroyTemporaryTrayIcon() {
+
+        if (
+            !this.temporaryTray ||
+            this.temporaryTray.isDestroyed()
+        )
+            return;
+
+        this.temporaryTray.destroy();
+        this.temporaryTray = undefined;
+    }
+
+    displayBalloon( options: Partial<DisplayBalloonOptions> ) {
+
+        if ( options.respectQuietTime !== undefined )
+            options.respectQuietTime = options.respectQuietTime;
+        else
+            options.respectQuietTime = true;
+
+        (this.temporaryTray || this.tray)
+            ?.displayBalloon({
+                ...options,
+                title: 'YomiNinja',
+                content: options.content || '',
+                icon: this.getAppIcon()
+            });
+    }
+
+    getAppIcon(): NativeImage {
+
+        let appIconFile = 'icon_512x512.png';
+
+        if ( isMacOS )
+            appIconFile = 'icon_64x64@3x.png';
+
+        else if ( process.platform === 'win32' )
+            appIconFile = 'icon.ico';
+
+        const iconPath = join( ICONS_DIR, appIconFile );
+        
+        return nativeImage.createFromPath( iconPath );
+    }
 }
 
 type OcrCommandInput = {

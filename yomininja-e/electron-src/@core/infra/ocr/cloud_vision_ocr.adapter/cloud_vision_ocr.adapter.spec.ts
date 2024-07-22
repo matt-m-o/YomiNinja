@@ -1,3 +1,4 @@
+import { Language } from "../../../domain/language/language";
 import { CloudVisionOcrAdapter } from "./cloud_vision_ocr.adapter";
 import { getCloudVisionDefaultSettings } from "./cloud_vision_ocr_settings";
 import { CloudVisionRestAPI } from "./cloud_vision_rest_api";
@@ -9,6 +10,8 @@ describe('CloudVisionOcrAdapter tests', () => {
 
     let cloudVisionAPI: CloudVisionRestAPI;
     let ocrAdapter: CloudVisionOcrAdapter;
+
+    const language = Language.create({ name: 'japanese', two_letter_code: '' });
 
     beforeEach( () => {
 
@@ -24,7 +27,7 @@ describe('CloudVisionOcrAdapter tests', () => {
 
         const result = await ocrAdapter.recognize({
             imageBuffer: Buffer.from( base64Image, 'base64' ),
-            languageCode: 'ja'
+            language
         });
 
         const regionResults = result?.ocr_regions[0].results;
@@ -48,7 +51,7 @@ describe('CloudVisionOcrAdapter tests', () => {
 
         const result = await ocrAdapter.recognize({
             imageBuffer: Buffer.from( base64Image, 'base64' ),
-            languageCode: 'ja'
+            language
         });
 
         const regionResults = result?.ocr_regions[0].results;

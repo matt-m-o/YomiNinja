@@ -4,14 +4,16 @@ import { join } from "path";
 import isDev from 'electron-is-dev';
 import { format } from "url";
 import { PAGES_DIR } from "../util/directories.util";
-import { WindowManager } from "../../gyp_modules/window_management/window_manager";
 import { SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 import { uIOhook } from "uiohook-napi";
 import { windowManager } from "../@core/infra/app_initialization";
 import { getBrowserWindowHandle } from "../util/browserWindow.util";
-import os from 'os';
 import { matchUiohookMouseEventButton } from "../common/mouse_helpers";
 import { ClickThroughMode, ShowWindowOnCopy } from "../@core/domain/settings_preset/settings_preset_overlay";
+import { screen } from 'electron';
+
+const isMacOS = process.platform === 'darwin';
+const isLinux = process.platform === 'linux';
 
 export class OverlayController {
 
@@ -36,6 +38,12 @@ export class OverlayController {
 
     private hoveredText: string = '';
 
+    isOverlayBoundsLocked: boolean = false;
+
+    isOverlayWindowInTray: boolean = false;
+
+    isOverlayMovableResizable: boolean = false;
+
     constructor( input: {
         overlayService: OverlayService
     }) {
@@ -59,7 +67,7 @@ export class OverlayController {
 
         this.overlayWindow.on( 'show', ( ) => {
             this.showOverlayWindow();
-        });        
+        });
 
         this.overlayService.initWebSocket();
 
@@ -68,11 +76,19 @@ export class OverlayController {
 
     private createOverlayWindow() {
 
-        this.overlayWindow = new BrowserWindow({            
-            fullscreen: true,
+        const useFullscreenMode = !isMacOS && !isLinux;
+
+        let windowOptions: Electron.BrowserWindowConstructorOptions = {
+            fullscreen: useFullscreenMode,
             frame: false,
+            movable: true, //! false
+            resizable: true,
             transparent: true,
             autoHideMenuBar: true,
+            // skipTaskbar: isMacOS,
+            // fullscreenable: true,
+            // resizable: true,
+            hasShadow: false,
             webPreferences: {
                 nodeIntegration: false, // false
                 contextIsolation: false,
@@ -81,7 +97,18 @@ export class OverlayController {
             titleBarStyle: 'hidden',
             titleBarOverlay: false,
             title: 'OCR Overlay - YomiNinja'
-        });
+        };
+
+        if ( isMacOS ) {
+            windowOptions = {
+                ...windowOptions,
+                skipTaskbar: true,
+                fullscreenable: true,
+                type: 'panel'
+            }
+        }
+
+        this.overlayWindow = new BrowserWindow( windowOptions );
 
         this.overlayWindow.on( 'close', ( e ) => {
             e.preventDefault();
@@ -108,7 +135,7 @@ export class OverlayController {
         });
 
         this.overlayWindow.loadURL(url);
-        // this.overlayWindow.maximize();        
+        // this.overlayWindow.maximize();
         
         const showDevTools = isDev && false;
         if (showDevTools) {
@@ -117,6 +144,18 @@ export class OverlayController {
         }
         
         this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop && !showDevTools, "normal" ); // normal, pop-up-menu och screen-saver
+        if ( !useFullscreenMode ) {
+            this.overlayWindow.setBounds(
+                screen.getPrimaryDisplay().bounds
+            );
+            this.overlayWindow.setVisibleOnAllWorkspaces(
+                true,
+                {
+                    visibleOnFullScreen: true,
+                    skipTransformProcessType: true
+                }
+            );
+        }
 
         // "True" Prevents black image when using youtube on some browsers (e.g. Brave)
         this.overlayWindow.setIgnoreMouseEvents( this.clickThroughMode !== 'disabled', { // !showDevTools
@@ -232,6 +271,7 @@ export class OverlayController {
             this.globalShortcutAccelerators.push( overlayHotkeys.copy_text );
         }
 
+        globalShortcut.register( 'Ctrl+Shift+M', this.toggleMovable );
 
         uIOhook.on( 'mousemove', async ( e ) => {
 
@@ -327,6 +367,11 @@ export class OverlayController {
     private showOverlayWindow() {
         // console.log("OverlayController.showOverlayWindow");
 
+        if ( this.isOverlayWindowInTray ) {
+            this.isOverlayWindowInTray = false
+            this.overlayWindow.showInactive();
+        }
+
         this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
         
         const overlayWindowHandle = getBrowserWindowHandle( this.overlayWindow );
@@ -336,7 +381,11 @@ export class OverlayController {
         if ( !this.showWindowWithoutFocus ) {
 
             this.overlayWindow.setVisibleOnAllWorkspaces(
-                true, { visibleOnFullScreen:true }
+                true,
+                {
+                    visibleOnFullScreen: true,
+                    skipTransformProcessType: true
+                }
             );
             // if ( process.platform !== 'linux' ) {
             windowManager.setForegroundWindow( overlayWindowHandle );
@@ -437,5 +486,54 @@ export class OverlayController {
 
     private copyHoveredText = () => {
         this.copyText( this.hoveredText );
+    }
+
+    toggleMovable = ( newMovableState?: boolean ): boolean => {
+
+        if ( newMovableState === undefined )
+            newMovableState = !this.isOverlayMovableResizable; // isResizable
+
+        this.isOverlayMovableResizable = newMovableState;
+
+        this.overlayWindow.setMovable( newMovableState );
+        this.overlayWindow.setResizable( newMovableState );
+
+        let ignoreMouseEvents = !newMovableState;
+
+        if ( this.clickThroughMode === 'disabled' )
+            ignoreMouseEvents = false;
+
+        this.overlayWindow.setIgnoreMouseEvents(
+            ignoreMouseEvents, {
+                forward: true
+            }
+        );
+
+        this.overlayWindow.webContents.send( 'set_movable', newMovableState );
+        this.overlayWindow.show();
+
+        if ( newMovableState ) {
+
+            if ( this.overlayWindow.isFullScreen() )
+                this.overlayWindow.setFullScreen( false );
+
+            if ( this.overlayWindow.isMaximized() )
+                this.overlayWindow.unmaximize();
+            
+            // this.overlayWindow.setBounds(
+            //     this.mainWindow.getBounds()
+            // );
+        }
+
+        return newMovableState;
+    }
+
+    lockOverlayBounds( newState: boolean = true ) {
+        this.isOverlayBoundsLocked = newState;
+    }
+
+    minimizeOverlayWindowToTray() {
+        this.overlayWindow.hide();
+        this.isOverlayWindowInTray = true;
     }
 }

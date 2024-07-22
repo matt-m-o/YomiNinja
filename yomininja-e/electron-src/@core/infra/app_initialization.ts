@@ -14,33 +14,79 @@ import { ppOcrAdapterName } from './ocr/ppocr.adapter/ppocr_settings';
 import { getDefaultSettingsPresetProps } from '../domain/settings_preset/default_settings_preset_props';
 import semver from 'semver';
 import { cloudVisionOcrAdapterName, getCloudVisionDefaultSettings } from './ocr/cloud_vision_ocr.adapter/cloud_vision_ocr_settings';
-import { getGoogleLensDefaultSettings } from './ocr/google_lens_ocr.adapter/google_lens_ocr_settings';
+import { getGoogleLensDefaultSettings, googleLensOcrAdapterName } from './ocr/google_lens_ocr.adapter/google_lens_ocr_settings';
+import { pyOcrService } from './ocr/py_ocr_service/_temp_index';
+import { paddleOcrService } from './ocr/ocr_services/paddle_ocr_service/_temp_index';
 
-
+const isMacOS = process.platform === 'darwin';
 export let activeProfile: Profile;
 export let windowManager: WindowManager;
 
 
 async function populateLanguagesRepository( languageRepo: LanguageTypeOrmRepository ) {
-    const languages: Language_CreationInput[] = [
-        { name: 'japanese', two_letter_code: 'ja' },
-        { name: 'english', two_letter_code: 'en' },
-        { name: 'chinese', two_letter_code: 'ch' },
-        { name: 'korean', two_letter_code: 'ko' },
-    ]
-    for ( const data of languages ) {
-        const exists = await languageRepo.findOne({ two_letter_code: data.two_letter_code });
 
-        if ( exists ) continue;
+    const languages: Language_CreationInput[] = [
+        { name: 'japanese', two_letter_code: 'ja', bcp47_tag: 'ja-JP' },
+        { name: 'chinese (simplified)', two_letter_code: 'zh', bcp47_tag: 'zh-Hans' },
+        { name: 'chinese (traditional)', two_letter_code: 'zh', bcp47_tag: 'zh-Hant' },
+        { name: 'cantonese (simplified)', two_letter_code: '', bcp47_tag: 'yue-Hans' },
+        { name: 'cantonese (traditional)', two_letter_code: '', bcp47_tag: 'yue-Hant' },
+        { name: 'korean', two_letter_code: 'ko', bcp47_tag: 'ko-KR' },
+        { name: 'thai', two_letter_code: 'th', bcp47_tag: 'th-TH' },
+        { name: 'vietnamese', two_letter_code: 'vi', bcp47_tag: 'vi-VN' },
+        { name: 'latin', two_letter_code: 'la', bcp47_tag: 'la' },
+        { name: 'cyrillic', two_letter_code: 'cy', bcp47_tag: 'cyrl' },
+        { name: 'english', two_letter_code: 'en', bcp47_tag: 'en' },
+        { name: 'french (FR)', two_letter_code: 'fr', bcp47_tag: 'fr-FR' },
+        { name: 'italian (IT)', two_letter_code: 'it', bcp47_tag: 'it-IT' },
+        { name: 'german (DE)', two_letter_code: 'de', bcp47_tag: 'de-DE' },
+        { name: 'spanish (ES)', two_letter_code: 'es', bcp47_tag: 'es-ES' },
+        { name: 'portuguese (BR)', two_letter_code: 'pt', bcp47_tag: 'pt-BR' },
+        { name: 'russian', two_letter_code: 'ru', bcp47_tag: 'ru-RU' },
+        { name: 'ukrainian', two_letter_code: 'uk', bcp47_tag: 'uk-UA' },
+    ];
+
+    for ( const data of languages ) {
+
+        const exists = await languageRepo.findOne({ name: data.name });
+        
+        if ( exists ) {
+
+            if ( exists.bcp47_tag ) continue;
+
+            // Adding bcp47 tag to older records
+            exists.bcp47_tag = data.bcp47_tag as string;
+
+            await languageRepo.update( exists );
+
+            continue;
+        }
+        else if ( data.bcp47_tag === 'zh-Hans' ) {
+            // Updating the old chinese record
+
+            const oldChinese = await languageRepo.findOne({ name: 'chinese' });
+            if ( oldChinese ) {
+
+                oldChinese.name = data.name;
+                oldChinese.two_letter_code = data.two_letter_code;
+                oldChinese.bcp47_tag = data.bcp47_tag;
+
+                await languageRepo.update(oldChinese);
+
+                continue;
+            }
+        }
 
         await languageRepo.insert( Language.create( data ) )
             .catch( console.error );
-    }    
+    }
 }
 
 export async function initializeApp() {
     
     try {
+
+        const serviceStartupPromise = startServices();
 
         // Initializing database
         await get_MainDataSource().initialize();
@@ -63,9 +109,7 @@ export async function initializeApp() {
 
         await populateLanguagesRepository( languageRepo );
 
-        const ppocrAdapter = get_PpOcrAdapter();
-        await new Promise( resolve => ppocrAdapter.startProcess( resolve ) );
-        await ppocrAdapter.ppocrServiceProcessStatusCheck();
+        await serviceStartupPromise;
 
         // console.log('Initializing settings...');
         let defaultSettingsPreset = await settingsPresetRepo.findOne({ name: SettingsPreset.default_name });
@@ -113,7 +157,8 @@ export async function initializeApp() {
                 }
             });
         }
-        await ppocrAdapter.ppocrServiceProcessStatusCheck();
+
+        await servicesHealthCheck();
 
         
         // console.log('Initializing languages...');
@@ -133,7 +178,7 @@ export async function initializeApp() {
             defaultProfile = Profile.create({
                 active_ocr_language: defaultLanguage,
                 active_settings_preset: defaultSettingsPreset,
-                selected_ocr_adapter_name: ppOcrAdapterName
+                selected_ocr_adapter_name: isMacOS ? googleLensOcrAdapterName : ppOcrAdapterName
             });
             await profileRepo.insert(defaultProfile);
         }
@@ -157,4 +202,31 @@ export async function initializeApp() {
 
 export function getActiveProfile(): Profile {
     return activeProfile;
+}
+
+async function startServices() {
+
+    const serviceStartupPromises: Promise<unknown>[] = [];
+
+    if ( !isMacOS ) {
+        serviceStartupPromises.push(
+            new Promise( resolve => paddleOcrService.startProcess( resolve ) )
+        );
+    }
+    serviceStartupPromises.push( new Promise( resolve => pyOcrService.startProcess( resolve ) ) );
+
+    await Promise.all( serviceStartupPromises );
+    await servicesHealthCheck();
+}
+
+async function servicesHealthCheck() {
+
+    const serviceHealthCheckPromises: Promise<unknown>[] = [];
+
+    if ( !isMacOS ) {
+        serviceHealthCheckPromises.push( paddleOcrService.processStatusCheck() )
+    }
+    serviceHealthCheckPromises.push( pyOcrService.processStatusCheck() )
+
+    await Promise.all( serviceHealthCheckPromises );
 }

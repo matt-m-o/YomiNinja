@@ -26,6 +26,7 @@ const OverlayFrame = styled('div')({
   height: '100vh',
   overflow: 'hidden',
   boxSizing: 'border-box',
+  '-webkit-app-region': 'no-drag'
 });
 
 const ProgressContainer = styled('div')({
@@ -36,6 +37,16 @@ const ProgressContainer = styled('div')({
   right: '2%',
   bottom: '5%'
 
+});
+
+const DragArea = styled('div')({
+  width: '100%',
+  height: '100%',
+  backgroundColor: '#00000092',
+  '-webkit-app-region': 'drag',
+  cursor: 'move',
+  position: 'relative',
+  zIndex: 999999999
 });
 
 export default function OcrOverlay() {
@@ -55,6 +66,7 @@ export default function OcrOverlay() {
   const overlayHotkeys: OverlayHotkeys = activeSettingsPreset?.overlay?.hotkeys;
   const overlayBehavior: OverlayBehavior = activeSettingsPreset?.overlay?.behavior;
 
+  let [ showDragArea, setShowDragArea ] = useState(false);
 
   useEffect( () => {
 
@@ -82,6 +94,9 @@ export default function OcrOverlay() {
       
     else
       value = false;
+
+    if ( showDragArea || element.id === 'drag-area' )
+      value = false;
     
     // console.log( currentElement );
     // console.log( value );
@@ -95,10 +110,15 @@ export default function OcrOverlay() {
     
     if ( !window ) return;
 
+    global.ipcRenderer.on( 'set_movable', ( event, value ) => {
+      console.log({ value })
+      setShowDragArea( value );
+    });
+
     return () => {
       document.removeEventListener( 'mousemove', handleClickThrough );
+      global.ipcRenderer.removeAllListeners( 'set_movable' );
     };
-
 
   }, [] );
 
@@ -106,7 +126,7 @@ export default function OcrOverlay() {
   const templateRegions = activeOcrTemplate?.target_regions.map( region => {
     const { position, size } = region;
     return (
-        <OcrTargetRegionDiv className="ocr-region" key={ region.id }
+        <OcrTargetRegionDiv key={ region.id } // className="ocr-region" This class can break JPDBReader
           style={{
             border: 'solid',
             borderColor: overlayFrameVisuals?.border_color || 'red',
@@ -131,6 +151,20 @@ export default function OcrOverlay() {
         contentVisibility: showResults ? 'visible' : 'hidden'
       }}
     >
+      { showDragArea &&
+        <DragArea id="drag-area">
+          <Typography
+            
+            sx={{
+              ml: 2,
+              pt: 1,
+              color: overlayFrameVisuals?.border_color || 'red',
+            }}
+          >
+            The overlay is now movable and resizable!
+          </Typography>
+        </DragArea>
+      }
       {templateRegions}
       <FullscreenOcrResult
         ocrItemBoxVisuals={ocrItemBoxVisuals}

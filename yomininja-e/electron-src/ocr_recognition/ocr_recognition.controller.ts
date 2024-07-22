@@ -20,7 +20,7 @@ export class OcrRecognitionController {
     
     private mainWindow: BrowserWindow;
     private overlayWindow: BrowserWindow;
-
+    private recognizing: boolean = false; 
 
     constructor( input: {        
         ocrRecognitionService: OcrRecognitionService< OcrEngineSettingsU >;        
@@ -52,19 +52,27 @@ export class OcrRecognitionController {
                     .map( language => language.toJson() );                
             }
         );
+
+        ipcMain.handle( 'ocr_recognition:get_supported_ocr_engines',
+            ( event: IpcMainInvokeEvent ): { [key: string]: string; } => {
+                return this.ocrRecognitionService.getSupportedOcrEngines();
+            }
+        );
     }
 
     async recognize(
         input: {
             image: Buffer,
             engineName?: string;
+            autoOcr?: boolean;
         }
     ) {
-        const { image, engineName } = input;
+        const { image, engineName, autoOcr } = input;
         
+        this.recognizing = true;
         
         try {
-            console.log('');
+            // console.log('');
             // console.time('controller.recognize');
             // console.log(activeProfile);
             // console.log('OcrRecognitionController.recognize')
@@ -72,17 +80,19 @@ export class OcrRecognitionController {
             const ocrResultScalable = await this.ocrRecognitionService.recognize({
                 imageBuffer: image,
                 profileId: getActiveProfile().id,
-                engineName
+                engineName,
+                autoMode: input.autoOcr
             });
             // console.log({ ocrResultScalable });
 
             // console.timeEnd('controller.recognize');
             // console.log('');
 
-            if ( 
-                !ocrResultScalable ||
-                !ocrResultScalable?.ocr_regions?.length ||
-                !ocrResultScalable?.ocr_regions?.some( region => region?.results?.length )
+            if (
+                !autoOcr &&
+                ( !ocrResultScalable ||
+                  !ocrResultScalable?.ocr_regions?.length ||
+                  !ocrResultScalable?.ocr_regions?.some( region => region?.results?.length ) )
             ) {
                 const notification: InAppNotification = {
                     type: 'info',
@@ -101,6 +111,7 @@ export class OcrRecognitionController {
         } catch (error) {
             console.error( error );
         }
+        this.recognizing = false;
     }
 
     async applySettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
@@ -128,6 +139,10 @@ export class OcrRecognitionController {
                 }
             );
         }, 3000 );
+    }
+
+    isRecognizing(): boolean {
+        return this.recognizing;
     }
 
 }

@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Card, CardContent, Container, Divider, Grid, SxProps, Theme, Typography, styled } from "@mui/material";
+import { Box, Button, Card, CardContent, Container, Divider, Grid, SxProps, Theme, Typography, styled } from "@mui/material";
 import { CSSProperties, ReactNode, useContext, useEffect, useState } from "react";
 import { ExtensionsContext } from "../../context/extensions.provider";
 import Image  from 'next/image';
@@ -8,6 +8,7 @@ import ExtensionItem from "./ExtensionItem";
 import AlertDialog from "../common/AlertDialog";
 import { BrowserExtensionJson } from "../../../electron-src/@core/domain/browser_extension/browser_extension";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { CustomAccordion } from "../common/CustomAccordion";
 
 const SectionDivider = styled( Divider )({
     marginTop: '30px',
@@ -95,19 +96,11 @@ export default function Extensions() {
         global.ipcRenderer.invoke( 'open_link', link );
     }
 
-    function CustomAccordion( props: { summary: any, children: ReactNode, sx?: SxProps<Theme> } ) {
-        return(
-            <Accordion sx={{ backgroundColor: '#202124' }}>
-                <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-                    <Typography fontSize={'1.1rem'}>
-                        {props.summary}
-                    </Typography>
-                </AccordionSummary>
-                <AccordionDetails sx={{ pl: 1, ...props.sx }}>
-                    {props.children}
-                </AccordionDetails>
-            </Accordion>
-        );
+    const accordionStyle: CSSProperties = {
+        backgroundColor: '#202124'
+    };
+    const accordionDetailsSx: SxProps<Theme> = {
+        pl: 1
     }
 
     return (
@@ -179,6 +172,7 @@ export default function Extensions() {
                                         Important notes
                                     </Typography>
                                 }
+                                style={accordionStyle}
                             >
                                 <UL>
                                     <li> Not all Chrome extensions are currently supported. </li>
@@ -194,7 +188,8 @@ export default function Extensions() {
                                         How to open Yomitan/Yomichan options
                                     </Typography>
                                 }
-                                sx={{ pl: 5 }}
+                                detailsSx={{ pl: 4 }}
+                                style={accordionStyle}
                             >
                                 To open Yomitan/Yomichan options:
                                 <OL>
@@ -217,7 +212,8 @@ export default function Extensions() {
                                         How to open JPDBReader options and set the API key
                                     </Typography>
                                 }
-                                sx={{ }}
+                                detailsSx={{ }}
+                                style={accordionStyle}
                             >
                                 <OL>
                                     <li> Make sure JPDB Reader is enabled. </li>
@@ -226,6 +222,10 @@ export default function Extensions() {
                                     <li> Paste your JPDB.io API key into the <strong>API Token</strong> field. </li>
                                     <li> Click on <strong>Save</strong>. </li>
                                 </OL>
+
+                                <Typography fontSize={'1.1rem'}>
+                                    To log into jpdb.io, you can click on the "jpdb settings page" link from the JPDBReader extension settings screen.
+                                </Typography>
 
                             </CustomAccordion>
 

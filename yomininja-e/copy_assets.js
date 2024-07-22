@@ -2,7 +2,7 @@ const fs = require('fs');
 
 // Proto files
 fs.cpSync(
-    './grpc/protos',
+    '../ocr_services/protos',
     './main/grpc/protos',
     { recursive: true }
 );

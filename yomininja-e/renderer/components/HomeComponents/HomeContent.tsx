@@ -1,4 +1,4 @@
-import { CSSProperties, useContext, useEffect } from "react"
+import { CSSProperties, useContext, useEffect, useState } from "react"
 import { LanguagesContext } from "../../context/languages.provider";
 import { Autocomplete, Box, Button, Card, CardContent, Container, FormControl, FormControlLabel, Grid, InputAdornment, InputLabel, OutlinedInput, SxProps, TextField, TextFieldProps, Theme, Typography, styled } from "@mui/material";
 import { ProfileContext } from "../../context/profile.provider";
@@ -20,9 +20,12 @@ const ButtonInput = styled(TextField)({
     }
 });
 
-function capitalize( text: string ) {
-    return text?.charAt(0).toUpperCase() + text?.slice(1);
-}
+const TextFieldCapitalize = styled(TextField)({
+    '& input': {
+        textTransform: 'capitalize'
+    }
+});
+
 
 export default function HomeContent() {
 
@@ -35,20 +38,22 @@ export default function HomeContent() {
 
     const { activeCaptureSource } = useContext( CaptureSourceContext );
 
-    const activeOcrLanguage: string = capitalize( profile?.active_ocr_language.name ) || '';
-    const languageOptions: string[] = languages?.map( language => capitalize(language.name) );
+    const activeOcrLanguage: string = profile?.active_ocr_language.name || '';
+    const languageOptions: string[] = languages?.map( language => language.name );
 
-    // Adapter name : Engine name
-    const ocrEnginesDict = {
-        'PpOcrAdapter': 'PaddleOCR',
-        'CloudVisionOcrAdapter': 'Google Cloud Vision',
-        'GoogleLensOcrAdapter': 'Google Lens'
-    };
-    
-    const ocrEngineOptions: string[] = Object.values( ocrEnginesDict );
+    // {Adapter_name : Engine_name}
+    const [ supportedOcrEngines, setSupportedOcrEngines ] = useState<{ [key: string]: string; }>({});
 
-    let selectedOcrEngine: string = ocrEnginesDict[ profile?.selected_ocr_adapter_name ] || '';
+    const ocrEngineOptions = Object.values( supportedOcrEngines );
+    const selectedOcrEngine = supportedOcrEngines[ profile?.selected_ocr_adapter_name ] || '';
 
+
+    useEffect( () => {
+        getSupportedOcrEngines()
+            .then( dict => {
+                setSupportedOcrEngines( dict );
+            });
+    }, [] );
 
     function handleLanguageSelectChange( languageName: string ) {
 
@@ -65,9 +70,14 @@ export default function HomeContent() {
         global.ipcRenderer.invoke('main:show_capture_source_selection');
     }
 
+    async function getSupportedOcrEngines(): Promise< { [key: string]: string; } > {
+        const result = await global.ipcRenderer.invoke( 'ocr_recognition:get_supported_ocr_engines' ) as { [key: string]: string; };
+        return result;
+    }
+
     function handleOcrEngineSelection( selectedEngineName: string ) {
         
-        Object.entries( ocrEnginesDict )
+        Object.entries( supportedOcrEngines )
             .forEach( ([ adapterName, engineName ]) => {
 
                 if ( engineName !== selectedEngineName )
@@ -160,16 +170,15 @@ export default function HomeContent() {
                         <Autocomplete autoHighlight
                             fullWidth
                             renderInput={ (params) => {
-                                return <TextField {...params}
+                                return <TextFieldCapitalize {...params}
                                     label='OCR Language'
                                     fullWidth
                                     InputProps={{
                                         ...params.InputProps,
                                         startAdornment: <TranslateOutlinedIcon sx={{ mr: '10px' }}/>,
-                                        style: {
-                                            paddingLeft: '14px'
-                                        }
+                                        style: { paddingLeft: '14px', textTransform: 'capitalize' }
                                     }}
+                                    style={{ textTransform: 'capitalize' }}
                                 />
                             }}
                             value={ activeOcrLanguage || '' }
@@ -177,8 +186,14 @@ export default function HomeContent() {
                                 handleLanguageSelectChange( newValue );
                             }}
                             options={ languageOptions || [] }
-                            sx={{ mb: '25px' }}
-                            ListboxProps={{ style: selectListBoxCSS }}
+                            sx={{ mb: '25px', textTransform: 'capitalize' }}
+                            ListboxProps={{
+                                style: {
+                                    ...selectListBoxCSS,
+                                    textTransform: 'capitalize'
+                                }
+                            }}
+                            style={{ textTransform: 'capitalize' }}
                         />
 
                         <OcrTemplateSelector
@@ -187,7 +202,9 @@ export default function HomeContent() {
                         
                     </Container>
 
-                    <Typography fontSize='1rem' lineHeight={2} ml={1} mb={0} mt={'56px'}>
+                    <Typography fontSize='1.08rem' lineHeight={2} ml={1} mb={0} mt={'56px'}
+                        sx={{ fontWeight: 600 }}
+                    >
                         ✨New features:
                     </Typography>
                     <ul
@@ -196,20 +213,43 @@ export default function HomeContent() {
                             color: 'lightgray',
                             lineHeight: 2,
                             marginTop: 0,
-                            marginLeft: 20
+                            marginLeft: 15
                         }}
                     >
-                        <li> Google Lens integration. </li>
-                        <li> Google Cloud Vision integration. </li>
-                        <li> Individual character positioning for accurate text overlay (currently exclusive to Cloud Vision). </li>
-                        <li> Expanded PaddleOCR settings menu with additional parameters. </li>
-                        <li> Native support for Yomitan, Yomichan, and JPDB extensions. </li>
-                        <li> Global hotkeys for toggling the overlay and coping extracted text. </li>
-                        <li> Dedicated global hotkeys for each OCR engine. </li>
-                        <li> Edit extracted text with Ctrl + Double Click, allowing for manual corrections. </li>
-                        <li> Enhanced overlay customization options. </li>
-                        <li> Option to automatically hide OCR results upon focus loss. </li>
+                        <li>
+                            <strong> MangaOCR integration. </strong>
+                        </li>
 
+                        <li>
+                            <strong> Initial support for macOS. </strong>
+                        </li>
+
+                        <li>
+                            <strong> Apple's Vision Framework OCR engine integration (macOS only). </strong>
+                        </li>
+
+                        <li>
+                            <strong> Auto OCR (OCR Templates): </strong>
+                            Monitors your screen and automatically runs OCR whenever it detects meaningful changes.
+                        </li>
+
+                        <li>
+                            <strong> Text-to-Speech (OCR Templates). </strong>
+                        </li>
+
+                        <li>
+                            <strong> System tray icon. </strong>
+                        </li>
+
+                        <li> 
+                            <strong> Overlay Adjustment Option: </strong>
+                            You can now manually move or resize the overlay either from the tray icon or by pressing <strong>Ctrl+Shift+M</strong>. 
+                        </li>
+
+                        <li>
+                            <strong> Added PaddleOCR languages: </strong> Chinese (traditional), Latin, and Cyrillic. 
+                        </li>
+                        {/* <li> Clipboard options menu (WIP) </li> */}
                     </ul>
 
                 </CardContent>

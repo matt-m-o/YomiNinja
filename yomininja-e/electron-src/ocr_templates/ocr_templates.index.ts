@@ -1,5 +1,6 @@
 import { get_ChangeActiveOcrTemplateUseCase, get_CreateOcrTemplateUseCase, get_DeleteOcrTemplateUseCase, get_GetOcrTemplatesUseCase, get_GetProfileUseCase, get_UpdateOcrTemplateUseCase } from "../@core/infra/container_registry/use_cases_registry";
 import { OcrTemplatesController } from "./ocr_templates.controller";
+import { OcrTemplatesEvents } from "./ocr_templates.events";
 import { OcrTemplatesService } from "./ocr_templates.service";
 
 
@@ -24,3 +25,5 @@ export const ocrTemplatesService = new OcrTemplatesService({
 export const ocrTemplatesController = new OcrTemplatesController({
     ocrTemplatesService
 });
+
+export const ocrTemplateEvents: OcrTemplatesEvents = new OcrTemplatesEvents();

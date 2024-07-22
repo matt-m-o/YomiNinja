@@ -2,12 +2,17 @@ import { OcrTargetRegion, OcrTargetRegionId, OcrTargetRegionJson } from "./ocr_t
 
 export type OcrTemplateId = number;
 
+export type CapturerOptions = {
+    interval_between_frames: number;
+};
+
 export type OcrTemplateConstructorProps = {
     id?: OcrTemplateId;
     name: string;
     target_regions: OcrTargetRegion[];
     image: Buffer;
     capture_source_name?: string | null;
+    capturer_options?: CapturerOptions | null;
     created_at: Date;
     updated_at: Date;
 };
@@ -30,6 +35,7 @@ export class OcrTemplate {
     target_regions: OcrTargetRegion[];
     image: Buffer;
     capture_source_name: string | null;
+    capturer_options: CapturerOptions | null;
     created_at: Date;
     updated_at: Date;
 
@@ -44,6 +50,7 @@ export class OcrTemplate {
         this.target_regions = props?.target_regions || [];
         this.image = props.image;
         this.capture_source_name = props?.capture_source_name || null;
+        this.capturer_options = props?.capturer_options || null;
         this.created_at = props.created_at;
         this.updated_at = props.updated_at;
 
@@ -105,6 +112,15 @@ export class OcrTemplate {
         this.target_regions = this.target_regions || [];
     }
 
+    isAutoOcrEnabled(): boolean {
+        for ( const region of this.target_regions ) {
+            if ( region?.auto_ocr_options?.enabled )
+                return true;
+        }
+
+        return false;
+    }
+
     toJson(): OcrTemplateJson {
         return {
             id: this.id,
@@ -113,6 +129,7 @@ export class OcrTemplate {
             image_base64: this.image.toString('base64'),
             target_regions: this.target_regions.map( item => item.toJson() ),
             capture_source_name: this.capture_source_name,
+            capturer_options: this.capturer_options,
             created_at: this.created_at,
             updated_at: this.updated_at,
         };

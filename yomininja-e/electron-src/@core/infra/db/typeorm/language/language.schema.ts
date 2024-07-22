@@ -32,7 +32,13 @@ export const LanguageTypeOrmSchema = new EntitySchema< Language >({
             type: String,
             length: 3,
             nullable: true
-        }         
+        },
+
+        bcp47_tag: {
+            type: String,
+            length: 20,
+            nullable: true
+        }
     }
 
 });

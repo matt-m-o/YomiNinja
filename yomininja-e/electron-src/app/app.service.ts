@@ -37,14 +37,41 @@ export class AppService {
     }
 
     async getAllCaptureSources(): Promise< CaptureSource[] > {
+
+        const isWaylandSession = (
+            process.platform === 'linux'&&
+            Boolean(process.env.WAYLAND_DISPLAY)
+        );
+
+        const types: ("screen" | "window")[] = [ 'screen', 'window' ];
+        const thumbnailSize = { width: 0, height: 0 };
         
-        const sources = await desktopCapturer.getSources({
-            types: [ 'screen', 'window' ],
-            thumbnailSize: {
-                width: 0,
-                height: 0,
-            },
-        });
+        let sources: Electron.DesktopCapturerSource[] = [];
+
+        if ( !isWaylandSession ) {
+            sources = await desktopCapturer.getSources({
+                types,
+                thumbnailSize
+            });
+        }
+        else {
+            // sources = [
+            //     ...( await desktopCapturer.getSources({
+            //         types: [ types[0] ],
+            //         thumbnailSize
+            //     })),
+            //     ...( await desktopCapturer.getSources({
+            //         types: [ types[1] ],
+            //         thumbnailSize
+            //     }))
+            // ];
+
+            sources = await desktopCapturer.getSources({
+                types,
+                thumbnailSize
+            });
+        }
+        
 
         const results: CaptureSource[] = sources.map( source => ({
             id: source.id,

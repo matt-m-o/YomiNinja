@@ -139,6 +139,10 @@ export default function HotkeyHints() {
                 { createHotkeyHint( 'Hide overlay', [overlayHotkeys?.clear] ) }
 
                 { createHotkeyHint( 'Copy text', [overlayHotkeys?.copy_text] ) }
+
+                { createHotkeyHint( 'Edit Overlay', ['Ctrl+Double Click'] ) }
+                { createHotkeyHint( 'Move/Resize Overlay', ['Ctrl+Shift+M'] ) }
+
                 
             </Box>
 

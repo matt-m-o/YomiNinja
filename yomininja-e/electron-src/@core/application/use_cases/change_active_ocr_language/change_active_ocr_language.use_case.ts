@@ -5,7 +5,8 @@ import { ProfileRepository } from "../../../domain/profile/profile.repository";
 
 
 export type ChangeActiveLanguage_Input = {    
-    languageCode: string; // Two letters
+    languageBcp47Tag: string;
+    languageCode?: string; // two letter code
     profileId: string;
 }
 
@@ -18,9 +19,14 @@ export class ChangeActiveOcrLanguageUseCase {
 
     async execute( input: ChangeActiveLanguage_Input ): Promise< void > {
                 
-        const selectedLanguage: Language | null = await this.languageRepo.findOne({
-            two_letter_code: input.languageCode,
+        let selectedLanguage: Language | null = await this.languageRepo.findOne({
+            bcp47_tag: input.languageBcp47Tag,
         });
+
+        if ( !selectedLanguage )
+            selectedLanguage = await this.languageRepo.findOne({
+                two_letter_code: input.languageCode,
+            });
 
         if ( !selectedLanguage )
             return;

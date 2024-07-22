@@ -1,4 +1,4 @@
-import * as x11 from 'x11';
+// import * as x11 from 'x11';
 import { TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
 import { exec } from 'child_process';
 

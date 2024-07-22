@@ -1,10 +1,11 @@
+import { Language } from "../../../domain/language/language";
 import { OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
 import { FakeOcrTestAdapter } from "./fake_ocr.adapter";
 
 describe("OCR Test Adapter tests", () => {
                 
     const ocrTestAdapterBaseProps: OcrResult_CreationInput = {
-        id: 1,
+        id: '1',
         context_resolution: {
             width: 1920,
             height: 1080,                        
@@ -24,6 +25,8 @@ describe("OCR Test Adapter tests", () => {
             }
         ]
     };
+
+    const language = Language.create({ name: 'japanese', two_letter_code: '' });
 
     const ocrTestAdapterSupportedLanguages = [ "en", "ja" ];
     
@@ -48,7 +51,7 @@ describe("OCR Test Adapter tests", () => {
 
         const result = await ocrTestAdapter.recognize({            
             imageBuffer: Buffer.from(testText),
-            languageCode: "en",
+            language,
         });
 
         const regionResults = result?.ocr_regions[0].results;

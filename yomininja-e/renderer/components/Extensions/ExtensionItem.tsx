@@ -36,7 +36,7 @@ export default function ExtensionItem( props: ExtensionItemProps ) {
                 backgroundColor: '#202124',
                 borderRadius: '8px',
                 width: '465px',
-                minHeight: '200px'
+                minHeight: '230px',
             }}
         >
             <CardContent
@@ -49,7 +49,7 @@ export default function ExtensionItem( props: ExtensionItemProps ) {
                 }}
             >
 
-                <Box display='flex' mb={4}>
+                <Box display='flex' mb={2}>
 
                     <Image
                         src={'data:image/png;base64,'+extension.icon_base64}
@@ -83,8 +83,20 @@ export default function ExtensionItem( props: ExtensionItemProps ) {
                         >
                             {extension.description}
                         </Typography>
-                    </Box>
 
+                        <Typography 
+                            title={ extension.author }
+                            color='darkgray'
+                            // height='96px'
+                            flex={1}
+                            noWrap
+                            overflow={'hidden'}
+                            mt={2}
+                            // visibility={ extension?.author ? 'visible' : 'hidden' }
+                        >
+                            Author: { extension.author || "unknown" }
+                        </Typography>
+                    </Box>
                 </Box>
                 
                 <div
