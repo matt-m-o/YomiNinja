@@ -13,14 +13,14 @@ import { ipcRenderer } from "../../utils/ipc-renderer";
 import { isElectronBrowser } from "../../utils/environment";
 import { ProfileContext } from "../../context/profile.provider";
 
-export type FullscreenOcrResultProps = {
+export type OcrResultsProps = {
     ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
     overlayHotkeys: OverlayHotkeys;
     overlayBehavior: OverlayBehavior;
 };
 
 
-export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
+export default function OcrResults( props: OcrResultsProps ) {
 
     const { ocrItemBoxVisuals, overlayHotkeys, overlayBehavior } = props;
 

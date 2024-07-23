@@ -11,7 +11,7 @@ import {
 import { SettingsContext } from "../../context/settings.provider";
 import { CircularProgress, Typography, debounce } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import FullscreenOcrResult from "./OcrResults";
+import OcrResults from "./OcrResults";
 import { DictionaryContext } from "../../context/dictionary.provider";
 import CustomCursor from "./CustomCursor/CustomCursor";
 import { OcrResultContext } from "../../context/ocr_result.provider";
@@ -167,7 +167,7 @@ export default function OcrOverlay() {
         </DragArea>
       }
       {templateRegions}
-      <FullscreenOcrResult
+      <OcrResults
         ocrItemBoxVisuals={ocrItemBoxVisuals}
         overlayHotkeys={overlayHotkeys}
         overlayBehavior={overlayBehavior}
