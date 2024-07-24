@@ -15,6 +15,7 @@ import { GetBrowserExtensionsUseCase } from "../@core/application/use_cases/brow
 import { handleJPDBReaderPopup } from "./browser_extension_manager/workarounds/jpdb_reader";
 import { launchConfig, windowManager } from "../@core/infra/app_initialization";
 import { getBrowserWindowHandle } from "../util/browserWindow.util";
+import { handleMigakuPopup } from "./browser_extension_manager/workarounds/migaku_workarounds";
 
 export class BrowserExtensionsService {
 
@@ -128,6 +129,9 @@ export class BrowserExtensionsService {
 
             if ( extension?.name.includes('JPDBreader') )
                 handleJPDBReaderPopup( popup );
+
+            if ( extension?.name.includes('Migaku') )
+                handleMigakuPopup( popup, this.createExtensionWindow );
         });
         
         // console.log({ EXTENSIONS_DIR });
@@ -334,9 +338,10 @@ export class BrowserExtensionsService {
             height: 700,
             autoHideMenuBar: true,
             webPreferences: {
-              sandbox: true,
-              nodeIntegration: false,
-              contextIsolation: true,
+                sandbox: true,
+                nodeIntegration: false,
+                contextIsolation: false,
+                backgroundThrottling: false
             }
         });
 
