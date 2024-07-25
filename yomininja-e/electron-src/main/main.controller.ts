@@ -11,6 +11,7 @@ import { getBrowserWindowHandle } from '../util/browserWindow.util';
 import { overlayController } from '../overlay/overlay.index';
 import { uIOhook } from 'uiohook-napi';
 import { ipcMain } from '../common/ipc_main';
+import { httpServerPort } from '../common/server';
 
 export class MainController {
 
@@ -170,11 +171,7 @@ export class MainController {
     async loadMainPage( showWindow = true ): Promise< void >  {
         this.mainWindowUrl = isDev ?
             'http://localhost:8000/' :
-            format({
-                pathname: join( PAGES_DIR, '/index.html'),
-                protocol: 'file:',
-                slashes: true,
-            });
+            `http://localhost:${httpServerPort}/index.html`;
 
         await this.mainWindow.loadURL (this.mainWindowUrl );
 

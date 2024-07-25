@@ -13,7 +13,11 @@ export class IpcRendererUniversal implements IpcRenderer {
             return;
 
         if ( !global?.ipcRenderer ) {
-            this.socket = io('http://localhost:49990');
+
+            if ( !location.href.includes('.html') ) // dev mode
+                this.socket = io('http://localhost:10010');
+            else
+                this.socket = io();
             
             this.socket.on('connect', () => {
                 console.log('IPC Socket Connected!');
