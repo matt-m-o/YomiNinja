@@ -22,12 +22,12 @@ export async function bufferToDataURL(
 
     const prefix = 'data:image/' + format + ';base64,';
 
-    let convertionOptions = format !== 'png' ?
+    let conversionOptions = format !== 'png' ?
         { quality } :
         undefined;
 
     const base64Data = ( metadata.format !== format ?
-            await sharpImage.toFormat( format, convertionOptions ).toBuffer() :
+            await sharpImage.toFormat( format, conversionOptions ).toBuffer() :
             image
         )
         .toString('base64');
