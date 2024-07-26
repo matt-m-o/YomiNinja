@@ -67,6 +67,8 @@ export interface OcrRegion {
 export type OcrResultScalable_CreationInput = {
     id: string;
     context_resolution?: OcrResultContextResolution;
+    position?: OcrResultBoxPositionPcts;
+    image?: Buffer | string;
     results?: OcrItemScalable[];
     ocr_regions?: OcrRegion[];
 };
@@ -76,6 +78,8 @@ export class OcrResultScalable {
 
     public id: string;
     public context_resolution: OcrResultContextResolution;
+    public position?: OcrResultBoxPositionPcts;
+    public image?: Buffer | string;
     // public results: OcrItemScalable[];
     public ocr_regions: OcrRegion[];
     
@@ -90,6 +94,8 @@ export class OcrResultScalable {
 
         // this.results = input.results ? [ ...input?.results ] : [];
         this.ocr_regions = input?.ocr_regions ? input.ocr_regions : [];
+        this.position = input.position;
+        this.image = input.image;
     }
 
     static create( input: OcrResultScalable_CreationInput ): OcrResultScalable {

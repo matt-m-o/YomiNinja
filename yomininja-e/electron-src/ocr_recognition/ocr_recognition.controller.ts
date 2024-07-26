@@ -113,6 +113,11 @@ export class OcrRecognitionController {
             let resultJson = ocrResultScalable;
 
             if ( ocrResultScalable ) {
+                const overlayBounds = this.overlayWindow.getBounds();
+                ocrResultScalable.position = {
+                    top: overlayBounds.y,
+                    left: overlayBounds.x
+                };
                 resultJson = await this.ocrResultToJson( ocrResultScalable );
             }
 
@@ -160,6 +165,14 @@ export class OcrRecognitionController {
     }
 
     async ocrResultToJson( result: OcrResultScalable ): Promise<OcrResultScalable > {
+
+        if ( result?.image && Buffer.isBuffer(result.image) ) {
+            result.image = await bufferToDataURL({
+                image: result.image,
+                format: 'png',
+                quality: 100
+            });
+        }
 
         for ( const region of result.ocr_regions ) {
             if ( !region.image || !Buffer.isBuffer(region.image) )

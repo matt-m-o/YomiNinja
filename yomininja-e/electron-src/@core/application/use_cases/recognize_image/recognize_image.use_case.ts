@@ -135,7 +135,8 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
             context_resolution: {
                 width: metadata.width,
                 height: metadata.height,
-            }
+            },
+            image
         });
 
         
