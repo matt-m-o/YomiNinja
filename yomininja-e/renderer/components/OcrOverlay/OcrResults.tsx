@@ -10,7 +10,7 @@ import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
 import { removeFurigana } from "../../utils/text_utils";
 import { ipcRenderer } from "../../utils/ipc-renderer";
-import { isElectronBrowser } from "../../utils/environment";
+import { isElectronBrowser, isFullscreenWindow } from "../../utils/environment";
 import { ProfileContext } from "../../context/profile.provider";
 
 export type OcrResultsProps = {
@@ -28,12 +28,23 @@ export default function OcrResults( props: OcrResultsProps ) {
     const { ocrResult } = useContext( OcrResultContext );
     const { activeOcrTemplate } = useContext( OcrTemplatesContext );
     const { speak, getVoices } = useContext( TTSContext );
+    const [ isPopup, setIsPopup ] = useState(false);
+    const [ isFullscreen, setIsFullscreen ] = useState(false);
     
     const [ editableBoxId, setEditableBoxId ] = useState< string | undefined >(undefined);
 
     const isElectron = isElectronBrowser();
 
     const activeLang = profile?.active_ocr_language;
+
+    useEffect( () => {
+        if ( !parent ) return;
+        
+        setIsPopup( Boolean( parent.window.opener ) );
+        setIsFullscreen( isFullscreenWindow(window) );
+
+        console.log({ isPopup, isFullscreen })
+    }, [] );
 
     const handleBoxMouseEnter = ( item: OcrItemScalable, ocrRegionId?: string ) => {
         
@@ -132,7 +143,25 @@ export default function OcrResults( props: OcrResultsProps ) {
         return item.text.map( line => line.content ).join(sep);
     }
 
+    const context_resolution = ocrResult?.context_resolution;
+
+    const resultAspectRatio = ocrResult ?
+        context_resolution.width / context_resolution.height :
+        16/9;
+
     return ( <>
+        { !isElectron && ocrResult?.image && typeof ocrResult?.image === 'string' &&
+            <img className="ignore-mouse"
+                src={ocrResult.image}
+                style={{
+                    width: context_resolution && isPopup && isFullscreen ? context_resolution.width+'px' : '100%',
+                    height: context_resolution && isPopup && isFullscreen ? context_resolution.height+'px' : '100%',
+                    marginTop: -2,
+                    marginLeft: -1,
+                    aspectRatio: resultAspectRatio
+                }}
+            />
+        }
         { ocrResult?.ocr_regions?.map(
             ( ocrRegion, regionIdx ) => {
 
@@ -144,9 +173,7 @@ export default function OcrResults( props: OcrResultsProps ) {
                     removeFurigana(ocrRegion.results, furiganaFilterThreshold || 0.6);
                 }
 
-                const regionStyle: CSSProperties ={
-                    
-                }
+                const regionAspectRatio = ocrRegion.size.width / ocrRegion.size.height;
             
                 return (
                     <div className="ocr-region ignore-mouse" key={regionIdx}
@@ -160,13 +187,15 @@ export default function OcrResults( props: OcrResultsProps ) {
                             boxSizing: 'border-box'
                         }}
                     >
-                        { typeof ocrRegion.image === 'string' && !isElectron &&
+                        { !ocrResult.image && typeof ocrRegion.image === 'string' && !isElectron &&
                             <img className="ignore-mouse"
                                 src={ocrRegion.image}
                                 style={{
                                     width: '100%',
-                                    height: '99.8%',
-                                    marginLeft: -1,
+                                    height: '100%',
+                                    marginTop: 1,
+                                    marginLeft: 1,
+                                    aspectRatio: regionAspectRatio
                                 }}
                             />
                         }
