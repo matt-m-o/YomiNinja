@@ -111,6 +111,8 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
         if ( !ocrResult )
             return null;
 
+        ocrResult.image = imageBuffer;
+
         return ocrResult;
     }
 
