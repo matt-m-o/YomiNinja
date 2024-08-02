@@ -199,6 +199,10 @@ export class OverlayController {
                 );
             }
         });
+
+        ipcMain.handle( 'overlay:hide_browser_window', ( event: IpcMainInvokeEvent, data ) => {
+            this.hideBrowserPopupOverlayWindow();
+        });
     }
 
     async registerGlobalShortcuts( settingsPresetJson?: SettingsPresetJson ) {        

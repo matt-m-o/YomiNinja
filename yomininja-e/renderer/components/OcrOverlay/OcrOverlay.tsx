@@ -104,10 +104,25 @@ export default function OcrOverlay() {
     ipcRenderer.invoke( 'overlay:set_ignore_mouse_events', value );
   };
 
+  function handleBrowserClickThrough( event: MouseEvent ) {
+    const element = document.elementFromPoint(
+      event.clientX,
+      event.clientY
+    );
+
+    // console.log(element);
+
+    if ( element.classList.contains('ignore-mouse') ) {
+      ipcRenderer.invoke( 'overlay:hide_browser_window' );
+    }
+  }
+
   useEffect( () => {
     
     if ( isElectron )
       document.addEventListener( 'mousemove', handleClickThrough );
+    else
+      document.addEventListener( 'click', handleBrowserClickThrough );
     
     if ( !window ) return;
 
