@@ -110,10 +110,14 @@ export default function CaptureSourceMenu() {
         </> 
     }
 
-    function CaptureSourceList( { items }: {items: CaptureSource[]} ) {        
+    function CaptureSourceList( { items }: {items: CaptureSource[]} ) {
+
+        const sort = ( a, b ) => {
+            return a.name < b.name ? -1 : 1
+        };
 
         return (<>
-            { items?.map( ( item, idx ) => (
+            { items?.toSorted(sort).map( ( item, idx ) => (
                 <Grid item key={idx}
                     // sx={{ display: 'flex', justifyContent: 'center' }}
                 >
