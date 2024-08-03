@@ -404,7 +404,13 @@ export class AppController {
         this.globalShortcutAccelerators = [];
     }
 
-    private showOverlayWindow() {
+    private showOverlayWindow( input?: { showInactive: boolean, displayResults: boolean }) {
+        if ( input ) {
+            return overlayController.showOverlayWindow({
+                ...input,
+                isElectronEvent: false,
+            });
+        }
         overlayController.showOverlayWindow();
     }
 
@@ -590,7 +596,7 @@ export class AppController {
         if ( image && runFullScreenImageCheck)
             isFullScreenImage = await this.isFullScreenImage(image);
         this.setOverlayBounds( isFullScreenImage ? 'fullscreen' :  'maximized' );
-        this.showOverlayWindow(); // This can cause problems with JPDBReader extension // Warning: Unknown display value, please report this!
+        this.showOverlayWindow({ showInactive: true, displayResults: false }); // This can cause problems with JPDBReader extension // Warning: Unknown display value, please report this!
         ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
 
         if ( this.isEditingOcrTemplate ) {

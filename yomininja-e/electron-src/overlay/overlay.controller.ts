@@ -408,6 +408,7 @@ export class OverlayController {
             isElectronEvent: boolean;
             showInactive?: boolean;
             forceActivation?: boolean;
+            displayResults?: boolean;
         }
     ) => {
         // console.log("OverlayController.showOverlayWindow");
@@ -420,6 +421,15 @@ export class OverlayController {
                 const overlayWindowHandle = getBrowserWindowHandle( this.overlayWindow );
 
                 if ( !options?.isElectronEvent ) {
+
+                    if ( options ) {
+                        if ( typeof options?.displayResults === 'undefined' ) {
+                            options = {
+                                ...options,
+                                displayResults: true
+                            };
+                        }
+                    }
 
                     if ( isMacOS && this.overlayWindow.isFocused() )
                         this.overlayWindow.blur();
@@ -438,6 +448,12 @@ export class OverlayController {
                             this.overlayWindow.moveAbove( this.activeCaptureSource.id );
                     }
 
+                    ipcMain.send(
+                        this.overlayWindow,
+                        'user_command:toggle_results',
+                        typeof options?.displayResults !== 'undefined' ? options.displayResults : true
+                    );
+
                     return;
                 }
 
@@ -446,8 +462,6 @@ export class OverlayController {
                     this.overlayWindow.showInactive();
                     return;
                 }
-
-                ipcMain.send( this.overlayWindow, 'user_command:toggle_results', true );
                 
                 console.log({ overlayWindowHandle });
                 
