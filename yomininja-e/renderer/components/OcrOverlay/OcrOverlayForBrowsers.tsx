@@ -11,6 +11,7 @@ export default function OcrOverlayForBrowsers() {
     const [ overlayWindow, setOverlayWindow ] = useState<Window>();
     const [ isPopup, setIsPopup ] = useState(false);
     const [ title, setTitle ] = useState('');
+    const [ isFullscreen, setIsFullscreen ] = useState(false);
 
     const ocrResultResolution = ocrResult?.context_resolution;
 
@@ -29,7 +30,7 @@ export default function OcrOverlayForBrowsers() {
         if ( typeof location === 'undefined') return;
 
         setIsPopup( Boolean(window.opener) );
-        
+        setIsFullscreen( isFullscreenWindow( window ) )
         setUrl( location.href.replace('-browser', '') );
 
     }, [] )
@@ -132,7 +133,7 @@ export default function OcrOverlayForBrowsers() {
 
     useEffect( () => {
         
-        if ( isPopup ) {
+        if ( isPopup && ocrResult ) {
           const { context_resolution, position } = ocrResult;
           const { widthOffset, heightOffset } = getWindowSizeOffset();
     
@@ -169,7 +170,6 @@ export default function OcrOverlayForBrowsers() {
             if ( isFullscreenWindow(window) ) return;
             window.moveTo( newPosition.x, newPosition.y );
           }
-          window.blur();
         }
     }, [ocrResult] );
     
@@ -177,17 +177,31 @@ export default function OcrOverlayForBrowsers() {
     return ( <div
         style={{
             display: 'flex',
+            backgroundColor: 'black',
             flexDirection: 'row',
-            alignItems: 'flex-start'
+            alignItems: 'flex-start',
+            scrollbarColor: 'transparent'
         }}
     >
         <title>{title}</title>
-        <iframe id='overlay-iframe' src={url} frameBorder="0"
+
+        <div id='iframe-container'
             style={{
-                aspectRatio: aspectRatio,
-                height: "100vh",
+                width: "100%",
+                height: '100vh',
+                minWidth: ocrResultResolution?.width
             }}
-        />
+        >
+            <iframe id='overlay-iframe' src={url} frameBorder="0"
+                style={{
+                    width: ocrResultResolution?.width,
+                    height: ocrResultResolution?.height || '100%',
+                    // maxHeight: '105%',
+                    maxWidth: '105%',
+                    aspectRatio,
+                }}
+            />
+        </div>
         
         <div
             style={{
@@ -195,7 +209,7 @@ export default function OcrOverlayForBrowsers() {
                 flexDirection: 'column'
             }}
         >
-            { !isPopup &&
+            { !isPopup && !isFullscreen &&
                 <Button  variant='contained'
                     sx={{
                         minWidth: 100,
@@ -209,7 +223,7 @@ export default function OcrOverlayForBrowsers() {
                 </Button>
             }
 
-            <Button  variant='contained'
+            <Button variant='contained'
                 sx={{
                     minWidth: 100,
                     ml: 1,
@@ -217,13 +231,16 @@ export default function OcrOverlayForBrowsers() {
                     mr: 1
                 }}
                 onClick={ () => {
-                    const iframe = document.getElementById('overlay-iframe');
-                    if (iframe.requestFullscreen) {
-                        iframe.requestFullscreen();
+                    const iframeContainer = document.getElementById('iframe-container');
+                    iframeContainer.addEventListener( 'fullscreenchange', () => {
+                        setIsFullscreen( Boolean(document.fullscreenElement) )
+                    });
+                    if (iframeContainer.requestFullscreen) {
+                        iframeContainer.requestFullscreen();
                     // @ts-ignore
-                    } else if (iframe.webkitRequestFullscreen) { /* Safari */
+                    } else if (iframeContainer.webkitRequestFullscreen) { /* Safari */
                         // @ts-ignore
-                        iframe.webkitRequestFullscreen();
+                        iframeContainer.webkitRequestFullscreen();
                     }
                 }}
             >

@@ -41,9 +41,17 @@ export default function OcrResults( props: OcrResultsProps ) {
         if ( !parent ) return;
         
         setIsPopup( Boolean( parent.window.opener ) );
-        setIsFullscreen( isFullscreenWindow(window) );
+        setIsFullscreen( isFullscreenWindow(parent.window) );
 
-        console.log({ isPopup, isFullscreen })
+        const iframe = parent.document.getElementById('iframe-container');
+        
+        if ( iframe ) {
+            iframe.addEventListener('fullscreenchange', ( e ) => {
+                console.log(e);
+                setIsFullscreen( Boolean(parent.document.fullscreenElement) );
+            });
+        }
+        // console.log({ isPopup, isFullscreen });
     }, [] );
 
     const handleBoxMouseEnter = ( item: OcrItemScalable, ocrRegionId?: string ) => {
@@ -150,15 +158,18 @@ export default function OcrResults( props: OcrResultsProps ) {
         16/9;
 
     return ( <>
-        { !isElectron && ocrResult?.image && typeof ocrResult?.image === 'string' &&
+        { !isElectron && typeof ocrResult?.image === 'string' &&
             <img className="ignore-mouse"
                 src={ocrResult.image}
                 style={{
-                    width: context_resolution && isPopup && isFullscreen ? context_resolution.width+'px' : '100%',
-                    height: context_resolution && isPopup && isFullscreen ? context_resolution.height+'px' : '100%',
-                    marginTop: -2,
-                    marginLeft: -1,
-                    aspectRatio: resultAspectRatio
+                    width: (context_resolution && isPopup) || isFullscreen ? context_resolution.width+'px' : '100%',
+                    height: (context_resolution && isPopup) || isFullscreen ? context_resolution.height+'px' : '100%',
+                    // marginTop: isFullscreen ? 0 : -2,
+                    // marginLeft: isFullscreen ? 0 : -1,
+                    maxWidth: '105%',
+                    maxHeight: '105%',
+                    // aspectRatio: resultAspectRatio,
+                    imageResolution: 'from-image'
                 }}
             />
         }
@@ -187,7 +198,7 @@ export default function OcrResults( props: OcrResultsProps ) {
                             boxSizing: 'border-box'
                         }}
                     >
-                        { !ocrResult.image && typeof ocrRegion.image === 'string' && !isElectron &&
+                        {/* { !ocrResult.image && typeof ocrRegion.image === 'string' && !isElectron &&
                             <img className="ignore-mouse"
                                 src={ocrRegion.image}
                                 style={{
@@ -198,7 +209,7 @@ export default function OcrResults( props: OcrResultsProps ) {
                                     aspectRatio: regionAspectRatio
                                 }}
                             />
-                        }
+                        } */}
                         {
 
                             ocrRegion.results.map( ( item, resultIdx ) => {
