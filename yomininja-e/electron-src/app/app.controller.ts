@@ -432,7 +432,7 @@ export class AppController {
     setOverlayBounds( entireScreenMode: 'fullscreen' | 'maximized' = 'fullscreen' ) {
         // console.time("setOverlayBounds");
 
-        if ( overlayController.isOverlayBoundsLocked )
+        if ( !overlayController.automaticOverlayBounds )
             return;
 
         const isFullscreen = entireScreenMode === 'fullscreen';
@@ -723,9 +723,9 @@ export class AppController {
                 label: 'Overlay Automatic Adjustment',
                 toolTip: 'Overlay Auto Positioning and Resizing',
                 type: 'checkbox',
-                checked: !overlayController.isOverlayBoundsLocked,
+                checked: overlayController.automaticOverlayBounds,
                 click: ( event ) => {
-                    overlayController.lockOverlayBounds( !event.checked );
+                    overlayController.setAutomaticOverlayBounds( event.checked );
                     // event.checked = !overlayController.isOverlayBoundsLocked;
                 },
             },

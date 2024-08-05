@@ -79,6 +79,7 @@ export type OverlayBehavior = {
     always_forward_mouse_clicks: boolean;
     show_window_without_focus: boolean;
     hide_results_on_blur: boolean;
+    automatic_adjustment: boolean; // Overlay automatic positioning and resizing
 };
 
 export type OverlayHotkeys = {

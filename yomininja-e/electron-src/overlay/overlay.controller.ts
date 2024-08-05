@@ -41,7 +41,7 @@ export class OverlayController {
 
     private hoveredText: string = '';
 
-    isOverlayBoundsLocked: boolean = false;
+    automaticOverlayBounds: boolean = false;
 
     isOverlayWindowInTray: boolean = false;
 
@@ -504,6 +504,7 @@ export class OverlayController {
         this.alwaysForwardMouseClicks = Boolean( settingsPresetJson.overlay.behavior.always_forward_mouse_clicks );
         this.showWindowWithoutFocus = Boolean( settingsPresetJson.overlay.behavior.show_window_without_focus );
         this.hideResultsOnBlur = Boolean( settingsPresetJson.overlay.behavior.hide_results_on_blur );
+        this.automaticOverlayBounds = Boolean( settingsPresetJson.overlay.behavior.automatic_adjustment );
 
         this.overlayWindow?.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );
         this.overlayWindow.setIgnoreMouseEvents( this.clickThroughMode !== 'disabled', {
@@ -622,8 +623,8 @@ export class OverlayController {
         return newMovableState;
     }
 
-    lockOverlayBounds( newState: boolean = true ) {
-        this.isOverlayBoundsLocked = newState;
+    setAutomaticOverlayBounds( newState: boolean = true ) {
+        this.automaticOverlayBounds = newState;
     }
 
     minimizeOverlayWindowToTray() {
