@@ -430,71 +430,12 @@ export class AppController {
     }
 
     setOverlayBounds( entireScreenMode: 'fullscreen' | 'maximized' = 'fullscreen' ) {
-        // console.time("setOverlayBounds");
 
-        if ( !overlayController.automaticOverlayBounds )
-            return;
-
-        const isFullscreen = entireScreenMode === 'fullscreen';
-        
-        if ( this.captureSourceDisplay ) {
-
-            if ( isMacOS ) {
-                this.overlayWindow.setVisibleOnAllWorkspaces(
-                    true,
-                    {
-                        visibleOnFullScreen: true,
-                        skipTransformProcessType: true
-                    }
-                );
-            }
-            
-            this.overlayWindow.setBounds({                
-                ...this.captureSourceDisplay?.workArea,
-            });
-
-            if ( isFullscreen ) {
-                if ( !isMacOS ) {
-                    this.overlayWindow.setFullScreen( true );
-                }
-                else {
-                    this.overlayWindow.setBounds(
-                        screen.getPrimaryDisplay().bounds
-                    );
-                }
-            }
-            
-            if ( entireScreenMode === 'maximized' )
-                this.overlayWindow.maximize();
-        }
-
-        else if ( this.captureSourceWindow ) {
-
-            let targetWindowBounds = {
-                width: this.captureSourceWindow.size.width,
-                height: this.captureSourceWindow.size.height,
-                x: this.captureSourceWindow.position.x,
-                y: this.captureSourceWindow.position.y,
-            };
-
-            if ( os.platform() === 'linux' )
-                this.overlayWindow.setFullScreen( false );
-
-            if ( os.platform() === 'win32' ) {
-                // Handling potential issues with DIP
-                targetWindowBounds = screen.screenToDipRect( this.overlayWindow, targetWindowBounds );
-            }
-
-            this.overlayWindow.setBounds( targetWindowBounds );
-
-            // console.log({ targetWindowBounds });
-
-            // Might be necessary to calculate and set twice
-            // dipRect = screen.screenToDipRect( this.overlayWindow, targetWindowBounds )
-            // this.overlayWindow.setBounds( dipRect );
-        }
-
-        // console.timeEnd("setOverlayBounds");
+        overlayController.setOverlayBounds({
+            entireScreenMode,
+            captureSourceDisplay: this.captureSourceDisplay,
+            captureSourceWindow: this.captureSourceWindow
+        });
     }
 
 

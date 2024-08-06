@@ -14,6 +14,8 @@ import { screen } from 'electron';
 import { ipcMain } from "../common/ipc_main";
 import { CaptureSource } from "../app/types";
 import { httpServerPort } from "../common/server";
+import os from 'os';
+import { ExternalWindow } from "../ocr_recognition/common/types";
 
 const isMacOS = process.platform === 'darwin';
 const isLinux = process.platform === 'linux';
@@ -621,6 +623,88 @@ export class OverlayController {
         }
 
         return newMovableState;
+    }
+
+    setOverlayBounds(
+        input: {
+            entireScreenMode?: 'fullscreen' | 'maximized',
+            captureSourceDisplay?: Electron.Display,
+            captureSourceWindow?: ExternalWindow,
+        }
+    ) {
+        input.entireScreenMode = input.entireScreenMode || 'fullscreen';
+
+        const {
+            entireScreenMode,
+            captureSourceDisplay,
+            captureSourceWindow
+        } = input;
+
+        // console.time("setOverlayBounds");
+
+        if ( !this.automaticOverlayBounds )
+            return;
+
+        const isFullscreen = entireScreenMode === 'fullscreen';
+        
+        if ( captureSourceDisplay ) {
+
+            if ( isMacOS ) {
+                this.overlayWindow.setVisibleOnAllWorkspaces(
+                    true,
+                    {
+                        visibleOnFullScreen: true,
+                        skipTransformProcessType: true
+                    }
+                );
+            }
+            
+            this.overlayWindow.setBounds({                
+                ...captureSourceDisplay?.workArea,
+            });
+
+            if ( isFullscreen ) {
+                if ( !isMacOS ) {
+                    this.overlayWindow.setFullScreen( true );
+                }
+                else {
+                    this.overlayWindow.setBounds(
+                        screen.getPrimaryDisplay().bounds
+                    );
+                }
+            }
+            
+            if ( entireScreenMode === 'maximized' )
+                this.overlayWindow.maximize();
+        }
+
+        else if ( captureSourceWindow ) {
+
+            let targetWindowBounds = {
+                width: captureSourceWindow.size.width,
+                height: captureSourceWindow.size.height,
+                x: captureSourceWindow.position.x,
+                y: captureSourceWindow.position.y,
+            };
+
+            if ( os.platform() === 'linux' )
+                this.overlayWindow.setFullScreen( false );
+
+            if ( os.platform() === 'win32' ) {
+                // Handling potential issues with DIP
+                targetWindowBounds = screen.screenToDipRect( this.overlayWindow, targetWindowBounds );
+            }
+
+            this.overlayWindow.setBounds( targetWindowBounds );
+
+            // console.log({ targetWindowBounds });
+
+            // Might be necessary to calculate and set twice
+            // dipRect = screen.screenToDipRect( this.overlayWindow, targetWindowBounds )
+            // this.overlayWindow.setBounds( dipRect );
+        }
+
+        // console.timeEnd("setOverlayBounds");
     }
 
     setAutomaticOverlayBounds( newState: boolean = true ) {
