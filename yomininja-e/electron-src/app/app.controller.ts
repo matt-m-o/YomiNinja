@@ -671,6 +671,19 @@ export class AppController {
                 },
             },
             {
+                label: 'Fullscreen Overlay',
+                toolTip: 'Overlay Auto Positioning and Resizing',
+                type: 'checkbox',
+                checked: this.overlayWindow.isFullScreen(),
+                click: ( event ) => {
+                    const newState = !this.overlayWindow.isFullScreen();
+                    this.overlayWindow.setFullScreen( newState );
+                    console.log({
+                        newState
+                    })
+                }
+            },
+            {
                 type: 'separator'
             },
             {
