@@ -12,6 +12,7 @@ import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { AppInfoContext } from "../../context/app_info.provider";
 import { ipcRenderer } from "../../utils/ipc-renderer";
+import { isElectronBrowser } from "../../utils/environment";
 
 const ButtonInput = styled(TextField)({
     minWidth: '500px',
@@ -46,16 +47,21 @@ export default function HomeContent() {
 
     // {Adapter_name : Engine_name}
     const [ supportedOcrEngines, setSupportedOcrEngines ] = useState<{ [key: string]: string; }>({});
+    const [ overlayLink, setOverlayLink ] = useState<string>();
 
     const ocrEngineOptions = Object.values( supportedOcrEngines );
     const selectedOcrEngine = supportedOcrEngines[ profile?.selected_ocr_adapter_name ] || '';
-
 
     useEffect( () => {
         getSupportedOcrEngines()
             .then( dict => {
                 setSupportedOcrEngines( dict );
             });
+        
+        if ( location.href.endsWith('index.html') )
+            setOverlayLink( location.href.replace('index', 'ocr-overlay-browser') );
+        else
+            setOverlayLink( location.href + "ocr-overlay-browser.html" );
     }, [] );
 
     function handleLanguageSelectChange( selectedName: string ) {
@@ -114,6 +120,13 @@ export default function HomeContent() {
     const selectListBoxCSS: CSSProperties = {
         backgroundColor: '#121212',
     };
+
+    function viewOverlayInBrowser() {
+        if ( isElectronBrowser() ) {
+            console.log({ overlayLink })
+            ipcRenderer.invoke( 'open_link', overlayLink );
+        }
+    }
 
     return (
         
@@ -205,6 +218,15 @@ export default function HomeContent() {
                         <OcrTemplateSelector
                             listBoxCSS={selectListBoxCSS}
                         />
+
+                        <Button variant="outlined" title="experimental"
+                            href= { !isElectronBrowser() && overlayLink }
+                            target="_blank"
+                            fullWidth
+                            onClick={ viewOverlayInBrowser }
+                        >
+                            View Overlay in  Your Browser
+                        </Button>
                         
                     </Container>
 
