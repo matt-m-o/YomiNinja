@@ -1,6 +1,7 @@
 // import * as x11 from 'x11';
-import { TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
+import { Rectangle, TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
 import { exec } from 'child_process';
+import { windowManager } from 'node-window-manager';
 
 
 type XDoToolWindowGeometry = {
@@ -97,6 +98,15 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
                 height: 0
             }
         }
+    }
+
+    setWindowBounds = ( windowHandle: number, bounds: Partial<Rectangle> ) => {
+        windowManager.getWindows()
+            .find( w => {
+                if ( w.id !== windowHandle ) return;
+                w.setBounds(bounds);
+                return true;
+            });
     }
 
 

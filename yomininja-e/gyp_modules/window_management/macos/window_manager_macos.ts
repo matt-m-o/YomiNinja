@@ -1,5 +1,5 @@
 import { systemPreferences } from 'electron';
-import { TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
+import { Rectangle, TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
 import { windowManager } from 'node-window-manager';
 import os from 'os';
 
@@ -114,6 +114,15 @@ export class WindowManagerMacOS implements WindowManagerNativeInterface {
                 height: 0
             }
         }
+    }
+
+    setWindowBounds = ( windowHandle: number, bounds: Partial<Rectangle> ) => {
+        windowManager.getWindows()
+            .find( w => {
+                if ( w.id !== windowHandle ) return;
+                w.setBounds(bounds);
+                return true;
+            });
     }
 
 

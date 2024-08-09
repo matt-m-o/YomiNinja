@@ -1,5 +1,5 @@
 import bindings from 'bindings';
-import { TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
+import { Rectangle, TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
 import { windowManager } from 'node-window-manager';
 
 export function getWindowManagerWin32(): WindowManagerNativeInterface {
@@ -59,5 +59,14 @@ export class WindowManagerWin32 implements WindowManagerNativeInterface {
         items.forEach( (item: any) => {    
             item.title = item.title.replace( '\x00', '' );            
         });
+    }
+
+    setWindowBounds = ( windowHandle: number, bounds: Partial<Rectangle> ) => {
+        windowManager.getWindows()
+            .find( w => {
+                if ( w.id !== windowHandle ) return;
+                w.setBounds(bounds);
+                return true;
+            });
     }
 }
