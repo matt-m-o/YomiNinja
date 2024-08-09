@@ -117,7 +117,7 @@ export default function CaptureSourceMenu() {
         };
 
         return (<>
-            { items?.toSorted(sort).map( ( item, idx ) => (
+            { items?.sort(sort).map( ( item, idx ) => (
                 <Grid item key={idx}
                     // sx={{ display: 'flex', justifyContent: 'center' }}
                 >
