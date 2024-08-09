@@ -664,6 +664,9 @@ export class OverlayController {
             this.overlayWindow.setBounds({                
                 ...captureSourceDisplay?.workArea,
             });
+            this.setBrowserPopupOverlayBounds({
+                ...captureSourceDisplay?.workArea
+            })
 
             if ( isFullscreen ) {
                 if ( !isMacOS ) {
@@ -673,6 +676,9 @@ export class OverlayController {
                     this.overlayWindow.setBounds(
                         screen.getPrimaryDisplay().bounds
                     );
+                    this.setBrowserPopupOverlayBounds(
+                        screen.getPrimaryDisplay().bounds
+                    )
                 }
             }
             
@@ -698,6 +704,7 @@ export class OverlayController {
             }
 
             this.overlayWindow.setBounds( targetWindowBounds );
+            this.setBrowserPopupOverlayBounds( targetWindowBounds );
 
             // console.log({ targetWindowBounds });
 
@@ -707,6 +714,26 @@ export class OverlayController {
         }
 
         // console.timeEnd("setOverlayBounds");
+    }
+
+    async setBrowserPopupOverlayBounds( bounds: Partial<Electron.Rectangle> ) {
+        const windows = await windowManager.searchWindow('YomiNinja (Browser pop pup)');
+
+        const window = windows.find( window => {
+            if ( window.title.includes('YomiNinja (Browser pop pup)') ) {
+                windowManager.setForegroundWindow(window.handle);
+                windowManager.setWindowBounds(
+                    window.handle,
+                    {
+                        x: bounds.x,
+                        y: bounds.y
+                    }
+                );
+                return true;
+            }
+        });
+
+        return Boolean( window );
     }
 
     setAutomaticOverlayBounds( newState: boolean = true ) {
