@@ -46,5 +46,6 @@ export let httpServerPort = 10_010;
 getNextPortAvailable( httpServerPort )
     .then( port => {
         httpServerPort = port || httpServerPort - 1;
+        console.log("\nHTTP Server port: "+httpServerPort);
         httpServer.listen( httpServerPort );
     });
