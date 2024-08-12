@@ -19,6 +19,7 @@ import { ExtensionsContext } from '../context/extensions.provider';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ipcRenderer } from '../utils/ipc-renderer';
+import { onDisplayModeChange } from '../utils/environment';
 
 
 
@@ -81,6 +82,7 @@ export default function Layout( { contents }: LayoutProps) {
     ipcRenderer.invoke( 'main:set_active_tab', newValue );
   }; 
   const router = useRouter();
+  const [ displayMode, setDisplayMode ] = useState('browser');
 
   function hashToTabIdx( hash: string ) {
     return hash.split('tab-')[1];
@@ -100,8 +102,13 @@ export default function Layout( { contents }: LayoutProps) {
 
     router.events.on("hashChangeStart", onHashChangeStart);
 
+    const off = onDisplayModeChange( window, ( mode ) => {
+      setDisplayMode(mode);
+    });
+
     return () => {
         router.events.off("hashChangeStart", onHashChangeStart);
+        off()
     };
   }, [router.events]);
 
@@ -171,7 +178,8 @@ export default function Layout( { contents }: LayoutProps) {
               theme.palette.mode === 'light'
                 ? theme.palette.grey[100]
                 : theme.palette.grey[1000],
-              userSelect: 'none'
+              userSelect: 'none',
+              appRegion: displayMode === 'window-controls-overlay' ? 'drag' : 'unset'
             }}
             style={{ paddingRight: '12px' }}
           >
