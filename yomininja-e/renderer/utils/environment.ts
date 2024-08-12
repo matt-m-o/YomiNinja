@@ -11,11 +11,7 @@ export function isFullscreenWindow( window: Window ): boolean {
     return window.matchMedia("(display-mode: fullscreen").matches;
 }
 
-export function onDisplayModeChange(
-    window: Window,
-    callBack: ( displayMode: string ) => void
-): () => void {
-
+export function getDisplayMode( window: Window ): string {
     const modes = [
         'browser',
         'fullscreen',
@@ -23,14 +19,23 @@ export function onDisplayModeChange(
         'standalone'
     ];
 
+    let displayMode = 'browser';
+
+    displayMode = modes.find( mode =>
+        window.matchMedia(`(display-mode: ${mode})`).matches
+    ) || displayMode;
+
+    return displayMode;
+}
+
+export function onDisplayModeChange(
+    window: Window,
+    callBack: ( displayMode: string ) => void
+): () => void {
 
     const listener = ( e: MediaQueryListEvent ) => {
-        let displayMode = 'browser';
-
-        displayMode = modes.find( mode =>
-            window.matchMedia(`(display-mode: ${mode})`).matches
-        ) || displayMode;
-
+        const displayMode = getDisplayMode( window );
+        
         // console.log(e)
         callBack( displayMode );
         console.log('display-mode: '+ displayMode);
@@ -49,4 +54,11 @@ export function onDisplayModeChange(
         window.matchMedia( '(display-mode: standalone)' )
             .removeEventListener( 'change', listener );
     };
+}
+
+export function isInPWAMode( window: Window ): boolean {
+    return Boolean( 
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.matchMedia('(display-mode: window-controls-overlay)').matches
+    );
 }
