@@ -8,6 +8,7 @@ import { OcrTemplatesProvider } from '../context/ocr_templates.provider';
 import { NotificationsProvider } from '../context/notifications.provider';
 import { TTSProvider } from '../context/text-to-speech.provider';
 import { ProfileProvider } from '../context/profile.provider';
+import Head from 'next/head';
 
 
 
@@ -23,7 +24,9 @@ export default function OcrOverlayPage() {
   
 
   return ( <>
-    <title>OCR Overlay - YomiNinja</title>
+    <Head>
+      <title>OCR Overlay - YomiNinja</title>
+    </Head>
     <SettingsProvider>
       <NotificationsProvider>
         <DictionaryProvider>

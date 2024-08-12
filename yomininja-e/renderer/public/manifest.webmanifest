@@ -1,0 +1,16 @@
+{
+    "name": "YomiNinja WebApp",
+    "short_name": "YomiNinja",
+    "start_url": "./ocr-overlay-browser.html",  
+    "display_override": ["window-controls-overlay", "fullscreen"],
+    "display": "standalone",
+    "theme_color": "#121212",
+    "background_color": "#121212",
+    "icons": [
+      {
+        "src": "/logos/yomininja_512x512.png",
+        "type": "image/png",
+        "sizes": "512x512"
+      }
+    ]
+  }
