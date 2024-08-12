@@ -12,7 +12,7 @@ import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { AppInfoContext } from "../../context/app_info.provider";
 import { ipcRenderer } from "../../utils/ipc-renderer";
-import { isElectronBrowser } from "../../utils/environment";
+import { isElectronBrowser, onDisplayModeChange } from "../../utils/environment";
 
 const ButtonInput = styled(TextField)({
     minWidth: '500px',
@@ -48,6 +48,7 @@ export default function HomeContent() {
     // {Adapter_name : Engine_name}
     const [ supportedOcrEngines, setSupportedOcrEngines ] = useState<{ [key: string]: string; }>({});
     const [ overlayLink, setOverlayLink ] = useState<string>();
+    const [ isPWA, setIsPWA ] = useState(false);
 
     const ocrEngineOptions = Object.values( supportedOcrEngines );
     const selectedOcrEngine = supportedOcrEngines[ profile?.selected_ocr_adapter_name ] || '';
@@ -62,6 +63,17 @@ export default function HomeContent() {
             setOverlayLink( location.href.replace('index', 'ocr-overlay-browser') );
         else
             setOverlayLink( location.href + "ocr-overlay-browser.html" );
+
+        const off = onDisplayModeChange( window, ( mode ) => {
+            setIsPWA(
+                mode === 'standalone' ||
+                mode === 'window-controls-overlay'
+            );
+        });
+
+        return () => {
+            off();
+        };
     }, [] );
 
     function handleLanguageSelectChange( selectedName: string ) {
@@ -122,6 +134,19 @@ export default function HomeContent() {
     };
 
     function viewOverlayInBrowser() {
+
+        if ( isPWA && window ) {
+            const { screenLeft, screenTop } = window;
+            const {  } = screen;
+            const windowFeatures = `left=${screenLeft},top=${screenTop},width=${1200},height=${700},titlebar=no,location=0`;
+            const overlayWindow = window.open(
+                overlayLink,
+                "overlayWindow",
+                windowFeatures
+            );
+            return;
+        }
+
         if ( isElectronBrowser() ) {
             console.log({ overlayLink })
             ipcRenderer.invoke( 'open_link', overlayLink );
@@ -220,7 +245,7 @@ export default function HomeContent() {
                         />
 
                         <Button variant="outlined" title="experimental"
-                            href= { !isElectronBrowser() && overlayLink }
+                            href= { !isElectronBrowser() && !isPWA && overlayLink }
                             target="_blank"
                             fullWidth
                             onClick={ viewOverlayInBrowser }

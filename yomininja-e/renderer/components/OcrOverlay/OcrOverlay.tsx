@@ -89,7 +89,7 @@ export default function OcrOverlay() {
 
     let value = false;
 
-    if ( element.classList.contains('ignore-mouse') )
+    if ( element?.classList.contains('ignore-mouse') )
       value = true;
       
     else
@@ -112,7 +112,7 @@ export default function OcrOverlay() {
 
     // console.log(element);
 
-    if ( element.classList.contains('ignore-mouse') ) {
+    if ( element?.classList.contains('ignore-mouse') ) {
       ipcRenderer.invoke( 'overlay:hide_browser_window' );
     }
   }
