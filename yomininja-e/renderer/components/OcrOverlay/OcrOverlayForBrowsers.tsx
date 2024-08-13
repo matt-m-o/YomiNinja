@@ -1,7 +1,8 @@
 import { Button } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { OcrResultContext } from "../../context/ocr_result.provider";
-import { isElectronBrowser, isFullscreenWindow } from "../../utils/environment";
+import { isElectronBrowser, isFullscreenWindow, isInPWAMode, onDisplayModeChange } from "../../utils/environment";
+import Head from 'next/head';
 
 export default function OcrOverlayForBrowsers() {
 
@@ -10,8 +11,10 @@ export default function OcrOverlayForBrowsers() {
     const [ url, setUrl ] = useState<string>();
     const [ overlayWindow, setOverlayWindow ] = useState<Window>();
     const [ isPopup, setIsPopup ] = useState(false);
+    const [ isPWA, setIsPWA ] = useState(false);
     const [ title, setTitle ] = useState('');
     const [ isFullscreen, setIsFullscreen ] = useState(false);
+    const [ homeUrl, setHomeUrl ] = useState('');
 
     const ocrResultResolution = ocrResult?.context_resolution;
 
@@ -29,20 +32,39 @@ export default function OcrOverlayForBrowsers() {
 
         if ( typeof location === 'undefined') return;
 
-        setIsPopup( Boolean(window.opener) );
+        setIsPopup(
+            Boolean(window.opener) ||
+            isInPWAMode( window )
+        );
+
+        setIsPWA( isInPWAMode( window ) );
+
+        const off = onDisplayModeChange( window, ( mode ) => {
+            console.log({ mode })
+            const isPwa = isInPWAMode( window );
+            setIsPWA( isInPWAMode( window ) );
+        });
+
         setIsFullscreen( isFullscreenWindow( window ) )
         setUrl( location.href.replace('-browser', '') );
+        setHomeUrl(
+            location.href.replace( '/ocr-overlay-browser', '' )
+            .replace('.html', '' )
+        );
 
+        return () => {
+            off();
+        }
     }, [] )
 
     useEffect( () => {
 
-        if ( isPopup )
+        if ( isPopup || isPWA )
             setTitle( 'OCR Overlay - YomiNinja (Browser pop pup)' );
         else
             setTitle('OCR Overlay - YomiNinja')
 
-    }, [isPopup] )
+    }, [ isPopup, isPWA ] )
 
     function popOutOverlay() {
 
@@ -183,7 +205,9 @@ export default function OcrOverlayForBrowsers() {
             scrollbarColor: 'transparent'
         }}
     >
-        <title>{title}</title>
+        <Head>
+            <title>{title}</title>
+        </Head>
 
         <div id='iframe-container'
             style={{
@@ -209,7 +233,7 @@ export default function OcrOverlayForBrowsers() {
                 flexDirection: 'column'
             }}
         >
-            { !isPopup && !isFullscreen &&
+            { !isPopup && !isPWA && !isFullscreen &&
                 <Button  variant='contained'
                     sx={{
                         minWidth: 100,
@@ -245,6 +269,18 @@ export default function OcrOverlayForBrowsers() {
                 }}
             >
                 Fullscreen
+            </Button>
+            <Button
+                variant='contained'
+                href={homeUrl}
+                sx={{
+                    minWidth: 100,
+                    ml: 1,
+                    mt: 1,
+                    mr: 1
+                }}
+            >
+                Home
             </Button>
         </div>
         

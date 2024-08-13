@@ -12,7 +12,7 @@ import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { AppInfoContext } from "../../context/app_info.provider";
 import { ipcRenderer } from "../../utils/ipc-renderer";
-import { isElectronBrowser, onDisplayModeChange } from "../../utils/environment";
+import { isElectronBrowser, isInPWAMode, onDisplayModeChange } from "../../utils/environment";
 
 const ButtonInput = styled(TextField)({
     minWidth: '500px',
@@ -64,11 +64,10 @@ export default function HomeContent() {
         else
             setOverlayLink( location.href + "ocr-overlay-browser.html" );
 
+        setIsPWA( isInPWAMode( window ) );
+
         const off = onDisplayModeChange( window, ( mode ) => {
-            setIsPWA(
-                mode === 'standalone' ||
-                mode === 'window-controls-overlay'
-            );
+            setIsPWA( isInPWAMode( window ) );
         });
 
         return () => {

@@ -19,7 +19,7 @@ import { ExtensionsContext } from '../context/extensions.provider';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ipcRenderer } from '../utils/ipc-renderer';
-import { onDisplayModeChange } from '../utils/environment';
+import { getDisplayMode, onDisplayModeChange } from '../utils/environment';
 
 
 
@@ -101,6 +101,8 @@ export default function Layout( { contents }: LayoutProps) {
     };
 
     router.events.on("hashChangeStart", onHashChangeStart);
+
+    setDisplayMode( getDisplayMode( window) );
 
     const off = onDisplayModeChange( window, ( mode ) => {
       setDisplayMode(mode);
