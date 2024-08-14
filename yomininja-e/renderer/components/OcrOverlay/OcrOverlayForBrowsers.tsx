@@ -3,10 +3,12 @@ import { useContext, useEffect, useState } from "react";
 import { OcrResultContext } from "../../context/ocr_result.provider";
 import { isElectronBrowser, isFullscreenWindow, isInPWAMode, onDisplayModeChange } from "../../utils/environment";
 import Head from 'next/head';
+import { AppInstallationContext } from "../../context/app_installation.provider";
 
 export default function OcrOverlayForBrowsers() {
 
     const { ocrResult } = useContext( OcrResultContext );
+    const { installButtonVisibility, install } = useContext( AppInstallationContext );
 
     const [ url, setUrl ] = useState<string>();
     const [ overlayWindow, setOverlayWindow ] = useState<Window>();
@@ -155,7 +157,7 @@ export default function OcrOverlayForBrowsers() {
 
     useEffect( () => {
         
-        if ( isPopup && ocrResult ) {
+        if ( (isPopup || isPWA) && ocrResult ) {
           const { context_resolution, position } = ocrResult;
           const { widthOffset, heightOffset } = getWindowSizeOffset();
     
@@ -233,6 +235,20 @@ export default function OcrOverlayForBrowsers() {
                 flexDirection: 'column'
             }}
         >
+            <Button
+                title="Install this WebApp for an enhanced overlay!"
+                variant='contained'
+                sx={{
+                    display: installButtonVisibility ? 'inherit' : 'none',
+                    minWidth: 100,
+                    ml: 1,
+                    mt: 1,
+                    mr: 1
+                }}
+                onClick={install}
+            >
+                Install
+            </Button>
             { !isPopup && !isPWA && !isFullscreen &&
                 <Button  variant='contained'
                     sx={{
@@ -270,6 +286,7 @@ export default function OcrOverlayForBrowsers() {
             >
                 Fullscreen
             </Button>
+
             <Button
                 variant='contained'
                 href={homeUrl}
@@ -282,6 +299,7 @@ export default function OcrOverlayForBrowsers() {
             >
                 Home
             </Button>
+
         </div>
         
         

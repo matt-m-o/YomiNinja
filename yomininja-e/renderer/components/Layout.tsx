@@ -10,7 +10,7 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import Divider from '@mui/material/Divider';
-import { ListItemIcon, ListItemText, SxProps, Tab, Tabs, Theme } from '@mui/material';
+import { Button, ListItemIcon, ListItemText, SxProps, Tab, Tabs, Theme } from '@mui/material';
 import TabContext from '@mui/lab/TabContext';
 import TabPanel from'@mui/lab/TabPanel';
 import TabList from '@mui/lab/TabList';
@@ -19,7 +19,8 @@ import { ExtensionsContext } from '../context/extensions.provider';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ipcRenderer } from '../utils/ipc-renderer';
-import { getDisplayMode, onDisplayModeChange } from '../utils/environment';
+import { getDisplayMode, isElectronBrowser, onDisplayModeChange } from '../utils/environment';
+import { AppInstallationContext } from '../context/app_installation.provider';
 
 
 
@@ -68,7 +69,9 @@ export type LayoutProps = {
   }[]
 }
 
-export default function Layout( { contents }: LayoutProps) {  
+export default function Layout( { contents }: LayoutProps) { 
+
+  const { installButtonVisibility, install } = useContext( AppInstallationContext );
 
   const [ open, setOpen ] = useState(false);
   const toggleDrawer = () => {
@@ -83,6 +86,8 @@ export default function Layout( { contents }: LayoutProps) {
   }; 
   const router = useRouter();
   const [ displayMode, setDisplayMode ] = useState('browser');
+
+  // const isElectron = isElectronBrowser();
 
   function hashToTabIdx( hash: string ) {
     return hash.split('tab-')[1];
@@ -164,7 +169,7 @@ export default function Layout( { contents }: LayoutProps) {
     </div>
   ));
 
-  const { browserActionList } = useContext( ExtensionsContext )
+  const { browserActionList } = useContext( ExtensionsContext );
 
   return (
     <TabContext value={activeTab}>
@@ -208,6 +213,18 @@ export default function Layout( { contents }: LayoutProps) {
             >
               { contents[activeTab].tabLabel.text }
             </Typography>
+
+            <Button
+              title="Install this WebApp for an enhanced overlay!"
+              variant='contained'
+              sx={{
+                display: installButtonVisibility ? 'inherit' : 'none',
+                minWidth: 100,
+              }}
+              onClick={install}
+            >
+              Install on this browser
+            </Button>
   
             {/* <IconButton color="inherit">
               <Badge badgeContent={6} color="secondary">
@@ -215,7 +232,7 @@ export default function Layout( { contents }: LayoutProps) {
               </Badge>
             </IconButton> */}
 
-            {browserActionList}
+            { browserActionList }
   
           </Toolbar>
         </AppBar>
