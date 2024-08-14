@@ -162,8 +162,8 @@ export default function OcrResults( props: OcrResultsProps ) {
             <img className="ignore-mouse"
                 src={ocrResult.image}
                 style={{
-                    width: (context_resolution && isPopup) || isFullscreen ? context_resolution.width+'px' : '100%',
-                    height: (context_resolution && isPopup) || isFullscreen ? context_resolution.height+'px' : '100%',
+                    minWidth: (context_resolution && isPopup) || isFullscreen ? context_resolution.width+'px' : '100%',
+                    minHeight: (context_resolution && isPopup) || isFullscreen ? context_resolution.height+'px' : '100%',
                     // marginTop: isFullscreen ? 0 : -2,
                     // marginLeft: isFullscreen ? 0 : -1,
                     maxWidth: '105%',
