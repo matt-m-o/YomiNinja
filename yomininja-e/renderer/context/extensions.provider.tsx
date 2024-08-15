@@ -50,7 +50,7 @@ export const ExtensionsProvider = ( { children }: PropsWithChildren ) => {
 
     function getExtensionActionButton( extensionId: string ): Element {
         const element = document.querySelector("browser-action-list")
-            .shadowRoot
+            ?.shadowRoot
             ?.querySelector("#"+extensionId);
 
         return element;
