@@ -52,7 +52,7 @@ export default function OcrSymbolsContainer( props: OcrSymbolsContainerProps ) {
         '&::selection': textSelectionStyle,
     });
 
-    const fontSizeFactor = ocrItemBoxVisuals.text.font_size_factor;
+    const fontSizeFactor = ocrItemBoxVisuals?.text.font_size_factor;
     const letterSpacingFactor = typeof ocrItemBoxVisuals.text?.letter_spacing_factor === 'number' ?
         ocrItemBoxVisuals.text?.letter_spacing_factor / 100 : 1;
 

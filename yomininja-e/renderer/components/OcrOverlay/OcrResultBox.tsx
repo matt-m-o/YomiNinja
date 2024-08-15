@@ -131,7 +131,7 @@ export default function OcrResultBox( props: {
         fontSize: adjustedFontSize + 'px', // isVertical ? fontSize * 0.8 : fontSize * 0.85
         lineHeight: adjustedFontSize + 'px',
         fontWeight: ocrItemBoxVisuals?.text?.font_weight,
-        letterSpacing: ocrItemBoxVisuals.text.letter_spacing || 'inherit',
+        letterSpacing: ocrItemBoxVisuals?.text.letter_spacing || 'inherit',
         contentVisibility: 'visible',
         zIndex: 10,
         // @ts-expect-error

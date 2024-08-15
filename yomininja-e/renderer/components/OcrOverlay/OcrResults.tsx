@@ -178,9 +178,9 @@ export default function OcrResults( props: OcrResultsProps ) {
 
                 const ocrTemplateRegion = getOcrTemplateTargetRegion( ocrRegion.id );
 
-                const furiganaFilterThreshold = ocrItemBoxVisuals.text?.furigana_filter?.threshold;
+                const furiganaFilterThreshold = ocrItemBoxVisuals?.text?.furigana_filter?.threshold;
 
-                if ( Boolean( ocrItemBoxVisuals.text.furigana_filter?.enabled ) ) {
+                if ( Boolean( ocrItemBoxVisuals?.text.furigana_filter?.enabled ) ) {
                     removeFurigana(ocrRegion.results, furiganaFilterThreshold || 0.6);
                 }
 

@@ -100,7 +100,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                                 text: {
                                     ...ocrItemBoxVisuals.text,
                                     sentence_ending_punctuation: {
-                                        ...ocrItemBoxVisuals.text.sentence_ending_punctuation,
+                                        ...ocrItemBoxVisuals?.text.sentence_ending_punctuation,
                                         enabled: event.target.checked
                                     }
                                 }
@@ -121,7 +121,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                                 text: {
                                     ...ocrItemBoxVisuals.text,
                                     sentence_ending_punctuation: {
-                                        ...ocrItemBoxVisuals.text.sentence_ending_punctuation,
+                                        ...ocrItemBoxVisuals?.text.sentence_ending_punctuation,
                                         hidden: event.target.checked
                                     }
                                 }
@@ -143,7 +143,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                                 text: {
                                     ...ocrItemBoxVisuals.text,
                                     furigana_filter: {
-                                        ...ocrItemBoxVisuals.text.furigana_filter,
+                                        ...ocrItemBoxVisuals.text?.furigana_filter,
                                         enabled: event.target.checked
                                     }
                                 }

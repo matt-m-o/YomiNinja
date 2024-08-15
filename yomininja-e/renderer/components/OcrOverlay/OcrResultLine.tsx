@@ -72,7 +72,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
 
 
     let lineFontSize = 0;
-    let fontSizeFactor = ocrItemBoxVisuals.text.font_size_factor;
+    let fontSizeFactor = ocrItemBoxVisuals?.text.font_size_factor;
     fontSizeFactor = fontSizeFactor ? fontSizeFactor / 100 : 1;
     let lineHeight = lineFontSize;
     const letterSpacingFactor = typeof ocrItemBoxVisuals.text?.letter_spacing_factor === 'number' ?
