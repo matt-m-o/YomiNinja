@@ -166,7 +166,7 @@ export class OcrRecognitionController {
 
     async ocrResultToJson( result: OcrResultScalable ): Promise<OcrResultScalable > {
 
-        if ( result?.image && Buffer.isBuffer(result.image) ) {
+        if ( result?.image && typeof result.image !== 'string' ) {
             result.image = await bufferToDataURL({
                 image: result.image,
                 format: 'png',
