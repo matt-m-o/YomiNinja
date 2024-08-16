@@ -3,6 +3,7 @@ import { SettingsContext } from "../../context/settings.provider";
 import { useContext, useEffect, useState } from "react";
 import { SettingsPresetJson } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
 import { GeneralSettings, RunAtSystemStartupOptions } from "../../../electron-src/@core/domain/settings_preset/settings_preset_general";
+import { CompatibilitySettings } from "../../../electron-src/@core/domain/settings_preset/settings_preset_compatibility";
 
 
 // Settings section component
@@ -11,14 +12,17 @@ export default function AppSettingsGeneral() {
     const {
         activeSettingsPreset,
         defaultSettingsPreset,
-        updateActivePresetGeneral
+        updateActivePresetGeneral,
+        updateActivePresetCompatibility
     } = useContext( SettingsContext );
 
     const generalSettings: GeneralSettings = activeSettingsPreset?.general;
+    const compatibilitySettings: CompatibilitySettings = activeSettingsPreset?.compatibility;
 
     console.log({
-        generalSettings
-    })
+        generalSettings,
+        compatibilitySettings
+    });
     
     return (
         <Box sx={{ flexGrow: 1, margin: 1, mt:0 }}>
@@ -74,13 +78,34 @@ export default function AppSettingsGeneral() {
                     control={
                         <Switch
                             checked={
-                                typeof generalSettings?.hardware_acceleration === 'undefined' ?
-                                true :
-                                Boolean( generalSettings?.hardware_acceleration )
+                                typeof compatibilitySettings?.hardware_acceleration === 'undefined' ?
+                                    true :
+                                    Boolean( compatibilitySettings?.hardware_acceleration )
                             }
                             onChange={ ( event ) => {
-                                updateActivePresetGeneral({
+                                updateActivePresetCompatibility({
                                     hardware_acceleration: event.target.checked
+                                });
+                            }}
+                        /> 
+                    }
+                />
+            </Container>
+
+
+            <Container sx={{ ml: 1.5,  mt: 0, mb: 2 }}>
+                <FormControlLabel label='Enable GPU Compositing'
+                    title='Changes will take effect after restarting the app.'
+                    control={
+                        <Switch
+                            checked={
+                                typeof compatibilitySettings?.gpu_compositing === 'undefined' ?
+                                    true :
+                                    Boolean( compatibilitySettings?.gpu_compositing )
+                            }
+                            onChange={ ( event ) => {
+                                updateActivePresetCompatibility({
+                                    gpu_compositing: event.target.checked
                                 });
                             }}
                         /> 

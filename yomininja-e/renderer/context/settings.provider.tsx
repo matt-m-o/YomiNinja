@@ -5,6 +5,7 @@ import { OcrEngineSettingsU } from "../../electron-src/@core/infra/types/entity_
 import { OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations } from "../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import { GeneralSettings } from "../../electron-src/@core/domain/settings_preset/settings_preset_general";
 import { ipcRenderer } from "../utils/ipc-renderer";
+import { CompatibilitySettings } from "../../electron-src/@core/domain/settings_preset/settings_preset_compatibility";
 
 export type SettingsContextType = {
     activeSettingsPreset: SettingsPresetJson;
@@ -16,6 +17,7 @@ export type SettingsContextType = {
     updateActivePresetVisuals: ( input: Partial< OverlayVisualCustomizations > ) => void;
     updateActivePresetBehavior: ( input: Partial< OverlayBehavior > ) => void; 
     updateActivePresetOcrEngine: ( input: Partial< OcrEngineSettingsU > ) => void; 
+    updateActivePresetCompatibility: ( input: Partial< CompatibilitySettings > ) => void;
     updateActivePresetDictionary: ( input: Partial< DictionarySettings > ) => void;
     triggerOcrEngineRestart: ( engineName: string ) => void;
     loadCloudVisionCredentialsFile: () => Promise< void >;
@@ -140,6 +142,16 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         activeSettingsPreset.general = {
             ...activeSettingsPreset.general,
             ...newGeneral,
+        };
+
+        updateActivePreset( activeSettingsPreset );
+    }
+
+    function updateActivePresetCompatibility( newSettings: Partial< CompatibilitySettings > ) {
+
+        activeSettingsPreset.compatibility = {
+            ...activeSettingsPreset.compatibility,
+            ...newSettings,
         };
 
         updateActivePreset( activeSettingsPreset );
@@ -297,6 +309,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
                 updateActivePresetVisuals,
                 updateActivePresetBehavior,
                 updateActivePresetOcrEngine,
+                updateActivePresetCompatibility,
                 updateActivePresetDictionary,
                 triggerOcrEngineRestart,
                 loadCloudVisionCredentialsFile,
