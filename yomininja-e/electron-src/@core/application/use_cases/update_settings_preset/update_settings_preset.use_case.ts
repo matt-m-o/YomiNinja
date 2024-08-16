@@ -96,7 +96,11 @@ export class UpdateSettingsPresetUseCase< TOcrSettings extends OcrEngineSettings
         settingsPreset.updateGeneralSettings({
             ...defaultSettingsProps.general,
             ...input.general,
-        })
+        });
+        settingsPreset.updateCompatibilitySettings({
+            ...defaultSettingsProps.compatibility,
+            ...input.compatibility,
+        });
 
         // console.log( settingsPreset );
 

@@ -8,7 +8,10 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
         version: "0.6.0",
         general: {
             run_at_system_startup: 'no',
+        },
+        compatibility: {
             hardware_acceleration: true,
+            gpu_compositing: true,
         },
         overlay: {
             visuals: {

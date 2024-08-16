@@ -28,6 +28,11 @@ export const SettingsPresetTypeOrmSchema = new EntitySchema< SettingsPresetInsta
             nullable: true
         },
 
+        compatibility: {
+            type: 'json',
+            nullable: true
+        },
+
         overlay: {
             type: 'json',
         },
