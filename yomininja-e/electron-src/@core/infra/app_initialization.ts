@@ -264,9 +264,10 @@ export function getLaunchConfig(): LaunchConfig {
     if ( !launchConfig ) {
         launchConfig = {
             hardware_acceleration: true,
+            gpu_compositing: true,
             enable_devtools: true
         };
-            fs.writeFileSync(
+        fs.writeFileSync(
             filePath,
             JSON.stringify( launchConfig, null, '\t' )
         );

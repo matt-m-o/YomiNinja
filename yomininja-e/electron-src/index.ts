@@ -72,7 +72,13 @@ function preInitialization() {
 
   if ( launchConfig.hardware_acceleration === false ) {
     app.disableHardwareAcceleration();
-    console.log("Hardware Acceleration is disabled!");
+    console.log("Hardware Acceleration is disabled!"); 
+  }
+  if ( launchConfig.gpu_compositing === false ) {
+    app.commandLine.appendArgument(
+      '--disable-gpu-compositing'
+    );
+    console.log("GPU Compositing is disabled!");
   }
   
 }

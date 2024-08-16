@@ -11,7 +11,7 @@ import { getDefaultSettingsPresetProps } from "../@core/domain/settings_preset/d
 import { getPpOcrDefaultSettings } from "../@core/infra/ocr/ppocr.adapter/ppocr_settings";
 import { getMangaOcrDefaultSettings } from "../@core/infra/ocr/manga_ocr.adapter/manga_ocr_settings";
 import { getAppleVisionDefaultSettings } from "../@core/infra/ocr/apple_vision.adapter/apple_vision_settings";
-import { activeProfile } from "../@core/infra/app_initialization";
+import { activeProfile, getLaunchConfig } from "../@core/infra/app_initialization";
 import { USER_DATA_DIR } from "../util/directories.util";
 import path from "path";
 import fs from 'fs';
@@ -51,36 +51,37 @@ export class SettingsService {
         if ( activePreset?.id === settingsPresetJson.id ) {
 
             const { general } = settingsPresetJson;
+            const { compatibility } = settingsPresetJson;
 
             if ( general?.run_at_system_startup ) {
                 console.log({
                     general
                 })
 
-                // if ( !electronIsDev ) {
+                if ( !electronIsDev ) {
                     app.setLoginItemSettings({
                         openAtLogin: general.run_at_system_startup !== 'no',
                         path: app.getPath("exe"),
                         args: [`--systemStartup`]
                     });
-                // }
+                }
             }
 
-            if ( typeof general?.hardware_acceleration !== 'undefined') {
-                const launchConfigPath = path.join(USER_DATA_DIR, 'launch_config.json');
-                const launchConfigRaw = fs.readFileSync(
-                    path.join(USER_DATA_DIR, 'launch_config.json'),
-                    'utf8'
-                );
-                const launchConfig = JSON.parse(launchConfigRaw);
+            const launchConfigPath = path.join( USER_DATA_DIR, 'launch_config.json' );
+            const launchConfig = getLaunchConfig();
 
-                launchConfig.hardware_acceleration = Boolean( general.hardware_acceleration );
-
-                fs.writeFileSync(
-                    launchConfigPath,
-                    JSON.stringify( launchConfig, null, '\t' )
-                );
+            if ( typeof compatibility?.hardware_acceleration !== 'undefined') {
+                launchConfig.hardware_acceleration = Boolean( compatibility.hardware_acceleration );
             }
+            
+            if ( typeof compatibility?.gpu_compositing !== 'undefined' ) {
+                launchConfig.gpu_compositing = Boolean( compatibility.gpu_compositing );
+            }
+
+            fs.writeFileSync(
+                launchConfigPath,
+                JSON.stringify( launchConfig, null, '\t' )
+            );
         }
 
 
