@@ -1,5 +1,7 @@
 import path from "path";
 import fs from 'fs';
+import { PopupView } from "electron-chrome-extensions/dist/browser/popup";
+import { BrowserWindow } from "electron";
 
 
 export function applyYomiWorkaround( extensionPath: string  ) {
@@ -74,4 +76,73 @@ function applyManifestV2Patch( extensionPath: string ) {
     catch (error) {
         console.error(error);
     }
+}
+
+export function handleYomitanPopup( popup: PopupView, openWindow?: ( url: string ) => BrowserWindow ) {
+
+    const { browserWindow: popupWindow } = popup;
+
+    if ( !popupWindow ) return;
+
+    const fixButtons = () => {
+        
+        document.querySelectorAll('.nav-button').forEach( button => {
+
+            if ( button.classList.contains('action-open-settings' )) {
+                button.addEventListener( 'click', () => {
+                    const href = button.getAttribute('href');
+                    if ( !href ) return;
+                    location.href = href;
+                });
+            }
+
+            if ( button.classList.contains('action-open-search' )) {
+                button.addEventListener( 'click', () => {
+                    const href = button.getAttribute('href');
+                    if ( !href ) return;
+                    location.href = href;
+                });
+            }
+
+            if ( button.classList.contains('action-open-info' )) {
+                button.addEventListener( 'click', () => {
+                    const href = button.getAttribute('href');
+                    if ( !href ) return;
+                    location.href = href;
+                });
+            }
+
+        });
+    }
+
+
+    const applyFixes = ( window: BrowserWindow ) => {
+
+        window.webContents.executeJavaScript(`
+            (${fixButtons.toString()})();
+        `);
+
+        window.webContents.on('update-target-url', ( e, url ) => {
+
+            setTimeout( () => {
+                window.webContents.executeJavaScript(`
+                    (${fixButtons.toString()})();
+                `);
+            }, 5000 );
+        });
+
+    }
+
+    popup.whenReady()
+        .then( () => {
+
+            applyFixes(popupWindow);
+
+            popupWindow.webContents.on('will-navigate', ( e, url ) => {
+                if ( !openWindow ) return;
+                e.preventDefault();
+                const extensionWindow = openWindow( url );
+            });
+            
+        });
 }

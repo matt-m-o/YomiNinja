@@ -16,6 +16,7 @@ import { handleJPDBReaderPopup } from "./browser_extension_manager/workarounds/j
 import { launchConfig, windowManager } from "../@core/infra/app_initialization";
 import { getBrowserWindowHandle } from "../util/browserWindow.util";
 import { handleMigakuPopup } from "./browser_extension_manager/workarounds/migaku_workarounds";
+import { handleYomitanPopup } from "./browser_extension_manager/workarounds/yomi_workaround";
 
 export class BrowserExtensionsService {
 
@@ -132,6 +133,9 @@ export class BrowserExtensionsService {
 
             if ( extension?.name.includes('Migaku') )
                 handleMigakuPopup( popup, this.createExtensionWindow );
+
+            if ( extension?.name.includes('Yomitan') )
+                handleYomitanPopup( popup, this.createExtensionWindow )
         });
         
         // console.log({ EXTENSIONS_DIR });
