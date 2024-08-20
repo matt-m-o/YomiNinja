@@ -661,26 +661,24 @@ export class AppController {
                 accelerator: 'Ctrl+Shift+M'
             },
             {
-                label: 'Overlay Automatic Adjustment',
+                label: 'Automatic Overlay Adjustment',
                 toolTip: 'Overlay Auto Positioning and Resizing',
                 type: 'checkbox',
                 checked: overlayController.automaticOverlayBounds,
                 click: ( event ) => {
+                    event.checked = !overlayController.automaticOverlayBounds
                     overlayController.setAutomaticOverlayBounds( event.checked );
-                    // event.checked = !overlayController.isOverlayBoundsLocked;
                 },
             },
             {
                 label: 'Fullscreen Overlay',
-                toolTip: 'Overlay Auto Positioning and Resizing',
+                toolTip: 'Toggle Fullscreen Mode',
                 type: 'checkbox',
                 checked: this.overlayWindow.isFullScreen(),
                 click: ( event ) => {
                     const newState = !this.overlayWindow.isFullScreen();
                     this.overlayWindow.setFullScreen( newState );
-                    console.log({
-                        newState
-                    })
+                    event.checked = newState;
                 }
             },
             {
