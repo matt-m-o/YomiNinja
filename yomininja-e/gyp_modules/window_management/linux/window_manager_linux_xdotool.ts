@@ -199,4 +199,40 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
    
     }
 
+    async getWindowGeometryAlt( windowHandle: number ) {
+        const command = `xwininfo -id ${windowHandle}`;
+
+        return new Promise( ( resolve, reject ) => {
+
+            exec( command, (error, stdout, stderr) => {
+
+                if ( error ) {
+                    console.error(`Error executing xwininfo: ${stderr}`);
+                    reject( null );
+                }
+
+                const outputLines = stdout.trim().split('\n').slice(1);
+
+                const values = outputLines.map( line => {
+                    const value = line.split(':')[1];
+                    return parseInt( value, 10 );
+                });
+    
+                const geometry: XDoToolWindowGeometry = {
+                    WINDOW: windowHandle,
+                    X:  values[1],
+                    Y: values[2],
+                    WIDTH: values[5],
+                    HEIGHT: values[6],
+                    SCREEN: 0,
+                };
+
+                console.log(geometry);
+    
+                resolve( geometry );
+            });
+        });
+   
+    }
+
 }
