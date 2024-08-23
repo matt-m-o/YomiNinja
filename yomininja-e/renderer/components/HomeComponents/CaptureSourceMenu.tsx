@@ -1,10 +1,11 @@
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Grid, SxProps, Theme, Typography, createTheme } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Grid, InputAdornment, SxProps, TextField, Theme, Typography, createTheme } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Tab from '@mui/material/Tab';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from'@mui/lab/TabPanel';
-import { useContext, useEffect, useState } from "react";
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import { ChangeEvent, useContext, useEffect, useState } from "react";
 
 import { CaptureSource } from '../../../electron-src/ocr_recognition/common/types';
 import { CaptureSourceContext } from "../../context/capture_source.provider";
@@ -25,6 +26,8 @@ export default function CaptureSourceMenu() {
         updateActiveCaptureSource,
         refreshCaptureSources,
     } = useContext( CaptureSourceContext );
+
+    const [ searchValue, setSearchValue ] = useState< string >('');
 
     useEffect( () => {
         refreshCaptureSources();
@@ -92,8 +95,16 @@ export default function CaptureSourceMenu() {
 
 
         return <>
-            <Button onClick={ () => handleSourceClick(captureSource) } sx={{ ...sx, width: 'max-content' }}>
-                <Box display='flex' flexDirection='column' alignItems='center' key={captureSource.id}>
+            <Button title={captureSource.name}
+                onClick={ () => handleSourceClick(captureSource) } 
+                sx={{ ...sx, width: 'max-content' }}
+            >
+                <Box display='flex' flexDirection='column' alignItems='center'
+                    key={captureSource.id}
+                    sx={{
+                        height: '130px',
+                    }}
+                >
                     <VideoElement mediaSourceId={captureSource.id} maxWidth={180} />
                     <Typography align="center" mt={2}                
                         sx={{ 
@@ -101,7 +112,8 @@ export default function CaptureSourceMenu() {
                             textOverflow: 'ellipsis',
                             overflow: 'hidden',
                             whiteSpace: 'nowrap',
-                            width: '180px'
+                            width: '180px',
+                            mt: 'auto'
                         }}>
                         { captureSource?.name }
                     </Typography>
@@ -117,7 +129,9 @@ export default function CaptureSourceMenu() {
         };
 
         return (<>
-            { items?.sort(sort).map( ( item, idx ) => (
+            { items?.sort(sort)
+                .filter( item => item.name.toLowerCase().includes( searchValue.toLowerCase() ) )
+                .map( ( item, idx ) => (
                 <Grid item key={idx}
                     // sx={{ display: 'flex', justifyContent: 'center' }}
                 >
@@ -127,7 +141,6 @@ export default function CaptureSourceMenu() {
         </>)
     }    
 
-    
 
     return (
         <Box display='flex' justifyContent='center' flexDirection='column' 
@@ -136,11 +149,32 @@ export default function CaptureSourceMenu() {
             <Typography mb={2} fontSize={'1.1rem'} > Choose the OCR capture source </Typography>
 
             <TabContext value={tab}>
-                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                <Box sx={{ borderBottom: 1, borderColor: 'divider', display: 'flex' }}>
                     <TabList onChange={tabHandleChange} aria-label="lab API tabs example">
                         <Tab label="Entire screen" value="1" />
                         <Tab label="Window" value="2" />
                     </TabList>
+                    <TextField type="search"
+                        placeholder="Search"
+                        variant="standard"
+                        size="small"
+                        value={searchValue}
+                        onChange={ (event: ChangeEvent< HTMLInputElement >) => {
+                            setSearchValue( event.target.value );
+                        }}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchRoundedIcon />
+                                </InputAdornment>
+                            ),
+                        }}
+                        sx={{
+                            minWidth: '45%',
+                            mt: 1.5,
+                            ml: 'auto'
+                        }}
+                    />
                 </Box>
 
                 <Box
