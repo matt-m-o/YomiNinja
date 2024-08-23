@@ -4,11 +4,17 @@ import { OcrResultContext } from "../../context/ocr_result.provider";
 import { isElectronBrowser, isFullscreenWindow, isInPWAMode, onDisplayModeChange } from "../../utils/environment";
 import Head from 'next/head';
 import { AppInstallationContext } from "../../context/app_installation.provider";
+import { SettingsContext } from "../../context/settings.provider";
 
 export default function OcrOverlayForBrowsers() {
 
     const { ocrResult } = useContext( OcrResultContext );
     const { installButtonVisibility, install } = useContext( AppInstallationContext );
+    const { activeSettingsPreset } = useContext( SettingsContext );
+
+    const automaticAdjustment = typeof activeSettingsPreset?.overlay?.behavior?.automatic_adjustment  === 'boolean'?
+        activeSettingsPreset?.overlay?.behavior?.automatic_adjustment :
+        true;
 
     const [ url, setUrl ] = useState<string>();
     const [ overlayWindow, setOverlayWindow ] = useState<Window>();
@@ -173,7 +179,9 @@ export default function OcrOverlayForBrowsers() {
             //   newHeight
             // });
             ignoreResizeEvent = true;
-            window.resizeTo( newWidth, newHeight );
+
+            if ( automaticAdjustment )
+                window.resizeTo( newWidth, newHeight );
           }
     
           const newPosition = {
@@ -192,7 +200,9 @@ export default function OcrOverlayForBrowsers() {
             //   }
             // });
             if ( isFullscreenWindow(window) ) return;
-            window.moveTo( newPosition.x, newPosition.y );
+
+            if ( automaticAdjustment )
+                window.moveTo( newPosition.x, newPosition.y );
           }
         }
     }, [ocrResult] );
