@@ -24,6 +24,7 @@ export class OcrRecognitionController {
     private mainWindow: BrowserWindow;
     private overlayWindow: BrowserWindow;
     private recognizing: boolean = false; 
+    private result: OcrResultScalable | null = null;
 
     constructor( input: {        
         ocrRecognitionService: OcrRecognitionService< OcrEngineSettingsU >;        
@@ -59,6 +60,13 @@ export class OcrRecognitionController {
         ipcMain.handle( 'ocr_recognition:get_supported_ocr_engines',
             ( event: IpcMainInvokeEvent ): { [key: string]: string; } => {
                 return this.ocrRecognitionService.getSupportedOcrEngines();
+            }
+        );
+
+        ipcMain.handle( 'ocr_recognition:get_result',
+            ( event: IpcMainInvokeEvent ): OcrResultScalable | null => {
+                console.log('ocr_recognition:get_result')
+                return this.result;
             }
         );
     }
@@ -121,10 +129,12 @@ export class OcrRecognitionController {
                 resultJson = await this.ocrResultToJson( ocrResultScalable );
             }
 
+            this.result = resultJson || null;
+
             ipcMain.send(
                 this.overlayWindow,
                 'ocr:result',
-                resultJson || null
+                this.result
             );
 
         } catch (error) {

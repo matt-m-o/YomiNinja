@@ -1,6 +1,7 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { OcrResultScalable } from "../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { ipcRenderer } from "../utils/ipc-renderer";
+import { setTimeout } from "timers";
 
 
 export type OcrResultContextType = {    
@@ -32,6 +33,11 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
     useEffect( () => {
 
         ipcRenderer.on( 'ocr:result', ocrResultHandler );
+
+        setTimeout( () => {
+            ipcRenderer.invoke('ocr_recognition:get_result')
+                .then( result => ocrResultHandler( null, result ) );
+        }, 1000 );
         
         ipcRenderer.on( 'user_command:toggle_results', ( e, value ) => {
             // if ( showResults === value ) return;
