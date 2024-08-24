@@ -62,3 +62,12 @@ export function isInPWAMode( window: Window ): boolean {
         window.matchMedia('(display-mode: window-controls-overlay)').matches
     );
 }
+
+export function getWindowSizeOffset(): { widthOffset: number, heightOffset: number } {
+    const widthOffset = window.outerWidth - window.innerWidth;
+    const heightOffset = window.outerHeight - window.innerHeight;
+    return {
+        widthOffset,
+        heightOffset
+    };
+}
