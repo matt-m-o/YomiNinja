@@ -110,7 +110,10 @@ export default function OcrOverlay() {
       event.clientY
     );
 
-    // console.log(element);
+    const eventElement = event.target as HTMLElement;
+
+    if (eventElement.id.includes('MigakuShadowDom'))
+      return;
 
     if ( element?.classList.contains('ignore-mouse') ) {
       ipcRenderer.invoke( 'overlay:hide_browser_window' );
