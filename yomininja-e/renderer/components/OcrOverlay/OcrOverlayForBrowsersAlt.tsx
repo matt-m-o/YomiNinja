@@ -1,29 +1,33 @@
-import { Button } from "@mui/material";
+import { Button, FormControlLabel, Switch } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
-import { OcrResultContext } from "../../context/ocr_result.provider";
-import { isElectronBrowser, isFullscreenWindow, isInPWAMode, onDisplayModeChange } from "../../utils/environment";
+import { OcrResultContext, OcrResultProvider } from "../../context/ocr_result.provider";
+import { getWindowSizeOffset, isElectronBrowser, isFullscreenWindow, isInPWAMode, onDisplayModeChange } from "../../utils/environment";
 import Head from 'next/head';
 import { AppInstallationContext } from "../../context/app_installation.provider";
-import { SettingsContext } from "../../context/settings.provider";
+import { SettingsContext, SettingsProvider } from "../../context/settings.provider";
+import { NotificationsProvider } from "../../context/notifications.provider";
+import { DictionaryProvider } from "../../context/dictionary.provider";
+import { OcrTemplatesProvider } from "../../context/ocr_templates.provider";
+import { TTSProvider } from "../../context/text-to-speech.provider";
+import { ProfileProvider } from "../../context/profile.provider";
+import OcrOverlay from "./OcrOverlay";
+import { getCookie, setCookie, hasCookie } from 'cookies-next';
 import OcrOverlayMenu from "./OcrOverlayMenu";
 
-export default function OcrOverlayForBrowsers() {
+export default function OcrOverlayForBrowsersAlt() {
 
     const { ocrResult } = useContext( OcrResultContext );
-    const { installButtonVisibility, install } = useContext( AppInstallationContext );
+    
     const { activeSettingsPreset } = useContext( SettingsContext );
 
     const automaticAdjustment = typeof activeSettingsPreset?.overlay?.behavior?.automatic_adjustment  === 'boolean'?
         activeSettingsPreset?.overlay?.behavior?.automatic_adjustment :
         true;
 
-    const [ url, setUrl ] = useState<string>();
     const [ overlayWindow, setOverlayWindow ] = useState<Window>();
     const [ isPopup, setIsPopup ] = useState(false);
     const [ isPWA, setIsPWA ] = useState(false);
     const [ title, setTitle ] = useState('');
-    const [ isFullscreen, setIsFullscreen ] = useState(false);
-    const [ homeUrl, setHomeUrl ] = useState('');
 
     const ocrResultResolution = ocrResult?.context_resolution;
 
@@ -54,13 +58,6 @@ export default function OcrOverlayForBrowsers() {
             setIsPWA( isInPWAMode( window ) );
         });
 
-        setIsFullscreen( isFullscreenWindow( window ) )
-        setUrl( location.href.replace('-browser', '') );
-        setHomeUrl(
-            location.href.replace( '/ocr-overlay-browser', '' )
-            .replace('.html', '' )
-        );
-
         return () => {
             off();
         }
@@ -74,25 +71,6 @@ export default function OcrOverlayForBrowsers() {
             setTitle('OCR Overlay - YomiNinja')
 
     }, [ isPopup, isPWA ] )
-
-    function popOutOverlay() {
-
-        const { widthOffset, heightOffset } = getWindowSizeOffset();
-
-        const width = ocrResult?.context_resolution.width || 1200;
-        const height = ocrResult?.context_resolution.height || 700;
-
-        const top = ocrResult ? ocrResult.position.top - (heightOffset) : window.screenY;
-        const left = ocrResult ? ocrResult.position.left - (widthOffset / 2) : window.screenX;
-
-        const windowFeatures = `left=${left},top=${top},width=${width},height=${height},titlebar=no,location=0`;
-        let overlayWindow = window.open(
-            location.href,
-            "mozillaWindow",
-            windowFeatures
-        );
-        setOverlayWindow( overlayWindow );
-    }
 
     let ignoreResizeEvent = false;
     let resizeTimeout = null;
@@ -152,14 +130,7 @@ export default function OcrOverlayForBrowsers() {
     // }, [isPopup] )
 
 
-    function getWindowSizeOffset(): { widthOffset: number, heightOffset: number } {
-        const widthOffset = window.outerWidth - window.innerWidth;
-        const heightOffset = window.outerHeight - window.innerHeight;
-        return {
-            widthOffset,
-            heightOffset
-        };
-    }
+    
 
 
     useEffect( () => {
@@ -203,7 +174,7 @@ export default function OcrOverlayForBrowsers() {
             if ( isFullscreenWindow(window) ) return;
 
             if ( automaticAdjustment )
-                window.moveTo( newPosition.x, newPosition.y );
+                window.moveTo( newPosition.x, newPosition.y ); 
           }
         }
     }, [ocrResult] );
@@ -222,14 +193,14 @@ export default function OcrOverlayForBrowsers() {
             <title>{title}</title>
         </Head>
 
-        <div id='iframe-container'
+        <div id='container'
             style={{
                 width: "100%",
                 height: '100vh',
                 minWidth: ocrResultResolution?.width
             }}
         >
-            <iframe id='overlay-iframe' src={url} frameBorder="0"
+            <div id='overlay-container'
                 style={{
                     width: ocrResultResolution?.width,
                     height: ocrResultResolution?.height || '100%',
@@ -237,7 +208,25 @@ export default function OcrOverlayForBrowsers() {
                     maxWidth: '105%',
                     aspectRatio,
                 }}
-            />
+            >
+                <SettingsProvider>
+                    <NotificationsProvider>
+                        <DictionaryProvider>
+                            <OcrResultProvider>
+                                <OcrTemplatesProvider>
+                                    <TTSProvider>
+                                        <ProfileProvider>
+
+                                            <OcrOverlay/>
+
+                                        </ProfileProvider>
+                                    </TTSProvider>
+                                </OcrTemplatesProvider>
+                            </OcrResultProvider>
+                        </DictionaryProvider>
+                    </NotificationsProvider>
+                </SettingsProvider>
+            </div>
         </div>
         
         <OcrOverlayMenu/>
