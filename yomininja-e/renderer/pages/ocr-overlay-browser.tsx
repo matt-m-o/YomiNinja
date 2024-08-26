@@ -4,7 +4,7 @@ import { AppInstallationProvider } from '../context/app_installation.provider';
 import { SettingsProvider } from '../context/settings.provider';
 import OcrOverlayForBrowsersAlt from '../components/OcrOverlay/OcrOverlayForBrowsersAlt';
 import { useEffect, useState } from 'react';
-import { getCookie, setCookie, hasCookie } from 'cookies-next';
+import { getCookie, setCookie, hasCookie, deleteCookie } from 'cookies-next';
 import OcrOverlayForBrowsers from '../components/OcrOverlay/OcrOverlayForBrowsers';
 
 export default function OcrOverlayBrowserPage() {
@@ -13,10 +13,20 @@ export default function OcrOverlayBrowserPage() {
 
     useEffect( () => {
 
-        if ( !hasCookie( 'strict_mode' ) )
-            setCookie( 'strict_mode', 'true' );
+        setTimeout( () => {
+            const usingMigaku = Boolean(
+                document.getElementById('MigakuShadowDom')
+            );
 
-        setStrictMode( Boolean( getCookie('strict_mode') == 'true' ) );
+            if ( !hasCookie( 'strict_mode' ) ) {
+                setCookie( 'strict_mode', (!usingMigaku).toString() );
+                location.reload();
+            }
+            else {
+                setStrictMode( Boolean( getCookie('strict_mode') == 'true' ) );
+            }
+            
+        }, 1000 );
 
     }, [] );
 
