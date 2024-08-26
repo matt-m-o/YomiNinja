@@ -71,7 +71,7 @@ export default function OcrOverlayMenu() {
     let style: CSSProperties= {
         display: 'flex',
         flexDirection: 'column',
-        marginTop: 30
+        marginTop: 40
     };
 
     if ( !ocrResult ) { 
@@ -79,7 +79,8 @@ export default function OcrOverlayMenu() {
             ...style,
             position: 'absolute',
             right: 5,
-            top: 30
+            top: 40,
+            marginTop: 0
         };
      }
     
