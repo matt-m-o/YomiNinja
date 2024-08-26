@@ -209,23 +209,19 @@ export default function OcrOverlayForBrowsersAlt() {
                     aspectRatio,
                 }}
             >
-                <SettingsProvider>
-                    <NotificationsProvider>
-                        <DictionaryProvider>
-                            <OcrResultProvider>
-                                <OcrTemplatesProvider>
-                                    <TTSProvider>
-                                        <ProfileProvider>
+                <NotificationsProvider>
+                    <DictionaryProvider>
+                        <OcrTemplatesProvider>
+                            <TTSProvider>
+                                <ProfileProvider>
 
-                                            <OcrOverlay/>
+                                    <OcrOverlay/>
 
-                                        </ProfileProvider>
-                                    </TTSProvider>
-                                </OcrTemplatesProvider>
-                            </OcrResultProvider>
-                        </DictionaryProvider>
-                    </NotificationsProvider>
-                </SettingsProvider>
+                                </ProfileProvider>
+                            </TTSProvider>
+                        </OcrTemplatesProvider>
+                    </DictionaryProvider>
+                </NotificationsProvider>
             </div>
         </div>
         
