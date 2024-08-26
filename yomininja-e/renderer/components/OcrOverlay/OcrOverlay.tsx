@@ -167,7 +167,8 @@ export default function OcrOverlay() {
       sx={{
         borderColor: overlayFrameVisuals?.border_color || 'red',
         borderWidth: overlayFrameVisuals?.border_width + 'px',
-        contentVisibility: showResults ? 'visible' : 'hidden'
+        contentVisibility: showResults ? 'visible' : 'hidden',
+        borderRadius: '12px'
       }}
     >
       { showDragArea &&
