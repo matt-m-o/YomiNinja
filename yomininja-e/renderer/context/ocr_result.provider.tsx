@@ -37,7 +37,7 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
         setTimeout( () => {
             ipcRenderer.invoke('ocr_recognition:get_result')
                 .then( result => ocrResultHandler( null, result ) );
-        }, 1000 );
+        }, 2000 );
         
         ipcRenderer.on( 'user_command:toggle_results', ( e, value ) => {
             // if ( showResults === value ) return;
