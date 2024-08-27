@@ -222,7 +222,7 @@ export default function OcrOverlayForBrowsers() {
             <title>{title}</title>
         </Head>
 
-        <div id='iframe-container'
+        <div id='overlay-container'
             style={{
                 width: "100%",
                 height: '100vh',
