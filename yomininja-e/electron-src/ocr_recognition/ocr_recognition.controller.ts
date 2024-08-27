@@ -65,7 +65,6 @@ export class OcrRecognitionController {
 
         ipcMain.handle( 'ocr_recognition:get_result',
             ( event: IpcMainInvokeEvent ): OcrResultScalable | null => {
-                console.log('ocr_recognition:get_result')
                 return this.result;
             }
         );
