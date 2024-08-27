@@ -4,10 +4,12 @@ import { AppInstallationContext } from "../../context/app_installation.provider"
 import { getWindowSizeOffset, isFullscreenWindow, isInPWAMode, onDisplayModeChange } from "../../utils/environment";
 import { OcrResultContext } from "../../context/ocr_result.provider";
 import { getCookie, setCookie, hasCookie } from 'cookies-next';
+import CloseIcon from '@mui/icons-material/Close';
 
 
 export default function OcrOverlayMenu() {
 
+    const [ visible, setVisible ] = useState(true);
     const { ocrResult } = useContext( OcrResultContext );
     const { installButtonVisibility, install } = useContext( AppInstallationContext );
     const [ strictMode, setStrictMode ] = useState(true);
@@ -68,114 +70,121 @@ export default function OcrOverlayMenu() {
         // setOverlayWindow( overlayWindow );
     }
 
-    let style: CSSProperties= {
-        display: 'flex',
-        flexDirection: 'column',
-        marginTop: 40
-    };
-
-    if ( !ocrResult ) { 
-        style = {
-            ...style,
-            position: 'absolute',
-            right: 5,
-            top: 40,
-            marginTop: 0
-        };
-     }
     
     return (
-    <div
-        style={style}
-    >
-        <Button
-            title="Install this WebApp for an enhanced overlay!"
-            variant='contained'
-            sx={{
-                display: installButtonVisibility ? 'inherit' : 'none',
-                minWidth: 100,
-                ml: 1,
-                mt: 1,
-                mr: 1
+        <div
+            style={{
+                display: visible ? 'flex' : 'none',
+                flexDirection: 'column',
+                backgroundColor: '#272727',
+                position: 'absolute',
+                top: '70px',
+                right: '1%',
+                borderRadius: '14px',
+                paddingBottom: '5px'
             }}
-            onClick={install}
         >
-            Install
-        </Button>
-        { !isPopup && !isPWA && !isFullscreen &&
-            <Button  variant='contained'
+            <Button
+                id='close-overlay-menu'
+                endIcon={<CloseIcon/>}
+                onClick={ () => {
+                    setVisible(false)
+                }}
+            >
+                Close Menu
+            </Button>
+            <Button
+                title="Install this WebApp for an enhanced overlay!"
+                variant='contained'
+                sx={{
+                    display: installButtonVisibility ? 'inherit' : 'none',
+                    minWidth: 100,
+                    ml: 1,
+                    mt: 1,
+                    mr: 1
+                }}
+                onClick={install}
+            >
+                Install
+            </Button>
+            { !isPopup && !isPWA && !isFullscreen &&
+                <Button  variant='contained'
+                    sx={{
+                        minWidth: 100,
+                        ml: 1,
+                        mt: 1,
+                        mr: 1
+                    }}
+                    onClick={popOutOverlay}
+                >
+                    Pop Out
+                </Button>
+            }
+
+            <Button variant='contained'
                 sx={{
                     minWidth: 100,
                     ml: 1,
                     mt: 1,
                     mr: 1
                 }}
-                onClick={popOutOverlay}
-            >
-                Pop Out
-            </Button>
-        }
+                onClick={ () => {
 
-        <Button variant='contained'
-            sx={{
-                minWidth: 100,
-                ml: 1,
-                mt: 1,
-                mr: 1
-            }}
-            onClick={ () => {
-                const iframeContainer = document.getElementById('overlay-container');
-                iframeContainer.addEventListener( 'fullscreenchange', () => {
-                    setIsFullscreen( Boolean(document.fullscreenElement) )
-                });
-                if (iframeContainer.requestFullscreen) {
-                    iframeContainer.requestFullscreen();
-                // @ts-ignore
-                } else if (iframeContainer.webkitRequestFullscreen) { /* Safari */
+
+                    let overlayContainer = document.getElementById('overlay-container');
+
+                    overlayContainer.addEventListener( 'fullscreenchange', () => {
+                        setIsFullscreen( Boolean(document.fullscreenElement) )
+                    });
+                    if (overlayContainer.requestFullscreen) {
+                        overlayContainer.requestFullscreen();
                     // @ts-ignore
-                    iframeContainer.webkitRequestFullscreen();
+                    } else if (overlayContainer.webkitRequestFullscreen) { /* Safari */
+                        // @ts-ignore
+                        overlayContainer.webkitRequestFullscreen();
+                    }
+                }}
+            >
+                Fullscreen
+            </Button>
+
+            <Button
+                variant='contained'
+                href={homeUrl}
+                sx={{
+                    minWidth: 100,
+                    ml: 1,
+                    mt: 1,
+                    mr: 1
+                }}
+            >
+                Home
+            </Button>
+
+            <FormControlLabel label='Strict Mode'
+                title="Strict Mode can break some extensions"
+                control={
+                    <Switch
+                        checked={ strictMode }
+                        onChange={ ( event ) => {
+                            setCookie(
+                                'strict_mode',
+                                event.target.checked.toString()
+                            );
+                            setStrictMode( event.target.checked )
+                            location.reload()
+                        }}
+                    /> 
                 }
-            }}
-        >
-            Fullscreen
-        </Button>
+                sx={{
+                    color: 'white',
+                    minWidth: 145,
+                    ml: 0,
+                    mt: 1,
+                    mr: 1  
+                }}
+            />
 
-        <Button
-            variant='contained'
-            href={homeUrl}
-            sx={{
-                minWidth: 100,
-                ml: 1,
-                mt: 1,
-                mr: 1
-            }}
-        >
-            Home
-        </Button>
-
-        <FormControlLabel label='Strict Mode'
-            title="Strict Mode can break some extensions"
-            control={
-                <Switch
-                    checked={ strictMode }
-                    onChange={ ( event ) => {
-                        setCookie(
-                            'strict_mode',
-                            event.target.checked.toString()
-                        );
-                        setStrictMode( event.target.checked )
-                        location.reload()
-                    }}
-                /> 
-            }
-            sx={{
-                color: 'white',
-                minWidth: 145,
-                ml: 0,
-                mt: 1,
-                mr: 1  
-            }}
-        />
-
-    </div>);
+        </div>
+    );
 }
