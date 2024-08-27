@@ -112,7 +112,10 @@ export default function OcrOverlay() {
 
     const eventElement = event.target as HTMLElement;
 
-    if (eventElement.id.includes('MigakuShadowDom'))
+    if (
+      eventElement.id.includes('MigakuShadowDom') ||
+      eventElement.id.includes('close-overlay-menu')
+    )
       return;
 
     if ( element?.classList.contains('ignore-mouse') ) {
