@@ -429,12 +429,16 @@ export class AppController {
         this.registerGlobalShortcuts( settingsPresetJson );
     }
 
-    setOverlayBounds( entireScreenMode: 'fullscreen' | 'maximized' = 'fullscreen' ) {
+    setOverlayBounds(
+        entireScreenMode: 'fullscreen' | 'maximized' = 'fullscreen',
+        preventNegativeCoordinates: boolean = false
+    ) {
 
         overlayController.setOverlayBounds({
             entireScreenMode,
             captureSourceDisplay: this.captureSourceDisplay,
-            captureSourceWindow: this.captureSourceWindow
+            captureSourceWindow: this.captureSourceWindow,
+            preventNegativeCoordinates
         });
     }
 
@@ -524,6 +528,8 @@ export class AppController {
         
         await this.handleCaptureSourceSelection();
 
+        const preventNegativeCoordinates = Boolean(image);
+
         image = await this.appService.getCaptureSourceImage({
             image,
             display: this.captureSourceDisplay,
@@ -536,7 +542,11 @@ export class AppController {
         let isFullScreenImage = true;
         if ( image && runFullScreenImageCheck)
             isFullScreenImage = await this.isFullScreenImage(image);
-        this.setOverlayBounds( isFullScreenImage ? 'fullscreen' :  'maximized' );
+
+        this.setOverlayBounds(
+            isFullScreenImage ? 'fullscreen' :  'maximized',
+            preventNegativeCoordinates
+        );
         this.showOverlayWindow({ showInactive: true, displayResults: false }); // This can cause problems with JPDBReader extension // Warning: Unknown display value, please report this!
         ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
 

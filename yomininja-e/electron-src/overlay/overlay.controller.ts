@@ -632,6 +632,7 @@ export class OverlayController {
             entireScreenMode?: 'fullscreen' | 'maximized',
             captureSourceDisplay?: Electron.Display,
             captureSourceWindow?: ExternalWindow,
+            preventNegativeCoordinates?: boolean
         }
     ) {
         input.entireScreenMode = input.entireScreenMode || 'fullscreen';
@@ -692,8 +693,16 @@ export class OverlayController {
                 width: captureSourceWindow.size.width,
                 height: captureSourceWindow.size.height,
                 x: captureSourceWindow.position.x,
-                y: captureSourceWindow.position.y,
+                y: captureSourceWindow.position.y
             };
+
+            if ( input.preventNegativeCoordinates === true ) {
+                targetWindowBounds = {
+                    ...targetWindowBounds,
+                    x: targetWindowBounds.x < 0 ? 0 : targetWindowBounds.x,
+                    y: targetWindowBounds.y < 0 ? 0 : targetWindowBounds.y
+                }
+            }
 
             if ( os.platform() === 'linux' )
                 this.overlayWindow.setFullScreen( false );
