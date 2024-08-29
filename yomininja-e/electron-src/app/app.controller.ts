@@ -438,7 +438,8 @@ export class AppController {
             entireScreenMode,
             captureSourceDisplay: this.captureSourceDisplay,
             captureSourceWindow: this.captureSourceWindow,
-            preventNegativeCoordinates
+            preventNegativeCoordinates,
+            isTaskbarVisible: !Boolean(this.taskbar?.auto_hide)
         });
     }
 

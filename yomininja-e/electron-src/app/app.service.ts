@@ -245,8 +245,8 @@ export class AppService {
             metadata.height : window.size.height;
 
         const windowArea = {
-            left: window.position.x > 0 ? window.position.x : 0, //Math.abs(window.position.x) * 2,
-            top: window.position.y > 0 ? window.position.y : 0, //Math.abs(window.position.y) * 2,
+            left: window.position.x > 0 ? window.position.x : 0,
+            top: window.position.y > 0 ? window.position.y : 0,
             width,
             height,
         };
@@ -255,7 +255,7 @@ export class AppService {
             windowArea.width = metadata.width - windowArea.left;
 
         if ( windowArea.top + windowArea.height > metadata.height )
-            windowArea.height = metadata.height - windowArea.top;
+            windowArea.height = metadata.height - windowArea.top
         
         return await sharp(image).extract(windowArea)
             .toBuffer();

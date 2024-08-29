@@ -632,7 +632,8 @@ export class OverlayController {
             entireScreenMode?: 'fullscreen' | 'maximized',
             captureSourceDisplay?: Electron.Display,
             captureSourceWindow?: ExternalWindow,
-            preventNegativeCoordinates?: boolean
+            preventNegativeCoordinates?: boolean,
+            isTaskbarVisible?: boolean
         }
     ) {
         input.entireScreenMode = input.entireScreenMode || 'fullscreen';
@@ -697,10 +698,16 @@ export class OverlayController {
             };
 
             if ( input.preventNegativeCoordinates === true ) {
-                targetWindowBounds = {
-                    ...targetWindowBounds,
-                    x: targetWindowBounds.x < 0 ? 0 : targetWindowBounds.x,
-                    y: targetWindowBounds.y < 0 ? 0 : targetWindowBounds.y
+                if ( targetWindowBounds.x < 0 ) {
+                    if ( input.isTaskbarVisible === false )
+                        targetWindowBounds.width -= Math.abs(targetWindowBounds.x)
+                    targetWindowBounds.x = 0;
+                }
+
+                if ( targetWindowBounds.y < 0 ) {
+                    if ( input.isTaskbarVisible === false )
+                        targetWindowBounds.height -= Math.abs(targetWindowBounds.y)
+                    targetWindowBounds.y = 0;
                 }
             }
 
