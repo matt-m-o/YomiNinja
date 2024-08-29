@@ -6,6 +6,7 @@ import { getNextPortAvailable } from '../@core/infra/util/port_check';
 import fs from 'fs';
 import path from 'path';
 import { PAGES_DIR } from '../util/directories.util';
+import mimeTypes from 'mime-types';
 
 export let httpServer = http.createServer( async (req, res) => {
     // const parsed = url.parse( String(req?.url), true )
@@ -26,7 +27,15 @@ export let httpServer = http.createServer( async (req, res) => {
                     res.writeHead(500, { 'Content-Type': 'text/plain' });
                     res.end('Internal server error');
                 } else {
-                    res.writeHead(200, { 'Content-Type': 'text/html' });
+                    const contentType = mimeTypes.lookup(
+                        path.extname(filePath)
+                    );
+
+                    if ( contentType )
+                        res.writeHead(200, { 'Content-Type': contentType });
+                    else
+                        res.writeHead(200);
+
                     res.end(data);
                 }
             });
