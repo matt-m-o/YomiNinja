@@ -23,7 +23,7 @@ export class WindowManagerMacOS implements WindowManagerNativeInterface {
         if ( !this.hasAccessibilityAccess )
             return this.requestAccessibility();
 
-        console.log(`searchWindowByTitle: ${title}`);
+        // console.log(`searchWindowByTitle: ${title}`);
 
         return this.getAllWindows()
             .filter( window => window.title.includes( title ) );

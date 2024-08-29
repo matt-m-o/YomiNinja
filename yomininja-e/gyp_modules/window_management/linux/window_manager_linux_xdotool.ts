@@ -18,7 +18,7 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
 
     async searchWindowByTitle( title: string ): Promise<WindowProperties[]> {
 
-        console.log(`searchWindowByTitle: ${title}`);
+        // console.log(`searchWindowByTitle: ${title}`);
 
         const ids = await this.searchWindowByName( title );
         const windows: WindowProperties[] = [];
