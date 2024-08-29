@@ -158,6 +158,7 @@ export default function CaptureSourceMenu() {
                         placeholder="Search"
                         variant="standard"
                         size="small"
+                        autoFocus
                         value={searchValue}
                         onChange={ (event: ChangeEvent< HTMLInputElement >) => {
                             setSearchValue( event.target.value );
@@ -168,6 +169,7 @@ export default function CaptureSourceMenu() {
                                     <SearchRoundedIcon />
                                 </InputAdornment>
                             ),
+                            autoFocus: true
                         }}
                         sx={{
                             minWidth: '45%',
