@@ -279,8 +279,18 @@ export default function HomeContent() {
                             <strong> Comic Text Detector (MangaOCR only). </strong>
                         </li>
 
+                        { systemInfo?.platform === 'darwin' && 
+                            <li>
+                                <strong> The Apple Vision engine now supports vertical text recognition. </strong>
+                            </li>
+                        }
+
                         <li>
                             <strong> The positioning and sizing of extracted text have been improved. </strong>
+                        </li>
+
+                        <li>
+                            <strong> The overlay can now be viewed in web browsers and installed on Chromium-based browsers. </strong>
                         </li>
 
                         <li>
