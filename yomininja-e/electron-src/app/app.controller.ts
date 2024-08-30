@@ -562,11 +562,19 @@ export class AppController {
             this.mainWindow.show();
         }
         else {
-            await ocrRecognitionController.recognize({
-                image,
-                engineName
-            })
-                .catch( console.error );
+
+            try {
+                const response = await ocrRecognitionController.recognize({
+                    image,
+                    engineName
+                });
+
+                if ( response.status === 'replaced' )
+                    return;
+            }
+            catch (error) {
+                console.error(error);
+            }
         }
 
         ipcMain.send( this.overlayWindow, 'ocr:processing_complete' );

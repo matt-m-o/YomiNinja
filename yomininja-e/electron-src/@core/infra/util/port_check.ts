@@ -28,7 +28,7 @@ export async function isPortAvailable( port: number ): Promise< boolean > {
         });
     
         server.on( 'error', ( e ) => {
-            console.error(e);
+            console.log(e.message);
             server.close();
             resolve(false);
         });

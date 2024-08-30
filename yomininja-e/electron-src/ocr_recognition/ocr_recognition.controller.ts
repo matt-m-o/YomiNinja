@@ -16,6 +16,12 @@ import { InAppNotification } from "../common/types/in_app_notification";
 import { ipcMain } from "../common/ipc_main";
 import { bufferToDataURL } from "../util/image.util";
 import { OcrResultScalable } from "../@core/domain/ocr_result_scalable/ocr_result_scalable";
+import { cloneDeep } from 'lodash';
+
+export type Recognition_Output = {
+    result: OcrResultScalable | null;
+    status: 'complete' | 'replaced' | 'failed';
+};
 
 export class OcrRecognitionController {
     
@@ -23,8 +29,9 @@ export class OcrRecognitionController {
     
     private mainWindow: BrowserWindow;
     private overlayWindow: BrowserWindow;
-    private recognizing: boolean = false; 
+    private recognizing: boolean = false;
     private result: OcrResultScalable | null = null;
+    private recognitionCallOnHold: Recognition_Input | undefined;
 
     constructor( input: {        
         ocrRecognitionService: OcrRecognitionService< OcrEngineSettingsU >;        
@@ -70,14 +77,25 @@ export class OcrRecognitionController {
         );
     }
 
-    async recognize(
-        input: {
-            image: Buffer,
-            engineName?: string;
-            autoOcr?: boolean;
-        }
-    ) {
+    recognize = async ( input: Recognition_Input ): Promise< Recognition_Output > => {
         const { image, engineName, autoOcr } = input;
+        
+        if ( this.recognizing && !input.autoOcr ) {
+            this.recognitionCallOnHold = cloneDeep(input);
+            console.log('Replacing current recognition request!');
+            return {
+                result: null,
+                status: 'replaced'
+            };
+        }
+        else {
+            this.recognitionCallOnHold = undefined;            
+        }
+        
+        const response: Recognition_Output = {
+            result: null,
+            status: 'failed'
+        };
         
         this.recognizing = true;
         
@@ -93,17 +111,28 @@ export class OcrRecognitionController {
                 engineName,
                 autoMode: input.autoOcr
             });
-            // console.log({ ocrResultScalable });
+            this.recognizing = false;
+
+            // Throwing away current response an returning newest call result
+            if ( this.recognitionCallOnHold ){
+                const newInput = cloneDeep( this.recognitionCallOnHold );
+                this.recognitionCallOnHold = undefined;
+                return await this.recognize( newInput );
+            }
+
+            response.result = ocrResultScalable;
+
+            response.status = 'complete';
 
             // console.timeEnd('controller.recognize');
             // console.log('');
-
             if (
                 !autoOcr &&
                 ( !ocrResultScalable ||
                   !ocrResultScalable?.ocr_regions?.length ||
                   !ocrResultScalable?.ocr_regions?.some( region => region?.results?.length ) )
             ) {
+                
                 const notification: InAppNotification = {
                     type: 'info',
                     message: 'No text recognized! Please try again.',
@@ -115,6 +144,8 @@ export class OcrRecognitionController {
                     'notifications:show',
                     notification
                 );
+
+                response.status = 'failed';
             }
 
             let resultJson = ocrResultScalable;
@@ -139,7 +170,10 @@ export class OcrRecognitionController {
         } catch (error) {
             console.error( error );
         }
+        
         this.recognizing = false;
+
+        return response;
     }
 
     async applySettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
@@ -194,3 +228,9 @@ export class OcrRecognitionController {
         return result;
     }
 }
+
+export type Recognition_Input = {
+    image: Buffer;
+    engineName?: string;
+    autoOcr?: boolean;
+};
