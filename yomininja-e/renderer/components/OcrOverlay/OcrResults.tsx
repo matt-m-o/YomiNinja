@@ -12,6 +12,7 @@ import { removeFurigana } from "../../utils/text_utils";
 import { ipcRenderer } from "../../utils/ipc-renderer";
 import { isElectronBrowser, isFullscreenWindow } from "../../utils/environment";
 import { ProfileContext } from "../../context/profile.provider";
+import { SettingsContext } from "../../context/settings.provider";
 
 export type OcrResultsProps = {
     ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
@@ -22,8 +23,13 @@ export type OcrResultsProps = {
 
 export default function OcrResults( props: OcrResultsProps ) {
 
-    const { ocrItemBoxVisuals, overlayHotkeys, overlayBehavior } = props;
+    const {
+        ocrItemBoxVisuals,
+        overlayHotkeys,
+        overlayBehavior
+    } = props;
 
+    const { activeSettingsPreset } = useContext( SettingsContext );
     const { profile } = useContext( ProfileContext );
     const { ocrResult } = useContext( OcrResultContext );
     const { activeOcrTemplate } = useContext( OcrTemplatesContext );
@@ -31,6 +37,7 @@ export default function OcrResults( props: OcrResultsProps ) {
     const [ isPopup, setIsPopup ] = useState(false);
     const [ isFullscreen, setIsFullscreen ] = useState(false);
     
+    const overlayVisuals = activeSettingsPreset?.overlay?.visuals;
     const [ editableBoxId, setEditableBoxId ] = useState< string | undefined >(undefined);
 
     const isElectron = isElectronBrowser();
@@ -164,8 +171,8 @@ export default function OcrResults( props: OcrResultsProps ) {
                 style={{
                     minWidth: (context_resolution && isPopup) || isFullscreen ? context_resolution.width+'px' : '100%',
                     minHeight: (context_resolution && isPopup) || isFullscreen ? context_resolution.height+'px' : '100%',
-                    // marginTop: isFullscreen ? 0 : -2,
-                    // marginLeft: isFullscreen ? 0 : -1,
+                    marginTop: -overlayVisuals.frame.border_width+'px',
+                    marginLeft: -overlayVisuals.frame.border_width+'px',
                     maxWidth: '105%',
                     maxHeight: '105%',
                     // aspectRatio: resultAspectRatio,
