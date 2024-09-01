@@ -75,6 +75,9 @@ export function handleMigakuPopup( popup: PopupView, openWindow?: ( url: string 
         window.webContents.on('update-target-url', ( e, url ) => {
 
             setTimeout( () => {
+
+                if ( window.isDestroyed() ) return;
+                
                 window.webContents.executeJavaScript(`
                     (${fixButtons.toString()})();
                 `);

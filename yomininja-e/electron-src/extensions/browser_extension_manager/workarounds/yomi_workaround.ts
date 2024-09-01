@@ -125,10 +125,14 @@ export function handleYomitanPopup( popup: PopupView, openWindow?: ( url: string
         window.webContents.on('update-target-url', ( e, url ) => {
 
             setTimeout( () => {
+                
+                if ( window.isDestroyed() ) return;
+
                 window.webContents.executeJavaScript(`
                     (${fixButtons.toString()})();
                 `);
-            }, 5000 );
+
+            }, 2000 );
         });
 
     }
