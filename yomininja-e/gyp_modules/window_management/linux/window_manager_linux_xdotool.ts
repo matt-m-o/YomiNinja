@@ -112,6 +112,8 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
 
     activateWindow( windowId: number ) {
         const command = `xdotool windowactivate ${windowId}`;
+
+        // console.log({ command });
         
         exec( command, ( error, stdout, stderr ) => {
 
@@ -124,6 +126,8 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
     searchWindowByName( windowName: string ): Promise< number[] > {
 
         const command = `xdotool search --onlyvisible --name "${windowName}"`;
+
+        // console.log({ command });
 
         return new Promise( ( resolve, reject ) => {
 
@@ -148,6 +152,8 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
 
         const command = `xdotool getwindowname ${windowHandle}`;
 
+        // console.log({ command });
+
         return new Promise( ( resolve, reject ) => {
 
             exec( command, ( error, stdout, stderr ) => {
@@ -167,6 +173,8 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
     async getWindowGeometry( windowHandle: number ): Promise< XDoToolWindowGeometry | null > {
 
         const command = `xdotool getwindowgeometry --shell ${windowHandle}`;
+
+        // console.log({ command });
 
         return new Promise( ( resolve, reject ) => {
 
@@ -201,6 +209,8 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
 
     async getWindowGeometryAlt( windowHandle: number ) {
         const command = `xwininfo -id ${windowHandle}`;
+
+        // console.log({ command });
 
         return new Promise( ( resolve, reject ) => {
 

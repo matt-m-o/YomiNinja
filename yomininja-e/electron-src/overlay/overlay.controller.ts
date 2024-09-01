@@ -376,10 +376,11 @@ export class OverlayController {
     }
 
     private async showBrowserPopupOverlayWindow(): Promise<boolean> {
-        const windows = await windowManager.searchWindow('YomiNinja (Browser pop pup)');
+        const windowTitle = '(Browser pop pup)';
+        const windows = await windowManager.searchWindow(windowTitle);
 
         const window = windows.find( window => {
-            if ( window.title.includes('YomiNinja (Browser pop pup)') ) {
+            if ( window.title.includes(windowTitle) ) {
                 windowManager.setForegroundWindow(window.handle);
                 return true;
             }
@@ -392,10 +393,10 @@ export class OverlayController {
 
         if ( !this.activeCaptureSource?.window?.id ) return;
 
-        const windows = await windowManager.searchWindow('YomiNinja (Browser pop pup)');
+        const windows = await windowManager.searchWindow('(Browser pop pup)');
 
         const window = windows.find( window => {
-            if ( window.title.includes('OCR Overlay - YomiNinja (Browser pop pup)') ) {
+            if ( window.title.includes('(Browser pop pup)') ) {
 
                 if ( this.activeCaptureSource?.window?.id )
                     windowManager.setForegroundWindow(this.activeCaptureSource.window.id);
@@ -733,10 +734,11 @@ export class OverlayController {
     }
 
     async setBrowserPopupOverlayBounds( bounds: Partial<Electron.Rectangle> ) {
-        const windows = await windowManager.searchWindow('YomiNinja (Browser pop pup)');
+        const windowTitle = '(Browser pop pup)';
+        const windows = await windowManager.searchWindow(windowTitle);
 
         const window = windows.find( window => {
-            if ( window.title.includes('YomiNinja (Browser pop pup)') ) {
+            if ( window.title.includes(windowTitle) ) {
                 windowManager.setForegroundWindow(window.handle);
                 windowManager.setWindowBounds(
                     window.handle,
