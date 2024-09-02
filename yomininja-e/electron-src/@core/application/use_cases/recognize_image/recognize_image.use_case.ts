@@ -166,7 +166,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
 
             const { auto_ocr_options } = targetRegion;
 
-            refreshAllRegions = refreshAllRegions || auto_ocr_options.refresh_all_regions;
+            refreshAllRegions = Boolean( refreshAllRegions || auto_ocr_options?.refresh_all_regions );
 
             const targetRegionPixels = targetRegion.toPixels({
                 width: metadata.width,
