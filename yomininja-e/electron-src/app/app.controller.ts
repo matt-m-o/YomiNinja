@@ -235,7 +235,8 @@ export class AppController {
                     this.activeCaptureSource.window = this.captureSourceWindow;
                 }
 
-                this.mainWindow.webContents.send(
+                ipcMain.send(
+                    this.mainWindow,
                     'app:active_capture_source',
                     this.activeCaptureSource
                 );
@@ -552,8 +553,9 @@ export class AppController {
         ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
 
         if ( this.isEditingOcrTemplate ) {
-            this.mainWindow.webContents.send(
-                'app:capture_source_image',
+            ipcMain.send(
+                this.mainWindow,
+                'settings_preset:google_window_closed',
                 {
                     image,
                     imageBase64 :image.toString('base64')

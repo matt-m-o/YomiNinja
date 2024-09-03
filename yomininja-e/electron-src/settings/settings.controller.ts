@@ -38,7 +38,11 @@ export class SettingsController {
             if ( !settingsPresetJson )
                 return;
             
-            this.mainWindow.webContents.send( 'settings_preset:active_data', settingsPresetJson ); 
+            ipcMain.send(
+                this.mainWindow,
+                'settings_preset:active_data',
+                settingsPresetJson
+            );
 
             return settingsPresetJson;
         });
@@ -207,7 +211,11 @@ export class SettingsController {
             
             this.googleWindow = undefined;
             
-            this.mainWindow.webContents.send( 'settings_preset:google_window_closed' );
+            ipcMain.send(
+                this.mainWindow,
+                'settings_preset:google_window_closed'
+            );
+            // this.mainWindow.webContents.send( 'settings_preset:google_window_closed' );
         });
 
         this.googleWindow.loadURL('https://www.google.com');

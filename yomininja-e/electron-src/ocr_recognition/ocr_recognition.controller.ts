@@ -197,7 +197,7 @@ export class OcrRecognitionController {
 
                     if ( !this.mainWindow ) return;
 
-                    this.mainWindow.webContents.send( 'ocr_recognition:ocr_engine_restarted' );
+                    ipcMain.send( this.mainWindow, 'ocr_recognition:ocr_engine_restarted' );
                 }
             );
         }, 3000 );

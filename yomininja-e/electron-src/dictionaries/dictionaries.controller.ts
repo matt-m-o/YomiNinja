@@ -163,8 +163,11 @@ export class DictionariesController {
     }
 
     private importProgressCallBack = ( input: DictionaryImportProgress ) => {
-
-        this.mainWindow.webContents.send( 'dictionaries:import_progress', input );
+        ipcMain.send(
+            this.mainWindow,
+            'dictionaries:import_progress',
+            input
+        );
     }
 
 }

@@ -61,7 +61,8 @@ export class BrowserExtensionsController {
                             message: 'Extension installation has failed!'
                         };
 
-                        this.mainWindow.webContents.send(
+                        ipcMain.send(
+                            this.mainWindow,
                             'notifications:show',
                             notification
                         );

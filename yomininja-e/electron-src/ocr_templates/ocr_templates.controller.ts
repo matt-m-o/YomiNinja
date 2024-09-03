@@ -129,7 +129,7 @@ export class OcrTemplatesController {
         const json = template?.toJson();
 
         ipcMain.send( this.overlayWindow, 'ocr_templates:active_template', json );
-        // this.mainWindow.webContents.send( eventName, json );
+        // ipcMain.send( this.mainWindow, eventName );
         ocrTemplateEvents.emit( 'active_template', template );
 
         // console.log( json?.target_regions );
