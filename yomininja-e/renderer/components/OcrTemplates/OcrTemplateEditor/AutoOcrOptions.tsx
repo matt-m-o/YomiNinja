@@ -1,11 +1,11 @@
 import { FormControlLabel, Switch, Typography } from "@mui/material";
 import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
-import { CaptureSource } from "../../../electron-src/ocr_recognition/common/types";
-import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
+import { CaptureSource } from "../../../../electron-src/ocr_recognition/common/types";
+import { OcrTargetRegionJson } from "../../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
 import { SetStateAction, useContext, useState } from "react";
-import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
-import OcrSettingsSlider from "../AppSettings/OcrSettings/OcrSettingsSlider";
-import { ipcRenderer } from "../../utils/ipc-renderer";
+import { OcrTemplatesContext } from "../../../context/ocr_templates.provider";
+import OcrSettingsSlider from "../../AppSettings/OcrSettings/OcrSettingsSlider";
+import { ipcRenderer } from "../../../utils/ipc-renderer";
 
 export type AutoOcrOptionsProps = {
     activeCaptureSource: CaptureSource;

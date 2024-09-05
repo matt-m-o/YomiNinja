@@ -2,7 +2,7 @@ import { Box, Button, Card, CardContent, Container, Divider, FormControlLabel, G
 import { CSSProperties, useContext, useEffect, useState } from "react";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 import CreateOcrTemplateModal from "./CreateOcrTemplateModal";
-import OcrTemplateEditor from "./OcrTemplateEditor";
+import OcrTemplateEditor from "./OcrTemplateEditor/OcrTemplateEditor";
 import ModeEditOutlineRoundedIcon from '@mui/icons-material/ModeEditOutlineRounded';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';

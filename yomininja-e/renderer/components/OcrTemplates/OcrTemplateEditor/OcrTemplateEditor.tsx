@@ -1,17 +1,17 @@
 import { Autocomplete, Container, FormControlLabel, MenuItem, Select, styled, Switch, TextField, Typography } from "@mui/material";
 import { CSSProperties, useContext, useEffect, useRef, useState } from "react";
-import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
-import OcrTargetRegion from "./OcrTargetRegion";
+import { OcrTemplatesContext } from "../../../context/ocr_templates.provider";
+import OcrTargetRegion from "../OcrTargetRegion";
 import Moveable from "react-moveable";
-import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
+import { OcrTargetRegionJson } from "../../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
 import Selecto from "react-selecto";
-import OcrSettingsSlider from "../AppSettings/OcrSettings/OcrSettingsSlider";
-import { CustomAccordion } from "../common/CustomAccordion";
-import { TTSContext } from "../../context/text-to-speech.provider";
+import OcrSettingsSlider from "../../AppSettings/OcrSettings/OcrSettingsSlider";
+import { CustomAccordion } from "../../common/CustomAccordion";
+import { TTSContext } from "../../../context/text-to-speech.provider";
 import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
-import { CaptureSourceContext } from "../../context/capture_source.provider";
+import { CaptureSourceContext } from "../../../context/capture_source.provider";
 import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
-import { ipcRenderer } from "../../utils/ipc-renderer";
+import { ipcRenderer } from "../../../utils/ipc-renderer";
 import AutoOcrOptions from "./AutoOcrOptions";
 import TTSOptions from "./TTSOptions";
 

@@ -1,11 +1,11 @@
 import { Autocomplete, FormControlLabel, Switch, TextField, Typography } from "@mui/material";
-import { CaptureSource } from "../../../electron-src/ocr_recognition/common/types";
-import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
+import { CaptureSource } from "../../../../electron-src/ocr_recognition/common/types";
+import { OcrTargetRegionJson } from "../../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
 import { SetStateAction, useContext, useState } from "react";
-import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
-import OcrSettingsSlider from "../AppSettings/OcrSettings/OcrSettingsSlider";
+import { OcrTemplatesContext } from "../../../context/ocr_templates.provider";
+import OcrSettingsSlider from "../../AppSettings/OcrSettings/OcrSettingsSlider";
 import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
-import { TTSContext } from "../../context/text-to-speech.provider";
+import { TTSContext } from "../../../context/text-to-speech.provider";
 
 export type AutoOcrOptionsProps = {
     selectedTargetRegion: OcrTargetRegionJson;
