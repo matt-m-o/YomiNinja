@@ -39,6 +39,7 @@ export default function TTSOptions( props: AutoOcrOptionsProps ) {
                 return <TextField {...params}
                     label='Voice'
                     fullWidth
+                    placeholder="Voice" 
                     InputProps={{
                         ...params.InputProps,
                         startAdornment: <RecordVoiceOverIcon sx={{ mr: '10px' }}/>,
