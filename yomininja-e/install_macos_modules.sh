@@ -6,3 +6,5 @@ npm install --force --include=optional @img/sharp-darwin-arm64
 
 npm install --force --include=optional @img/sharp-libvips-darwin-x64
 npm install --force --include=optional @img/sharp-libvips-darwin-arm64
+
+npm install --force node-window-manager@2.2.3
