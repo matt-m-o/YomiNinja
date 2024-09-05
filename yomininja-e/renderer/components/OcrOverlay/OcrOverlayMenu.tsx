@@ -131,17 +131,17 @@ export default function OcrOverlayMenu() {
                 onClick={ () => {
 
 
-                    let overlayContainer = document.getElementById('overlay-container');
+                    const body = document.body;
 
-                    overlayContainer.addEventListener( 'fullscreenchange', () => {
+                    body.addEventListener( 'fullscreenchange', () => {
                         setIsFullscreen( Boolean(document.fullscreenElement) )
                     });
-                    if (overlayContainer.requestFullscreen) {
-                        overlayContainer.requestFullscreen();
+                    if (body.requestFullscreen) {
+                        body.requestFullscreen();
                     // @ts-ignore
-                    } else if (overlayContainer.webkitRequestFullscreen) { /* Safari */
+                    } else if (body.webkitRequestFullscreen) { /* Safari */
                         // @ts-ignore
-                        overlayContainer.webkitRequestFullscreen();
+                        body.webkitRequestFullscreen();
                     }
                 }}
             >

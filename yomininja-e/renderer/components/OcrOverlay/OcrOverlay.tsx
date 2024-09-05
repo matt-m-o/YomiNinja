@@ -23,13 +23,7 @@ import { ipcRenderer } from "../../utils/ipc-renderer";
 import { isElectronBrowser } from '../../utils/environment';
 
 
-const OverlayFrame = styled('div')({
-  border: 'solid 1px',
-  height: '100vh',
-  overflow: 'hidden',
-  boxSizing: 'border-box',
-  '-webkit-app-region': 'no-drag'
-});
+
 
 const ProgressContainer = styled('div')({
   position: 'absolute',
@@ -163,6 +157,13 @@ export default function OcrOverlay() {
     );
   });
 
+  const OverlayFrame = styled('div')({
+    border: 'solid 1px',
+    height: isElectron ? '100vh' : '100%',
+    overflow: 'hidden',
+    boxSizing: 'border-box',
+    '-webkit-app-region': 'no-drag'
+  });
   
 
   return ( <>

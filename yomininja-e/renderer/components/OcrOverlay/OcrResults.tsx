@@ -191,7 +191,14 @@ export default function OcrResults( props: OcrResultsProps ) {
                     removeFurigana(ocrRegion.results, furiganaFilterThreshold || 0.6);
                 }
 
-                const regionAspectRatio = ocrRegion.size.width / ocrRegion.size.height;
+                // const regionAspectRatio = ocrRegion.size.width / ocrRegion.size.height;
+                const regionWidth = isElectron ?
+                    ( ocrRegion.size.width * 100 ) + "%" :
+                    ( ocrRegion.size.width * context_resolution.width ) + "px";
+
+                const regionHeight = isElectron ?
+                    ( ocrRegion.size.height * 100 ) + "%" :
+                    ( ocrRegion.size.height * context_resolution.height ) + "px";
             
                 return (
                     <div className="ocr-region ignore-mouse" key={regionIdx}
@@ -200,8 +207,8 @@ export default function OcrResults( props: OcrResultsProps ) {
                             position: 'absolute',
                             top: ( ocrRegion.position.top * 100 ) + "%",
                             left: ( ocrRegion.position.left * 100 ) + "%",
-                            width: ( ocrRegion.size.width * 100 ) + "%",
-                            height: ( ocrRegion.size.height * 100 ) + "%",
+                            width: regionWidth,
+                            height: regionHeight,
                             boxSizing: 'border-box'
                         }}
                     >
@@ -242,10 +249,12 @@ export default function OcrResults( props: OcrResultsProps ) {
                                         key={resultIdx}
                                         ocrItem={item}
                                         ocrRegionSize={ocrRegion.size}
+                                        contextResolution={ocrResult.context_resolution}
                                         ocrRegionId={ocrRegion.id}
                                         ocrItemBoxVisuals={ocrItemBoxVisuals}
                                         overlayBehavior={overlayBehavior}
                                         overlayHotkeys={overlayHotkeys}
+                                        isElectron={isElectron}
                                         onClick={ handleBoxClick }
                                         onMouseEnter={ handleBoxMouseEnter }
                                         onMouseLeave={ handleBoxMouseLeave }

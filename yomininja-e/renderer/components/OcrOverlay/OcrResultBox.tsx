@@ -3,6 +3,7 @@ import { OcrItemScalable, OcrTextLineSymbolScalable } from "../../../electron-sr
 import { styled } from "@mui/material";
 import { OverlayBehavior, OverlayHotkeys, OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import OcrResultLine from "./OcrResultLine";
+import { OcrResultContextResolution } from "../../../electron-src/@core/domain/ocr_result/ocr_result";
 
 const BaseOcrResultBox = styled('div')({
     // border: 'solid',
@@ -29,11 +30,13 @@ export default function OcrResultBox( props: {
         width: number;
         height: number;
     };
+    contextResolution: OcrResultContextResolution;
     ocrRegionId?: string;
     ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
     overlayHotkeys: OverlayHotkeys;
     overlayBehavior: OverlayBehavior;
     contentEditable: boolean;
+    isElectron: boolean;
     onMouseEnter?: ( item: OcrItemScalable, ocrRegionId?: string ) => void;
     onMouseLeave?: () => void;
     onClick?: ( item: OcrItemScalable, ocrRegionId?: string ) => void;
@@ -44,9 +47,11 @@ export default function OcrResultBox( props: {
     const {
         ocrItem,
         ocrRegionSize,
+        contextResolution,
         ocrItemBoxVisuals,
         contentEditable,
-        ocrRegionId
+        ocrRegionId,
+        isElectron
     } = props;
     const { box } = ocrItem;
 
@@ -98,9 +103,15 @@ export default function OcrResultBox( props: {
     }, [] );
 
     // const fontSize = isVertical ? box.dimensions.width * 90 : box.dimensions.height * 65;
-    
-    const regionWidthPx = ocrRegionSize.width * window.innerWidth;
-    const regionHeightPx = ocrRegionSize.height * window.innerHeight;
+
+    const regionWidthPx = isElectron ?
+        ocrRegionSize.width * window.innerWidth:
+        ocrRegionSize.width * contextResolution.width;
+
+    const regionHeightPx = isElectron ?
+        ocrRegionSize.height * window.innerHeight :
+        ocrRegionSize.height * contextResolution.height;
+
     
     const boxWidthPx = regionWidthPx * ( box.dimensions.width / 100 );
     const boxHeightPx = regionHeightPx * ( box.dimensions.height / 100 );

@@ -195,7 +195,7 @@ export default function OcrOverlayForBrowsersAlt() {
 
         <div id='container'
             style={{
-                width: "100%",
+                width: "100vw",
                 height: '100vh',
                 minWidth: ocrResultResolution?.width
             }}
