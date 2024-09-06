@@ -212,5 +212,6 @@ if __name__ == "__main__":
     if IS_MAC_OS:
         with ProcessPoolExecutor( max_workers= 1 ) as executor:
             serve( server_port, executor )
+            executor.shutdown()
     else:
         serve( server_port )
