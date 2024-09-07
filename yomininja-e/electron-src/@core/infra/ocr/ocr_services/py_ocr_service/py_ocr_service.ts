@@ -187,7 +187,7 @@ export class PyOcrService {
         this.serviceProcess = spawn(
             executable,
             [ port.toString() ],
-            { cwd: this.binRoot }
+            { cwd: this.binRoot, detached: true }
         );
 
         // Handle stdout data
@@ -233,6 +233,10 @@ export class PyOcrService {
             this.serviceProcess.kill();
             process.exit(1);
         });
+
+        process.on( 'exit', this.killServiceProcess );
+        process.on( 'SIGINT', this.killServiceProcess );
+        process.on( 'SIGTERM', this.killServiceProcess );
     }
 
     async processStatusCheck(): Promise< boolean > {
@@ -298,5 +302,13 @@ export class PyOcrService {
 
         }, ( timeoutSeconds - 10 ) * 1000 ); // Executes every 1000 milliseconds = 1 second
 
+    }
+
+    killServiceProcess = () => {
+        if ( !this.serviceProcess ) return;
+        console.log(`Killing PyOCRService`);
+
+        this.serviceProcess.kill("SIGTERM");
+        process.kill( -this.serviceProcess.pid );
     }
 }

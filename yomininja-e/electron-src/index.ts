@@ -12,6 +12,8 @@ import { USER_DATA_DIR } from './util/directories.util';
 import fs from 'fs';
 import path from 'path';
 import { getLaunchConfig } from './@core/infra/app_initialization';
+import { pyOcrService } from './@core/infra/ocr/ocr_services/py_ocr_service/_temp_index';
+import { paddleOcrService } from './@core/infra/ocr/ocr_services/paddle_ocr_service/_temp_index';
 const isMacOS = process.platform === 'darwin';
 
 
@@ -39,6 +41,9 @@ else {
   
   // Quit the app once all windows are closed
   app.on('window-all-closed', () => {
+
+    pyOcrService.killServiceProcess();
+    paddleOcrService.killServiceProcess();
   
     globalShortcut.unregisterAll();
   
@@ -57,11 +62,8 @@ else {
 
 
 function startUIOhook(){
-  if (
-    isMacOS &&
-    !systemPreferences.isTrustedAccessibilityClient(true)
-  )
-    return;
+
+  if ( isMacOS ) return;
 
   uIOhook.start();
 }
