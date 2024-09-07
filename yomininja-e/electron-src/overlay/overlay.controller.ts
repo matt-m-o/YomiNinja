@@ -16,6 +16,7 @@ import { CaptureSource } from "../app/types";
 import { httpServerPort } from "../common/server";
 import os from 'os';
 import { ExternalWindow } from "../ocr_recognition/common/types";
+import { WindowProperties } from "../../gyp_modules/window_management/window_manager";
 
 const isMacOS = process.platform === 'darwin';
 const isLinux = process.platform === 'linux';
@@ -376,34 +377,25 @@ export class OverlayController {
     }
 
     private async showBrowserPopupOverlayWindow(): Promise<boolean> {
-        const windowTitle = '(Browser pop pup)';
-        const windows = await windowManager.searchWindow(windowTitle);
+        const window = await this.getBrowserPopupWindow();
 
-        const window = windows.find( window => {
-            if ( window.title.includes(windowTitle) ) {
-                windowManager.setForegroundWindow(window.handle);
-                return true;
-            }
-        });
+        if ( !window ) return false;
 
-        return Boolean(window);
+        windowManager.setForegroundWindow( window.handle );
+
+        return true;
     }
 
     private async hideBrowserPopupOverlayWindow(): Promise< void > {
 
         if ( !this.activeCaptureSource?.window?.id ) return;
 
-        const windows = await windowManager.searchWindow('(Browser pop pup)');
+        const window = await this.getBrowserPopupWindow();
 
-        const window = windows.find( window => {
-            if ( window.title.includes('(Browser pop pup)') ) {
+        if ( !window ) return;
 
-                if ( this.activeCaptureSource?.window?.id )
-                    windowManager.setForegroundWindow(this.activeCaptureSource.window.id);
-
-                return true;
-            }
-        });
+        windowManager.setForegroundWindow( this.activeCaptureSource.window.id );
+        
     }
 
     showOverlayWindow = (
@@ -488,7 +480,9 @@ export class OverlayController {
                 this.overlayWindow.setAlwaysOnTop( false, "normal" );
                 this.overlayWindow.setAlwaysOnTop( true, level ); // normal, pop-up-menu, och, screen-saver
 
-                this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop, level );
+                if ( this.overlayAlwaysOnTop ) return;
+
+                this.overlayWindow.setAlwaysOnTop( false, level );
             });   
     }
 
@@ -733,25 +727,22 @@ export class OverlayController {
         // console.timeEnd("setOverlayBounds");
     }
 
-    async setBrowserPopupOverlayBounds( bounds: Partial<Electron.Rectangle> ) {
-        const windowTitle = '(Browser pop pup)';
-        const windows = await windowManager.searchWindow(windowTitle);
+    async setBrowserPopupOverlayBounds( bounds: Partial<Electron.Rectangle> ): Promise< boolean > {
+        
+        const window = await this.getBrowserPopupWindow();
 
-        const window = windows.find( window => {
-            if ( window.title.includes(windowTitle) ) {
-                windowManager.setForegroundWindow(window.handle);
-                windowManager.setWindowBounds(
-                    window.handle,
-                    {
-                        x: bounds.x,
-                        y: bounds.y
-                    }
-                );
-                return true;
+        if ( !window ) return false;
+
+        windowManager.setForegroundWindow( window.handle );
+        windowManager.setWindowBounds(
+            window.handle,
+            {
+                x: bounds.x,
+                y: bounds.y
             }
-        });
+        );
 
-        return Boolean( window );
+        return true;
     }
 
     setAutomaticOverlayBounds( newState: boolean = true ) {
@@ -763,4 +754,21 @@ export class OverlayController {
         this.isOverlayWindowInTray = true;
     }
 
+    async getBrowserPopupWindow(): Promise<WindowProperties | undefined> {
+        const windowTitle = '(Browser pop pup)';
+
+        let windows: WindowProperties[] = [];
+
+        try {
+            windows = await windowManager.searchWindow(windowTitle);    
+        } catch (error) {
+            console.error(error);
+        }
+        
+        return windows.find( window => {
+            if ( window.title.includes(windowTitle) ) {
+                return true;
+            }
+        });
+    }
 }
