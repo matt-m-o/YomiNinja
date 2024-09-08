@@ -413,6 +413,8 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
         if ( this.getCacheAge() > 30 )
             return false;
 
+        if ( !this.prevImage?.equals ) return false;
+
         const isSameImage = this.prevImage.equals( image );
 
         if ( !isSameImage ) return false;

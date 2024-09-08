@@ -78,9 +78,9 @@ export class OcrRecognitionController {
     }
 
     recognize = async ( input: Recognition_Input ): Promise< Recognition_Output > => {
-        const { image, engineName, autoOcr } = input;
+        const { image, engineName } = input;
         
-        if ( this.recognizing && !input.autoOcr ) {
+        if ( this.recognizing ) {
             this.recognitionCallOnHold = cloneDeep(input);
             console.log('Replacing current recognition request!');
             return {
@@ -109,7 +109,7 @@ export class OcrRecognitionController {
                 imageBuffer: image,
                 profileId: getActiveProfile().id,
                 engineName,
-                autoMode: input.autoOcr
+                autoMode: false
             });
             this.recognizing = false;
 
@@ -127,7 +127,6 @@ export class OcrRecognitionController {
             // console.timeEnd('controller.recognize');
             // console.log('');
             if (
-                !autoOcr &&
                 ( !ocrResultScalable ||
                   !ocrResultScalable?.ocr_regions?.length ||
                   !ocrResultScalable?.ocr_regions?.some( region => region?.results?.length ) )
@@ -174,6 +173,58 @@ export class OcrRecognitionController {
         this.recognizing = false;
 
         return response;
+    }
+
+    async autoRecognize(
+        input: {
+            image: Buffer,
+            engineName?: string;
+        }
+    ) {
+        const { image, engineName } = input;
+        
+        this.recognizing = true;
+        
+        try {
+            // console.log('');
+            // console.time('controller.recognize');
+            // console.log(activeProfile);
+            // console.log('OcrRecognitionController.recognize')
+
+            const ocrResultScalable = await this.ocrRecognitionService.recognize({
+                imageBuffer: image,
+                profileId: getActiveProfile().id,
+                engineName,
+                autoMode: true
+            });
+            // console.log({ ocrResultScalable });
+
+            // console.timeEnd('controller.recognize');
+            // console.log('');
+
+            let resultJson = ocrResultScalable;
+
+            if ( ocrResultScalable ) {
+                const overlayBounds = this.overlayWindow.getBounds();
+                ocrResultScalable.position = {
+                    top: overlayBounds.y,
+                    left: overlayBounds.x
+                };
+                resultJson = await this.ocrResultToJson( ocrResultScalable );
+            }
+
+            this.result = resultJson || null;
+
+            ipcMain.send(
+                this.overlayWindow,
+                'ocr:result',
+                this.result
+            );
+
+        } catch (error) {
+            console.error( error );
+        }
+        this.recognizing = false;
     }
 
     async applySettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
