@@ -175,6 +175,13 @@ export class AppController {
 
         this.destroyTemporaryTrayIcon();
         this.createTrayIcon();
+
+        if (
+            isMacOS &&
+            !systemPreferences.isTrustedAccessibilityClient(false)
+        ) {
+            systemPreferences.isTrustedAccessibilityClient(true);
+        }
         console.timeEnd('YomiNinja Startup time');
     }
 
@@ -245,8 +252,11 @@ export class AppController {
                     .catch( console.error );
 
                 overlayController.activeCaptureSource = this.activeCaptureSource;
-
-                this.setOverlayBounds( 'maximized' );
+                
+                if ( this.activeCaptureSource.type === 'screen' )
+                    this.setOverlayBounds( 'fullscreen' );
+                else
+                    this.setOverlayBounds( 'maximized' );
                 
                 // console.log({
                 //     isAutoOcrEnabled: ocrTemplatesController.isAutoOcrEnabled
@@ -609,9 +619,8 @@ export class AppController {
             if ( ocrRecognitionController.isRecognizing() )
                 return;
 
-            await ocrRecognitionController.recognize({
-                    image,
-                    autoOcr: true
+            await ocrRecognitionController.autoRecognize({
+                    image
                 })
                 .catch( console.error );
         }
