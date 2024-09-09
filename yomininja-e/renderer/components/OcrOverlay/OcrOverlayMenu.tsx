@@ -136,10 +136,21 @@ export default function OcrOverlayMenu() {
                     body.addEventListener( 'fullscreenchange', () => {
                         setIsFullscreen( Boolean(document.fullscreenElement) )
                     });
-                    if (body.requestFullscreen) {
+
+                    if ( isFullscreen ) {
+                        if ( document.exitFullscreen ) {
+                            document.exitFullscreen();
+                        }
+                        // @ts-ignore
+                        else if ( document.webkitExitFullscreen ) {// Safari
+                            // @ts-ignore
+                            document.webkitExitFullscreen();
+                        }
+                    }
+                    else if ( body.requestFullscreen ) {
                         body.requestFullscreen();
                     // @ts-ignore
-                    } else if (body.webkitRequestFullscreen) { /* Safari */
+                    } else if ( body.webkitRequestFullscreen ) { // Safari
                         // @ts-ignore
                         body.webkitRequestFullscreen();
                     }
