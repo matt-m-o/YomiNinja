@@ -136,7 +136,6 @@ export default function HomeContent() {
 
         if ( isPWA && window ) {
             const { screenLeft, screenTop } = window;
-            const {  } = screen;
             const windowFeatures = `left=${screenLeft},top=${screenTop},width=${1200},height=${700},titlebar=no,location=0`;
             const overlayWindow = window.open(
                 overlayLink,
@@ -249,7 +248,7 @@ export default function HomeContent() {
                             fullWidth
                             onClick={ viewOverlayInBrowser }
                         >
-                            View Overlay in  Your Browser
+                            View Overlay in Your Browser
                         </Button>
                         
                     </Container>

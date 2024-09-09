@@ -149,7 +149,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         </span>
     ) : undefined;
 
-    const { bcp47_tag } = active_ocr_language;
+    const bcp47_tag = active_ocr_language?.bcp47_tag;
 
     if (
         !([ 'ja-JP', 'zh-Hans', 'zh-Hant', 'yue-Hans', 'yue-Hant' ]
