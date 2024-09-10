@@ -199,14 +199,28 @@ export default function OcrResults( props: OcrResultsProps ) {
                 const regionHeight = isElectron ?
                     ( ocrRegion.size.height * 100 ) + "%" :
                     ( ocrRegion.size.height * context_resolution.height ) + "px";
+
+                let regionPosition: CSSProperties;
+
+                if ( isElectron ) {
+                    regionPosition = {
+                        top: ( ocrRegion.position.top * 100 ) + "%",
+                        left: ( ocrRegion.position.left * 100 ) + "%",
+                    }
+                }
+                else {
+                    regionPosition = {
+                        top: ocrRegion.position.top * context_resolution.height + 'px',
+                        left: ocrRegion.position.left * context_resolution.width + 'px',
+                    }
+                }
             
                 return (
                     <div className="ocr-region ignore-mouse" key={regionIdx}
                         style={{
                             // border: 'solid 2px yellow',
+                            ...regionPosition,
                             position: 'absolute',
-                            top: ( ocrRegion.position.top * 100 ) + "%",
-                            left: ( ocrRegion.position.left * 100 ) + "%",
                             width: regionWidth,
                             height: regionHeight,
                             boxSizing: 'border-box'
