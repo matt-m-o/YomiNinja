@@ -12,22 +12,7 @@ export default function OcrOverlayBrowserPage() {
     const [ strictMode, setStrictMode ] = useState(true);
 
     useEffect( () => {
-
-        setTimeout( () => {
-            const usingMigaku = Boolean(
-                document.getElementById('MigakuShadowDom')
-            );
-
-            if ( !hasCookie( 'strict_mode' ) ) {
-                setCookie( 'strict_mode', (!usingMigaku).toString() );
-                location.reload();
-            }
-            else {
-                setStrictMode( Boolean( getCookie('strict_mode') == 'true' ) );
-            }
-            
-        }, 1000 );
-
+        setStrictMode( Boolean( getCookie('strict_mode') == 'true' ) );
     }, [] );
 
     return (
