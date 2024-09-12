@@ -376,7 +376,11 @@ export class PaddleOcrService {
         if ( !this.serviceProcess ) return;
         console.log('Killing PaddleOCRService');
 
-        // Ensure the child process is killed before exiting
-        this.serviceProcess.kill('SIGTERM'); // You can use 'SIGINT' or 'SIGKILL' as well
+        try {
+            // Ensure the child process is killed before exiting
+            this.serviceProcess.kill('SIGTERM'); // You can use 'SIGINT' or 'SIGKILL' as well
+        } catch (error) {
+            console.error(error);
+        }
     }
 }

@@ -308,7 +308,11 @@ export class PyOcrService {
         if ( !this.serviceProcess ) return;
         console.log(`Killing PyOCRService`);
 
-        this.serviceProcess.kill("SIGTERM");
-        process.kill( -this.serviceProcess.pid );
+        try {
+            this.serviceProcess.kill("SIGTERM");
+            process.kill( -this.serviceProcess.pid );
+        } catch (error) {
+            console.error(error);
+        }
     }
 }
