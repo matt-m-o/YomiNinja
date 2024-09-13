@@ -565,7 +565,7 @@ export class AppController {
         if ( this.isEditingOcrTemplate ) {
             ipcMain.send(
                 this.mainWindow,
-                'settings_preset:google_window_closed',
+                'app:capture_source_image',
                 {
                     image,
                     imageBase64 :image.toString('base64')

@@ -101,7 +101,7 @@ export class OcrRecognitionController {
         
         try {
             // console.log('');
-            // console.time('controller.recognize');
+            console.time('Recognition time');
             // console.log(activeProfile);
             // console.log('OcrRecognitionController.recognize')
 
@@ -172,6 +172,7 @@ export class OcrRecognitionController {
         
         this.recognizing = false;
 
+        console.timeEnd('Recognition time');
         return response;
     }
 
