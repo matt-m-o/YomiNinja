@@ -20,14 +20,14 @@ export class AppleVisionPyService implements AppleVisionService {
 
     async recognize( input: AppleVisionRecognize_Input ): Promise< OcrResult | null > {
 
-        console.time(`${this.ocrEngine} Recognize`);
+        // console.time(`${this.ocrEngine} Recognize`);
         const result = await pyOcrService.recognize({
             id: input.id,
             image: input.image,
             languageCode: this.handleLanguageCode(input.languageCode),
             ocrEngine: this.ocrEngine
         });
-        console.time(`${this.ocrEngine} Recognize`);
+        // console.time(`${this.ocrEngine} Recognize`);
 
         return result;
     };
