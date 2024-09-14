@@ -20,7 +20,13 @@ export type AutoOcrOptions = {
     refresh_all_regions: boolean;
 }
 
-type TextToSpeechOptions = {
+export interface ImagePreprocessingOperation {
+    name: string;
+    enabled: boolean;
+    args?: Record< string, any >;
+};
+
+export type TextToSpeechOptions = {
     voice_uri: string;
     automatic: boolean;
     on_hover: boolean;
@@ -39,6 +45,8 @@ export type OcrTargetRegionConstructorProps = {
     angle?: number; // degrees
     auto_ocr_options?: AutoOcrOptions;
     text_to_speech_options?: TextToSpeechOptions;
+    preprocessing_pipeline?: ImagePreprocessingOperation[];
+    image?: Buffer;
 };
 
 export interface OcrTargetRegionCreationInput extends Omit<
@@ -57,6 +65,8 @@ export class OcrTargetRegion {
     angle: number; // degrees
     auto_ocr_options: AutoOcrOptions;
     text_to_speech_options: TextToSpeechOptions;
+    preprocessing_pipeline: ImagePreprocessingOperation[];
+    image?: Buffer;
 
     constructor( props: OcrTargetRegionConstructorProps ) {
 
@@ -106,6 +116,9 @@ export class OcrTargetRegion {
             speed,
             pitch
         }
+
+        this.preprocessing_pipeline = props.preprocessing_pipeline || [];
+        this.image = props.image;
     }
 
     static create( input: OcrTargetRegionCreationInput ): OcrTargetRegion {
@@ -148,6 +161,8 @@ export class OcrTargetRegion {
             angle: this.angle,
             auto_ocr_options: this.auto_ocr_options,
             text_to_speech_options: this.text_to_speech_options,
+            preprocessing_pipeline: this.preprocessing_pipeline,
+            image_base64: this.image?.toString('base64')
         };
     }
 
@@ -163,4 +178,5 @@ export interface OcrTargetRegionJson extends Omit<
 > {
     id: OcrTargetRegionId;
     angle: number;
+    image_base64?: string;
 };
