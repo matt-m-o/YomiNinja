@@ -1,5 +1,6 @@
 import { ImageExtractInput, ImageMetadata, ImageProcessingAdapter, ImageResizeInput, ImageResizeOutput } from '../../application/adapters/image_processing.adapter';
 import sharp from 'sharp';
+import { ImagePreprocessingOperation } from '../../domain/ocr_template/ocr_target_region/ocr_target_region';
 
 export class SharpImageProcessingAdapter implements ImageProcessingAdapter {
     
@@ -34,11 +35,11 @@ export class SharpImageProcessingAdapter implements ImageProcessingAdapter {
         }
         
         const newWidth = Math.floor( width * scaling_factor );
-        const newHeight = Math.floor( height * scaling_factor );        
+        const newHeight = Math.floor( height * scaling_factor );
         
         // console.timeEnd("Sharp.resize");
         return {
-            resizedImage: await sharpInstance.resize( newWidth, newHeight ).toBuffer(),
+            resizedImage: await sharpInstance.resize( newWidth, newHeight, { kernel: 'cubic' } ).toBuffer(),
             width: newWidth,
             height: newHeight
         }
@@ -81,5 +82,75 @@ export class SharpImageProcessingAdapter implements ImageProcessingAdapter {
             width: metadata?.width || 0,
             height: metadata?.height || 0,
         };
+    }
+
+    async applyPipeline( image: Buffer, pipelineOperations: ImagePreprocessingOperation[] ): Promise< Buffer > {
+
+        if ( !pipelineOperations?.length ) return image;
+
+        const originalMetadata = await sharp( image ).metadata();
+
+        if ( 
+            !originalMetadata.width ||
+            !originalMetadata.height
+        ) return image;
+
+        let sharpPipeline = sharp( image );
+
+        let isOriginalSize = true;
+
+        for ( const operation of pipelineOperations ) {
+
+            if ( !operation.enabled ) continue;
+
+            const operationName = operation.name.toLocaleLowerCase();
+
+            if ( operationName === 'resize' ) {
+                let scale_factor: number = 1;
+
+                if ( operation?.args && 'scale_factor' in operation?.args )
+                    scale_factor = Number( operation.args.scale_factor );
+
+                if ( scale_factor === 1 && isOriginalSize ) continue;
+
+                if ( !isOriginalSize ) {
+                    sharpPipeline = sharp( await sharpPipeline.toBuffer() );
+                }
+
+                sharpPipeline.resize(
+                    Math.floor( originalMetadata.width * scale_factor ),
+                    Math.floor( originalMetadata.height * scale_factor ),
+                    {
+                        kernel: 'cubic'
+                    }
+                );
+
+                isOriginalSize = false;
+            }
+            else if ( operationName === 'blur' ) {
+                let sigma: number | undefined;
+
+                if ( operation?.args && 'sigma' in operation?.args )
+                    sigma = Number(operation.args.sigma);
+
+                sharpPipeline.blur( sigma );
+            }
+            else if ( operationName === 'grayscale' ) {
+                sharpPipeline.grayscale();
+            }
+            else if ( operationName === 'invert colors' ) {
+                sharpPipeline.negate();
+            }
+            else if ( operationName === 'threshold' ) {
+                let threshold: number | undefined;
+
+                if ( operation?.args && 'threshold' in operation?.args )
+                    threshold = Number( operation.args.threshold );
+
+                sharpPipeline.threshold( threshold );
+            }
+        }
+            
+        return await sharpPipeline.toBuffer();
     }
 }
