@@ -222,6 +222,9 @@ container_registry.bind( Registry.UpdateOcrTemplateUseCase )
             ocrTargetRegionRepo: context.container.get(
                 Registry.OcrTargetRegionTypeOrmRepository
             ),
+            imageProcessing: context.container.get(
+                Registry.SharpImageProcessingAdapter
+            ),
         })
     });
 
