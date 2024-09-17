@@ -173,7 +173,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
                 height: metadata.height,
             });
 
-            const regionImage = await this.imageProcessing.extract({
+            let regionImage = await this.imageProcessing.extract({
                 image,
                 position: targetRegionPixels.position,
                 size: targetRegionPixels.size,
@@ -271,6 +271,18 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
                     continue;
                 }
             }
+
+            
+            console.time("Image preprocessing time");
+            try {
+                regionImage = await this.imageProcessing.applyPipeline(
+                    regionImage,
+                    targetRegion.preprocessing_pipeline
+                );
+            } catch (error) {
+                console.error(error);
+            }
+            console.timeEnd("Image preprocessing time");
 
             const regionResult = await ocrAdapter.recognize({
                     imageBuffer: regionImage,
