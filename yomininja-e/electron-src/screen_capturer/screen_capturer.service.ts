@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain, IpcMainInvokeEvent, MessagePortMain } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, MessagePortMain } from "electron";
 import { CaptureSource, ExternalWindow } from "../app/types";
 import { join } from 'path';
 import { PAGES_DIR } from "../util/directories.util";
@@ -18,7 +18,16 @@ export class ScreenCapturerService {
     obs: any;
     obsConnected: boolean = false;
 
-    async createCaptureStream( input: { captureSource: CaptureSource, force?: boolean }  ) {
+    async createCapturer(
+        input: {
+            captureSource: CaptureSource,
+            showWindow?: boolean,
+            streamFrames: boolean,
+            force?: boolean,
+        }
+    ) {
+
+        const { showWindow, streamFrames } = input;
 
         this.captureSource = cloneDeep( input.captureSource );
 
@@ -29,18 +38,13 @@ export class ScreenCapturerService {
             this.screenCapturerWindow
         )
             return;
-
-        await this.createCapturerWindow( false ); // isDev
-    }
-
-    async createCapturerWindow( showWindow = false ) {
         
         if ( this.screenCapturerWindow )
             await this.destroyScreenCapturer();
             
         this.screenCapturerWindow = new BrowserWindow({
-            width: 960,
-            height: 540,
+            width: 1100,
+            height: 600,
             autoHideMenuBar: true,
             show: showWindow,
             alwaysOnTop: true,
@@ -48,6 +52,7 @@ export class ScreenCapturerService {
                 nodeIntegration: false,
                 contextIsolation: false,
                 preload: join(__dirname, '../preload.js'),
+                backgroundThrottling: false
             },
             title: 'Screen Capturer - YomiNinja'
         });
@@ -73,9 +78,14 @@ export class ScreenCapturerService {
             );
         }
 
-        // this.screenCapturerWindow.webContents.on( 'dom-ready', this.startStream );
-        this.screenCapturerWindow.webContents.on( 'dom-ready', () => {
-            this.setIntervalBetweenFrames( this.intervalBetweenFrames );
+        if ( streamFrames ) {
+            this.screenCapturerWindow.webContents.on('dom-ready', () => {
+                setTimeout( this.startStream, 3000 );
+            });
+        }
+
+        this.screenCapturerWindow.webContents.once("did-navigate", () => {
+            console.log(`\nWebRTC process id: ${this.screenCapturerWindow?.webContents.getOSProcessId()}\n`);
         });
     }
 
@@ -100,15 +110,22 @@ export class ScreenCapturerService {
     }
 
     grabFrame = () => {
-        // console.log('\ngrabFrame \n')
         this.screenCapturerWindow?.webContents.send('screen_capturer:grab_frame');
     }
 
     startStream = async () => {
-        while ( this.screenCapturerWindow !== undefined ) {
-            await this.sleep( this.intervalBetweenFrames );
-            this.grabFrame();
-        }
+
+        this.screenCapturerWindow?.webContents.send('screen_capturer:start_stream');
+        this.setIntervalBetweenFrames( this.intervalBetweenFrames );
+
+        // while ( this.screenCapturerWindow !== undefined ) {
+        //     await this.sleep( this.intervalBetweenFrames );
+        //     this.grabFrame();
+        // }
+    }
+
+    stopStream = () => {
+        this.screenCapturerWindow?.webContents.send('screen_capturer:stop_stream');
     }
 
     sleep( ms: number ) {
@@ -153,25 +170,6 @@ export class ScreenCapturerService {
         if ( !this.screenCapturerWindow ) {
             this.captureSource = cloneDeep( captureSource );
             return;
-        }
-
-        const currentSize = this.captureSource?.window?.size;
-        const newSize = captureSource.window?.size;
-
-        const sameShape = (
-            currentSize?.width === newSize?.width &&
-            currentSize?.height === newSize?.height
-        );
-
-        if ( !sameShape ) {
-
-            this.captureSource = cloneDeep( captureSource );
-
-            await this.destroyScreenCapturer();
-            await this.createCaptureStream({
-                captureSource,
-                force: true
-            });
         }
 
     }

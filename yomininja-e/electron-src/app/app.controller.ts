@@ -21,7 +21,7 @@ import { profileController } from "../profile/profile.index";
 import { dictionariesController } from "../dictionaries/dictionaries.index";
 import { ocrTemplateEvents, ocrTemplatesController } from "../ocr_templates/ocr_templates.index";
 import { htmlMouseButtonToUiohook, matchUiohookMouseEventButton } from "../common/mouse_helpers";
-import { debounce } from "lodash";
+import { cloneDeep, debounce } from "lodash";
 import { windowManager } from "node-window-manager";
 import { screenCapturerController } from "../screen_capturer/screen_capturer.index";
 import { ICONS_DIR } from "../util/directories.util";
@@ -29,6 +29,7 @@ import { join } from "path";
 import { sleep } from "../util/sleep.util";
 import electronIsDev from "electron-is-dev";
 import { ipcMain } from "../common/ipc_main";
+import { isWaylandDisplay } from "../util/environment.util";
 const isMacOS = process.platform === 'darwin';
 
 let startupTimer: NodeJS.Timeout;
@@ -60,6 +61,8 @@ export class AppController {
 
     private tray: Tray | undefined;
     private temporaryTray: Tray | undefined;
+
+    private previousOcrCommandData: OcrCommandInput;
 
     constructor( input: {
         appService: AppService
@@ -163,13 +166,33 @@ export class AppController {
         this.handleCaptureSourceSelection();
 
         this.taskbar = this.appService.getTaskbar();
-
-        this.activeCaptureSource = entireScreenAutoCaptureSource;
+        
+        await this.appService.init();
+        this.activeCaptureSource = this.appService.entireScreenCaptureSource;
         
         screenCapturerController.init();
-        screenCapturerController.onCapture( 
+        screenCapturerController.setCaptureSource( this.activeCaptureSource );
+
+        if ( !isWaylandDisplay ) {
+            screenCapturerController.createCapturer({
+                captureSource: this.activeCaptureSource,
+                streamFrames: false
+            });
+        }
+        screenCapturerController.onStreamFrame( 
             async ( frame: Buffer ) => {
                 return this._handleVideoStream( frame );
+            }
+        );
+
+        screenCapturerController.onScreenshot( 
+            async ( image: Buffer ) => {
+                return await this.handleOcrCommand({
+                    ...cloneDeep( this.previousOcrCommandData ),
+                    image,
+                    preventNegativeCoordinates: screen.getAllDisplays().length === 1,
+                    autoCrop: false
+                });
             }
         );
 
@@ -261,13 +284,13 @@ export class AppController {
                 // console.log({
                 //     isAutoOcrEnabled: ocrTemplatesController.isAutoOcrEnabled
                 // });
-                if ( ocrTemplatesController.isAutoOcrEnabled ) {
-                    screenCapturerController.createCaptureStream({
-                        captureSource: this.activeCaptureSource,
-                        force: true
-                    });
-                }
-
+                
+                screenCapturerController.createCapturer({
+                    captureSource: this.activeCaptureSource,
+                    force: true,
+                    streamFrames: ocrTemplatesController.isAutoOcrEnabled
+                });
+                
                 this.isCaptureSourceUserSelected = true;
             }
         );
@@ -288,12 +311,13 @@ export class AppController {
                 console.log({ isAutoOcrEnabled });
 
             if ( !isAutoOcrEnabled )
-                await screenCapturerController.destroyScreenCapturer();
+                await screenCapturerController.stopStream();
 
             if ( isAutoOcrEnabled && this.isCaptureSourceUserSelected ) {
-                screenCapturerController.createCaptureStream({
+                screenCapturerController.createCapturer({
                     captureSource: this.activeCaptureSource,
-                    force: true
+                    force: true,
+                    streamFrames: isAutoOcrEnabled
                 });
             }
         });
@@ -471,7 +495,7 @@ export class AppController {
             this.captureSourceDisplay = undefined;        
     }
 
-    async handleWindowSource() {      
+    async handleWindowSource() {
         
         if ( this.userSelectedWindowId ) {
             this.captureSourceWindow = await this.appService.getExternalWindow( this?.userSelectedWindowId );
@@ -485,10 +509,15 @@ export class AppController {
 
     async handleCaptureSourceSelection() {
         // console.time('handleCaptureSourceSelection');
+
         this.handleDisplaySource();
-        await this.handleWindowSource();
+
+        if ( !isWaylandDisplay )
+            await this.handleWindowSource();
+
         // console.timeEnd('handleCaptureSourceSelection');
-        await screenCapturerController.setCaptureSource( this.activeCaptureSource );
+        if ( !isWaylandDisplay )
+            await screenCapturerController.setCaptureSource( this.activeCaptureSource );
     }
 
     private async isFullScreenImage( imageBuffer: Buffer ): Promise<boolean> {
@@ -529,23 +558,38 @@ export class AppController {
         let {
             image,
             runFullScreenImageCheck,
-            engineName
+            engineName,
+            preventNegativeCoordinates,
+            autoCrop
         } = input;
 
         if ( overlayController.isOverlayMovableResizable )
             return;
+
+        if ( !input.image ) {
+            this.previousOcrCommandData = input;
+            const success = screenCapturerController.screenshot({
+                captureSource: this.activeCaptureSource
+            });
+
+            if ( success ) return;
+        }
 
         ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
         ipcMain.send( this.overlayWindow, 'ocr:processing_started' );
         
         await this.handleCaptureSourceSelection();
 
-        const preventNegativeCoordinates = Boolean(image);
+        preventNegativeCoordinates = preventNegativeCoordinates !== undefined ?
+            preventNegativeCoordinates :
+            Boolean( image );
 
+        
         image = await this.appService.getCaptureSourceImage({
             image,
             display: this.captureSourceDisplay,
             window: this.captureSourceWindow,
+            autoCrop
         });
 
         if ( !image ) return;
@@ -779,8 +823,10 @@ export class AppController {
     }
 }
 
-type OcrCommandInput = {
+export type OcrCommandInput = {
     image?: Buffer;
     runFullScreenImageCheck?: boolean;
     engineName?: string;
+    preventNegativeCoordinates?: boolean;
+    autoCrop?: boolean;
 }
