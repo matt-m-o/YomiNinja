@@ -130,6 +130,13 @@ export default function AppInfo() {
                                 { systemInfo.osVersion } 
                             </Typography>
 
+                            { systemInfo.windowSystem &&
+                                <Typography sx={{ pb: 1 }}>
+                                    <strong>Window System: </strong>
+                                    { systemInfo.windowSystem } 
+                                </Typography>
+                            }
+
                             <Typography sx={{ pb: 1 }}>
                                 <strong>CPU: </strong>
                                 {systemInfo.cpuModel.trim() + ` (${systemInfo.cpuArch})` } 

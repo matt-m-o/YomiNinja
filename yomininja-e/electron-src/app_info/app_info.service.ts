@@ -1,7 +1,7 @@
 import { CheckForAppUpdatesUseCase, CheckForAppUpdates_Output } from "../@core/application/use_cases/check_for_app_updates/check_for_app_updates.use_case";
 import { differenceInMinutes } from 'date-fns';
 import os, { platform } from 'os';
-import { app } from 'electron';
+import { isLinux, isWaylandDisplay } from "../util/environment.util";
 
 export class AppInfoService {
 
@@ -32,13 +32,21 @@ export class AppInfoService {
     }
 
     getSystemInfo(): SystemInfo {
+
         const info: SystemInfo = {
             platform: os.platform(),
             osVersion: os.version(),
             cpuModel: os.cpus()[0].model,
             cpuArch: os.arch(),
-            appArch: process.arch
+            appArch: process.arch,
         };
+
+        if ( isLinux ) {
+            info.windowSystem = isWaylandDisplay ?
+                "Wayland" :
+                "Xorg";
+        }
+
         return info;
     }
 }
@@ -49,4 +57,5 @@ export type SystemInfo = {
     cpuModel: string;
     cpuArch: string;
     appArch: string;
+    windowSystem?: string;
 }
