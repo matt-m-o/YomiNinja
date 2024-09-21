@@ -184,7 +184,7 @@ export class OcrRecognitionController {
     ) {
         const { image, engineName } = input;
         
-        this.recognizing = true;
+        if ( this.recognizing ) return;
         
         try {
             // console.log('');
@@ -225,7 +225,7 @@ export class OcrRecognitionController {
         } catch (error) {
             console.error( error );
         }
-        this.recognizing = false;
+        // this.recognizing = false;
     }
 
     async applySettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
