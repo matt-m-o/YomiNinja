@@ -316,7 +316,7 @@ export class AppController {
             if ( isAutoOcrEnabled && this.isCaptureSourceUserSelected ) {
                 screenCapturerController.createCapturer({
                     captureSource: this.activeCaptureSource,
-                    force: true,
+                    force: false,
                     streamFrames: isAutoOcrEnabled
                 });
             }
