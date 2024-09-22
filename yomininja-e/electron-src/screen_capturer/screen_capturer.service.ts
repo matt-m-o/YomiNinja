@@ -29,15 +29,25 @@ export class ScreenCapturerService {
 
         const { showWindow, streamFrames } = input;
 
-        this.captureSource = cloneDeep( input.captureSource );
-
-        await this.sleep(1000);
+        if ( input.captureSource.id !== this.captureSource?.id )
+            input.force = true;
 
         if ( 
             !input.force &&
             this.screenCapturerWindow
-        )
+        ){
+
+            if ( input.streamFrames )
+                this.startStream();
+            else
+                this.stopStream();
+
             return;
+        }
+
+        this.captureSource = cloneDeep( input.captureSource );
+
+        await this.sleep(1000);
         
         if ( this.screenCapturerWindow )
             await this.destroyScreenCapturer();
