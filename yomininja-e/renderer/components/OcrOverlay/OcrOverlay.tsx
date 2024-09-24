@@ -21,6 +21,7 @@ import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 import ProcessingIndicator from "./ProcessingIndicator";
 import { ipcRenderer } from "../../utils/ipc-renderer";
 import { isElectronBrowser } from '../../utils/environment';
+import { AppInfoContext } from "../../context/app_info.provider";
 
 
 
@@ -50,6 +51,7 @@ export default function OcrOverlay() {
   const { activeSettingsPreset } = useContext( SettingsContext );
   const { toggleScanner } = useContext( DictionaryContext );
   const { activeOcrTemplate } = useContext( OcrTemplatesContext );
+  const { systemInfo } = useContext( AppInfoContext );
   
 
   const { ocrResult, showResults, processing } = useContext( OcrResultContext );
@@ -119,24 +121,29 @@ export default function OcrOverlay() {
 
   useEffect( () => {
     
-    if ( isElectron )
+    if ( isElectron && systemInfo?.windowSystem !== 'Wayland' )
       document.addEventListener( 'mousemove', handleClickThrough );
+
+    else if ( isElectron && systemInfo?.windowSystem === 'Wayland' )
+      document.addEventListener( 'click', handleClickThrough );
+
     else
       document.addEventListener( 'click', handleBrowserClickThrough );
     
     if ( !window ) return;
 
     ipcRenderer.on( 'set_movable', ( event, value ) => {
-      console.log({ value })
+      console.log({ movable: value })
       setShowDragArea( value );
     });
 
     return () => {
       document.removeEventListener( 'mousemove', handleClickThrough );
+      document.removeEventListener( 'click', handleClickThrough );
       ipcRenderer.removeAllListeners( 'set_movable' );
     };
 
-  }, [] );
+  }, [systemInfo] );
 
 
   const templateRegions = activeOcrTemplate?.target_regions.map( region => {

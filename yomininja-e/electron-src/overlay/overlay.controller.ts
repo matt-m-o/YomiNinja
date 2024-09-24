@@ -17,6 +17,7 @@ import { httpServerPort } from "../common/server";
 import os from 'os';
 import { ExternalWindow } from "../ocr_recognition/common/types";
 import { WindowProperties } from "../../gyp_modules/window_management/window_manager";
+import { isWaylandDisplay } from "../util/environment.util";
 
 const isMacOS = process.platform === 'darwin';
 const isLinux = process.platform === 'linux';
@@ -195,11 +196,7 @@ export class OverlayController {
             // console.log('clickThroughMode: '+ this.clickThroughMode);
 
             if ( this.clickThroughMode === 'auto' ) {
-
-                this.overlayWindow.setIgnoreMouseEvents(
-                    value,
-                    { forward: true }
-                );
+                this.toggleClickThrough(value)
             }
         });
 
@@ -480,9 +477,14 @@ export class OverlayController {
                 this.overlayWindow.setAlwaysOnTop( false, "normal" );
                 this.overlayWindow.setAlwaysOnTop( true, level ); // normal, pop-up-menu, och, screen-saver
 
+
+                if ( isWaylandDisplay )
+                    this.toggleClickThrough( false );
+
                 if ( this.overlayAlwaysOnTop ) return;
 
                 this.overlayWindow.setAlwaysOnTop( false, level );
+
             });   
     }
 
@@ -770,5 +772,13 @@ export class OverlayController {
                 return true;
             }
         });
+    }
+
+    toggleClickThrough( value: boolean ) {
+
+        this.overlayWindow.setIgnoreMouseEvents(
+            value,
+            { forward: true }
+        );
     }
 }
