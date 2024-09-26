@@ -277,9 +277,9 @@ export class AppController {
                 overlayController.activeCaptureSource = this.activeCaptureSource;
                 
                 if ( this.activeCaptureSource.type === 'screen' )
-                    this.setOverlayBounds( 'fullscreen' );
+                    this.setOverlayBounds({ entireScreenMode: 'fullscreen' }); 
                 else
-                    this.setOverlayBounds( 'maximized' );
+                    this.setOverlayBounds({ entireScreenMode: 'maximized' }); 
                 
                 // console.log({
                 //     isAutoOcrEnabled: ocrTemplatesController.isAutoOcrEnabled
@@ -464,17 +464,26 @@ export class AppController {
         this.registerGlobalShortcuts( settingsPresetJson );
     }
 
-    setOverlayBounds(
-        entireScreenMode: 'fullscreen' | 'maximized' = 'fullscreen',
-        preventNegativeCoordinates: boolean = false
-    ) {
+    setOverlayBounds( input: {
+        entireScreenMode?: 'fullscreen' | 'maximized';
+        preventNegativeCoordinates?: boolean;
+        bounds?: Partial<Electron.Rectangle>;
+    }) {
+        let {
+            entireScreenMode,
+            preventNegativeCoordinates,
+            bounds
+        } = input;
+
+        entireScreenMode = entireScreenMode || 'fullscreen';
 
         overlayController.setOverlayBounds({
             entireScreenMode,
             captureSourceDisplay: this.captureSourceDisplay,
             captureSourceWindow: this.captureSourceWindow,
             preventNegativeCoordinates,
-            isTaskbarVisible: !Boolean(this.taskbar?.auto_hide)
+            isTaskbarVisible: !Boolean(this.taskbar?.auto_hide),
+            bounds
         });
     }
 
@@ -594,15 +603,26 @@ export class AppController {
 
         if ( !image ) return;
 
+        let overlayBounds: Partial<Electron.Rectangle> | undefined;
+
+        if ( isWaylandDisplay ) {
+            const imageMetadata = await sharp(image).metadata();
+            overlayBounds = {
+                width: imageMetadata.width,
+                height: imageMetadata.height
+            };
+        }
+
         // Setting overlay bounds
         let isFullScreenImage = true;
         if ( image && runFullScreenImageCheck)
             isFullScreenImage = await this.isFullScreenImage(image);
 
-        this.setOverlayBounds(
-            isFullScreenImage ? 'fullscreen' :  'maximized',
-            preventNegativeCoordinates
-        );
+        this.setOverlayBounds({
+            entireScreenMode: isFullScreenImage ? 'fullscreen' :  'maximized',
+            preventNegativeCoordinates,
+            bounds: overlayBounds
+        });
         this.showOverlayWindow({ showInactive: true, displayResults: false }); // This can cause problems with JPDBReader extension // Warning: Unknown display value, please report this!
         ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
 

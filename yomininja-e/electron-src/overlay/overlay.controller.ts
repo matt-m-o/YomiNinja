@@ -18,6 +18,7 @@ import os from 'os';
 import { ExternalWindow } from "../ocr_recognition/common/types";
 import { WindowProperties } from "../../gyp_modules/window_management/window_manager";
 import { isWaylandDisplay } from "../util/environment.util";
+import { appService } from "../app/app.index";
 
 const isMacOS = process.platform === 'darwin';
 const isLinux = process.platform === 'linux';
@@ -630,21 +631,25 @@ export class OverlayController {
             captureSourceDisplay?: Electron.Display,
             captureSourceWindow?: ExternalWindow,
             preventNegativeCoordinates?: boolean,
-            isTaskbarVisible?: boolean
+            isTaskbarVisible?: boolean,
+            bounds?: Partial<Electron.Rectangle>
         }
     ) {
         input.entireScreenMode = input.entireScreenMode || 'fullscreen';
 
-        const {
+        let {
             entireScreenMode,
             captureSourceDisplay,
-            captureSourceWindow
+            captureSourceWindow,
+            bounds
         } = input;
 
         // console.time("setOverlayBounds");
 
         if ( !this.automaticOverlayBounds )
             return;
+
+        let newBounds: Partial<Electron.Rectangle> = { ...bounds };
 
         const isFullscreen = entireScreenMode === 'fullscreen';
         
@@ -659,25 +664,23 @@ export class OverlayController {
                     }
                 );
             }
-            
-            this.overlayWindow.setBounds({                
+
+            newBounds = {
                 ...captureSourceDisplay?.workArea,
-            });
-            this.setBrowserPopupOverlayBounds({
-                ...captureSourceDisplay?.workArea
-            })
+                ...bounds
+            };
+            this._setOverlayBounds( newBounds );
 
             if ( isFullscreen ) {
                 if ( !isMacOS ) {
                     this.overlayWindow.setFullScreen( true );
                 }
                 else {
-                    this.overlayWindow.setBounds(
-                        screen.getPrimaryDisplay().bounds
-                    );
-                    this.setBrowserPopupOverlayBounds(
-                        screen.getPrimaryDisplay().bounds
-                    )
+                    newBounds = {
+                        ...screen.getPrimaryDisplay().bounds,
+                        ...bounds
+                    };
+                    this._setOverlayBounds( newBounds );
                 }
             }
             
@@ -690,11 +693,12 @@ export class OverlayController {
             let targetWindowBounds = {
                 width: captureSourceWindow.size.width,
                 height: captureSourceWindow.size.height,
-                x: captureSourceWindow.position.x,
-                y: captureSourceWindow.position.y
+                x: captureSourceWindow.position.x || 0,
+                y: captureSourceWindow.position.y || 0,
+                ...newBounds
             };
 
-            if ( input.preventNegativeCoordinates === true ) {
+            if ( input.preventNegativeCoordinates ) {
                 if ( targetWindowBounds.x < 0 ) {
                     if ( input.isTaskbarVisible === false )
                         targetWindowBounds.width -= Math.abs(targetWindowBounds.x)
@@ -716,14 +720,24 @@ export class OverlayController {
                 targetWindowBounds = screen.screenToDipRect( this.overlayWindow, targetWindowBounds );
             }
 
-            this.overlayWindow.setBounds( targetWindowBounds );
-            this.setBrowserPopupOverlayBounds( targetWindowBounds );
+            this._setOverlayBounds( targetWindowBounds );
 
             // console.log({ targetWindowBounds });
 
             // Might be necessary to calculate and set twice
             // dipRect = screen.screenToDipRect( this.overlayWindow, targetWindowBounds )
             // this.overlayWindow.setBounds( dipRect );
+        }
+        else if ( bounds?.width && bounds?.height ) {
+            const display = appService.getCurrentDisplay();
+
+            const fullscreen = (
+                bounds.width >= display.bounds.width &&
+                bounds.height >= display.bounds.height
+            );
+
+            this.overlayWindow.setFullScreen( fullscreen );
+            this._setOverlayBounds( bounds );
         }
 
         // console.timeEnd("setOverlayBounds");
@@ -780,5 +794,25 @@ export class OverlayController {
             value,
             { forward: true }
         );
+    }
+
+    private _setOverlayBounds( bounds: Partial<Electron.Rectangle> ) {
+
+        if (
+            isWaylandDisplay &&
+            bounds.width !== undefined &&
+            bounds.height !== undefined
+        ) {
+            return this.overlayWindow.webContents.executeJavaScript(`
+                window.resizeTo(
+                    ${bounds.width},
+                    ${bounds.height}
+                );
+            `);
+        }
+
+        this.overlayWindow.setBounds( bounds );
+        
+        this.setBrowserPopupOverlayBounds( bounds );
     }
 }
