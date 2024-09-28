@@ -1,5 +1,5 @@
 // import * as x11 from 'x11';
-import { Rectangle, TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
+import { Position, Rectangle, TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
 import { exec } from 'child_process';
 import { windowManager } from 'node-window-manager';
 
@@ -47,7 +47,7 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
 
         console.log(`getWindowProperties: ${windowHandle}`);
 
-        const windowGeometry = await this.getWindowGeometry( windowHandle );
+        const windowGeometry = await this.getWindowGeometryAlt( windowHandle );
 
         if ( !windowGeometry ) {
             console.log(`window ${windowHandle} doesn't exists!`);
@@ -173,7 +173,6 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
     async getWindowGeometry( windowHandle: number ): Promise< XDoToolWindowGeometry | null > {
 
         const command = `xdotool getwindowgeometry --shell ${windowHandle}`;
-
         // console.log({ command });
 
         return new Promise( ( resolve, reject ) => {
@@ -207,10 +206,12 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
    
     }
 
-    async getWindowGeometryAlt( windowHandle: number ) {
+    async getWindowGeometryAlt( windowHandle: number ): Promise< XDoToolWindowGeometry | null > {
         const command = `xwininfo -id ${windowHandle}`;
 
         // console.log({ command });
+
+        // const windowDecorations = await this.getWindowDecorations( windowHandle );
 
         return new Promise( ( resolve, reject ) => {
 
@@ -227,22 +228,84 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
                     const value = line.split(':')[1];
                     return parseInt( value, 10 );
                 });
-    
+
+                const relativeX = values[3];
+                const relativeY = values[4];
+
+                let Y = values[2];
+
+                // if ( windowDecorations.length > 0 )
+                //     Y -= windowDecorations[2];
+
                 const geometry: XDoToolWindowGeometry = {
                     WINDOW: windowHandle,
                     X:  values[1],
-                    Y: values[2],
+                    Y,
                     WIDTH: values[5],
                     HEIGHT: values[6],
                     SCREEN: 0,
                 };
-
-                console.log(geometry);
     
                 resolve( geometry );
             });
         });
    
+    }
+
+    async getWindowDecorations( windowHandle: number ): Promise<number[]> {
+        const command = `xprop -id ${windowHandle} _NET_FRAME_EXTENTS`;
+
+        return new Promise( ( resolve, reject ) => {
+
+            exec( command, (error, stdout, stderr) => {
+
+                if ( error ) {
+                    console.error(`Error executing xprop: ${stderr}`);
+                    reject( null );
+                }
+
+                const outputLines = stdout.trim();
+
+                if ( !outputLines.includes('=') )
+                    return resolve( [] );
+
+                const values = outputLines
+                    .split('=')?.[1]
+                    .split(',')
+                    .map( item => parseInt(item.trim()) );
+    
+                resolve( values );
+            });
+        });
+    }
+
+    async getCursorPosition(): Promise<Position> {
+        const command = 'xdotool getmouselocation --shell';
+
+        return new Promise( ( resolve, reject ) => {
+
+            exec( command, (error, stdout, stderr) => {
+
+                if ( error ) {
+                    console.error(`Error executing xwininfo: ${stderr}`);
+                    reject( null );
+                }
+
+                const outputLines = stdout.trim().split('\n');
+
+                const values = outputLines.map( line => {
+                    const value = line.split('=')[1];
+                    return parseInt( value, 10 );
+                });
+    
+                const cursorPosition: Position = {
+                    x: values[0],
+                    y: values[1]
+                };
+    
+                resolve( cursorPosition );
+            });
+        });
     }
 
 }

@@ -1,5 +1,6 @@
 import * as x11 from 'x11';
 import { TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
+import { screen } from 'electron';
 
 
 export class WindowManagerLinuxX11 implements WindowManagerNativeInterface {
@@ -186,6 +187,10 @@ export class WindowManagerLinuxX11 implements WindowManagerNativeInterface {
         const ids = await this.getAllWindowIds();
 
         return ids.some( id => id === windowHandle );
+    }
+
+    getCursorPosition() {
+        return screen.getCursorScreenPoint();
     }
 
 }
