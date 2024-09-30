@@ -20,6 +20,7 @@ import { DetectRequest } from "../../../../../../grpc/rpc/ocr_service/DetectRequ
 import { DetectResponse__Output } from "../../../../../../grpc/rpc/ocr_service/DetectResponse";
 import { getNextPortAvailable } from "../../../util/port_check";
 import { TextLine__Output } from "../../../../../../grpc/rpc/ocr_service/TextLine";
+import { isLinux } from "../../../../../util/environment.util";
 
 export class PaddleOcrService {
     
@@ -177,7 +178,7 @@ export class PaddleOcrService {
         this.serviceProcess = spawn(
             executable,
             [ this.settingsPresetsRoot, 'default', port.toString() ],
-            { cwd: this.binRoot }
+            { cwd: this.binRoot, detached: isLinux }
         );
         this.serviceProcess.on('error', error => {
             console.error(error);
@@ -379,6 +380,8 @@ export class PaddleOcrService {
         try {
             // Ensure the child process is killed before exiting
             this.serviceProcess.kill('SIGTERM'); // You can use 'SIGINT' or 'SIGKILL' as well
+            if ( isLinux )
+                process.kill( -this.serviceProcess.pid );
         } catch (error) {
             console.error(error);
         }
