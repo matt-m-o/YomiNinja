@@ -17,7 +17,7 @@ import { httpServerPort } from "../common/server";
 import os from 'os';
 import { ExternalWindow } from "../ocr_recognition/common/types";
 import { WindowProperties } from "../../gyp_modules/window_management/window_manager";
-import { isWaylandDisplay } from "../util/environment.util";
+import { isWaylandDisplay, isWindows } from "../util/environment.util";
 import { appService } from "../app/app.index";
 
 const isMacOS = process.platform === 'darwin';
@@ -625,7 +625,7 @@ export class OverlayController {
         return newMovableState;
     }
 
-    setOverlayBounds(
+    async setOverlayBounds(
         input: {
             entireScreenMode?: 'fullscreen' | 'maximized',
             captureSourceDisplay?: Electron.Display,
@@ -651,7 +651,17 @@ export class OverlayController {
 
         let newBounds: Partial<Electron.Rectangle> = { ...bounds };
 
-        const isFullscreen = entireScreenMode === 'fullscreen';
+        let isFullscreen = entireScreenMode === 'fullscreen';
+
+        const currentDisplay = await this.getCurrentDisplay();
+
+        if ( bounds?.width && bounds.height ) {
+            const display = captureSourceDisplay || currentDisplay;
+            isFullscreen = (
+                bounds?.width >= display.bounds.width &&
+                bounds?.height >= display.bounds.height
+            );
+        }
         
         if ( captureSourceDisplay ) {
 
@@ -673,14 +683,15 @@ export class OverlayController {
 
             if ( isFullscreen ) {
                 if ( !isMacOS ) {
-                    this.overlayWindow.setFullScreen( true );
-                }
-                else {
                     newBounds = {
-                        ...screen.getPrimaryDisplay().bounds,
+                        ...captureSourceDisplay.bounds,
                         ...bounds
                     };
                     this._setOverlayBounds( newBounds );
+                    this.overlayWindow.setFullScreen( true );
+                }
+                else {
+                    this.overlayWindow.maximize();
                 }
             }
             
@@ -729,14 +740,7 @@ export class OverlayController {
             // this.overlayWindow.setBounds( dipRect );
         }
         else if ( bounds?.width && bounds?.height ) {
-            const display = appService.getCurrentDisplay();
-
-            const fullscreen = (
-                bounds.width >= display.bounds.width &&
-                bounds.height >= display.bounds.height
-            );
-
-            this.overlayWindow.setFullScreen( fullscreen );
+            this.overlayWindow.setFullScreen( isFullscreen );
             this._setOverlayBounds( bounds );
         }
 
@@ -812,7 +816,15 @@ export class OverlayController {
         }
 
         this.overlayWindow.setBounds( bounds );
-        
+
         this.setBrowserPopupOverlayBounds( bounds );
+    }
+
+    private async getCurrentDisplay(): Promise<Electron.Display> {
+
+        const cursorScreenPoint = await windowManager.getCursorPosition();
+        const displayNearestPoint = screen.getDisplayNearestPoint(cursorScreenPoint);
+        
+        return displayNearestPoint;
     }
 }

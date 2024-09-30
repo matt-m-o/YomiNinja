@@ -6,7 +6,7 @@ import { CaptureSource, ExternalWindow } from "./types";
 import { screen } from 'electron';
 import sharp from "sharp";
 const isMacOs = process.platform === 'darwin';
-import { isWaylandDisplay } from "../util/environment.util";
+import { isLinux, isWaylandDisplay } from "../util/environment.util";
 
 
 export const entireScreenAutoCaptureSource: CaptureSource = {
@@ -115,15 +115,12 @@ export class AppService {
             .find( display => display.id === id );
     }
 
-    getCurrentDisplay(): Electron.Display {
-        
-        // screen.getAllDisplays().forEach( ({ id, label }, idx ) => console.log({
-        //     idx, id, label
-        // }));
+    async getCurrentDisplay(): Promise< Electron.Display > {
             
-        const { getCursorScreenPoint, getDisplayNearestPoint } = screen;
+        const cursorScreenPoint =  await windowManager.getCursorPosition();
+        const displayNearestPoint = screen.getDisplayNearestPoint( cursorScreenPoint );
         
-        return getDisplayNearestPoint( getCursorScreenPoint() );
+        return displayNearestPoint;
     }
 
     getAllDisplays(): Electron.Display[] {
@@ -226,21 +223,9 @@ export class AppService {
             return;
 
         if ( isMacOs ) {
-            display = screen.getAllDisplays()
-                .find( display => display.id == Number(source?.display_id) );
-            display = display || this.getCurrentDisplay();
-
-            const imageSize = source.thumbnail.getSize();
-
-            if (
-                display && 
-                (imageSize.height > display.workArea.height ||
-                  imageSize.width > display.workArea.width)
-
-            ) {
-                const workAreaImage = source.thumbnail.crop(display.workArea);
-                return workAreaImage.toPNG();
-            }
+            return await this.cropWorkAreaFromImage({
+                source
+            });
         }
 
         return source.thumbnail.toPNG();
@@ -284,6 +269,35 @@ export class AppService {
         
         return await sharp(image).extract(windowArea)
             .toBuffer();
+    }
+
+    async cropWorkAreaFromImage(
+        input: {
+            display?: Electron.Display,
+            source: Electron.DesktopCapturerSource
+        }
+    ): Promise<Buffer | undefined> {
+        let { display, source } = input;
+
+        if ( !display ) {
+            display = screen.getAllDisplays()
+                .find( display => display.id == Number(source?.display_id) );
+
+            display = display || (await this.getCurrentDisplay());
+        }
+
+        const imageSize = source.thumbnail.getSize();
+
+        if (
+            display && 
+            (imageSize.height > display.workArea.height ||
+             imageSize.width > display.workArea.width)
+        ) {
+            const workAreaImage = source.thumbnail.crop(display.workArea);
+            return workAreaImage.toPNG();
+        }
+
+        return source.thumbnail.toPNG();
     }
 }
 

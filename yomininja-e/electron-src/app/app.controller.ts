@@ -29,7 +29,7 @@ import { join } from "path";
 import { sleep } from "../util/sleep.util";
 import electronIsDev from "electron-is-dev";
 import { ipcMain } from "../common/ipc_main";
-import { isWaylandDisplay } from "../util/environment.util";
+import { isLinux, isWaylandDisplay } from "../util/environment.util";
 const isMacOS = process.platform === 'darwin';
 
 let startupTimer: NodeJS.Timeout;
@@ -190,7 +190,7 @@ export class AppController {
                 return await this.handleOcrCommand({
                     ...cloneDeep( this.previousOcrCommandData ),
                     image,
-                    preventNegativeCoordinates: screen.getAllDisplays().length === 1,
+                    preventNegativeCoordinates: false,
                     autoCrop: false
                 });
             }
@@ -488,7 +488,7 @@ export class AppController {
     }
 
 
-    handleDisplaySource() {
+    async handleDisplaySource() {
 
         if ( this.userSelectedDisplayId !== undefined ) {
             this.captureSourceDisplay = this.appService.getDisplay( this.userSelectedDisplayId );
@@ -499,7 +499,7 @@ export class AppController {
             this.userSelectedDisplayId === undefined &&
             !this.userSelectedWindowId
         ) 
-            this.captureSourceDisplay = this.appService.getCurrentDisplay();
+            this.captureSourceDisplay = await this.appService.getCurrentDisplay();
         else 
             this.captureSourceDisplay = undefined;        
     }
@@ -519,7 +519,7 @@ export class AppController {
     async handleCaptureSourceSelection() {
         // console.time('handleCaptureSourceSelection');
 
-        this.handleDisplaySource();
+        await this.handleDisplaySource();
 
         if ( !isWaylandDisplay )
             await this.handleWindowSource();
@@ -577,11 +577,11 @@ export class AppController {
 
         if ( !input.image ) {
             this.previousOcrCommandData = input;
-            const success = screenCapturerController.screenshot({
+            const screenshotSuccess = screenCapturerController.screenshot({
                 captureSource: this.activeCaptureSource
             });
 
-            if ( success ) return;
+            if ( screenshotSuccess ) return;
         }
 
         ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
@@ -605,7 +605,7 @@ export class AppController {
 
         let overlayBounds: Partial<Electron.Rectangle> | undefined;
 
-        if ( isWaylandDisplay ) {
+        if ( isLinux ) {
             const imageMetadata = await sharp(image).metadata();
             overlayBounds = {
                 width: imageMetadata.width,
