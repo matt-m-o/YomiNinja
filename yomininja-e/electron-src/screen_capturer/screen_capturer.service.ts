@@ -1,4 +1,4 @@
-import { BrowserWindow, IpcMainInvokeEvent, MessagePortMain } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, MessagePortMain, screen } from "electron";
 import { CaptureSource, ExternalWindow } from "../app/types";
 import { join } from 'path';
 import { PAGES_DIR } from "../util/directories.util";
@@ -7,6 +7,8 @@ import isDev from 'electron-is-dev';
 import { ocrRecognitionController } from "../ocr_recognition/ocr_recognition.index";
 import fs from 'fs';
 import { cloneDeep } from 'lodash';
+import sharp from "sharp";
+import { windowManager } from "../@core/infra/app_initialization";
 
 export class ScreenCapturerService {
 
@@ -182,6 +184,55 @@ export class ScreenCapturerService {
             return;
         }
 
+    }
+
+    async cropWorkAreaFromImage(
+        input: {
+            image: Buffer
+        }
+    ): Promise<Buffer> {
+
+        const { image } = input;
+
+        let display = screen.getAllDisplays()
+            .find( display => display.id == Number(this.captureSource?.displayId) );
+
+        display = display || (await this.getCurrentDisplay());
+
+        const sharpPipeline = sharp(image);
+
+        const imageMetadata = await sharpPipeline.metadata();
+
+        if (
+            !imageMetadata.width ||
+            !imageMetadata.height ||
+            !display
+        )
+            return image;
+
+        if (
+            imageMetadata.height > display.workArea.height ||
+            imageMetadata.width > display.workArea.width
+        ) {
+            const { workArea } = display;
+
+            const workAreaImage = sharpPipeline.extract({
+                top: workArea.y,
+                left: workArea.x,
+                width: workArea.width,
+                height: workArea.height
+            });
+
+            return await workAreaImage.toBuffer();
+        }
+
+        return image;
+    }
+
+    async getCurrentDisplay(): Promise<Electron.Display> {
+        const cursorScreenPoint = await windowManager.getCursorPosition();
+        const displayNearestPoint = screen.getDisplayNearestPoint(cursorScreenPoint);
+        return displayNearestPoint;
     }
 
 }

@@ -3,6 +3,7 @@ import { screenCapturerService } from "./screen_capturer.index";
 import { CaptureSource } from "../app/types";
 import { ipcMain } from "../common/ipc_main";
 import isDev from "electron-is-dev";
+import { isMacOS } from "../util/environment.util";
 
 export class ScreenCapturerController {
 
@@ -61,8 +62,13 @@ export class ScreenCapturerController {
             if ( !frame )
                 return;
 
-            handler( frame );
+            if ( isMacOS ) {
+                frame = await screenCapturerService.cropWorkAreaFromImage({
+                    image: frame
+                });
+            }
 
+            handler( frame );
         });
     }
 
@@ -75,6 +81,12 @@ export class ScreenCapturerController {
 
             if ( !screenshot )
                 return;
+
+            if ( isMacOS ) {
+                screenshot = await screenCapturerService.cropWorkAreaFromImage({
+                    image: screenshot
+                });
+            }
 
             handler( screenshot );
             
