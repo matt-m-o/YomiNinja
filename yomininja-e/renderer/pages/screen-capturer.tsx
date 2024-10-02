@@ -162,6 +162,24 @@ class Capturer {
 
         videoElement.srcObject = this.mediaStream;
     }
+
+    async reset() {
+        if ( !this.mediaStream ) return;
+
+        let canvasSize: Electron.Size | undefined;
+
+        if ( this.canvas ) {
+            canvasSize = {
+                width: this.canvas.width,
+                height: this.canvas.height
+            };
+        }
+
+        await this.init({
+            mediaSourceId: this.mediaSourceId,
+            canvasSize
+        });
+    }
 }
 
 export default function ScreenCapturer() {
@@ -213,6 +231,7 @@ function ScreenCapturerElement() {
                             sendFrame( frame );
                     } catch (error) {
                         console.error(error);
+                        await capturer.reset();
                     }
                 });
 
