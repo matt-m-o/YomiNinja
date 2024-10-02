@@ -632,7 +632,8 @@ export class OverlayController {
             captureSourceWindow?: ExternalWindow,
             preventNegativeCoordinates?: boolean,
             isTaskbarVisible?: boolean,
-            bounds?: Partial<Electron.Rectangle>
+            bounds?: Partial<Electron.Rectangle>,
+            imageSize?: Electron.Size
         }
     ) {
         input.entireScreenMode = input.entireScreenMode || 'fullscreen';
@@ -641,7 +642,8 @@ export class OverlayController {
             entireScreenMode,
             captureSourceDisplay,
             captureSourceWindow,
-            bounds
+            bounds,
+            imageSize
         } = input;
 
         // console.time("setOverlayBounds");
@@ -708,6 +710,22 @@ export class OverlayController {
                 y: captureSourceWindow.position.y || 0,
                 ...newBounds
             };
+
+            if ( imageSize ) {
+                const xOffset = targetWindowBounds.width - imageSize.width;
+                const yOffset = targetWindowBounds.height - imageSize.height;
+
+                if ( xOffset > 0 )
+                    targetWindowBounds.x = targetWindowBounds.x + xOffset;
+
+                if ( yOffset > 0 )
+                    targetWindowBounds.y = targetWindowBounds.y + yOffset;
+
+                targetWindowBounds = {
+                    ...targetWindowBounds,
+                    ...imageSize
+                };
+            }
 
             if ( input.preventNegativeCoordinates ) {
                 if ( targetWindowBounds.x < 0 ) {

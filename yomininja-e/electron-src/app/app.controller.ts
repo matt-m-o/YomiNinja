@@ -29,7 +29,7 @@ import { join } from "path";
 import { sleep } from "../util/sleep.util";
 import electronIsDev from "electron-is-dev";
 import { ipcMain } from "../common/ipc_main";
-import { isLinux, isWaylandDisplay } from "../util/environment.util";
+import { isLinux, isWaylandDisplay, isWindows } from "../util/environment.util";
 const isMacOS = process.platform === 'darwin';
 
 let startupTimer: NodeJS.Timeout;
@@ -468,11 +468,13 @@ export class AppController {
         entireScreenMode?: 'fullscreen' | 'maximized';
         preventNegativeCoordinates?: boolean;
         bounds?: Partial<Electron.Rectangle>;
+        imageSize?: Electron.Size
     }) {
         let {
             entireScreenMode,
             preventNegativeCoordinates,
-            bounds
+            bounds,
+            imageSize
         } = input;
 
         entireScreenMode = entireScreenMode || 'fullscreen';
@@ -483,7 +485,8 @@ export class AppController {
             captureSourceWindow: this.captureSourceWindow,
             preventNegativeCoordinates,
             isTaskbarVisible: !Boolean(this.taskbar?.auto_hide),
-            bounds
+            bounds,
+            imageSize
         });
     }
 
@@ -603,14 +606,17 @@ export class AppController {
 
         if ( !image ) return;
 
-        let overlayBounds: Partial<Electron.Rectangle> | undefined;
+        let imageSize: Electron.Size | undefined;
 
-        if ( isLinux ) {
+        if ( isLinux || isWindows ) {
             const imageMetadata = await sharp(image).metadata();
-            overlayBounds = {
-                width: imageMetadata.width,
-                height: imageMetadata.height
-            };
+
+            if ( imageMetadata.width && imageMetadata.height ) {
+                imageSize = {
+                    width: imageMetadata.width || 0,
+                    height: imageMetadata.height || 0
+                };
+            }
         }
 
         // Setting overlay bounds
@@ -621,7 +627,7 @@ export class AppController {
         this.setOverlayBounds({
             entireScreenMode: isFullScreenImage ? 'fullscreen' :  'maximized',
             preventNegativeCoordinates,
-            bounds: overlayBounds
+            imageSize
         });
         this.showOverlayWindow({ showInactive: true, displayResults: false }); // This can cause problems with JPDBReader extension // Warning: Unknown display value, please report this!
         ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );

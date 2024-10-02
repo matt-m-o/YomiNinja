@@ -15,10 +15,38 @@ class Capturer {
 
     keepStreaming: boolean = false;
 
-    init = async (
+    createdAt: number = 0;
+
+    init = async ( input: {
         mediaSourceId: string,
-        screenSize?: { width: number, height: number }
-    ) => {
+        mediaSize?: { width: number, height: number },
+        canvasSize?: { width: number, height: number },
+    }) => {
+        const {
+            mediaSourceId,
+            mediaSize: screenSize,
+            canvasSize
+        } = input;
+
+        if ( Date.now() < this.createdAt )
+            return;
+
+        this.createdAt = Date.now();
+
+        if ( this.mediaStream ) {
+
+            if (
+                this.canvas &&
+                this.mediaSourceId == mediaSourceId &&
+                canvasSize.width == this.canvas.width &&
+                canvasSize.height == this.canvas.height
+            )
+                return;
+
+            this.mediaStream.getTracks()
+                .forEach( t => t.stop() );
+        }
+
         this.mediaSourceId = mediaSourceId;
 
         let mandatory: any = {
@@ -46,6 +74,15 @@ class Capturer {
 
         this.track = this.mediaStream.getVideoTracks()[0];
         this.imageCapture = new ImageCapture( this.track );
+        
+        if ( canvasSize ) {
+            this.canvas = new OffscreenCanvas(
+                canvasSize.width,
+                canvasSize.height
+            );
+        }
+
+        this.updatePreviewSource();
     }
 
     setCanvasSize = async ( width?: number, height?: number ) => {
@@ -115,6 +152,16 @@ class Capturer {
     setIntervalBetweenFrames = ( ms: number ) => {
         this.intervalBetweenFrames = ms;
     }
+
+    updatePreviewSource() {
+        const element = document.getElementById('video-element');
+
+        if ( !element ) return;
+        
+        const videoElement = element as HTMLVideoElement;
+
+        videoElement.srcObject = this.mediaStream;
+    }
 }
 
 export default function ScreenCapturer() {
@@ -143,7 +190,7 @@ function ScreenCapturerElement() {
         if ( capturer.keepStreaming )
             return;
 
-        capturer.init( activeCaptureSource.id )
+        capturer.init({ mediaSourceId: activeCaptureSource.id })
             .then( async () => {
 
                 setPreview( VideoElement(capturer) );
@@ -200,10 +247,13 @@ function ScreenCapturerElement() {
                 autoPlay
                 onResize={ (e) => {
                     const { videoWidth, videoHeight } = e.currentTarget;
-                    capturer.setCanvasSize(
-                        videoWidth,
-                        videoHeight
-                    );
+                    capturer.init({
+                        mediaSourceId: capturer.mediaSourceId,
+                        canvasSize: {
+                            width: videoWidth,
+                            height: videoHeight
+                        }
+                    });
                 }}
             />
         );
