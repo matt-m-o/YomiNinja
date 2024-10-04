@@ -711,21 +711,21 @@ export class OverlayController {
                 ...newBounds
             };
 
-            if ( imageSize ) {
-                const xOffset = targetWindowBounds.width - imageSize.width;
-                const yOffset = targetWindowBounds.height - imageSize.height;
+            // if ( imageSize ) {
+            //     const xOffset = targetWindowBounds.width - imageSize.width;
+            //     const yOffset = targetWindowBounds.height - imageSize.height;
 
-                if ( xOffset > 0 )
-                    targetWindowBounds.x = targetWindowBounds.x + xOffset;
+            //     if ( xOffset > 0 )
+            //         targetWindowBounds.x = targetWindowBounds.x + xOffset;
 
-                if ( yOffset > 0 )
-                    targetWindowBounds.y = targetWindowBounds.y + yOffset;
+            //     if ( yOffset > 0 )
+            //         targetWindowBounds.y = targetWindowBounds.y + yOffset;
 
-                targetWindowBounds = {
-                    ...targetWindowBounds,
-                    ...imageSize
-                };
-            }
+            //     targetWindowBounds = {
+            //         ...targetWindowBounds,
+            //         ...imageSize
+            //     };
+            // }
 
             if ( input.preventNegativeCoordinates ) {
                 if ( targetWindowBounds.x < 0 ) {
@@ -750,6 +750,23 @@ export class OverlayController {
             }
 
             this._setOverlayBounds( targetWindowBounds );
+
+            if (
+                isWindows &&
+                targetWindowBounds.y < 0
+            ) {
+                const fullscreen = (
+                    targetWindowBounds.width >= currentDisplay.size.width &&
+                    targetWindowBounds.height >= currentDisplay.size.height
+                );
+
+                if ( fullscreen ) {
+                    this.overlayWindow.setFullScreen(true);
+                }
+                else {
+                    this.overlayWindow.maximize();
+                }
+            } 
 
             // console.log({ targetWindowBounds });
 
@@ -819,6 +836,7 @@ export class OverlayController {
     }
 
     private _setOverlayBounds( bounds: Partial<Electron.Rectangle> ) {
+        console.log("\nsetOverlayBounds\n");
 
         if (
             isWaylandDisplay &&
