@@ -21,11 +21,13 @@ class Capturer {
         mediaSourceId: string,
         mediaSize?: { width: number, height: number },
         canvasSize?: { width: number, height: number },
+        force?: boolean;
     }) => {
         const {
             mediaSourceId,
-            mediaSize: screenSize,
-            canvasSize
+            mediaSize,
+            canvasSize,
+            force
         } = input;
 
         if ( Date.now() < this.createdAt )
@@ -36,10 +38,11 @@ class Capturer {
         if ( this.mediaStream ) {
 
             if (
+                !force &&
                 this.canvas &&
-                this.mediaSourceId == mediaSourceId &&
-                canvasSize.width == this.canvas.width &&
-                canvasSize.height == this.canvas.height
+                this.mediaSourceId === mediaSourceId &&
+                canvasSize.width === this.canvas.width &&
+                canvasSize.height === this.canvas.height
             )
                 return;
 
@@ -56,11 +59,11 @@ class Capturer {
             cursor: "never"
         };
 
-        if ( screenSize ) {
+        if ( mediaSize ) {
             mandatory = {
                 ...mandatory,
-                maxWidth: screenSize.width,
-                maxHeight: screenSize.height
+                maxWidth: mediaSize.width,
+                maxHeight: mediaSize.height
             };
         }
 
@@ -95,35 +98,48 @@ class Capturer {
         this.canvas = new OffscreenCanvas( width, height );
     }
     
-    grabFrame = async ( format: 'jpeg' | 'png' = 'jpeg' ): Promise< Buffer > => {
+    grabFrame = async ( format: 'jpeg' | 'png' = 'jpeg' ): Promise< Buffer | undefined > => {
 
         if (
             this.grabbingFrame ||
             !this.imageCapture ||
             !this.canvas
         ) return;
+
+        
+        if ( this.track.readyState === 'ended' ) {
+            console.log(`track.readyState: ${this.track.readyState}`);
+            return;
+        }
+
         this.grabbingFrame = true;
 
-        // console.time('grabFrame')
-        const frame = await this.imageCapture.grabFrame();
+        try {
+            // console.time('grabFrame')
+            const frame = await this.imageCapture.grabFrame();
 
-        const context = this.canvas.getContext('2d');
-        context.drawImage( frame, 0, 0, frame.width, frame.height );
+            const context = this.canvas.getContext('2d');
+            context.drawImage( frame, 0, 0, frame.width, frame.height );
 
-        const blob = await new Promise<Blob>((resolve, reject) => {
-            this.canvas.convertToBlob({ type: `image/${format}`, quality: 1 })
-                .then((blob) => {
-                    if (!blob) reject();
-                    resolve(blob);
-                });
-        });
+            const blob = await new Promise<Blob>((resolve, reject) => {
+                this.canvas.convertToBlob({ type: `image/${format}`, quality: 1 })
+                    .then((blob) => {
+                        if (!blob) reject();
+                        resolve(blob);
+                    });
+            });
 
-        const buffer = Buffer.from( await blob.arrayBuffer() )
+            const buffer = Buffer.from( await blob.arrayBuffer() )
+
+            this.grabbingFrame = false;
+
+            // console.timeEnd('grabFrame')
+            return buffer;
+        } catch (error) {
+            console.error( error );
+        }
 
         this.grabbingFrame = false;
-
-        // console.timeEnd('grabFrame')
-        return buffer;
     }
 
     startStream = async ( resultCallBack: ( frame: Buffer ) => Promise<any>  ) => {
@@ -163,7 +179,7 @@ class Capturer {
         videoElement.srcObject = this.mediaStream;
     }
 
-    async reset() {
+    async reset( force?: boolean ) {
         if ( !this.mediaStream ) return;
 
         let canvasSize: Electron.Size | undefined;
@@ -177,7 +193,8 @@ class Capturer {
 
         await this.init({
             mediaSourceId: this.mediaSourceId,
-            canvasSize
+            canvasSize,
+            force
         });
     }
 }
@@ -227,11 +244,14 @@ function ScreenCapturerElement() {
                     
                     try {
                         const frame = await capturer.grabFrame('jpeg');
-                        if ( frame )
-                            sendFrame( frame );
+                        if ( frame ) {
+                            sendFrame( frame )
+                                .catch( console.error );
+                        }
                     } catch (error) {
                         console.error(error);
-                        await capturer.reset();
+                        await capturer.reset(true)
+                            .catch( console.error );
                     }
                 });
 
