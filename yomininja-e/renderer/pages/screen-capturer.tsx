@@ -16,6 +16,7 @@ class Capturer {
     keepStreaming: boolean = false;
 
     createdAt: number = 0;
+    frameGrabbedAt: number = Date.now();
 
     init = async ( input: {
         mediaSourceId: string,
@@ -105,16 +106,14 @@ class Capturer {
             !this.imageCapture ||
             !this.canvas
         ) return;
-
         
-        if ( this.track.readyState === 'ended' ) {
-            console.log(`track.readyState: ${this.track.readyState}`);
-            return;
-        }
-
-        this.grabbingFrame = true;
-
         try {
+
+            if ( await this.autoResetCapturer() )
+                return;
+            
+            this.grabbingFrame = true;
+
             // console.time('grabFrame')
             const frame = await this.imageCapture.grabFrame();
 
@@ -129,14 +128,17 @@ class Capturer {
                     });
             });
 
-            const buffer = Buffer.from( await blob.arrayBuffer() )
+            const buffer = Buffer.from( await blob.arrayBuffer() );
 
             this.grabbingFrame = false;
+
+            this.frameGrabbedAt = Date.now();
 
             // console.timeEnd('grabFrame')
             return buffer;
         } catch (error) {
-            console.error( error );
+            console.log(error);
+            await this.reset(); 
         }
 
         this.grabbingFrame = false;
@@ -196,6 +198,31 @@ class Capturer {
             canvasSize,
             force
         });
+    }
+
+    async autoResetCapturer(): Promise<boolean> {
+
+        const idleTime = Date.now() - this.frameGrabbedAt;
+        const maxIdleTime = 1000 * 60 * 60 * 2; // 2 hours;
+
+        const streamEnded = this.track.readyState === 'ended';
+
+        // console.log({
+        //     idleTime,
+        //     maxIdleTime 
+        // });
+
+        if ( this.track.readyState === 'ended' )
+            console.log(`track.readyState: ${this.track.readyState}`);
+
+        if ( idleTime < maxIdleTime && !streamEnded )
+            return false;
+
+        console.log('auto reset');
+
+        await this.reset();
+
+        return true
     }
 }
 
