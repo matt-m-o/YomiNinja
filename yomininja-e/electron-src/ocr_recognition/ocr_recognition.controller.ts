@@ -31,6 +31,7 @@ export class OcrRecognitionController {
     private overlayWindow: BrowserWindow;
     private recognizing: boolean = false;
     private result: OcrResultScalable | null = null;
+    private ocrRequestImageBuffer: Buffer | undefined;
     private recognitionCallOnHold: Recognition_Input | undefined;
 
     constructor( input: {        
@@ -156,6 +157,7 @@ export class OcrRecognitionController {
                     left: overlayBounds.x
                 };
                 resultJson = await this.ocrResultToJson( ocrResultScalable );
+                this.ocrRequestImageBuffer = image;
             }
 
             this.result = resultJson || null;
@@ -188,7 +190,7 @@ export class OcrRecognitionController {
         
         try {
             // console.log('');
-            // console.time('controller.recognize');
+            // console.time('autoRecognize');
             // console.log(activeProfile);
             // console.log('OcrRecognitionController.recognize')
 
@@ -198,6 +200,11 @@ export class OcrRecognitionController {
                 engineName,
                 autoMode: true
             });
+
+            if ( this.result?.id === ocrResultScalable?.id ) {
+                console.timeEnd('autoRecognize');
+                return;
+            }
             // console.log({ ocrResultScalable });
 
             // console.timeEnd('controller.recognize');
@@ -212,6 +219,7 @@ export class OcrRecognitionController {
                     left: overlayBounds.x
                 };
                 resultJson = await this.ocrResultToJson( ocrResultScalable );
+                this.ocrRequestImageBuffer = image;
             }
 
             this.result = resultJson || null;
@@ -225,6 +233,8 @@ export class OcrRecognitionController {
         } catch (error) {
             console.error( error );
         }
+
+        // console.timeEnd('autoRecognize');
         // this.recognizing = false;
     }
 
@@ -262,22 +272,22 @@ export class OcrRecognitionController {
     async ocrResultToJson( result: OcrResultScalable ): Promise<OcrResultScalable > {
 
         if ( result?.image && typeof result.image !== 'string' ) {
-            result.image = await bufferToDataURL({
-                image: result.image,
-                format: 'png',
-                quality: 100
-            });
+            result.image = 'data:image/png;base64,'+Buffer.from(result.image).toString('base64');
         }
 
-        for ( const region of result.ocr_regions ) {
-            if ( !region.image || !Buffer.isBuffer(region.image) )
-                continue;
-            region.image = await bufferToDataURL({
-                image: region.image
-            });
-        }
+        // for ( const region of result.ocr_regions ) {
+        //     if ( !region.image || !Buffer.isBuffer(region.image) )
+        //         continue;
+        //     region.image = await bufferToDataURL({
+        //         image: region.image
+        //     });
+        // }
 
         return result;
+    }
+
+    resultImage(): Buffer | undefined {
+        return this.ocrRequestImageBuffer;
     }
 }
 

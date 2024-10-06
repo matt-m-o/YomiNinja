@@ -88,6 +88,9 @@ export class SharpImageProcessingAdapter implements ImageProcessingAdapter {
 
         if ( !pipelineOperations?.length ) return image;
 
+        if ( pipelineOperations.filter( op => op.enabled ).length === 0 )
+            return image;
+
         const originalMetadata = await sharp( image ).metadata();
 
         if ( 
