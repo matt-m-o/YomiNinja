@@ -220,7 +220,7 @@ class Capturer {
 
         console.log('auto reset');
 
-        await this.reset();
+        await this.reset(true);
 
         return true
     }
