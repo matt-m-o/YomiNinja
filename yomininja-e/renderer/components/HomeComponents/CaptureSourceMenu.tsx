@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Grid, InputAdornment, SxProps, TextField, Theme, Typography, createTheme } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Grid, IconButton, InputAdornment, SxProps, TextField, Theme, Typography, createTheme } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Tab from '@mui/material/Tab';
 import TabContext from '@mui/lab/TabContext';
@@ -6,6 +6,7 @@ import TabList from '@mui/lab/TabList';
 import TabPanel from'@mui/lab/TabPanel';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import { ChangeEvent, useContext, useEffect, useState } from "react";
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 import { CaptureSource } from '../../../electron-src/ocr_recognition/common/types';
 import { CaptureSourceContext } from "../../context/capture_source.provider";
@@ -174,9 +175,21 @@ export default function CaptureSourceMenu() {
                         sx={{
                             minWidth: '45%',
                             mt: 1.5,
-                            ml: 'auto'
+                            // ml: 1,
+                            ml: 'auto',
                         }}
                     />
+                    <Button variant="text" title='Refresh'
+                        onClick={ refreshCaptureSources }
+                        sx={{
+                            ml: 2,
+                            mt: 1,
+                            minWidth: '35px',
+                            minHeight: '35px'
+                        }}
+                    >
+                        <RefreshIcon/>
+                    </Button>
                 </Box>
 
                 <Box
