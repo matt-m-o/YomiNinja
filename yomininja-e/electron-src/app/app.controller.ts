@@ -608,7 +608,7 @@ export class AppController {
 
         let imageSize: Electron.Size | undefined;
 
-        if ( isLinux || isWindows ) {
+        if ( isLinux ) {
             const imageMetadata = await sharp(image).metadata();
 
             if ( imageMetadata.width && imageMetadata.height ) {

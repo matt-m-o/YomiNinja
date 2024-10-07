@@ -657,12 +657,18 @@ export class OverlayController {
 
         const currentDisplay = await this.getCurrentDisplay();
 
-        if ( bounds?.width && bounds.height ) {
+        if ( bounds?.width && bounds?.height ) {
             const display = captureSourceDisplay || currentDisplay;
             isFullscreen = (
                 bounds?.width >= display.bounds.width &&
                 bounds?.height >= display.bounds.height
             );
+        }
+
+        if ( isLinux && imageSize ) {
+            bounds = {
+                ...imageSize
+            };
         }
         
         if ( captureSourceDisplay ) {
@@ -741,10 +747,14 @@ export class OverlayController {
                 }
             }
 
-            if ( os.platform() === 'linux' )
-                this.overlayWindow.setFullScreen( false );
-
-            if ( os.platform() === 'win32' ) {
+            if ( isLinux && imageSize ) {
+                const fullscreen = (
+                    imageSize.width >= currentDisplay.size.width &&
+                    imageSize.height >= currentDisplay.size.height
+                );
+                this.overlayWindow.setFullScreen(fullscreen);
+            }
+            else if ( isWindows ) {
                 // Handling potential issues with DIP
                 targetWindowBounds = screen.screenToDipRect( this.overlayWindow, targetWindowBounds );
             }
@@ -766,7 +776,7 @@ export class OverlayController {
                 else {
                     this.overlayWindow.maximize();
                 }
-            } 
+            }
 
             // console.log({ targetWindowBounds });
 
@@ -775,7 +785,15 @@ export class OverlayController {
             // this.overlayWindow.setBounds( dipRect );
         }
         else if ( bounds?.width && bounds?.height ) {
+
+            const currentDisplay = await this.getCurrentDisplay();
+            isFullscreen = (
+                bounds?.width >= currentDisplay.size.width &&
+                bounds?.height >= currentDisplay.size.height
+            );
+            
             this.overlayWindow.setFullScreen( isFullscreen );
+
             this._setOverlayBounds( bounds );
         }
 
