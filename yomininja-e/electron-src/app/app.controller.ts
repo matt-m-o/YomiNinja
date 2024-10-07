@@ -638,7 +638,7 @@ export class AppController {
                 'app:capture_source_image',
                 {
                     image,
-                    imageBase64 :image.toString('base64')
+                    imageBase64: Buffer.from(image).toString('base64')
                 }
             );
             this.mainWindow.show();

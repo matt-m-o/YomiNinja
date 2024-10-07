@@ -142,7 +142,11 @@ export default function EditOcrTemplateModal( props: EditOcrTemplateModalProps )
 
                     { base64Image &&
                         <img
-                            src={ 'data:image/png;base64,'+ base64Image }
+                            src={
+                                base64Image?.includes('data') ?
+                                    base64Image :
+                                    'data:image/png;base64,'+ base64Image
+                            }
                             alt="capture source image"
                             style={{
                                 // maxWidth: '50%',
