@@ -203,7 +203,7 @@ class Capturer {
     async autoResetCapturer(): Promise<boolean> {
 
         const idleTime = Date.now() - this.frameGrabbedAt;
-        const maxIdleTime = 1000 * 60 * 60 * 2; // 2 hours;
+        const maxIdleTime = 10_000; // 1000 * 60 * 60 * 2; // 2 hours;
 
         const streamEnded = this.track.readyState === 'ended';
 
@@ -217,6 +217,8 @@ class Capturer {
 
         if ( idleTime < maxIdleTime && !streamEnded )
             return false;
+
+        this.frameGrabbedAt = Date.now();
 
         console.log('auto reset');
 
