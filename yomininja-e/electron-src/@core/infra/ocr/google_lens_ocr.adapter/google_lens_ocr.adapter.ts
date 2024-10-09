@@ -50,7 +50,11 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
         //     imageHeight: imageMetadata.height
         // });
 
+        console.log();
+        console.time("Google Lens request time");
         const data = await this.sendRequest( imageBuffer );
+        console.timeEnd("Google Lens request time");
+        console.log();
 
         if ( !data ) {
             this.cacheResult( null );
@@ -137,7 +141,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
 
         const data = new FormData();
 
-        data.append( 'encoded_image', image, { filename: 'image.png' } );
+        data.append( 'encoded_image', Buffer.from(image), { filename: 'image.png' } );
 
         const stcs = Date.now().toString().slice(0, 10);
 
@@ -160,7 +164,6 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
         };
 
         try {
-
             const response = await axios.request(config);
 
             if ( !response?.data ) return;
@@ -191,7 +194,6 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
         } catch (error) {
             console.log(error);
         }
-        
     }
 
     handleOcrData( data: any[], contextResolution: OcrResultContextResolution ): OcrItemScalable[] {
