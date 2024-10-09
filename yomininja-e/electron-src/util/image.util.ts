@@ -3,13 +3,13 @@ import sharp, { AvailableFormatInfo, FormatEnum } from "sharp";
 export async function bufferToDataURL(
     input: {
         image: Buffer,
-        format?: keyof FormatEnum,
+        format?: keyof FormatEnum | string,
         quality?: number
     }
 ): Promise<string> {
     const { image, quality } = input;
     
-    let format: keyof FormatEnum = input.format || ('png' as keyof FormatEnum);
+    let format: keyof FormatEnum | string = input.format || ('png' as keyof FormatEnum);
 
     let sharpImage = sharp(image);
     const metadata = await sharpImage.metadata();
@@ -26,11 +26,8 @@ export async function bufferToDataURL(
         { quality } :
         undefined;
 
-    const base64Data = ( metadata.format !== format ?
-            await sharpImage.toFormat( format, conversionOptions ).toBuffer() :
-            image
-        )
-        .toString('base64');
+    const convertedImage = await sharpImage.toFormat( format as keyof FormatEnum, conversionOptions )
+        .toBuffer()
 
-    return prefix + base64Data;
+    return prefix + convertedImage.toString('base64');
 }
