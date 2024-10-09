@@ -129,7 +129,7 @@ export default function ImagePreprocessingOptions( props: ImagePreprocessingOpti
                 return ( <>
                     <ListItem
                         secondaryAction={
-                            <IconButton edge="end" aria-label="delete"
+                            <IconButton title='Remove' edge="end" aria-label="delete"
                                 onClick={() => {
                                     preprocessingPipeline.slice( idx, 1 );
 
@@ -185,6 +185,7 @@ export default function ImagePreprocessingOptions( props: ImagePreprocessingOpti
                         />
 
                         <Switch
+                            title={ op.enabled ? 'Disable' : 'Enable' }
                             checked={ Boolean( op.enabled ) }
                             onChange={ ( event, checked ) => {
                                 const updatedRegion: OcrTargetRegionJson = {
@@ -232,7 +233,7 @@ export default function ImagePreprocessingOptions( props: ImagePreprocessingOpti
 
             <ListItem
                 secondaryAction={
-                    <Button 
+                    <Button title="Add operation"
                         variant={ selectedOption ? 'contained' : 'outlined' }
                         style={{
                             height: '56px'
@@ -252,6 +253,12 @@ export default function ImagePreprocessingOptions( props: ImagePreprocessingOpti
                             if ( operation.name.toLowerCase() === 'resize' ) {
                                 operation.args = {
                                     scale_factor: 1
+                                };
+                            }
+
+                            if ( operation.name.toLowerCase() === 'threshold' ) {
+                                operation.args = {
+                                    threshold: 100
                                 };
                             }
 
