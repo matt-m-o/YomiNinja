@@ -759,22 +759,38 @@ export class OverlayController {
                 targetWindowBounds = screen.screenToDipRect( this.overlayWindow, targetWindowBounds );
             }
 
-            this._setOverlayBounds( targetWindowBounds );
+            await this._setOverlayBounds( targetWindowBounds );
 
             if (
-                isWindows &&
-                targetWindowBounds.y < 0
+                isWindows
             ) {
+                const windowDisplay = screen.getDisplayNearestPoint({
+                    x: targetWindowBounds.x + Math.floor(targetWindowBounds.width * 0.15),
+                    y: targetWindowBounds.y + Math.floor(targetWindowBounds.height * 0.15)
+                });
+
                 const fullscreen = (
-                    targetWindowBounds.width >= currentDisplay.size.width &&
-                    targetWindowBounds.height >= currentDisplay.size.height
+                    targetWindowBounds.width >= windowDisplay.size.width &&
+                    targetWindowBounds.height >= windowDisplay.size.height
                 );
 
-                if ( fullscreen ) {
-                    this.overlayWindow.setFullScreen(true);
-                }
-                else {
-                    this.overlayWindow.maximize();
+                const maximized = (
+                    targetWindowBounds.width >= windowDisplay.workAreaSize.width &&
+                    targetWindowBounds.height >= windowDisplay.workAreaSize.height
+                );
+
+                if ( fullscreen || maximized ) {
+                    await this._setOverlayBounds({
+                        y: windowDisplay.bounds.y,
+                        x: windowDisplay.bounds.x
+                    });
+
+                    if ( fullscreen ) {
+                        this.overlayWindow.setFullScreen(true);
+                    }
+                    else if ( maximized ) {
+                        this.overlayWindow.maximize();
+                    }
                 }
             }
 
