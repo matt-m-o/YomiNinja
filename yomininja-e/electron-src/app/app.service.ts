@@ -96,7 +96,7 @@ export class AppService {
         const results: CaptureSource[] = sources.map( source => ({
             id: source.id,
             displayId: Number(source.display_id),
-            name: source.name,
+            name: source.name || 'Unknown',
             type: source.id.includes('window') ? 'window' : 'screen',
         }));
 
