@@ -7,14 +7,29 @@ import fs from 'fs';
 import path from 'path';
 import { PAGES_DIR } from '../util/directories.util';
 import mimeTypes from 'mime-types';
+import { customBrowserExtensionsAPI } from '../extensions/custom_browser_extensions_api/browser/api/browser_api';
 
 export let httpServer = http.createServer( async (req, res) => {
-    // const parsed = url.parse( String(req?.url), true )
+
+    const parsedUrl = url.parse( String(req?.url), true )
+
     let filePath = req.url === '/' ? '/index.html' : String(req.url);
     filePath = path.join(
       isDev ? './renderer/out' : PAGES_DIR,
       filePath || ''
     );
+
+    if ( req.method == "POST" ) {
+        if ( parsedUrl.pathname?.includes('chrome-api') ) {
+            console.log({ pathname: parsedUrl.pathname })
+            await customBrowserExtensionsAPI.router(
+                parsedUrl,
+                req,
+                res
+            );
+            return;
+        }
+    }
   
     fs.access( filePath, fs.constants.F_OK, (err) => {
         if (err) {
