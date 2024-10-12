@@ -74,6 +74,7 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                 show: 'Alt+B',
                 clear: 'Alt+V',
                 ocr_on_screen_shot: true,
+                manual_adjustment: 'Ctrl+Shift+M'
             },
             behavior: {
                 copy_text_on_hover: false,
