@@ -51,13 +51,11 @@ export class AppService {
         return windowManager.getTaskbar();
     }
 
-    async getAllCaptureSources(): Promise< CaptureSource[] > {
+    async getAllCaptureSources( sourceTypes?: ('screen' | 'window')[] ): Promise< CaptureSource[] > {
 
         // console.time('getAllCaptureSources time');
-        
-        console.log(`\nisWaylandDisplay: ${isWaylandDisplay}\n`);
 
-        const types: ("screen" | "window")[] = [ 'screen', 'window' ];
+        const types: ("screen" | "window")[] = sourceTypes || ['screen', 'window'];
         const thumbnailSize = { width: 0, height: 0 };
         
         let sources: Electron.DesktopCapturerSource[] = [];
