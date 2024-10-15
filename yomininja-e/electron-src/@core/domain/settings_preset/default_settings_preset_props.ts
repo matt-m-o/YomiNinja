@@ -1,5 +1,6 @@
 import { SettingsPresetInstanceProps } from "../../infra/types/entity_instance.types";
 import { SettingsPreset, SettingsPresetProps,  } from "./settings_preset";
+import crypto from 'crypto';
 
 export function getDefaultSettingsPresetProps(): SettingsPresetProps {
 
@@ -74,7 +75,8 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                 show: 'Alt+B',
                 clear: 'Alt+V',
                 ocr_on_screen_shot: true,
-                manual_adjustment: 'Ctrl+Shift+M'
+                manual_adjustment: 'Ctrl+Shift+M',
+                remote_control_key: crypto.randomUUID()
             },
             behavior: {
                 copy_text_on_hover: false,

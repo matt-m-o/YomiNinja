@@ -11,7 +11,7 @@ import { getBrowserWindowHandle } from '../util/browserWindow.util';
 import { overlayController } from '../overlay/overlay.index';
 import { uIOhook } from 'uiohook-napi';
 import { ipcMain } from '../common/ipc_main';
-import { httpServerPort } from '../common/server';
+import { httpServerPort } from '../util/environment.util';
 
 export class MainController {
 

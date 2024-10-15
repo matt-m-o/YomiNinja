@@ -29,8 +29,13 @@ import { join } from "path";
 import { sleep } from "../util/sleep.util";
 import electronIsDev from "electron-is-dev";
 import { ipcMain } from "../common/ipc_main";
-import { isLinux, isWaylandDisplay, isWindows } from "../util/environment.util";
-const isMacOS = process.platform === 'darwin';
+import { isLinux, isWaylandDisplay, isWindows, isMacOS } from "../util/environment.util";
+import { googleLensOcrAdapterName } from "../@core/infra/ocr/google_lens_ocr.adapter/google_lens_ocr_settings";
+import { ppOcrAdapterName } from "../@core/infra/ocr/ppocr.adapter/ppocr_settings";
+import { mangaOcrAdapterName } from "../@core/infra/ocr/manga_ocr.adapter/manga_ocr_settings";
+import { appleVisionAdapterName } from "../@core/infra/ocr/apple_vision.adapter/apple_vision_settings";
+import { cloudVisionOcrAdapterName } from "../@core/infra/ocr/cloud_vision_ocr.adapter/cloud_vision_ocr_settings";
+import url from "url";
 
 let startupTimer: NodeJS.Timeout;
 
@@ -63,6 +68,7 @@ export class AppController {
     private temporaryTray: Tray | undefined;
 
     private previousOcrCommandData: OcrCommandInput;
+    private remoteControlKey: string;
 
     constructor( input: {
         appService: AppService
@@ -142,6 +148,8 @@ export class AppController {
         const settings = await this.appService.getActiveSettingsPreset();
         if ( !settings )
             throw new Error('no-active-settings-preset');
+
+        this.remoteControlKey = settings.overlay.hotkeys.remote_control_key;
 
 
         const isSystemStartup = process.argv.some( arg =>
@@ -229,9 +237,9 @@ export class AppController {
         });
 
         ipcMain.handle( 'app:get_capture_sources',
-            async ( event: IpcMainInvokeEvent ): Promise< CaptureSource[] > => {
+            async ( event: IpcMainInvokeEvent, types: ('screen' | 'window')[] | undefined ): Promise< CaptureSource[] > => {
 
-                const sources = await this.appService.getAllCaptureSources();
+                const sources = await this.appService.getAllCaptureSources(types);
                 return sources;
             }
         );
@@ -258,7 +266,7 @@ export class AppController {
 
                 this.activeCaptureSource = message;
 
-                if ( this.userSelectedWindowId ) {
+                if ( this.userSelectedWindowId && !isWaylandDisplay ) {
                     this.captureSourceWindow = await this.appService.getExternalWindow(
                         this.userSelectedWindowId
                     );
@@ -439,6 +447,55 @@ export class AppController {
         this.globalShortcutAccelerators = [];
     }
 
+    async remoteControlRouter( url: url.UrlWithParsedQuery  ): Promise< boolean > {
+
+        const parameters = url.query;
+        
+        if ( !('key' in parameters) ) return false;
+
+        const key = parameters['key'];
+
+        if ( key != this.remoteControlKey ) {
+            console.log("\nInvalid Remote Control key!!!\n");
+            return false;
+        }
+
+        const command = url.pathname?.split('/remote-control/')[1];
+
+        if ( !command ) return false;
+
+        if ( command === 'ocr' ) {
+            await this.handleOcrCommand();
+            return true;
+        }
+        else if ( command === 'ocr/apple-vision' ) {
+            await this.handleOcrCommand({ engineName: appleVisionAdapterName });
+            return true;
+        }
+        else if ( command === 'ocr/google-lens' ) {
+            await this.handleOcrCommand({ engineName: googleLensOcrAdapterName });
+            return true;
+        }
+        else if ( command === 'ocr/cloud-vision' ) {
+            await this.handleOcrCommand({ engineName: cloudVisionOcrAdapterName });
+            return true;
+        }
+        else if ( command === 'ocr/paddleocr' ) {
+            await this.handleOcrCommand({ engineName: ppOcrAdapterName });
+            return true;
+        }
+        else if ( command === 'ocr/mangaocr' ) {
+            await this.handleOcrCommand({ engineName: mangaOcrAdapterName });
+            return true;
+        }
+        else {
+            if ( await overlayController.remoteControlRouter( command ) )
+                return true;
+        }
+
+        return false;
+    }
+
     private showOverlayWindow( input?: { showInactive: boolean, displayResults: boolean }) {
         if ( input ) {
             return overlayController.showOverlayWindow({
@@ -462,6 +519,7 @@ export class AppController {
         this.showOverlayWindowWithoutFocus = Boolean( settingsPresetJson.overlay.behavior.show_window_without_focus );
 
         this.registerGlobalShortcuts( settingsPresetJson );
+        this.remoteControlKey = settingsPresetJson.overlay.hotkeys.remote_control_key;
     }
 
     setOverlayBounds( input: {
@@ -606,17 +664,16 @@ export class AppController {
 
         if ( !image ) return;
 
-        let imageSize: Electron.Size | undefined;
+        let imageSize: Promise<Electron.Size> | undefined;
 
-        if ( isLinux ) {
-            const imageMetadata = await sharp(image).metadata();
-
-            if ( imageMetadata.width && imageMetadata.height ) {
-                imageSize = {
+        if ( isLinux || isWindows ) {
+            imageSize = ( async () => {
+                const imageMetadata = await sharp(image).metadata();
+                return {
                     width: imageMetadata.width || 0,
                     height: imageMetadata.height || 0
-                };
-            }
+                }
+            })();
         }
 
         // Setting overlay bounds
@@ -627,7 +684,7 @@ export class AppController {
         this.setOverlayBounds({
             entireScreenMode: isFullScreenImage ? 'fullscreen' :  'maximized',
             preventNegativeCoordinates,
-            imageSize
+            imageSize: imageSize ? await imageSize : undefined
         });
         this.showOverlayWindow({ showInactive: true, displayResults: false }); // This can cause problems with JPDBReader extension // Warning: Unknown display value, please report this!
         ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
@@ -752,13 +809,6 @@ export class AppController {
 
                     this.showOverlayWindow();
                 }
-            },
-            {
-                label: 'Manually Move/Resize Overlay',
-                click: ( item ) => {
-                    overlayController.toggleMovable();
-                },
-                accelerator: 'Ctrl+Shift+M'
             },
             {
                 label: 'Automatic Overlay Adjustment',

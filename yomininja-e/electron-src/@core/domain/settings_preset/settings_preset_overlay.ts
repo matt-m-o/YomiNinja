@@ -90,6 +90,7 @@ export type OverlayHotkeys = {
     clear: string;
     toggle: string;
     manual_adjustment: string;
+    remote_control_key: string;
 };
 
 export type OverlaySettings = {
