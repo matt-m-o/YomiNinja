@@ -13,11 +13,10 @@ import { ClickThroughMode, ShowWindowOnCopy } from "../@core/domain/settings_pre
 import { screen } from 'electron';
 import { ipcMain } from "../common/ipc_main";
 import { CaptureSource } from "../app/types";
-import { httpServerPort } from "../common/server";
 import os from 'os';
 import { ExternalWindow } from "../ocr_recognition/common/types";
 import { WindowProperties } from "../../gyp_modules/window_management/window_manager";
-import { isWaylandDisplay, isWindows } from "../util/environment.util";
+import { httpServerPort, isWaylandDisplay, isWindows } from "../util/environment.util";
 import { appService } from "../app/app.index";
 
 const isMacOS = process.platform === 'darwin';
@@ -197,12 +196,16 @@ export class OverlayController {
             // console.log('clickThroughMode: '+ this.clickThroughMode);
 
             if ( this.clickThroughMode === 'auto' ) {
-                this.toggleClickThrough(value)
+                this.toggleClickThrough(value);
             }
         });
 
         ipcMain.handle( 'overlay:hide_browser_window', ( event: IpcMainInvokeEvent, data ) => {
             this.hideBrowserPopupOverlayWindow();
+        });
+
+        ipcMain.handle( 'overlay:hide_window', ( event: IpcMainInvokeEvent, data ) => {
+            this.hideOverlayHotkeyHandler();
         });
     }
 
@@ -281,7 +284,20 @@ export class OverlayController {
             this.globalShortcutAccelerators.push( overlayHotkeys.copy_text );
         }
 
-        globalShortcut.register( 'Ctrl+Shift+M', this.toggleMovable );
+        if ( overlayHotkeys.manual_adjustment?.includes('Mouse') ) {
+            uIOhook.on( 'mousedown', e => {
+    
+                if ( !matchUiohookMouseEventButton( e, overlayHotkeys.manual_adjustment ) )
+                    return;
+    
+                this.toggleMovable();
+            });
+        }
+        else if ( overlayHotkeys.manual_adjustment ) {
+            // View overlay and clear
+            globalShortcut.register( overlayHotkeys.manual_adjustment, this.toggleMovable );
+            this.globalShortcutAccelerators.push( overlayHotkeys.manual_adjustment );
+        }
 
         uIOhook.on( 'mousemove', async ( e ) => {
 
@@ -374,6 +390,32 @@ export class OverlayController {
         this.globalShortcutAccelerators = [];
     }
 
+    async remoteControlRouter( command: string ): Promise< boolean > {
+
+        if ( command === 'toggle-overlay' ) {
+            this.toggleOverlayHotkeyHandler();
+            return true;
+        }
+        else if ( command === 'show-overlay' ) {
+            this.showOverlayHotkeyHandler()
+            return true;
+        }
+        else if ( command === 'hide-overlay' ) {
+            this.hideOverlayHotkeyHandler();
+            return true;
+        }
+        else if ( command === 'copy-text' ) {
+            this.copyHoveredText();
+            return true;
+        }
+        else if ( command === 'toggle-movable-overlay' ) {
+            this.toggleMovable();
+            return true;
+        }
+
+        return false;
+    }
+
     private async showBrowserPopupOverlayWindow(): Promise<boolean> {
         const window = await this.getBrowserPopupWindow();
 
@@ -456,7 +498,7 @@ export class OverlayController {
                     return;
                 }
                 
-                console.log({ overlayWindowHandle });
+                // console.log({ overlayWindowHandle });
                 
                 if ( !this.showWindowWithoutFocus ) {
 
@@ -533,6 +575,11 @@ export class OverlayController {
     }
 
     private showOverlayHotkeyHandler = () => {
+
+        if ( isWaylandDisplay ) {
+            ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
+        }
+
         this.showOverlayWindow();
 
         this.showResults = true;
@@ -790,6 +837,29 @@ export class OverlayController {
                     }
                     else if ( maximized ) {
                         this.overlayWindow.maximize();
+                        // if (
+                        //     imageSize &&
+                        //     targetWindowBounds.y < 0
+                        // ) {
+                        //     const heightOffset = targetWindowBounds.height - imageSize.height;
+
+                        //     if (
+                        //         heightOffset === 1 &&
+                        //         targetWindowBounds.y < -1
+                        //     ) {
+                        //         this._setOverlayBounds({
+                        //             ...windowDisplay.workArea,
+                        //             y: targetWindowBounds.y,
+                        //             height: windowDisplay.workArea.height + Math.abs(targetWindowBounds.y)
+                        //         });
+                        //     }
+                        //     else {
+                        //         this.overlayWindow.maximize();
+                        //     }
+                        // }
+                        // else {
+                        //     this.overlayWindow.maximize();
+                        // }
                     }
                 }
             }
@@ -862,6 +932,11 @@ export class OverlayController {
     }
 
     toggleClickThrough( value: boolean ) {
+
+        if ( isWaylandDisplay && value ) {
+            if ( this.overlayWindow.isFocused() )
+                this.overlayWindow.blur();
+        }
 
         this.overlayWindow.setIgnoreMouseEvents(
             value,
