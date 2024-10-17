@@ -837,29 +837,29 @@ export class OverlayController {
                     }
                     else if ( maximized ) {
                         this.overlayWindow.maximize();
-                        // if (
-                        //     imageSize &&
-                        //     targetWindowBounds.y < 0
-                        // ) {
-                        //     const heightOffset = targetWindowBounds.height - imageSize.height;
+                        if (
+                            imageSize &&
+                            targetWindowBounds.y < 0
+                        ) {
+                            const heightOffset = targetWindowBounds.height - imageSize.height;
 
-                        //     if (
-                        //         heightOffset === 1 &&
-                        //         targetWindowBounds.y < -1
-                        //     ) {
-                        //         this._setOverlayBounds({
-                        //             ...windowDisplay.workArea,
-                        //             y: targetWindowBounds.y,
-                        //             height: windowDisplay.workArea.height + Math.abs(targetWindowBounds.y)
-                        //         });
-                        //     }
-                        //     else {
-                        //         this.overlayWindow.maximize();
-                        //     }
-                        // }
-                        // else {
-                        //     this.overlayWindow.maximize();
-                        // }
+                            if (
+                                heightOffset === 1 &&
+                                targetWindowBounds.y < -1
+                            ) {
+                                this._setOverlayBounds({
+                                    ...windowDisplay.workArea,
+                                    y: targetWindowBounds.y,
+                                    height: windowDisplay.workArea.height + Math.abs(targetWindowBounds.y)
+                                });
+                            }
+                            else {
+                                this.overlayWindow.maximize();
+                            }
+                        }
+                        else {
+                            this.overlayWindow.maximize();
+                        }
                     }
                 }
             }
