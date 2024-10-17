@@ -22,6 +22,7 @@ import path from 'path';
 import { USER_DATA_DIR } from '../../util/directories.util';
 import { LaunchConfig } from './types/launch_config';
 import { httpServer } from '../../common/server';
+import { detectHttpCliToolCmd } from '../../util/environment.util';
 
 const isMacOS = process.platform === 'darwin';
 export let activeProfile: Profile;
@@ -146,16 +147,6 @@ export async function initializeApp() {
                 };
             }
 
-            /// Migrating from v0.6 to v0.6.1 -----------------------------------
-            const cloudVisionSettings = settingsPresetUpdateData.ocr_engines.find(
-                item => item.ocr_adapter_name === cloudVisionOcrAdapterName
-            );
-
-            const defaultGoogleLensSettings = getGoogleLensDefaultSettings();
-
-            if ( cloudVisionSettings?.hotkey === defaultGoogleLensSettings.hotkey ) {
-                cloudVisionSettings.hotkey = getCloudVisionDefaultSettings().hotkey;
-            }
             /// ------------------------------------------------------------------
 
             await get_UpdateSettingsPresetUseCaseInstance().execute({
@@ -200,6 +191,8 @@ export async function initializeApp() {
 
         windowManager = new WindowManager();
         await windowManager.init();
+
+        await detectHttpCliToolCmd();
 
         // console.log('Initialization completed!');
     } catch (error) {
