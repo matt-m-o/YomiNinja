@@ -110,9 +110,12 @@ export class OcrTemplatesController {
                         console.error( error );
                     });
                     
-                const json = updatedTemplate?.toJson();
+                let json: OcrTemplateJson | undefined;
 
-                if ( updatedTemplate?.id === this.activeOcrTemplateId )
+                if ( updatedTemplate )
+                    json = updatedTemplate.toJson();
+
+                if ( updatedTemplate && updatedTemplate?.id === this.activeOcrTemplateId )
                     this.emitActiveTemplate( updatedTemplate );
                 
                 // console.log( json?.image_base64 );
