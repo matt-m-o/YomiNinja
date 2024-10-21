@@ -137,6 +137,13 @@ export default function AppInfo() {
                                 </Typography>
                             }
 
+                            { systemInfo.desktopEnvironment &&
+                                <Typography sx={{ pb: 1 }}>
+                                    <strong>Desktop Environment: </strong>
+                                    { systemInfo.desktopEnvironment } 
+                                </Typography>
+                            }
+
                             <Typography sx={{ pb: 1 }}>
                                 <strong>CPU: </strong>
                                 {systemInfo.cpuModel.trim() + ` (${systemInfo.cpuArch})` } 
