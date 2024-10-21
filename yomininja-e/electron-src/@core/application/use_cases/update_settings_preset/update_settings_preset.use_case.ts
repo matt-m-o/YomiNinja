@@ -88,6 +88,10 @@ export class UpdateSettingsPresetUseCase< TOcrSettings extends OcrEngineSettings
         settingsPreset.updateOverlaySettings({
             ...defaultSettingsProps.overlay,
             ...input.overlay,
+            hotkeys: {
+                ...defaultSettingsProps.overlay.hotkeys,
+                ...input.overlay.hotkeys
+            }
         });
         settingsPreset.updateDictionarySettings({
             ...defaultSettingsProps.dictionary,
