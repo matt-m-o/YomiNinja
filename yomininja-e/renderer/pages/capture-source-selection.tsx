@@ -3,6 +3,7 @@ import { CaptureSourceProvider } from '../context/capture_source.provider';
 import CaptureSourceMenu from '../components/HomeComponents/CaptureSourceMenu';
 import { defaultTheme } from '../components/Theme';
 import { Box, CssBaseline } from '@mui/material';
+import { AppInfoProvider } from '../context/app_info.provider';
 
 
 
@@ -10,8 +11,9 @@ export default function CaptureSourceSelectionPage() {
 
 
   return (
-    <CaptureSourceProvider>    
-      <Box
+    <CaptureSourceProvider>
+      <AppInfoProvider>
+        <Box
           component="main"
           sx={{
             backgroundColor: (theme) =>
@@ -30,6 +32,7 @@ export default function CaptureSourceSelectionPage() {
           <CaptureSourceMenu/>
           
         </Box>
+      </AppInfoProvider>
     </CaptureSourceProvider>
   );
 }
