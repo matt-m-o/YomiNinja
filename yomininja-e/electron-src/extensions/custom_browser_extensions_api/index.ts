@@ -1,5 +1,7 @@
+import electronIsDev from 'electron-is-dev';
 import fs from 'fs';
 import { join } from 'path';
+import { BUILTIN_EXTENSIONS_DIR } from '../../util/directories.util';
 
 export function injectPreloadFile(
     input: {
@@ -15,50 +17,62 @@ export function injectPreloadFile(
     if ( manifest.manifest_version <= 2 )
         return;
 
-    const preloadFilePath = join(
-        __dirname,
-        '../custom_browser_extensions_api/renderer/renderer.js'
-    );
+    let preloadFilePath = '';
 
-    patchPreloadFile( preloadFilePath );
+    if ( electronIsDev ) {
+        preloadFilePath = join(
+            __dirname,
+            '../custom_browser_extensions_api/renderer/renderer.js'
+        );
+    }
+    else {
+        preloadFilePath = join(
+            BUILTIN_EXTENSIONS_DIR,
+            '/renderer.js'
+        );
+    }
 
-    const destinationPath = join(extensionPath, '/preload.js')
     
-    fs.copyFileSync(
-        preloadFilePath,
-        destinationPath
-    );
+    try {
+        let preloadFile = fs.readFileSync( preloadFilePath, 'utf-8' );
+        preloadFile = patchPreloadFile( preloadFile );
 
-    const serviceWorkerPath = join(
-        extensionPath,
-        // @ts-ignore 
-        manifest.background.service_worker
-    );
+        const destinationPath = join(extensionPath, '/preload.js')
 
-    const serviceWorkerFile = fs.readFileSync( serviceWorkerPath, 'utf-8' );
-    const firstImportIdx = serviceWorkerFile.indexOf('import');
+        fs.writeFileSync( destinationPath, preloadFile, 'utf-8' );
 
-    const patch = `import './preload.js';\n`;
+        const serviceWorkerPath = join(
+            extensionPath,
+            // @ts-ignore 
+            manifest.background.service_worker
+        );
 
-    if ( serviceWorkerFile.includes(patch) )
-        return;
+        const serviceWorkerFile = fs.readFileSync( serviceWorkerPath, 'utf-8' );
+        const firstImportIdx = serviceWorkerFile.indexOf('import');
 
-    const contentsBefore = serviceWorkerFile.slice( 0, firstImportIdx );
-    const rest = serviceWorkerFile.slice( firstImportIdx );
+        const patch = `import './preload.js';\n`;
 
-    const updatedFileContents = contentsBefore + patch + rest;
+        if ( serviceWorkerFile.includes(patch) )
+            return;
 
-    fs.writeFileSync( serviceWorkerPath, updatedFileContents, 'utf-8' );
+        const contentsBefore = serviceWorkerFile.slice( 0, firstImportIdx );
+        const rest = serviceWorkerFile.slice( firstImportIdx );
+
+        const updatedFileContents = contentsBefore + patch + rest;
+
+        fs.writeFileSync( serviceWorkerPath, updatedFileContents, 'utf-8' );
+
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 
-function patchPreloadFile( filePath: string ) {
+function patchPreloadFile( file: string ): string {
     const lineToRemove = 'Object.defineProperty(exports, "__esModule", { value: true });';
 
-    let file = fs.readFileSync( filePath, 'utf-8' );
-
-    if ( !file.includes(lineToRemove) ) return;
+    if ( !file.includes(lineToRemove) ) return file;
 
     file = file.replace( lineToRemove, '');
-    fs.writeFileSync( filePath, file, 'utf-8' );
+    return file;
 }
