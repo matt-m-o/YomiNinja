@@ -197,6 +197,14 @@ export class ScreenCapturerService {
         let display = screen.getAllDisplays()
             .find( display => display.id == Number(this.captureSource?.displayId) );
 
+        console.log( this.captureSource );
+
+        console.log({
+            displays: screen.getAllDisplays().map( s => s.id )
+        });
+
+        // try with a display with negative coordinats
+
         display = display || (await this.getCurrentDisplay());
 
         const sharpPipeline = sharp(image);
@@ -210,18 +218,51 @@ export class ScreenCapturerService {
         )
             return image;
 
+        console.log({
+            imageMetadata: {
+                width: imageMetadata.width,
+                height: imageMetadata.height,
+            },
+            workArea: {
+                width: display.workArea.width,
+                height: display.workArea.height,
+            }
+        });
+
         if (
             imageMetadata.height > display.workArea.height ||
             imageMetadata.width > display.workArea.width
         ) {
             const { workArea } = display;
 
-            const workAreaImage = sharpPipeline.extract({
+            const region: sharp.Region = {
                 top: workArea.y,
                 left: workArea.x,
                 width: workArea.width,
                 height: workArea.height
+            };
+
+            if ( region.top < 0 )
+                region.top = 0;
+
+            if ( region.left < 0 )
+                region.left = 0;
+
+            const overWidth = (region.width + region.left) - imageMetadata.width;
+            const overHeight = (region.height + region.top) - imageMetadata.height;
+
+            if ( overWidth > 0 )
+                region.width = region.width - overWidth;
+
+            if ( overHeight > 0 )
+                region.height = region.height - overHeight;
+
+
+            console.log({
+                workAreaSharpRegion: region
             });
+
+            const workAreaImage = sharpPipeline.extract(region);
 
             return await workAreaImage.toBuffer();
         }
