@@ -1,11 +1,12 @@
 const TARGET_ARCH = process.env.TARGET_ARCH;
+const ML_HW_ACCELERATION = process.env.ML_HW_ACCELERATION
 
 if ( process.platform !== 'darwin' && TARGET_ARCH === 'arm64' ) {
     console.log("Skipping arm64 build!")
     process.exit();
 }
 
-module.exports = {
+let buildConfig = {
     "asar": true,
     "files": [
         "main",
@@ -26,6 +27,11 @@ module.exports = {
         {
             "from": "electron_resources",
             "to": "./",
+            "filter": "**/*"
+        },
+        {
+            "from": "main/electron-src/extensions/custom_browser_extensions_api/renderer/renderer.js",
+            "to": "./extensions/renderer.js",
             "filter": "**/*"
         }
     ],
@@ -98,4 +104,6 @@ module.exports = {
             }
         ]
     }
-};
+}
+
+module.exports = buildConfig;
