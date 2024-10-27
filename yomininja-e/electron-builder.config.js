@@ -106,4 +106,45 @@ let buildConfig = {
     }
 }
 
+if (
+    process.platform === 'win32'
+) {
+
+    let pyOcrServicePath = '../bin/win32/py_ocr_service/service';
+
+    if ( ML_HW_ACCELERATION )
+        pyOcrServicePath += '_'+ML_HW_ACCELERATION;
+
+    buildConfig = {
+        ...buildConfig,
+        "win": {
+            ...buildConfig.win,
+            "extraResources": [
+                {
+                    "from": "../bin/win32/ppocr",
+                    "to": "bin/ppocr",
+                    "filter": "**/*"
+                },
+                {
+                    "from": pyOcrServicePath,
+                    "to": `bin/py_ocr_service/service`,
+                    "filter": "**/*"
+                },
+                {
+                    "from": "../bin/win32/py_ocr_service/models",
+                    "to": "bin/py_ocr_service/models",
+                    "filter": "**/*"
+                }
+            ]
+        },
+    }
+
+    if ( ML_HW_ACCELERATION ) {
+        buildConfig = {
+            ...buildConfig,
+            artifactName: 'YomiNinja Setup ${version} '+ML_HW_ACCELERATION+'.${ext}',
+        }
+    }
+}
+
 module.exports = buildConfig;
