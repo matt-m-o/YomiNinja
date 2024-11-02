@@ -4,6 +4,7 @@ models/*
 *.png
 **.pyc
 *.venv/*
+python/*
 src/main.build/*
 src/output/*
 build/
