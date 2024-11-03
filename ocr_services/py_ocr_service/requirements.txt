@@ -1,6 +1,6 @@
 grpcio
 grpcio-tools
-numpy
+numpy==1.26.4
 Pillow
 pyinstaller
 opencv-python
