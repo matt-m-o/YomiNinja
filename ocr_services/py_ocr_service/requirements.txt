@@ -2,7 +2,7 @@ grpcio
 grpcio-tools
 numpy==1.26.4
 Pillow
-pyinstaller
+# pyinstaller
 opencv-python
 
 transformers
