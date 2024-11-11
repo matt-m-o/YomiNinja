@@ -1,11 +1,13 @@
+import sys
+sys.path.insert(0, '.')
 import threading
 from concurrent import futures
 import logging
 import grpc
+import os
 from ocr_service_pb2 import Result
 import ocr_service_pb2 as service_pb
 import ocr_service_pb2_grpc as service_grpc
-import sys
 import time
 from multiprocessing import freeze_support
 
