@@ -36,6 +36,8 @@ next-env.d.ts
 
 # gRPC
 **/grpc/rpc/**/*.ts
+**/grpc/lens_proto/**/*
+**/grpc/lens/**/*
 
 # build
 main/*
