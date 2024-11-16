@@ -32,6 +32,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "grpc-types": "proto-loader-gen-types --longs=String --enums=String --defaults --keep-case --oneofs --grpcLib=@grpc/grpc-js --outDir=./grpc/rpc ../ocr_services/protos/ocr_service.proto",
+    "grpc-lens-types": "proto-loader-gen-types --longs=String --enums=String --defaults --keep-case --oneofs --grpcLib=@grpc/grpc-js --includeDirs=./grpc/lens_proto --outDir=./grpc/lens ./grpc/lens_proto/*.proto",
     "gyp-build": "node-gyp clean && node-gyp configure && node-gyp build",
     "generate-licenses": "npx generate-license-file --input package.json --output third-party-licenses.txt --overwrite",
     "types-workaround": "node ./types/types_workaround.js",
@@ -40,7 +41,7 @@
   "dependencies": {
     "@google-cloud/vision": "^4.0.2",
     "@grpc/grpc-js": "^1.9.3",
-    "@grpc/proto-loader": "^0.7.9",
+    "@grpc/proto-loader": "^0.7.13",
     "@img/sharp-darwin-arm64": "^0.33.5",
     "@img/sharp-darwin-x64": "^0.33.5",
     "@img/sharp-libvips-darwin-arm64": "^1.0.4",
