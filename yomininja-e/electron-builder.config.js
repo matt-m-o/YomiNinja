@@ -133,7 +133,8 @@ if (
                 {
                     "from": "../bin/win32/py_ocr_service/models",
                     "to": "bin/py_ocr_service/models",
-                    "filter": "**/*"
+                    "filter": "**/manga_ocr"
+                    // "filter": "**/*"
                 }
             ]
         },
