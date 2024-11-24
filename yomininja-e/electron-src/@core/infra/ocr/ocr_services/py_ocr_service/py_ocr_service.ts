@@ -37,8 +37,8 @@ export class PyOcrService {
             arch = `/${process.arch}`;
 
         this.binRoot = isDev
-            ? join( BIN_DIR, `/${os.platform()}${arch}/py_ocr_service/service` )
-            : join( process.resourcesPath, '/bin/py_ocr_service/service' );
+            ? join( BIN_DIR, `/${os.platform()}${arch}/py_ocr_service` )
+            : join( process.resourcesPath, '/bin/py_ocr_service' );
     }
 
     connect( serviceAddress: string ) {
@@ -175,19 +175,24 @@ export class PyOcrService {
 
         const platform = os.platform();
 
-        let executableName = 'py_ocr_service.exe';
-
-        if ( platform !== 'win32' )
-            executableName = 'py_ocr_service';
-
-        const executable = join( this.binRoot + `/${executableName}` );
-
         let port: string | number| undefined = (await getNextPortAvailable( 53_000 )) || 32346;
-        
+
+        const executableName = platform === 'win32' ? 'python.exe' : 'python';
+
+        const executablePath = join( this.binRoot + `/python/${executableName}` );
+        const srcPath = join( this.binRoot + `/src` )
+        const pyScript = join( this.binRoot + `/src/py_ocr_service.py` );
+
+        // console.log({
+        //     pythonExecutable: executablePath,
+        //     srcPath,
+        //     pyScript
+        // });
+
         this.serviceProcess = spawn(
-            executable,
-            [ port.toString() ],
-            { cwd: this.binRoot, detached: true }
+            executablePath,
+            [ '-u', pyScript, port.toString() ],
+            { cwd: srcPath, detached: platform === 'win32' }
         );
 
         // Handle stdout data
