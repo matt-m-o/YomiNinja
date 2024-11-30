@@ -82,14 +82,22 @@ export class VoiceVoxTTS implements TextToSpeechService {
 
         if ( !speakerID ) return;
 
-        const audioQuery = await this.getAudioQuery({
+        const audioQuery: Record<string, any> = await this.getAudioQuery({
             text: input.text,
             speakerID
         });
 
+        audioQuery.speedScale = input.speed ? 
+            Number(input.speed.toFixed(2)) / 1.5 : 0;
+        audioQuery.pitchScale = input.pitch ? 
+            Number(input.pitch.toFixed(2)) / 20 : 0;
+        audioQuery.volumeScale = input.volume; 
+
+        console.log({audioQuery});
+
         const audio = await this.synthesis({
             audioQuery,
-            speakerID
+            speakerID,
         });
 
         return audio
@@ -114,7 +122,7 @@ export class VoiceVoxTTS implements TextToSpeechService {
 
     private async synthesis(
         input: {
-            audioQuery: unknown;
+            audioQuery: Record<string, any>;
             speakerID: number;
         }
     ): Promise<ArrayBuffer> {
