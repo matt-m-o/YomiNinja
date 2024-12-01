@@ -99,14 +99,14 @@ export async function initializeApp() {
 
         // Initializing database
         await get_MainDataSource().initialize();
-        const datasource = await get_DictionaryDataSource().initialize();
-        
+        const dictionaryDataSource = await get_DictionaryDataSource().initialize();
+
         // Setting database cache size
         const dbSize = 100 * 1024; // KB
         const defaultPageSize = 4; // KB
         const cacheSize = dbSize / defaultPageSize;
 
-        const queryRunner = datasource.createQueryRunner();        
+        const queryRunner = dictionaryDataSource.createQueryRunner();
         await queryRunner.query(`PRAGMA cache_size = ${cacheSize};`);         
         await queryRunner.release();
 
@@ -179,7 +179,7 @@ export async function initializeApp() {
                 active_settings_preset: defaultSettingsPreset,
                 selected_ocr_adapter_name: isMacOS ? googleLensOcrAdapterName : ppOcrAdapterName
             });
-            await profileRepo.insert(defaultProfile);
+            await profileRepo.insert( defaultProfile );
         }
         
         if ( !defaultProfile?.selected_ocr_adapter_name ) {
@@ -228,7 +228,7 @@ async function servicesHealthCheck() {
     if ( !isMacOS ) {
         serviceHealthCheckPromises.push( paddleOcrService.processStatusCheck() )
     }
-    serviceHealthCheckPromises.push( pyOcrService.processStatusCheck() )
+    serviceHealthCheckPromises.push( pyOcrService.processStatusCheck() );
 
     await Promise.all( serviceHealthCheckPromises );
 }

@@ -124,6 +124,8 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
         throw new Error('MangaOcrAdapter.getSettingsOptions() not implemented');
     }
     restart( callback: () => void ): void {
+        console.warn("Warning! 'MangaOcrAdapter.restart' is not implemented!")
+        callback();
     }
 
     private cacheResult( result: OcrResultScalable | null ) {

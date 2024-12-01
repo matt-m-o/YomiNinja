@@ -16,7 +16,7 @@ import { BrowserExtensionTypeOrmSchema } from './browser_extension/browser_exten
 export const mainDataSourceOptions: DataSourceOptions = {
     type: 'sqlite',
     synchronize: true,
-    database: join( USER_DATA_DIR, './databases/main.db' ),
+    database: join( USER_DATA_DIR, '/yn_databases/main.db' ),
     logging: false,
     entities: [
         SettingsPresetTypeOrmSchema,
@@ -34,7 +34,7 @@ export const mainDataSourceOptions: DataSourceOptions = {
 export const dictionaryDataSourceOptions: DataSourceOptions = {
     type: 'sqlite',
     synchronize: true,
-    database: join( USER_DATA_DIR, './databases/dict.db' ), // :memory: | join( './data/dict.db' )
+    database: join( USER_DATA_DIR, './yn_databases/dict.db' ), // :memory: | join( './data/dict.db' )
     logging: false,
     enableWAL: true,
     entities: [
