@@ -42,6 +42,8 @@ export class SystemTTS implements TextToSpeechService {
             speechSU.pitch = input.pitch;
 
         window.speechSynthesis.speak( speechSU );
+
+        return;
     }
 
     isVoiceSupported = ( voiceURI: string ): boolean => {
