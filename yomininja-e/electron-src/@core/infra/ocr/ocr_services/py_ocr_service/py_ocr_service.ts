@@ -9,7 +9,7 @@ import { RecognizeBase64Request } from "../../../../../../grpc/rpc/ocr_service/R
 import os from 'os';
 import { join } from "path";
 import isDev from 'electron-is-dev';
-import { BIN_DIR } from "../../../../../util/directories.util";
+import { BIN_DIR, USER_DATA_DIR } from "../../../../../util/directories.util";
 import { GetSupportedLanguagesRequest } from "../../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesRequest";
 import { GetSupportedLanguagesResponse__Output } from "../../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesResponse";
 import { MotionDetectionRequest } from "../../../../../../grpc/rpc/ocr_service/MotionDetectionRequest";
@@ -17,6 +17,7 @@ import { MotionDetectionResponse__Output } from "../../../../../../grpc/rpc/ocr_
 import { RecognizeBytesRequest } from "../../../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
 import { getNextPortAvailable } from "../../../util/port_check";
 import { sleep } from "../../../../../util/sleep.util";
+import fs from "fs";
 
 type OcrEnginesName = 'MangaOCR' | 'AppleVision' | string;
 
@@ -27,6 +28,7 @@ export class PyOcrService {
     private serviceProcess: ChildProcessWithoutNullStreams;
     private serverAddress: string;
     private binRoot: string;
+    private userBinRoot: string;
     private serviceKeepAlive: NodeJS.Timeout;
 
     constructor() {
@@ -39,6 +41,10 @@ export class PyOcrService {
         this.binRoot = isDev
             ? join( BIN_DIR, `/${os.platform()}${arch}/py_ocr_service` )
             : join( process.resourcesPath, '/bin/py_ocr_service' );
+
+        this.userBinRoot = join( USER_DATA_DIR, "/bin/py_ocr_service" )
+
+        this.handlePythonModulesPath();
     }
 
     connect( serviceAddress: string ) {
@@ -179,6 +185,7 @@ export class PyOcrService {
 
         const executableName = platform === 'win32' ? 'python.exe' : 'python';
 
+        // const executablePath = join( this.userBinRoot + `/python/${executableName}` );
         const executablePath = join( this.binRoot + `/python/${executableName}` );
         const srcPath = join( this.binRoot + `/src` )
         const pyScript = join( this.binRoot + `/src/py_ocr_service.py` );
@@ -319,5 +326,33 @@ export class PyOcrService {
         } catch (error) {
             console.error(error);
         }
+    }
+
+    handlePythonModulesPath() {
+
+        const lineComment = '##pre-installed-modules';
+
+        const _pthPath = join( this.userBinRoot, "/python/python312._pth" );
+        const embeddedModulesPath = join( this.binRoot, "/python/Lib/site-packages" );
+
+        console.log({
+            _pthPath,
+            embeddedModulesPath
+        });
+
+        if ( !fs.existsSync(_pthPath) ) {
+            console.log('Python "._pth" file not found!');
+            return;
+        }
+
+        const _pthData = fs.readFileSync( _pthPath, 'utf-8' );
+
+        const _pthLines = _pthData.split('\n').map( line => {
+            if ( !line.includes(lineComment) )
+                return line;
+            return `${embeddedModulesPath} ${lineComment}`;
+        });
+
+        fs.writeFileSync( _pthPath, _pthLines.join('\n') );
     }
 }
