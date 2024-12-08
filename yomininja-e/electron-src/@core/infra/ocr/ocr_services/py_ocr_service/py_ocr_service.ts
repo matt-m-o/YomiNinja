@@ -185,8 +185,7 @@ export class PyOcrService {
 
         const executableName = platform === 'win32' ? 'python.exe' : 'python';
 
-        // const executablePath = join( this.userBinRoot + `/python/${executableName}` );
-        const executablePath = join( this.binRoot + `/python/${executableName}` );
+        const executablePath = join( this.userBinRoot + `/python/${executableName}` );
         const srcPath = join( this.binRoot + `/src` )
         const pyScript = join( this.binRoot + `/src/py_ocr_service.py` );
 
