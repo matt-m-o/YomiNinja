@@ -91,7 +91,7 @@ export class AppController {
                         app.quit();
                         process.exit();
                     });
-            }, 45_000 );//
+            }, 60_000 );//
         }
 
         this.mainWindow = await mainController.init();
