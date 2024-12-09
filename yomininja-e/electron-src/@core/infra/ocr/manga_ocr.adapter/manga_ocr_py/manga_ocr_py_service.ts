@@ -1,3 +1,4 @@
+import { TextRecognitionModel } from "../../../../../../grpc/rpc/ocr_service/TextRecognitionModel";
 import { OcrAdapterStatus } from "../../../../application/adapters/ocr.adapter";
 import { OcrItemBox, OcrResult } from "../../../../domain/ocr_result/ocr_result";
 import { paddleOcrService } from "../../ocr_services/paddle_ocr_service/_temp_index";
@@ -6,6 +7,8 @@ import { MangaOcrRecognize_Input, MangaOcrService } from "../manga_ocr_service";
 
 
 export class MangaOcrPyService implements MangaOcrService {
+
+    private readonly ocrEngineName = 'MangaOCR';
 
     get status(): OcrAdapterStatus {
         return pyOcrService.status;
@@ -31,7 +34,7 @@ export class MangaOcrPyService implements MangaOcrService {
             id: input.id,
             image: input.image,
             languageCode: 'ja',
-            ocrEngine: 'MangaOCR',
+            ocrEngine: this.ocrEngineName,
             boxes
         });
         console.timeEnd("MangaOCR Recognize");
@@ -51,4 +54,12 @@ export class MangaOcrPyService implements MangaOcrService {
         );
     }
 
+    async getSupportedModels(): Promise< TextRecognitionModel[] > { 
+        return await pyOcrService.getSupportedModels( this.ocrEngineName )
+    }
+
+    async installModel( modelName: string ): Promise< boolean > {
+        const result = await pyOcrService.installModel( this.ocrEngineName, modelName );
+        return result?.success || false;
+    }
 }

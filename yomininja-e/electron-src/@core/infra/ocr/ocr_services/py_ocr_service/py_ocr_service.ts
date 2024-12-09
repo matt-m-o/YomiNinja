@@ -15,6 +15,11 @@ import { GetSupportedLanguagesResponse__Output } from "../../../../../../grpc/rp
 import { MotionDetectionRequest } from "../../../../../../grpc/rpc/ocr_service/MotionDetectionRequest";
 import { MotionDetectionResponse__Output } from "../../../../../../grpc/rpc/ocr_service/MotionDetectionResponse";
 import { RecognizeBytesRequest } from "../../../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
+import { GetSupportedModelsRequest } from "../../../../../../grpc/rpc/ocr_service/GetSupportedModelsRequest";
+import { GetSupportedModelsResponse } from "../../../../../../grpc/rpc/ocr_service/GetSupportedModelsResponse";
+import { InstallModelRequest } from "../../../../../../grpc/rpc/ocr_service/InstallModelRequest";
+import { InstallModelResponse } from "../../../../../../grpc/rpc/ocr_service/InstallModelResponse";
+import { TextRecognitionModel } from "../../../../../../grpc/rpc/ocr_service/TextRecognitionModel"
 import { getNextPortAvailable } from "../../../util/port_check";
 import { sleep } from "../../../../../util/sleep.util";
 import fs from "fs";
@@ -158,6 +163,64 @@ export class PyOcrService {
         return clientResponse.language_codes;
     }
 
+    async getSupportedModels( ocrEngineName: OcrEnginesName ): Promise< TextRecognitionModel[] > {
+
+        const ok = await this.processStatusCheck();        
+        if ( !ok ) return [];
+
+        if ( !this.ocrServiceClient )
+            return [];
+
+        const requestInput: GetSupportedModelsRequest = {
+            ocr_engine: ocrEngineName
+        };
+
+        const clientResponse = await new Promise< GetSupportedModelsResponse | undefined >(
+            (resolve, reject) => this.ocrServiceClient?.GetSupportedModels( requestInput, ( error, response ) => {
+                if (error) {
+                    this.restart( () => {} );
+                    return reject(error);
+                }
+                resolve(response);
+            })
+        );
+
+        if ( !clientResponse?.models )
+            return [];
+
+        return clientResponse.models;
+    }
+
+    async installModel( ocrEngineName: OcrEnginesName, modelName: string ): Promise< InstallModelResponse > {
+
+        let defaultResponse: InstallModelResponse = {
+            success: false
+        }
+
+        const ok = await this.processStatusCheck();
+        if ( !ok ) return defaultResponse;
+
+        if ( !this.ocrServiceClient )
+            return defaultResponse;
+
+        const requestInput: InstallModelRequest = {
+            ocr_engine: ocrEngineName,
+            model_name: modelName
+        };
+
+        const clientResponse = await new Promise< InstallModelResponse | undefined >(
+            (resolve, reject) => this.ocrServiceClient?.InstallModel( requestInput, ( error, response ) => {
+                if (error) {
+                    this.restart( () => {} );
+                    return reject(error);
+                }
+                resolve(response);
+            })
+        );
+
+        return clientResponse || defaultResponse;
+    }
+
     async motionDetection( input: MotionDetectionRequest ): Promise<number> {
 
         const ok = await this.processStatusCheck();        
@@ -185,7 +248,9 @@ export class PyOcrService {
 
         const executableName = platform === 'win32' ? 'python.exe' : 'python';
 
-        const executablePath = join( this.userBinRoot + `/python/${executableName}` );
+        const executablePath = platform === 'win32' ?
+            join( this.userBinRoot + `/python/${executableName}` ):
+            join( this.binRoot + `/python/${executableName}` );
         const srcPath = join( this.binRoot + `/src` )
         const pyScript = join( this.binRoot + `/src/py_ocr_service.py` );
 

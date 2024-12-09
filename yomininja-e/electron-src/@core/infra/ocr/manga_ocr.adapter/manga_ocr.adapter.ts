@@ -1,5 +1,5 @@
 import { OcrItem, OcrResult } from "../../../domain/ocr_result/ocr_result";
-import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
+import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, TextRecognitionModel, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 import { MangaOcrEngineSettings, getMangaOcrDefaultSettings, mangaOcrAdapterName } from "./manga_ocr_settings";
 import { pyOcrService } from "../ocr_services/py_ocr_service/_temp_index";
@@ -101,6 +101,23 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
 
     async getSupportedLanguages(): Promise< string[] > {
         return ['ja-JP'];
+    }
+
+    async getSupportedModels(): Promise< TextRecognitionModel[] > {
+        const models = await mangaOcrPyService.getSupportedModels();
+
+        return models.map( m => {
+            return {
+                name: m.name || '',
+                languageCodes: m.language_codes || [],
+                isInstalled: m.is_installed || false,
+            }
+        });
+
+    }
+
+    async installModel( modelName: string ): Promise< boolean > {
+        return await mangaOcrPyService.installModel( modelName );
     }
 
     async updateSettings (
