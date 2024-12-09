@@ -1,5 +1,5 @@
 import { google } from "@google-cloud/vision/build/protos/protos";
-import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
+import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, TextRecognitionModel, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrResult, OcrResultContextResolution, OcrTextLine, OcrTextLineSymbol, OcrTextLineWord } from "../../../domain/ocr_result/ocr_result";
 import { CloudVisionAPICredentials, CloudVisionApi } from "./cloud_vision_api";
 import { CloudVisionAPIMode, CloudVisionOcrEngineSettings, cloudVisionOcrAdapterName, getCloudVisionDefaultSettings } from "./cloud_vision_ocr_settings";
@@ -198,6 +198,10 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
     }
 
     async getSupportedLanguages(): Promise< string[] > {
+        return [];
+    }
+
+    async getSupportedModels(): Promise<TextRecognitionModel[]> {
         return [];
     }
 

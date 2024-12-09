@@ -1,4 +1,4 @@
-import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
+import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, TextRecognitionModel, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 import { AppleVisionOcrEngineSettings, getAppleVisionDefaultSettings, appleVisionAdapterName } from "./apple_vision_settings";
 import { appleVisionPyService } from "./apple_vision_py/_temp_index";
@@ -62,6 +62,10 @@ export class AppleVisionAdapter implements OcrAdapter< AppleVisionOcrEngineSetti
 
     async getSupportedLanguages(): Promise< string[] > {
         return ( await appleVisionPyService.getSupportedLanguages() );
+    }
+
+    async getSupportedModels(): Promise<TextRecognitionModel[]> {
+        return [];
     }
 
     async updateSettings (

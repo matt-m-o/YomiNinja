@@ -1,4 +1,4 @@
-import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
+import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, TextRecognitionModel, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import { RecognizeBytesRequest } from "../../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
 
 import { PpOcrEngineSettings, getPpOcrDefaultSettings, ppOcrAdapterName } from "./ppocr_settings";
@@ -68,6 +68,9 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
         return await paddleOcrService.getSupportedLanguages();
     }
 
+    async getSupportedModels(): Promise<TextRecognitionModel[]> {
+        return [];
+    }
 
     async updateSettings(
         _settingsUpdate: OcrEngineSettingsU,
@@ -102,5 +105,4 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
     async restart( callback: () => void ): Promise< void > {
         await paddleOcrService.restart( callback );
     };
-
 }

@@ -20,11 +20,19 @@ export type UpdateOcrAdapterSettingsOutput< TSettings extends OcrEngineSettings 
     restart: boolean;
 };
 
+export type TextRecognitionModel = {
+    name: string;
+    languageCodes: string[];
+    isInstalled: boolean;
+};
+
 export interface OcrAdapter< TSettings extends OcrEngineSettings = OcrEngineSettings > {     
     name: string;
     status: OcrAdapterStatus;
     recognize: ( input: OcrRecognitionInput ) => Promise< OcrResultScalable | null >;
     getSupportedLanguages: () => Promise< string[] >; // Get this by calling the grpc stub or reading it's config files
+    getSupportedModels: () => Promise< TextRecognitionModel[] >; // Get this by calling the grpc stub or reading it's config files
+    installModel?: ( modelName: string ) => Promise< boolean >;
     updateSettings: ( settingsUpdate: TSettings, oldSettings?: TSettings ) => Promise< UpdateOcrAdapterSettingsOutput< TSettings > >;
     getDefaultSettings: () => TSettings;
     getSettingsOptions: () => OcrEngineSettingsOptions;

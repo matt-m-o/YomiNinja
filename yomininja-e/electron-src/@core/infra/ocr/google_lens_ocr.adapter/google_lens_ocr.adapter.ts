@@ -1,5 +1,5 @@
 import { google } from "@google-cloud/vision/build/protos/protos";
-import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
+import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, TextRecognitionModel, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrResult, OcrResultContextResolution, OcrTextLine } from "../../../domain/ocr_result/ocr_result";
 import { googleLensOcrAdapterName, GoogleLensOcrEngineSettings, getGoogleLensDefaultSettings } from "./google_lens_ocr_settings";
 import { OcrEngineSettingsU } from "../../types/entity_instance.types";
@@ -372,6 +372,10 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
     }
 
     async getSupportedLanguages(): Promise< string[] > {
+        return [];
+    }
+
+    async getSupportedModels(): Promise<TextRecognitionModel[]> {
         return [];
     }
 
