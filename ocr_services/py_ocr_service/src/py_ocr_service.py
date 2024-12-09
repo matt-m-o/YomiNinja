@@ -159,6 +159,53 @@ class Service( service_grpc.OCRServiceServicer ):
             language_codes= language_codes
         )
 
+    def GetSupportedModels(self, request: service_pb.GetSupportedModelsRequest, context):
+        self.last_rpc_time = time.time()
+
+        models = []
+
+        match request.ocr_engine:
+            case 'MangaOCR':
+                models = self.manga_ocr_service.get_supported_models()
+
+            case 'AppleVision':
+                pass # models = self.apple_vision_service.get_supported_models()
+            
+            case 'AppleVisionKit':
+                pass # models = self.apple_vision_kit_service.get_supported_models()
+                
+            case _:
+                print(f'{request.ocr_engine} is not supported')
+
+
+        return service_pb.GetSupportedModelsResponse(
+            models = models
+        )
+    
+    def InstallModel(self, request: service_pb.InstallModelRequest, context):
+        self.last_rpc_time = time.time()
+
+        success = False
+
+        match request.ocr_engine:
+            case 'MangaOCR':
+                success = self.manga_ocr_service.install_model( request.model_name )
+
+            case 'AppleVision':
+                pass # models = self.apple_vision_service.install_model()
+            
+            case 'AppleVisionKit':
+                pass # models = self.apple_vision_kit_service.install_model()
+                
+            case _:
+                print(f'{request.ocr_engine} is not supported')
+
+
+        return service_pb.InstallModelResponse(
+            success = success
+        )
+        
+
     def MotionDetection(self, request: service_pb.MotionDetectionRequest, context):
         
         result = self.motion_detection_service.detect(

@@ -4,7 +4,7 @@ from manga_ocr import MangaOcr
 import cv2
 import numpy as np
 from typing import List, Dict
-from ocr_service_pb2 import Result, Box, Vertex, TextLine
+from ocr_service_pb2 import Result, Box, Vertex, TextLine, TextRecognitionModel 
 from PIL import Image
 from .comic_text_detector import ComicTextDetector
 from huggingface_hub import snapshot_download, scan_cache_dir
@@ -33,12 +33,14 @@ class MangaOcrService:
         
         self.comic_text_detector = ComicTextDetector()
 
-    def download_model( self ):
+    def download_model( self ) -> bool:
         if self.is_model_downloaded():
             return True
         try:
             snapshot_download( repo_id= self.recognition_model_id )
-        except:
+            return True
+        except Exception as error:
+            print(error)
             return False
 
     def is_model_downloaded( self ):
@@ -184,3 +186,14 @@ class MangaOcrService:
             bottom_right= Vertex( x=points[2][0], y=points[2][1] ),
             bottom_left= Vertex( x=points[3][0], y=points[3][1] )
         )
+    
+    def get_supported_models(self) -> List[TextRecognitionModel]:
+        model = TextRecognitionModel(
+            name = self.recognition_model_id,
+            language_codes = ['ja-JP'],
+            is_installed = self.is_model_downloaded()
+        )
+        return [ model ]
+    
+    def install_model(self, name: str) -> bool:
+        return self.download_model()
