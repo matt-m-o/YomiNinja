@@ -7,6 +7,8 @@ service OCRService {
   rpc RecognizeBase64( RecognizeBase64Request ) returns ( RecognizeDefaultResponse ) {}
   rpc Detect( DetectRequest ) returns ( DetectResponse ) {}
   rpc GetSupportedLanguages( GetSupportedLanguagesRequest ) returns ( GetSupportedLanguagesResponse ) {}
+  rpc GetSupportedModels( GetSupportedModelsRequest ) returns ( GetSupportedModelsResponse ) {}
+  rpc InstallModel( InstallModelRequest ) returns ( InstallModelResponse ) {}
   rpc UpdatePpOcrSettings( UpdatePpOcrSettingsRequest ) returns ( UpdateSettingsResponse ) {}
   rpc KeepAlive( KeepAliveRequest ) returns ( KeepAliveResponse ) {}
   rpc MotionDetection( MotionDetectionRequest ) returns ( MotionDetectionResponse ) {}
@@ -118,5 +120,27 @@ message UpdatePpOcrSettingsRequest {
   double cls_thresh = 9;
 }
 message UpdateSettingsResponse {
+  bool success = 1;
+}
+
+
+message TextRecognitionModel {
+  string name = 1;
+  repeated string language_codes = 2;
+  bool is_installed = 3;
+}
+message GetSupportedModelsRequest {
+  string ocr_engine = 1; // MangaOCR | PaddleOCR | AppleVision
+  string language_code = 2;
+}
+message GetSupportedModelsResponse {
+  repeated TextRecognitionModel models = 1;
+}
+
+message InstallModelRequest {
+  string ocr_engine = 1; // MangaOCR | PaddleOCR | AppleVision
+  string model_name = 2;
+}
+message InstallModelResponse {
   bool success = 1;
 }
