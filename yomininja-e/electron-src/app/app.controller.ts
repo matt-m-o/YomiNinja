@@ -214,6 +214,8 @@ export class AppController {
             systemPreferences.isTrustedAccessibilityClient(true);
         }
         console.timeEnd('YomiNinja Startup time');
+
+        setTimeout( () => ocrRecognitionController.installOcrModels(), 15_000 );
     }
 
     registersIpcHandlers() {

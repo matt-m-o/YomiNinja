@@ -1,4 +1,4 @@
-import { BrowserWindow, globalShortcut, screen, desktopCapturer, clipboard, IpcMainInvokeEvent } from "electron";
+import { BrowserWindow, globalShortcut, screen, desktopCapturer, clipboard, IpcMainInvokeEvent, app } from "electron";
 import isDev from 'electron-is-dev';
 import { join } from "path";
 import { format } from 'url';
@@ -16,7 +16,9 @@ import { InAppNotification } from "../common/types/in_app_notification";
 import { ipcMain } from "../common/ipc_main";
 import { bufferToDataURL } from "../util/image.util";
 import { OcrResultScalable } from "../@core/domain/ocr_result_scalable/ocr_result_scalable";
-import { cloneDeep } from 'lodash';
+import { cloneDeep, find } from 'lodash';
+import { Notification } from 'electron';
+import { pushInAppNotification } from "../common/notification_helpers";
 
 export type Recognition_Output = {
     result: OcrResultScalable | null;
@@ -288,6 +290,57 @@ export class OcrRecognitionController {
 
     resultImage(): Buffer | undefined {
         return this.ocrRequestImageBuffer;
+    }
+
+    async installOcrModels() {
+
+        const ocrAdapters = [ 'MangaOcrAdapter' ];
+
+        for ( const ocrAdapter of ocrAdapters ) {
+
+            const models = await this.ocrRecognitionService.getSupportedModels(ocrAdapter);
+        
+            for ( const model of models ) {
+                if ( !model.isInstalled && model.name ) {
+
+                    console.log(`Installing OCR model: ${model.name}`);
+                    this.notify({
+                        type: 'info',
+                        title: "Installing OCR model!",
+                        message: `Model: ${model.name}`
+                    });
+
+                    const success = await this.ocrRecognitionService.installOcrModel( ocrAdapter, model.name );
+                    
+                    this.notify({
+                        type: success ? 'info' :'error',
+                        title: success ? "OCR model installed!" : "OCR model installation failed!",
+                        message: `Model: ${model.name}`
+                    });
+                }
+            }
+        }
+    }
+
+    notify( input: {type: 'error' | 'info', title: string, message: string} ) {
+
+        const { type, title, message } = input;
+
+        pushInAppNotification({
+            notification: {
+                type,
+                message: `${title}\n${message}`,
+            },
+            windows: [
+                this.mainWindow,
+                this.overlayWindow
+            ]
+        });
+
+        (new Notification({
+            title,
+            body: message
+        })).show()
     }
 }
 
