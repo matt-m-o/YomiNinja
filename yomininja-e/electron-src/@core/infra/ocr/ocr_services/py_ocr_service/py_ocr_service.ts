@@ -48,8 +48,6 @@ export class PyOcrService {
             : join( process.resourcesPath, '/bin/py_ocr_service' );
 
         this.userBinRoot = join( USER_DATA_DIR, "/bin/py_ocr_service" )
-
-        this.handlePythonModulesPath();
     }
 
     connect( serviceAddress: string ) {
@@ -248,9 +246,7 @@ export class PyOcrService {
 
         const executableName = platform === 'win32' ? 'python.exe' : 'python';
 
-        const executablePath = platform === 'win32' ?
-            join( this.userBinRoot + `/python/${executableName}` ):
-            join( this.binRoot + `/python/${executableName}` );
+        const executablePath = join( this.userBinRoot + `/python/${executableName}` );
         const srcPath = join( this.binRoot + `/src` )
         const pyScript = join( this.binRoot + `/src/py_ocr_service.py` );
 
@@ -260,10 +256,17 @@ export class PyOcrService {
         //     pyScript
         // });
 
+        const MODELS_PATH = join( this.userBinRoot, '/models' );
+
         this.serviceProcess = spawn(
             executablePath,
             [ '-u', pyScript, port.toString() ],
-            { cwd: srcPath, detached: platform === 'win32' }
+            {
+                cwd: srcPath,
+                detached: platform === 'win32',
+                //@ts-ignore
+                env: { MODELS_PATH } 
+            }
         );
 
         // Handle stdout data
@@ -384,6 +387,8 @@ export class PyOcrService {
         if ( !this.serviceProcess ) return;
         console.log(`Killing PyOCRService`);
 
+        if ( !this.serviceProcess.pid ) return;
+
         try {
             this.serviceProcess.kill("SIGTERM");
             process.kill( -this.serviceProcess.pid );
@@ -392,17 +397,30 @@ export class PyOcrService {
         }
     }
 
-    handlePythonModulesPath() {
+    installPython() {
+
+        const pyPath = join( this.binRoot, '/python' );
+        const userPyPath = join( this.userBinRoot, '/python' );
+
+        fs.mkdirSync( userPyPath, { recursive: true } )
+
+        // Copy python files to user bin root
+        const files = fs.readdirSync( pyPath, { withFileTypes: true } );
+        for (const file of files) {
+            console.log( file.name );
+            if ( file.name !== 'Lib' ) {
+                fs.cpSync(
+                    join( pyPath, file.name ),
+                    join( userPyPath, file.name ),
+                    { recursive: true }
+                )
+            }
+        }
 
         const lineComment = '##pre-installed-modules';
 
         const _pthPath = join( this.userBinRoot, "/python/python312._pth" );
         const embeddedModulesPath = join( this.binRoot, "/python/Lib/site-packages" );
-
-        console.log({
-            _pthPath,
-            embeddedModulesPath
-        });
 
         if ( !fs.existsSync(_pthPath) ) {
             console.log('Python "._pth" file not found!');
@@ -417,6 +435,7 @@ export class PyOcrService {
             return `${embeddedModulesPath} ${lineComment}`;
         });
 
+        // Update ._pth file
         fs.writeFileSync( _pthPath, _pthLines.join('\n') );
     }
 }
