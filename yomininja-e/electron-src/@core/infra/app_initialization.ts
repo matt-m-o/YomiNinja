@@ -23,6 +23,7 @@ import { USER_DATA_DIR } from '../../util/directories.util';
 import { LaunchConfig } from './types/launch_config';
 import { httpServer } from '../../common/server';
 import { detectHttpCliToolCmd } from '../../util/environment.util';
+import { removeIncompatibleFiles, isUserDataCompatible, updateUserDataVersion } from '../../util/user_data.util';
 
 const isMacOS = process.platform === 'darwin';
 export let activeProfile: Profile;
@@ -95,6 +96,7 @@ export async function initializeApp() {
 
         // createServer();
 
+        await postInstallSetup();
         const serviceStartupPromise = startServices();
 
         // Initializing database
@@ -204,6 +206,18 @@ export async function initializeApp() {
 
 export function getActiveProfile(): Profile {
     return activeProfile;
+}
+
+async function postInstallSetup() {
+
+    if ( isUserDataCompatible() )
+        return;
+
+    removeIncompatibleFiles();
+
+    pyOcrService.installPython();
+
+    updateUserDataVersion();
 }
 
 async function startServices() {
