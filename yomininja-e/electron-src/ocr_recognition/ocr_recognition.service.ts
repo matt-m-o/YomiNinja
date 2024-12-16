@@ -146,8 +146,6 @@ export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = Oc
     async getSupportedModels( engineName: string ): Promise<TextRecognitionModel[]> {
         const ocrEngine = this.ocrAdapters.find( i => i.name === engineName );
 
-        console.log(ocrEngine);
-
         this.ocrAdapters.forEach( i => console.log(i.name) );
 
         if (!ocrEngine) return [];

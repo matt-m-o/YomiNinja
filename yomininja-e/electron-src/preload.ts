@@ -15,6 +15,7 @@ declare global {
 // needed node functionality here
 process.once('loaded', () => {
 
+  //@ts-ignore
   global.ipcRenderer = ipcRenderer;
   
 });

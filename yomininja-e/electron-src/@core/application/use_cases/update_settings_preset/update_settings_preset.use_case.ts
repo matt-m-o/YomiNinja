@@ -1,4 +1,3 @@
-import { settings } from "cluster";
 import { OcrEngineSettings, SettingsPreset, SettingsPresetJson } from "../../../domain/settings_preset/settings_preset";
 import { SettingsPresetRepository } from "../../../domain/settings_preset/settings_preset.repository";
 import { OcrAdapter } from "../../adapters/ocr.adapter";
