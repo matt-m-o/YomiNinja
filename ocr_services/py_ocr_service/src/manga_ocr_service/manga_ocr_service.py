@@ -8,6 +8,8 @@ from ocr_service_pb2 import Result, Box, Vertex, TextLine, TextRecognitionModel
 from PIL import Image
 from .comic_text_detector import ComicTextDetector
 from huggingface_hub import snapshot_download, scan_cache_dir
+import os
+from pathlib import Path
 
 torch.set_num_threads( os.cpu_count() )
 
@@ -17,6 +19,7 @@ class MangaOcrService:
     comic_text_detector: ComicTextDetector = None
     recognition_model_id: str = 'kha-white/manga-ocr-base'
     embedded_model_path = '../models/manga_ocr/'
+    custom_model_path = None
 
 
     def __init__(self) -> None:
@@ -24,20 +27,27 @@ class MangaOcrService:
 
     def init( self ):
 
-        if self.embedded_model_exists():
-            self.manga_ocr = MangaOcr('../models/manga_ocr/')
+        custom_model_exists = self.custom_model_exists()
 
-        else:
-            self.download_model()
-            self.manga_ocr = MangaOcr()
+        if not custom_model_exists:
+            custom_model_exists = self.download_model()
+
+        if custom_model_exists:
+            self.manga_ocr = MangaOcr( self.custom_model_path )
         
+        else:
+            self.manga_ocr = MangaOcr( self.recognition_model_id )
+
         self.comic_text_detector = ComicTextDetector()
 
     def download_model( self ) -> bool:
-        if self.is_model_downloaded():
+        if self.custom_model_exists():
             return True
         try:
-            snapshot_download( repo_id= self.recognition_model_id )
+            snapshot_download(
+                repo_id= self.recognition_model_id,
+                local_dir= self.get_custom_model_path()
+            )
             return True
         except Exception as error:
             print(error)
@@ -45,23 +55,40 @@ class MangaOcrService:
 
     def is_model_downloaded( self ):
 
-        # Verify if embedded model is available
+        # Verify if model is available
+        custom_model_exists = self.custom_model_exists()
         embedded_model_exists = self.embedded_model_exists()
         cached_model_exists = self.cached_model_exists()
 
-        print(f'embedded_model_exists: {embedded_model_exists}')
-        print(f'cached_model_exists: {cached_model_exists}')
+        # print(f'embedded_model_exists: {embedded_model_exists}')
+        # print(f'cached_model_exists: {cached_model_exists}')
 
-        return embedded_model_exists or cached_model_exists
+        return custom_model_exists or embedded_model_exists or cached_model_exists
     
     def embedded_model_exists(self):
-        return os.path.exists(self.embedded_model_path+'pytorch_model.bin')
+        return os.path.exists( self.embedded_model_path+'pytorch_model.bin' )
 
     def cached_model_exists( self ):
         cache_info = scan_cache_dir()
         cached_models = [repo.repo_id for repo in cache_info.repos]
 
-        return self.recognition_model_id in cached_models 
+        return self.recognition_model_id in cached_models
+    
+    def custom_model_exists(self):
+        bin_path = str( Path(self.get_custom_model_path()) / 'pytorch_model.bin' )
+        return os.path.exists( bin_path )
+    
+    def get_custom_model_path(self) -> str:
+        try:
+            MODELS_PATH = os.environ['MODELS_PATH']
+            self.custom_model_path = str( Path(MODELS_PATH) / 'manga_ocr' )
+            print('self.embedded_model_path: '+self.custom_model_path)
+            return self.custom_model_path
+
+        except KeyError:
+            print("Env variable MODELS_PATH is not set.")
+            
+        return self.embedded_model_path
 
     # OCR pipeline ( detect -> crop -> recognize )
     def recognize(
