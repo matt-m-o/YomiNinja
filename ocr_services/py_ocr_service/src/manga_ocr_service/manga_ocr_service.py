@@ -82,7 +82,6 @@ class MangaOcrService:
         try:
             MODELS_PATH = os.environ['MODELS_PATH']
             self.custom_model_path = str( Path(MODELS_PATH) / 'manga_ocr' )
-            print('self.embedded_model_path: '+self.custom_model_path)
             return self.custom_model_path
 
         except KeyError:
