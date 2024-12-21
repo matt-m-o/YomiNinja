@@ -35,6 +35,8 @@ export class PyOcrService {
     private binRoot: string;
     private userBinRoot: string;
     private serviceKeepAlive: NodeJS.Timeout;
+    private CUSTOM_MODULES_PATH: string;
+    private MODELS_PATH : string;
 
     constructor() {
 
@@ -48,6 +50,10 @@ export class PyOcrService {
             : join( process.resourcesPath, '/bin/py_ocr_service' );
 
         this.userBinRoot = join( USER_DATA_DIR, "/bin/py_ocr_service" )
+
+        this.CUSTOM_MODULES_PATH = join( this.binRoot, "/python/Lib/site-packages" )
+
+        this.MODELS_PATH = join( this.userBinRoot, '/models' );
     }
 
     connect( serviceAddress: string ) {
@@ -256,8 +262,6 @@ export class PyOcrService {
         //     pyScript
         // });
 
-        const MODELS_PATH = join( this.userBinRoot, '/models' );
-
         this.serviceProcess = spawn(
             executablePath,
             [ '-u', pyScript, port.toString() ],
@@ -265,7 +269,10 @@ export class PyOcrService {
                 cwd: srcPath,
                 detached: platform === 'win32',
                 //@ts-ignore
-                env: { MODELS_PATH } 
+                env: {
+                    CUSTOM_MODULES_PATH: this.CUSTOM_MODULES_PATH,
+                    MODELS_PATH: this.MODELS_PATH,
+                } 
             }
         );
 
@@ -407,7 +414,6 @@ export class PyOcrService {
         // Copy python files to user bin root
         const files = fs.readdirSync( pyPath, { withFileTypes: true } );
         for (const file of files) {
-            console.log( file.name );
             if ( file.name !== 'Lib' ) {
                 fs.cpSync(
                     join( pyPath, file.name ),
@@ -416,26 +422,9 @@ export class PyOcrService {
                 )
             }
         }
-
-        const lineComment = '##pre-installed-modules';
-
-        const _pthPath = join( this.userBinRoot, "/python/python312._pth" );
-        const embeddedModulesPath = join( this.binRoot, "/python/Lib/site-packages" );
-
-        if ( !fs.existsSync(_pthPath) ) {
-            console.log('Python "._pth" file not found!');
-            return;
-        }
-
-        const _pthData = fs.readFileSync( _pthPath, 'utf-8' );
-
-        const _pthLines = _pthData.split('\n').map( line => {
-            if ( !line.includes(lineComment) )
-                return line;
-            return `${embeddedModulesPath} ${lineComment}`;
-        });
-
-        // Update ._pth file
-        fs.writeFileSync( _pthPath, _pthLines.join('\n') );
     }
+
+    // isPythonInstalled(): boolean {
+
+    // }
 }
