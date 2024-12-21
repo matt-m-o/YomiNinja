@@ -1,7 +1,8 @@
 import fs from 'fs';
 import { USER_DATA_DIR } from './directories.util';
-import { join } from 'path';
+import path, { join } from 'path';
 import { app } from 'electron';
+import { get_MainDataSource } from '../@core/infra/container_registry/db_registry';
 
 const userDataVersionPath = join(USER_DATA_DIR, 'yn_version.txt');
 
@@ -23,7 +24,7 @@ export function isUserDataCompatible(): boolean {
     if ( userDataVersion !== app.getVersion() )
         return false
     
-    return  true;
+    return true;
 }
 
 export function removeIncompatibleFiles() {
@@ -38,4 +39,39 @@ export function removeIncompatibleFiles() {
         join( USER_DATA_DIR, '/bin' ),
         { recursive: true, force: true }
     );
+}
+
+export function updateUserDataStructure() {
+
+    const oldDbDirPath = join( USER_DATA_DIR, '/databases' );
+    const newDbPath = get_MainDataSource().options.database;
+
+    if ( typeof newDbPath !== 'string' )
+        return;
+
+    const newDbDirPath = path.dirname( newDbPath );
+
+    const oldDbPathExists = fs.existsSync( oldDbDirPath );
+
+    // console.log({
+    //     oldDbDirPath,
+    //     newDbDirPath,
+    //     oldDbPathExists
+    // });
+
+    if ( !oldDbPathExists )
+        return;
+
+    const files = fs.readdirSync( oldDbDirPath, { withFileTypes: true } );
+    for ( const file of files ) {
+        if ( file.name !== 'Lib' ) {
+            fs.cpSync(
+                join( file.parentPath, file.name ),
+                join( newDbDirPath, file.name ),
+                { recursive: true, force: false }
+            )
+        }
+    }
+
+    fs.existsSync( userDataVersionPath )
 }
