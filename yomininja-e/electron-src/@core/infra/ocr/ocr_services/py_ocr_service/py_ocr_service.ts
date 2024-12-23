@@ -424,7 +424,8 @@ export class PyOcrService {
         }
     }
 
-    // isPythonInstalled(): boolean {
-
-    // }
+    isPythonInstalled(): boolean {
+        const userPyPath = join( this.userBinRoot, '/python' );
+        return fs.existsSync( userPyPath );
+    }
 }

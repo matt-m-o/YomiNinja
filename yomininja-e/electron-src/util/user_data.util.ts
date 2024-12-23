@@ -3,6 +3,7 @@ import { USER_DATA_DIR } from './directories.util';
 import path, { join } from 'path';
 import { app } from 'electron';
 import { get_MainDataSource } from '../@core/infra/container_registry/db_registry';
+import { pyOcrService } from '../@core/infra/ocr/ocr_services/py_ocr_service/_temp_index';
 
 const userDataVersionPath = join(USER_DATA_DIR, 'yn_version.txt');
 
@@ -23,6 +24,9 @@ export function isUserDataCompatible(): boolean {
 
     if ( userDataVersion !== app.getVersion() )
         return false
+
+    if ( !pyOcrService.isPythonInstalled() )
+        return false;
     
     return true;
 }
