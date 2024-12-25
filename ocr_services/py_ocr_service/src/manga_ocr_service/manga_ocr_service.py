@@ -4,12 +4,13 @@ from manga_ocr import MangaOcr
 import cv2
 import numpy as np
 from typing import List, Dict
-from ocr_service_pb2 import Result, Box, Vertex, TextLine, TextRecognitionModel 
+from ocr_service_pb2 import Result, Box, Vertex, TextLine, TextRecognitionModel, HardwareAccelerationOption
 from PIL import Image
 from .comic_text_detector import ComicTextDetector
 from huggingface_hub import snapshot_download, scan_cache_dir
 import os
 from pathlib import Path
+import platform
 
 torch.set_num_threads( os.cpu_count() )
 
@@ -223,3 +224,85 @@ class MangaOcrService:
     
     def install_model(self, name: str) -> bool:
         return self.download_model()
+    
+    def get_hardware_acceleration_options(self) -> List[HardwareAccelerationOption]:
+
+        os_platform = platform.system().lower()  
+        base_command = 'pip install torch torchvision'
+
+        installed_cuda_version = torch.version.cuda
+        installed_hip_version = torch.version.hip
+        is_mps_available = torch.backends.mps.is_available()
+        is_cuda_available = torch.cuda.is_available()
+
+        using_cpu = not is_cuda_available and not is_mps_available and not installed_hip_version #torch.tensor(0).device.type == 'cpu'
+    
+        linux_opts_dict = [
+            {
+                "compute_platform": "CPU",
+                "install_command": "--index-url https://download.pytorch.org/whl/cpu",
+            },
+            {
+                "compute_platform": "CUDA",
+                "compute_platform_version": "11.8",
+                "install_command": "--index-url https://download.pytorch.org/whl/cu118"
+            },
+            {
+                "compute_platform": "CUDA",
+                "compute_platform_version": "12.6",
+                "install_command": "--index-url https://download.pytorch.org/whl/cu126"
+            },
+            {
+                "compute_platform": "CUDA",
+                "compute_platform_version": "12.8",
+                "install_command": "--index-url https://download.pytorch.org/whl/cu128"
+            },
+            {
+                "compute_platform": "ROCm",
+                "compute_platform_version": "6.3",
+                "install_command": "--index-url https://download.pytorch.org/whl/rocm6.3"
+            }
+        ]
+        
+        for option in linux_opts_dict:
+
+            is_installed = False
+            version = option.get('compute_platform_version')
+
+            if option['compute_platform'] == 'CPU':
+                is_installed = using_cpu
+
+            elif option['compute_platform'] == 'CUDA':
+                is_installed = version == installed_cuda_version
+
+            elif option['compute_platform'] == 'ROCm':
+                is_installed = version == installed_hip_version
+
+            option['backend'] = 'Torch'
+            option['installed'] = is_installed
+            option['install_command'] = base_command +' '+ option['install_command']
+
+        if os_platform == 'linux':
+            return [
+                HardwareAccelerationOption(
+                    backend= 'Torch',
+                    compute_platform= option['compute_platform'],
+                    compute_platform_version= option.get('compute_platform_version'),
+                    installed= bool( option.get('installed') ),
+                    install_command= base_command +' '+ option['install_command'],
+                ) for option in linux_opts_dict if option['compute_platform'] != 'ROCm'
+            ]
+        
+        if os_platform == 'windows':
+            return [
+                HardwareAccelerationOption(
+                    backend= option['backend'],
+                    compute_platform= option['compute_platform'],
+                    compute_platform_version= option.get('compute_platform_version'),
+                    installed= bool( option.get('installed') ),
+                    install_command= option['install_command'],
+                ) for option in linux_opts_dict if option['compute_platform'] != 'ROCm'
+            ]
+        
+        return []
+                

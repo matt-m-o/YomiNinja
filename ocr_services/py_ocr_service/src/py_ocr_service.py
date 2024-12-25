@@ -211,6 +211,29 @@ class Service( service_grpc.OCRServiceServicer ):
             success = success
         )
         
+    def GetHardwareAccelerationOptions(self, request: service_pb.GetHardwareAccelerationOptionsRequest, context):
+        self.last_rpc_time = time.time()
+
+        options = []
+
+        match request.ocr_engine:
+            case 'MangaOCR':
+                options = self.manga_ocr_service.get_hardware_acceleration_options()
+
+            case 'AppleVision':
+                pass # options = self.apple_vision_service.get_hardware_acceleration_options()
+            
+            case 'AppleVisionKit':
+                pass # models = self.apple_vision_kit_service.get_hardware_acceleration_options()
+                
+            case _:
+                print(f'{request.ocr_engine} is not supported')
+
+
+        return service_pb.GetHardwareAccelerationOptionsResponse(
+            options= options
+        )
+
 
     def MotionDetection(self, request: service_pb.MotionDetectionRequest, context):
         
@@ -249,8 +272,8 @@ def serve( port: str = '23456', executor: ProcessPoolExecutor = None ):
     print( server_info.replace("'", '"') )
 
     # Start the timeout check in a new thread
-    timeout_thread = threading.Thread(target=servicer.timeout_check)
-    timeout_thread.start()
+    # timeout_thread = threading.Thread(target=servicer.timeout_check)
+    # timeout_thread.start()
 
     server.wait_for_termination()
 
