@@ -9,6 +9,7 @@ service OCRService {
   rpc GetSupportedLanguages( GetSupportedLanguagesRequest ) returns ( GetSupportedLanguagesResponse ) {}
   rpc GetSupportedModels( GetSupportedModelsRequest ) returns ( GetSupportedModelsResponse ) {}
   rpc InstallModel( InstallModelRequest ) returns ( InstallModelResponse ) {}
+  rpc GetHardwareAccelerationOptions( GetHardwareAccelerationOptionsRequest ) returns ( GetHardwareAccelerationOptionsResponse ) {}
   rpc UpdatePpOcrSettings( UpdatePpOcrSettingsRequest ) returns ( UpdateSettingsResponse ) {}
   rpc KeepAlive( KeepAliveRequest ) returns ( KeepAliveResponse ) {}
   rpc MotionDetection( MotionDetectionRequest ) returns ( MotionDetectionResponse ) {}
@@ -143,4 +144,18 @@ message InstallModelRequest {
 }
 message InstallModelResponse {
   bool success = 1;
+}
+
+message HardwareAccelerationOption {
+  string backend = 1; // 'Torch' | 'ONNX'
+  string compute_platform = 2; // 'CPU' | 'CUDA' | 'ROCm' | 'Default';
+  string compute_platform_version = 3;
+  string install_command = 4;
+  bool installed = 5;
+}
+message GetHardwareAccelerationOptionsRequest {
+  string ocr_engine = 1; // MangaOCR | PaddleOCR | AppleVision
+}
+message GetHardwareAccelerationOptionsResponse {
+  repeated HardwareAccelerationOption options = 1;
 }
