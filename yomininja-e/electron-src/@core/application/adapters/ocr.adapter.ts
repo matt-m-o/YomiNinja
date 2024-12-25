@@ -26,6 +26,15 @@ export type TextRecognitionModel = {
     isInstalled: boolean;
 };
 
+export type HardwareAccelerationOption = {
+    osPlatform: NodeJS.Platform;
+    backend: string; //'Torch',
+    computePlatform: string; //'CPU' | 'CUDA' | 'ROCm' | 'Default';
+    computePlatformVersion?: string;
+    installCommand: string;
+    installed: boolean;
+}
+
 export interface OcrAdapter< TSettings extends OcrEngineSettings = OcrEngineSettings > {     
     name: string;
     status: OcrAdapterStatus;
@@ -33,6 +42,8 @@ export interface OcrAdapter< TSettings extends OcrEngineSettings = OcrEngineSett
     getSupportedLanguages: () => Promise< string[] >; // Get this by calling the grpc stub or reading it's config files
     getSupportedModels: () => Promise< TextRecognitionModel[] >; // Get this by calling the grpc stub or reading it's config files
     installModel?: ( modelName: string ) => Promise< boolean >;
+    getHardwareAccelerationOptions?: () => Promise< HardwareAccelerationOption[] >;
+    installHardwareAcceleration?: ( option: HardwareAccelerationOption ) => Promise< boolean >;
     updateSettings: ( settingsUpdate: TSettings, oldSettings?: TSettings ) => Promise< UpdateOcrAdapterSettingsOutput< TSettings > >;
     getDefaultSettings: () => TSettings;
     getSettingsOptions: () => OcrEngineSettingsOptions;
