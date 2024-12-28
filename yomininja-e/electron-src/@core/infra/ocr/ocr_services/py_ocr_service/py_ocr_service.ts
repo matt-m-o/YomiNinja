@@ -1,13 +1,13 @@
 import { OCRServiceClient } from "../../../../../../grpc/rpc/ocr_service/OCRService";
-import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
+import { ChildProcessWithoutNullStreams, spawn, spawnSync } from 'child_process';
 import { ocrServiceProto } from "../../../../../../grpc/grpc_protos";
 import * as grpc from '@grpc/grpc-js';
-import { OcrAdapterStatus } from "../../../../application/adapters/ocr.adapter";
+import { HardwareAccelerationOption, OcrAdapterStatus } from "../../../../application/adapters/ocr.adapter";
 import { OcrItem, OcrItemBox, OcrResult, OcrTextLine } from "../../../../domain/ocr_result/ocr_result";
 import { RecognizeDefaultResponse__Output } from "../../../../../../grpc/rpc/ocr_service/RecognizeDefaultResponse";
 import { RecognizeBase64Request } from "../../../../../../grpc/rpc/ocr_service/RecognizeBase64Request";
 import os from 'os';
-import { join } from "path";
+import path, { join } from "path";
 import isDev from 'electron-is-dev';
 import { BIN_DIR, USER_DATA_DIR } from "../../../../../util/directories.util";
 import { GetSupportedLanguagesRequest } from "../../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesRequest";
@@ -17,9 +17,15 @@ import { MotionDetectionResponse__Output } from "../../../../../../grpc/rpc/ocr_
 import { RecognizeBytesRequest } from "../../../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
 import { GetSupportedModelsRequest } from "../../../../../../grpc/rpc/ocr_service/GetSupportedModelsRequest";
 import { GetSupportedModelsResponse } from "../../../../../../grpc/rpc/ocr_service/GetSupportedModelsResponse";
+
 import { InstallModelRequest } from "../../../../../../grpc/rpc/ocr_service/InstallModelRequest";
 import { InstallModelResponse } from "../../../../../../grpc/rpc/ocr_service/InstallModelResponse";
 import { TextRecognitionModel } from "../../../../../../grpc/rpc/ocr_service/TextRecognitionModel"
+
+import { GetHardwareAccelerationOptionsRequest } from "../../../../../../grpc/rpc/ocr_service/GetHardwareAccelerationOptionsRequest";
+import { GetHardwareAccelerationOptionsResponse__Output } from "../../../../../../grpc/rpc/ocr_service/GetHardwareAccelerationOptionsResponse";
+import { HardwareAccelerationOption as HardwareAccelerationOption_grpc } from "../../../../../../grpc/rpc/ocr_service/HardwareAccelerationOption"
+
 import { getNextPortAvailable } from "../../../util/port_check";
 import { sleep } from "../../../../../util/sleep.util";
 import fs from "fs";
@@ -36,7 +42,8 @@ export class PyOcrService {
     private userBinRoot: string;
     private serviceKeepAlive: NodeJS.Timeout;
     private CUSTOM_MODULES_PATH: string;
-    private MODELS_PATH : string;
+    private MODELS_PATH: string;
+    private pyExecutableName: string;
 
     constructor() {
 
@@ -48,6 +55,9 @@ export class PyOcrService {
         this.binRoot = isDev
             ? join( BIN_DIR, `/${os.platform()}${arch}/py_ocr_service` )
             : join( process.resourcesPath, '/bin/py_ocr_service' );
+
+        this.pyExecutableName = os.platform() === 'win32' ? 'python.exe' : 'python';
+
 
         this.userBinRoot = join( USER_DATA_DIR, "/bin/py_ocr_service" )
 
@@ -250,9 +260,9 @@ export class PyOcrService {
 
         let port: string | number| undefined = (await getNextPortAvailable( 53_000 )) || 32346;
 
-        const executableName = platform === 'win32' ? 'python.exe' : 'python';
+        const executableName = this.pyExecutableName; // python or py_ocr_service
 
-        const executablePath = join( this.userBinRoot + `/python/${executableName}` );
+        const executablePath = join( this.userBinRoot + `/python/${this.pyExecutableName}` );
         const srcPath = join( this.binRoot + `/src` )
         const pyScript = join( this.binRoot + `/src/py_ocr_service.py` );
 
@@ -279,7 +289,7 @@ export class PyOcrService {
         // Handle stdout data
         this.serviceProcess.stdout.on('data', async ( data: string ) => {
 
-            console.log(`stdout: ${data.toString()}`);        
+            console.log(`stdout: ${data.toString()}`);
 
             if ( data.includes('[INFO-JSON]:') ) {
 
@@ -289,7 +299,7 @@ export class PyOcrService {
                     this.serverAddress = jsonData.server_address;
                     await sleep( isDev ? 5000 : 2500 );
                     this.connect( jsonData.server_address );
-                    this.keepAlive();
+                    // this.keepAlive();
                     if ( onInitialized )
                         onInitialized();
                 }
@@ -304,6 +314,10 @@ export class PyOcrService {
         // Handle process exit
         this.serviceProcess.on('close', (code) => {
             console.log(`${executableName} process exited with code ${code}`);
+
+            if ( this.status === OcrAdapterStatus.Disabled ) {
+                return;
+            }
 
             if ( this.status != OcrAdapterStatus.Restarting )
                 this.restart( () => {} );
@@ -361,6 +375,7 @@ export class PyOcrService {
     private restartProcess() {
         this.status = OcrAdapterStatus.Restarting;
         this.serviceProcess.kill('SIGTERM');
+        // this.killServiceProcess();
         this.startProcess();
     }
 
@@ -391,6 +406,29 @@ export class PyOcrService {
     }
 
     killServiceProcess = () => {
+        if (this.serviceProcess && this.serviceProcess.pid) {
+
+            if (os.platform() == 'win32') {
+                const { exec } = require('child_process');
+                exec(`taskkill /PID ${this.serviceProcess.pid} /T /F`, (err: Error) => {
+                    if (err) {
+                        console.error('Failed to taskkill process:', err);
+                    }
+                });
+                return
+            }
+            else {
+                try {
+                    process.kill(-this.serviceProcess.pid); // kill process group
+                } catch (e) {
+                    console.error('Failed to kill service process group:', e);
+                }
+            }
+        }
+    }
+
+    killServiceProcess_deprecated = () => {        
+
         if ( !this.serviceProcess ) return;
         console.log(`Killing PyOCRService`);
 
@@ -402,6 +440,15 @@ export class PyOcrService {
         } catch (error) {
             console.error(error);
         }
+    }
+
+    private disable() {
+        this.status = OcrAdapterStatus.Disabled;
+        this.killServiceProcess();
+    }
+    private enable() {
+        this.status = OcrAdapterStatus.Enabled;
+        this.startProcess();
     }
 
     installPython() {
@@ -422,10 +469,136 @@ export class PyOcrService {
                 )
             }
         }
+
+        const pyExecutablePath = join( this.userBinRoot + `/python/${this.pyExecutableName}` );
+
+        const getPip = spawnSync(
+            pyExecutablePath,
+            [ '-u', './get-pip.py' ],
+            {
+                cwd: path.dirname(pyExecutablePath),
+            },
+        );
+        
+        console.log("Installing python requirements...")
+        const installRequirements = spawnSync(
+            pyExecutablePath,
+            '-u -m pip install -r ./requirements.txt'.split(' '),
+            {
+                cwd: path.dirname(pyExecutablePath),
+                // detached: os.platform() === 'win32',
+            },
+        );
     }
 
     isPythonInstalled(): boolean {
         const userPyPath = join( this.userBinRoot, '/python' );
         return fs.existsSync( userPyPath );
+    }
+
+    installHardwareAcceleration(
+        input: {
+            option: HardwareAccelerationOption,
+            callback?: (success: boolean, error?: Error) => void,
+            logger?: ( logData: string ) => void
+        }
+    ) {
+        const { option, callback, logger } = input;
+
+        try {
+            // this.killServiceProcess();
+            // this.status = OcrAdapterStatus.Restarting;
+            // this.serviceProcess.kill('SIGTERM');
+            this.disable();
+
+            const pyExecutablePath = join( this.userBinRoot + `/python/${this.pyExecutableName}` );
+
+            const uninstallCmd = option.installCommand
+                .split(' --index-url')[0]
+                .replace('install', 'uninstall');
+    
+            const uninstallProcess = spawnSync(
+                pyExecutablePath,
+                [ '-u', '-m', ...uninstallCmd.split(' '), '-y'],
+                {
+                    cwd: path.dirname(pyExecutablePath),
+                    // detached: os.platform() === 'win32',
+                },
+            );
+            
+            const installationProcess = spawn(
+                pyExecutablePath,
+                [ '-u', '-m', ...option.installCommand.split(' ') ],
+                {
+                    cwd: path.dirname(pyExecutablePath),
+                    detached: os.platform() === 'win32',
+                },
+            );
+    
+            let ended = false;
+    
+            installationProcess.stdout.on( 'data', async ( data: string ) => {
+                if ( logger )
+                    logger( data.toString() );
+            });
+    
+            installationProcess.on( 'error', async ( data ) => {
+                console.log("installationProcess ERROR");
+                if ( callback )
+                    callback( false, data );
+    
+                ended = true;
+                this.enable();
+            });
+    
+            installationProcess.on( 'exit', async ( data ) => {
+                console.log("installationProcess EXIT");
+                if ( callback && !ended )
+                    callback( true );
+                
+                ended = true;
+                this.enable();
+            });
+        } catch (error) {
+            console.error(error);
+            this.enable();
+        }
+    }
+
+    async getHardwareAccelerationOptions( ocrEngineName: string ): Promise< HardwareAccelerationOption[] > {
+
+        const defaultResponse: HardwareAccelerationOption[] = [];
+
+        const ok = await this.processStatusCheck();        
+        if ( !ok ) return defaultResponse;
+
+        if ( !this.ocrServiceClient )
+            return defaultResponse;
+
+        const requestInput: GetHardwareAccelerationOptionsRequest = {
+            ocr_engine: ocrEngineName
+        };
+
+        const clientResponse = await new Promise< GetHardwareAccelerationOptionsResponse__Output | undefined >(
+            (resolve, reject) => this.ocrServiceClient?.GetHardwareAccelerationOptions( requestInput, ( error, response ) => {
+                if (error) {
+                    this.restart( () => {} );
+                    return reject(error);
+                }
+                resolve(response);
+            })
+        );
+
+        if ( !clientResponse?.options )
+            return defaultResponse;
+
+        return clientResponse.options.map( opt => ({
+            backend: opt.backend,
+            computePlatform: opt.compute_platform,
+            computePlatformVersion: opt.compute_platform_version || '',
+            installed: Boolean(opt.installed),
+            installCommand: opt.install_command,
+            osPlatform: os.platform(),
+        }));
     }
 }
