@@ -1,5 +1,5 @@
 import { TextRecognitionModel } from "../../../../../../grpc/rpc/ocr_service/TextRecognitionModel";
-import { OcrAdapterStatus } from "../../../../application/adapters/ocr.adapter";
+import { HardwareAccelerationOption, OcrAdapterStatus } from "../../../../application/adapters/ocr.adapter";
 import { OcrItemBox, OcrResult } from "../../../../domain/ocr_result/ocr_result";
 import { paddleOcrService } from "../../ocr_services/paddle_ocr_service/_temp_index";
 import { pyOcrService } from "../../ocr_services/py_ocr_service/_temp_index";
@@ -61,5 +61,26 @@ export class MangaOcrPyService implements MangaOcrService {
     async installModel( modelName: string ): Promise< boolean > {
         const result = await pyOcrService.installModel( this.ocrEngineName, modelName );
         return result?.success || false;
+    }
+
+    async getHardwareAccelerationOptions(): Promise< HardwareAccelerationOption[] > {
+        return await pyOcrService.getHardwareAccelerationOptions( this.ocrEngineName );
+    }
+
+    async installHardwareAcceleration( option: HardwareAccelerationOption ): Promise< boolean > {
+        return new Promise( ( resolve, reject ) => {
+            const callback = (success: boolean, error?: Error) => {
+
+                if ( error )
+                    console.error(error);
+
+                resolve( success );
+            }
+            pyOcrService.installHardwareAcceleration({
+                option,
+                callback,
+                logger: console.log
+            });
+        });
     }
 }

@@ -1,5 +1,5 @@
 import { OcrItem, OcrResult } from "../../../domain/ocr_result/ocr_result";
-import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, TextRecognitionModel, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
+import { HardwareAccelerationOption, OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, TextRecognitionModel, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 import { MangaOcrEngineSettings, getMangaOcrDefaultSettings, mangaOcrAdapterName } from "./manga_ocr_settings";
 import { pyOcrService } from "../ocr_services/py_ocr_service/_temp_index";
@@ -118,6 +118,14 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
 
     async installModel( modelName: string ): Promise< boolean > {
         return await mangaOcrPyService.installModel( modelName );
+    }
+
+    async getHardwareAccelerationOptions(): Promise< HardwareAccelerationOption[] > {
+        return await mangaOcrPyService.getHardwareAccelerationOptions();
+    }
+
+    async installHardwareAcceleration( option: HardwareAccelerationOption ): Promise< boolean > {
+        return await mangaOcrPyService.installHardwareAcceleration( option );
     }
 
     async updateSettings (
