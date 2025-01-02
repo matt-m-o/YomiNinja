@@ -5,7 +5,7 @@ import { RecognizeImageUseCase } from "../@core/application/use_cases/recognize_
 import { OcrResultScalable } from "../@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { GetActiveSettingsPresetUseCase } from "../@core/application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
 import { getActiveProfile, windowManager } from "../@core/infra/app_initialization";
-import { OcrAdapter, TextRecognitionModel } from "../@core/application/adapters/ocr.adapter";
+import { HardwareAccelerationOption, OcrAdapter, TextRecognitionModel } from "../@core/application/adapters/ocr.adapter";
 import { Language } from "../@core/domain/language/language";
 import { CaptureSource, ExternalWindow } from "./common/types";
 import sharp from 'sharp';
@@ -146,8 +146,6 @@ export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = Oc
     async getSupportedModels( engineName: string ): Promise<TextRecognitionModel[]> {
         const ocrEngine = this.ocrAdapters.find( i => i.name === engineName );
 
-        this.ocrAdapters.forEach( i => console.log(i.name) );
-
         if (!ocrEngine) return [];
 
         return await ocrEngine.getSupportedModels();
@@ -162,6 +160,31 @@ export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = Oc
 
         const success = await ocrEngine.installModel( modelName );
         console.log(`Model ${modelName} installation success: ${success}`);
+        return success;
+    }
+
+    async getHardwareAccelerationOptions( engineName: string ): Promise< HardwareAccelerationOption[] > {
+
+        const ocrEngine = this.ocrAdapters.find( i => i.name === engineName );
+
+        if ( !ocrEngine?.getHardwareAccelerationOptions )
+            return [];
+    
+        return ocrEngine.getHardwareAccelerationOptions();
+    }
+
+    async installHardwareAcceleration( engineName: string, option: HardwareAccelerationOption ): Promise< boolean > {
+        const ocrEngine = this.ocrAdapters.find( i => i.name === engineName );
+
+        if ( !ocrEngine?.installHardwareAcceleration ) {
+            return false;   
+        }
+
+        console.log(`\nInstalling ${engineName}: ${option.backend} ${option.computePlatform}`);
+
+        const success = await ocrEngine.installHardwareAcceleration( option );
+        console.log(`Installation success: ${success}`);
+
         return success;
     }
 }

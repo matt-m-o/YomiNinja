@@ -19,6 +19,7 @@ import { OcrResultScalable } from "../@core/domain/ocr_result_scalable/ocr_resul
 import { cloneDeep, find } from 'lodash';
 import { Notification } from 'electron';
 import { pushInAppNotification } from "../common/notification_helpers";
+import { HardwareAccelerationOption } from "../@core/application/adapters/ocr.adapter";
 
 export type Recognition_Output = {
     result: OcrResultScalable | null;
@@ -70,6 +71,28 @@ export class OcrRecognitionController {
         ipcMain.handle( 'ocr_recognition:get_supported_ocr_engines',
             ( event: IpcMainInvokeEvent ): { [key: string]: string; } => {
                 return this.ocrRecognitionService.getSupportedOcrEngines();
+            }
+        );
+
+        ipcMain.handle( 'ocr_recognition:get_hardware_acceleration_options',
+            async (
+                event: IpcMainInvokeEvent,
+                engineName: string
+            ): Promise< HardwareAccelerationOption[] > => {
+                
+                return await this.ocrRecognitionService.getHardwareAccelerationOptions( engineName );
+            }
+        );
+
+        ipcMain.handle( 'ocr_recognition:install_hardware_acceleration',
+            async (
+                event: IpcMainInvokeEvent,
+                engineName: string,
+                option: HardwareAccelerationOption
+            ): Promise< boolean > => {
+                console.log(engineName)
+                console.log(option);
+                return await this.installHardwareAcceleration( engineName, option );
             }
         );
 
@@ -320,6 +343,24 @@ export class OcrRecognitionController {
                 }
             }
         }
+    }
+
+    async installHardwareAcceleration( engineName: string, option: HardwareAccelerationOption ) {
+        const optionName = `${option.backend} ${option.computePlatform} ${option.computePlatformVersion}`;
+        console.log(`Installing: ${optionName}`);
+        this.notify({
+            type: 'info',
+            title: `Installing runtime!`,
+            message: `Runtime: ${optionName}`
+        });
+        const success = await this.ocrRecognitionService.installHardwareAcceleration( engineName, option );
+        this.notify({ 
+            type: success ? 'info' :'error',
+            title: success ? "Runtime installed!" : "Runtime installation failed!",
+            message: `Runtime: ${optionName}`
+        });
+
+        return success;
     }
 
     notify( input: {type: 'error' | 'info', title: string, message: string} ) {
