@@ -6,6 +6,7 @@ import { OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations } from "..
 import { GeneralSettings } from "../../electron-src/@core/domain/settings_preset/settings_preset_general";
 import { ipcRenderer } from "../utils/ipc-renderer";
 import { CompatibilitySettings } from "../../electron-src/@core/domain/settings_preset/settings_preset_compatibility";
+import { HardwareAccelerationOption } from "../../electron-src/@core/application/adapters/ocr.adapter";
 
 export type SettingsContextType = {
     activeSettingsPreset: SettingsPresetJson;
@@ -25,6 +26,11 @@ export type SettingsContextType = {
     openGooglePage: () => void;
     removeGoogleCookies: () => void;
     hasGoogleCookies: boolean;
+    getHardwareAccelerationOptions: ( engineName: string ) => Promise< HardwareAccelerationOption[] >
+    installHardwareAcceleration: (
+        ( engineName: string, option: HardwareAccelerationOption ) => Promise< boolean >
+    ),
+
 };
 
 
@@ -214,6 +220,29 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         setHasGoogleCookies( false );
     }
 
+
+    async function getHardwareAccelerationOptions(
+        engineName: string
+    ): Promise< HardwareAccelerationOption[] > {
+        const option = await ipcRenderer.invoke(
+            'ocr_recognition:get_hardware_acceleration_options',
+            engineName
+        );
+        return option;
+    }
+    async function installHardwareAcceleration(
+        engineName: string,
+        option: HardwareAccelerationOption
+    ): Promise< boolean > {
+        const success = await ipcRenderer.invoke(
+            'ocr_recognition:install_hardware_acceleration',
+            engineName,
+            option
+        );
+        return success;
+    }
+
+
     async function getActiveSettingsPreset(): Promise< SettingsPresetJson > {
 
         const settings = await ipcRenderer.invoke( 'settings_preset:get_active' ) as SettingsPresetJson;
@@ -247,6 +276,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         getActiveSettingsPreset();
         getDefaultSettingsPreset();
         checkGoogleCookies();
+        getHardwareAccelerationOptions('MangaOcrAdapter');
 
         return () => {
             ipcRenderer.removeAllListeners( 'settings_preset:active_data' );
@@ -316,7 +346,9 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
                 openCloudVisionPage,
                 openGooglePage,
                 removeGoogleCookies,
-                hasGoogleCookies
+                hasGoogleCookies,
+                getHardwareAccelerationOptions,
+                installHardwareAcceleration
             }}
         >
 
