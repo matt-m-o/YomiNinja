@@ -442,7 +442,7 @@ export class PyOcrService {
         }
     }
 
-    private disable() {
+    private disable = () => {
         this.status = OcrAdapterStatus.Disabled;
         this.killServiceProcess();
     }
@@ -470,7 +470,7 @@ export class PyOcrService {
 
         fs.mkdirSync( userPyPath, { recursive: true } )
 
-        // Copy python files to user bin root
+        // Copy python files to user bin root 
         const files = fs.readdirSync( pyPath, { withFileTypes: true } );
         for (const file of files) {
             if ( file.name !== 'Lib' ) {
