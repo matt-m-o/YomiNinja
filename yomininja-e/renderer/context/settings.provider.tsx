@@ -1,6 +1,6 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { DictionarySettings, OcrEngineSettings, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
-import { Alert, Backdrop, CircularProgress, Snackbar, debounce } from "@mui/material";
+import { Alert, Backdrop, CircularProgress, Snackbar, Typography, debounce } from "@mui/material";
 import { OcrEngineSettingsU } from "../../electron-src/@core/infra/types/entity_instance.types";
 import { OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations } from "../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import { GeneralSettings } from "../../electron-src/@core/domain/settings_preset/settings_preset_general";
@@ -224,21 +224,35 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     async function getHardwareAccelerationOptions(
         engineName: string
     ): Promise< HardwareAccelerationOption[] > {
-        const option = await ipcRenderer.invoke(
-            'ocr_recognition:get_hardware_acceleration_options',
-            engineName
-        );
-        return option;
+
+        try {
+            return await ipcRenderer.invoke(
+                'ocr_recognition:get_hardware_acceleration_options',
+                engineName
+            );
+        } catch (error) {
+            console.log(error);
+        }
+        
+        return [];
     }
     async function installHardwareAcceleration(
         engineName: string,
         option: HardwareAccelerationOption
     ): Promise< boolean > {
-        const success = await ipcRenderer.invoke(
-            'ocr_recognition:install_hardware_acceleration',
-            engineName,
-            option
-        );
+        setOpenBackdrop(true);
+        let success = false;
+        try {
+            success = await ipcRenderer.invoke(
+                'ocr_recognition:install_hardware_acceleration',
+                engineName,
+                option
+            );
+        } catch (error) {
+            console.error(error);
+        }
+        
+        setOpenBackdrop(false);
         return success;
     }
 
@@ -284,13 +298,24 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         }
     }, [] );
 
-    const [ openBackdrop, setOpenBackdrop ] = useState(false);
+    const [ openBackdrop, setOpenBackdrop ] = useState(false); 
     const backdrop = (
         <Backdrop
-            sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+            sx={{
+                color: '#fff',
+                zIndex: (theme) => theme.zIndex.drawer + 1
+            }}
             open={openBackdrop}            
         >
-            <CircularProgress color="inherit" />
+            <div style={{
+                display: "flex",
+                flexDirection: 'column',
+                alignItems: 'center'
+            }}>
+                <CircularProgress color="inherit" sx={{ ml: 'auto', mr: 'auto' }}/>
+                <Typography sx={{ mt: 2 }}>Please wait...</Typography>
+            </div>
+            
         </Backdrop>
     )
     
