@@ -277,7 +277,7 @@ export class PyOcrService {
             [ '-u', pyScript, port.toString() ],
             {
                 cwd: srcPath,
-                detached: platform === 'win32',
+                detached: false, //platform === 'win32',
                 //@ts-ignore
                 env: {
                     CUSTOM_MODULES_PATH: this.CUSTOM_MODULES_PATH,
@@ -325,18 +325,18 @@ export class PyOcrService {
 
         process.on('exit', () => {
             // Ensure the child process is killed before exiting
-            this.serviceProcess.kill('SIGTERM'); // You can use 'SIGINT' or 'SIGKILL' as well
+            this.disable();
         });
         
         process.on('SIGSEGV', ( error: Error ) => {
             console.error( error );
-            this.serviceProcess.kill();
+            this.disable();
             process.exit(1);
         });
 
-        process.on( 'exit', this.killServiceProcess );
-        process.on( 'SIGINT', this.killServiceProcess );
-        process.on( 'SIGTERM', this.killServiceProcess );
+        process.on( 'exit', this.disable );
+        process.on( 'SIGINT', this.disable );
+        process.on( 'SIGTERM', this.disable );
     }
 
     async processStatusCheck(): Promise< boolean > {
@@ -374,8 +374,8 @@ export class PyOcrService {
 
     private restartProcess() {
         this.status = OcrAdapterStatus.Restarting;
-        this.serviceProcess.kill('SIGTERM');
-        // this.killServiceProcess();
+        // this.serviceProcess.kill('SIGTERM');
+        this.killServiceProcess();
         this.startProcess();
     }
 
@@ -446,9 +446,21 @@ export class PyOcrService {
         this.status = OcrAdapterStatus.Disabled;
         this.killServiceProcess();
     }
-    private enable() {
+    private async enable( callback?: () => void ) {
         this.status = OcrAdapterStatus.Enabled;
-        this.startProcess();
+        try {
+            await new Promise( resolve => {
+                this.startProcess( resolve );
+            });
+        } catch (error) {
+            console.log(error);
+        }
+        
+        await this.processStatusCheck();
+        
+        if (!callback) return;
+
+        callback();
     }
 
     installPython() {
@@ -505,6 +517,8 @@ export class PyOcrService {
     ) {
         const { option, callback, logger } = input;
 
+        let ended = false;
+
         try {
             // this.killServiceProcess();
             // this.status = OcrAdapterStatus.Restarting;
@@ -535,7 +549,7 @@ export class PyOcrService {
                 },
             );
     
-            let ended = false;
+
     
             installationProcess.stdout.on( 'data', async ( data: string ) => {
                 if ( logger )
@@ -544,24 +558,29 @@ export class PyOcrService {
     
             installationProcess.on( 'error', async ( data ) => {
                 console.log("installationProcess ERROR");
+                await this.enable();
                 if ( callback )
                     callback( false, data );
     
                 ended = true;
-                this.enable();
             });
     
             installationProcess.on( 'exit', async ( data ) => {
                 console.log("installationProcess EXIT");
+                await this.enable();
                 if ( callback && !ended )
                     callback( true );
                 
                 ended = true;
-                this.enable();
             });
         } catch (error) {
             console.error(error);
-            this.enable();
+            if ( !ended ) {
+                this.enable( () => {
+                    if (callback)
+                        callback(false);
+                });
+            }
         }
     }
 
