@@ -17,6 +17,7 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
     public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
     private idCounter: number = 0;
     private cookie: string = '';
+    private apiKey: string = '';
 
     private prevImage: Buffer = Buffer.from('');
     private prevResult: OcrResultScalable | null = null;
@@ -141,9 +142,7 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
         // const cookie = await this.getCookie();
 
         try {
-
-            const apiKey = ''; //! TODO: Add to settings
-            const request = await this.createRequest( image, apiKey );
+            const request = await this.createRequest( image );
             const response = await axios.request( request );
 
             const responseData = lens.LensOverlayServerResponse.decode( response.data );
@@ -158,7 +157,7 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
         }
     }
 
-    async createRequest( image: Buffer, apiKey?: string ) {
+    async createRequest( image: Buffer ) {
 
         const imageBytes = await this.rescaleImage( image );
         const imageMetadata = await sharp( imageBytes ).metadata();
@@ -231,7 +230,7 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
             headers: { 
                 'host': url.host,
                 'content-type': 'application/x-protobuf',
-                'x-goog-api-key': apiKey, //! Important
+                'x-goog-api-key': this.apiKey, //! Important
                 'sec-fetch-site': 'none',
                 'sec-fetch-mode': 'no-cors',
                 'sec-fetch-dest': 'empty',
@@ -464,8 +463,13 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
 
         // TODO: Settings validation
 
-        settingsUpdate = settingsUpdate as GoogleLensOcrEngineSettings;
-        oldSettings = settingsUpdate as GoogleLensOcrEngineSettings;
+        // settingsUpdate = settingsUpdate as GoogleLensOcrEngineSettings;
+        // oldSettings = settingsUpdate as GoogleLensOcrEngineSettings;
+
+        const lensSettings = settingsUpdate as GoogleLensOcrEngineSettings;
+
+        if ( lensSettings?.api_key )
+            this.apiKey = lensSettings?.api_key;
 
         return {
             restart: false,

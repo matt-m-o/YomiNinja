@@ -2,7 +2,8 @@ import { Alert, Backdrop, Box, Button, Card, CardContent, CircularProgress, Cont
 import { SettingsContext } from "../../../context/settings.provider";
 import { ChangeEvent, useContext, useEffect, useState } from "react";
 import { GoogleLensOcrEngineSettings } from "../../../../electron-src/@core/infra/ocr/google_lens_ocr.adapter/google_lens_ocr_settings";
-
+import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
+import PasswordField from "../../common/PasswordField";
 
 
 type GoogleLensSettingsProps = {
@@ -48,6 +49,33 @@ export default function GoogleLensSettings( props: GoogleLensSettingsProps ) {
                 </Typography>
 
             </Box>
+
+            <Container
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}
+                style={{
+                    padding: 0,
+                    margin: 0
+                }}
+            >
+
+                <PasswordField
+                    label="API key"
+                    required
+                    value={ ocrEngineSettings?.api_key }
+                    onChange={ ( event: ChangeEvent< HTMLInputElement > ) => {
+                        // console.log(event.target.value);
+                        updateActivePresetOcrEngine({
+                            ...ocrEngineSettings,
+                            api_key: event.target.value
+                        });
+                    } }
+                    sx={{ mb: 2 }}
+                />
+
+            </Container>
             
             <Container
                 style={{

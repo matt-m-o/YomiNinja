@@ -5,6 +5,7 @@ export const googleLensOcrAdapterName = 'GoogleLensOcrAdapter';
 
 
 export interface GoogleLensOcrEngineSettings extends OcrEngineSettings {
+    api_key?: string;
 };
 
 export function getGoogleLensDefaultSettings(): GoogleLensOcrEngineSettings {
@@ -13,7 +14,8 @@ export function getGoogleLensDefaultSettings(): GoogleLensOcrEngineSettings {
         ocr_adapter_name: googleLensOcrAdapterName,
         hotkey: 'Alt+G',
         invert_colors: false,
-        image_scaling_factor: 1
+        image_scaling_factor: 1,
+        api_key: ''
     }
 
     return defaultSettings;
