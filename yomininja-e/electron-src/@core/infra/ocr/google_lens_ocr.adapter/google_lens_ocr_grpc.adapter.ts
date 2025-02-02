@@ -318,7 +318,8 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
                                             width: wordWidth * 100,
                                             height: wordHeight * 100
                                         },
-                                        angle_degrees: (wordAngle - lineAngle) * 100,
+                                        angle_radians: wordAngle - lineAngle,
+                                        angle_degrees: 0,
                                         isVertical,
                                         transform_origin: 'center'
                                     },
@@ -343,7 +344,8 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
                         width: lineWidth * 100,
                         height: lineHeight * 100
                     },
-                    angle_degrees: (lineAngle - paragraphAngle) * 100,
+                    angle_radians: lineAngle - paragraphAngle,
+                    angle_degrees: 0,
                     isVertical,
                     transform_origin: 'center'
                 };
@@ -375,7 +377,8 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
                         height: paragraphHeight * 100,
                     },
                     isVertical: paragraphIsVertical,
-                    angle_degrees: paragraphAngle * 100,
+                    angle_radians: paragraphAngle, 
+                    angle_degrees: 0,
                     transform_origin: 'center',
                 },
                 classification_label: 0,

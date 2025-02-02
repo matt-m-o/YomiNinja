@@ -17,6 +17,7 @@ export type OcrResultBoxScalable = {
     position: OcrResultBoxPositionPcts;
     dimensions?: OcrResultBoxDimensionsPcts;
     angle_degrees?: number;
+    angle_radians?: number;
     isVertical: boolean;
     transform_origin?: 'top' | 'bottom' | 'center';
 };
@@ -408,6 +409,7 @@ export class OcrResultScalable {
         return {
             position,
             angle_degrees,
+            angle_radians: 0,
             dimensions: {
                 width,
                 height
