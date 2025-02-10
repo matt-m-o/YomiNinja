@@ -224,7 +224,9 @@ export default function OcrResultBox( props: {
     }, [contentEditable]);
     
     
-
+    const boxTransform = box.transform_origin === 'center' ?
+        `rotate( ${box.angle_radians}rad )` :
+        `rotate( ${box.angle_degrees}deg )`;
 
     return (
         <Box className={ `extracted-text ${contentEditable ? 'editable' : ''}` } ref={boxRef}
@@ -234,7 +236,7 @@ export default function OcrResultBox( props: {
                 // top: box.position.top + '%',
                 transformOrigin: box?.transform_origin || 'top left',
                 bottom: ( bottom - sizeExpansionBottomPct ) + '%',
-                transform: `rotate( ${box.angle_degrees}deg )`,
+                transform: boxTransform,
                 minWidth: ( minWidth + sizeExpansionWidthPct ) + '%',
                 minHeight: ( box.dimensions.height + sizeExpansionHeightPct ) + '%',
             }}

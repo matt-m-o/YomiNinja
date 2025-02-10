@@ -65,7 +65,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
     const Container = styled('span')(containerStyle);
 
     const Line = styled('div')({
-        transformOrigin: 'top left',
+        // transformOrigin: line.box.transform_origin || 'top left',
         whiteSpace: 'pre',
         width: 'max-content',
     });
@@ -156,7 +156,10 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         .some( tag => bcp47_tag === tag ))
     )
         eolSymbol = '.'
-
+    
+    const containerTransform = line.box.transform_origin === 'center' ?
+        `rotate( ${line.box.angle_radians}rad )` :
+        `rotate( ${box.angle_degrees}deg )`;
 
     const symbolsContainer = positioningMode === 'character-based' && line.symbols?.length ? ( 
         <OcrSymbolsContainer
@@ -175,7 +178,6 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             EOLSymbol={EOLSymbol}
             includesGeneratedFurigana={includesGeneratedFurigana}
             style={{
-                transform: `rotate( ${-box.angle_degrees}deg )`,
                 fontSize: lineFontSize
             }}
         />
@@ -196,7 +198,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             EOLSymbol={EOLSymbol}
             includesGeneratedFurigana={includesGeneratedFurigana}
             style={{
-                transform: `rotate( ${-line.box.angle_degrees}deg )`,
+                transform: containerTransform,
                 fontSize: lineFontSize
             }}
         />
@@ -274,10 +276,14 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         letterSpacing: letterSpacing+'px'
     };
 
-    if ( box.isVertical )
+    if ( box.isVertical ) {
         lineBaseCSS.top = lineTopPx || '0%';
-    else
+        lineBaseCSS.transformOrigin = line.box.transform_origin || 'top left';
+    }
+    else {
         lineBaseCSS.bottom = lineBottomPx || '0%';
+        lineBaseCSS.transformOrigin = line.box.transform_origin || 'bottom left';
+    }
 
     const margin = props.sizeExpansionPx / 2 + 'px';
 
@@ -295,6 +301,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             margin,
             marginTop: !box.isVertical ? margin : lineTopPx,
             marginLeft: box.isVertical ? margin : lineLeftPx,
+            // transformOrigin: line.box.transform_origin || 'top left',
         }}>
             {symbolsContainer || line.content}
             { EOLSymbol }
@@ -316,8 +323,8 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                     ...lineBaseCSS,
                     position: linePositioning,
                     left: lineLeftPx || '0%',
-                    // transformOrigin: line?.box?.transform_origin || 'left top',
-                    // transform: `rotate( ${line?.box?.angle_degrees}deg )`,
+                    // transformOrigin: box.transform_origin == 'center' ? 'center' : undefined,
+                    // transform: containerTransform,
                     borderRadius: ocrItemBoxVisuals.border_radius,// '0px',
                     // textAlign: box.isVertical ? 'inherit' : 'left',
                     backgroundColor: ocrItemBoxVisuals.background_color,

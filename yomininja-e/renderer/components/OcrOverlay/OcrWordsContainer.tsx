@@ -87,6 +87,12 @@ export default function OcrWordsContainer( props: OcrWordsContainerProps ) {
         if ( fontSize < lineFontSize * 0.90 && word.word.length === 1)
             fontSize = (fontSize + lineFontSize) / 2; //  * 0.95;
 
+
+        const transform = word?.box.transform_origin === 'center' ?
+            `rotate( ${word.box.angle_radians}rad )` :
+            `rotate( ${word.box.angle_degrees}deg )`;
+
+
         const style: SxProps = {
             position: 'absolute',
             display: 'flex',
@@ -97,21 +103,25 @@ export default function OcrWordsContainer( props: OcrWordsContainerProps ) {
             fontSize: fontSize + 'px',
             letterSpacing: letterSpacing + 'px',
             lineHeight: textBlockBox.isVertical ? 'unset' : fontSize + 'px',
-            transform: `rotate( ${ word.box.angle_degrees }deg )`,
+            transform,
             // border: 'none',
             // border: 'solid 2px red',
             "&:hover": {
                 backgroundColor: ocrItemBoxVisuals?.background_color
             }
         };
+
+        
         
         if ( textBlockBox.isVertical ) {
-            style.top = topPx || '0%';
+            style.top = topPx ? topPx+'px' : '0%';
             style.height = wordBoxHeightPx + 'px';
+            style.transformOrigin = line?.box.transform_origin || 'top left';
         }
         else {
-            style.bottom = bottomPx || '0%';
             style.minHeight = wordBoxHeightPx + 'px';
+            style.bottom = bottomPx ? bottomPx : '0%';
+            style.transformOrigin = line?.box.transform_origin || 'bottom left';
         }
 
         if ( includesRightSpacing )

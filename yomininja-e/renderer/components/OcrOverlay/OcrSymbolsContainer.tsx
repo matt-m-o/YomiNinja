@@ -95,6 +95,11 @@ export default function OcrSymbolsContainer( props: OcrSymbolsContainerProps ) {
         const topPx = topOffset + ( ( top / 100 ) * regionHeightPx ) + ( sizeExpansionPx / 2 );
         const bottomPx = ( ( top / 100 ) - topPx - symbolBoxHeightPx ) ;
 
+    
+        const transform = symbol?.box.transform_origin === 'center' ?
+            `rotate( ${symbol.box.angle_radians}rad )` :
+            `rotate( ${symbol.box.angle_degrees}deg )`;
+
 
         const style: CSSProperties = {
             position: 'absolute',
@@ -103,7 +108,7 @@ export default function OcrSymbolsContainer( props: OcrSymbolsContainerProps ) {
             fontSize: lineFontSize + 'px',
             letterSpacing: letterSpacing + 'px',
             lineHeight: textBlockBox.isVertical ? 'unset' : lineFontSize + 'px',
-            transform: `rotate( ${ symbol.box.angle_degrees }deg )`,
+            transform,
             // border: 'none',
             // border: 'solid 2px red',
         }
@@ -111,10 +116,12 @@ export default function OcrSymbolsContainer( props: OcrSymbolsContainerProps ) {
         if ( textBlockBox.isVertical ) {
             style.top = topPx || '0%';
             style.height = symbolBoxHeightPx + 'px';
+            style.transformOrigin = symbol?.box.transform_origin || 'top left';
         }
         else {
             style.bottom = bottomPx || '0%';
             style.minHeight = symbolBoxHeightPx + 'px';
+            style.transformOrigin = symbol?.box.transform_origin || 'bottom left';
         }
         
         return (
