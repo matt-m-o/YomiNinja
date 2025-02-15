@@ -4,6 +4,7 @@ package ocr_service;
 
 service OCRService {
   rpc RecognizeBytes( RecognizeBytesRequest ) returns ( RecognizeDefaultResponse ) {}
+  rpc RecognizeSelective( RecognizeSelectiveRequest ) returns ( RecognizeDefaultResponse ) {}
   rpc RecognizeBase64( RecognizeBase64Request ) returns ( RecognizeDefaultResponse ) {}
   rpc Detect( DetectRequest ) returns ( DetectResponse ) {}
   rpc GetSupportedLanguages( GetSupportedLanguagesRequest ) returns ( GetSupportedLanguagesResponse ) {}
@@ -27,6 +28,7 @@ message RecognizeBytesRequest {
   bytes image_bytes = 3;
   repeated Box boxes = 4;
   string ocr_engine = 5; // MangaOCR | PaddleOCR
+  bool detection_only = 6;
 }
 message RecognizeBase64Request {
   string id = 1;
@@ -34,6 +36,7 @@ message RecognizeBase64Request {
   string base64_image = 3;
   repeated Box boxes = 4;
   string ocr_engine = 5; // MangaOCR | PaddleOCR | AppleVision
+  bool detection_only = 6;
 }
 
 message Vertex {
@@ -57,6 +60,8 @@ message Result {
   int32 classification_label = 4; // Text direction
   Box box = 5;
   bool is_vertical = 6;
+  string id = 7;
+  string recognition_state = 8;
 }
 message ContextResolution {
   int32 width = 1;
@@ -158,4 +163,17 @@ message GetHardwareAccelerationOptionsRequest {
 }
 message GetHardwareAccelerationOptionsResponse {
   repeated HardwareAccelerationOption options = 1;
+}
+
+
+message RecognizeSelectiveRequest {
+  // id of new or cached request
+  string id = 1; // Required
+  string language_code = 2;
+  bytes image_bytes = 3; // Optional
+  string base64_image = 6; // Optional
+
+  // list of ids of results to be recognized
+  repeated string result_ids = 4;
+  string ocr_engine = 5; // Required; MangaOCR 
 }
