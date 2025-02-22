@@ -4,7 +4,7 @@ from manga_ocr import MangaOcr
 import cv2
 import numpy as np
 from typing import List, Dict
-from ocr_service_pb2 import Result, Box, Vertex, TextLine, TextRecognitionModel, HardwareAccelerationOption
+from ocr_service_pb2 import Result, Box, Vertex, TextLine, TextRecognitionModel, HardwareAccelerationOption, RecognizeDefaultResponse
 from PIL import Image
 from .comic_text_detector import ComicTextDetector
 from huggingface_hub import snapshot_download, scan_cache_dir
@@ -22,18 +22,23 @@ class MangaOcrService:
     embedded_model_path = '../models/manga_ocr/'
     custom_model_path = None
 
+    previous_image: np.ndarray
+    previous_recognition: RecognizeDefaultResponse
 
     def __init__(self) -> None:
         self.is_model_downloaded()
 
     def init( self ):
 
+        self.previous_recognition = RecognizeDefaultResponse() 
+
+
         custom_model_exists = self.custom_model_exists()
 
         if not custom_model_exists:
             custom_model_exists = self.download_model()
 
-        if custom_model_exists:
+        if custom_model_exists and self.custom_model_path:
             self.manga_ocr = MangaOcr( self.custom_model_path )
         
         else:
@@ -93,46 +98,111 @@ class MangaOcrService:
     # OCR pipeline ( detect -> crop -> recognize )
     def recognize(
         self,
-        image: np.ndarray,
-        boxes: List[ Box ] = []
-    ) -> List[ Result ]:
+        image: Image.Image,
+        request_id: str,
+        boxes: List[ Box ] = [],
+        detection_only: bool = False # skip recognition and hold data
+    ) -> RecognizeDefaultResponse:
+        
+        if not self.manga_ocr:
+            self.init()
+    
+        if detection_only:
+            self.previous_recognition.Clear()
+
+        self.previous_image = np.array( image )
+
+        text_blocks: List[ Result ] = []
+
+        if len(boxes) == 0:
+            text_blocks = self.detect( self.previous_image )
+
+            if not detection_only:
+                for block_idx, block in enumerate(text_blocks):
+                    # print(f'\nProcessing text block {block_idx+1} of {len(text_blocks)}')
+                    
+                    for line_idx, line in enumerate(block.text_lines):
+                        line_image = self.crop_image( self.previous_image, line.box )
+                        line.content = self.manga_ocr( line_image )
+
+                    block.recognition_state = "RECOGNIZED"
+
+        else:
+            for block_idx, box in enumerate(boxes):
+                # print(f'\nProcessing text block {box_idx+1} of {len(boxes)}')
+                line_image = self.crop_image( self.previous_image, box )
+
+                line = TextLine(
+                    box=box,
+                    content=self.manga_ocr( line_image )
+                )
+
+                text_blocks.append(
+                    Result(
+                        box=box,
+                        text_lines=[line],
+                        recognition_state= "RECOGNIZED"
+                    )
+                )
+        
+        response = RecognizeDefaultResponse(
+                context_resolution= {
+                    'width': image.width,
+                    'height': image.height
+                },
+                id= request_id,
+                results= text_blocks
+            )
+        
+        if detection_only:
+            self.previous_recognition = response
+
+        return response
+    
+    def recognize_selective(
+        self,
+        request_id: str,
+        image: Image.Image = None,
+        result_ids: List[str] = []
+    ) -> RecognizeDefaultResponse | None:
         
         if not self.manga_ocr:
             self.init()
 
-        results: List[ Result ] = []
+        if self.previous_recognition.id != request_id:
+            self.previous_recognition.Clear()
 
-        if len(boxes) == 0:
-            text_blocks = self.detect( image )
+        if image:
+            self.previous_image = np.array( image )
+            text_blocks = self.detect( self.previous_image )
 
-            for block_idx, block in enumerate(text_blocks):
-                # print(f'\nProcessing text block {block_idx+1} of {len(text_blocks)}')
+            self.previous_recognition = RecognizeDefaultResponse(
+                context_resolution= {
+                    'width': image.width,
+                    'height': image.height
+                },
+                id= request_id,
+                results= text_blocks
+            )
+        
+        if self.previous_recognition.id == request_id:
+
+            for block in self.previous_recognition.results:
                 
-                for line_idx, line in enumerate(block.text_lines):
-                    line_image = self.crop_image( image, line.box )
+                if block.id not in result_ids or block.recognition_state == 'RECOGNIZED':
+                    continue
+
+                for line in block.text_lines:
+
+                    if ( bool(line.content) ):
+                        continue
+
+                    line_image = self.crop_image( self.previous_image, line.box )
                     line.content = self.manga_ocr( line_image )
+                
+                block.recognition_state = 'RECOGNIZED'
 
-            return text_blocks
-
-        # print(f'\n')
-
-        for block_idx, box in enumerate(boxes):
-            # print(f'\nProcessing text block {box_idx+1} of {len(boxes)}')
-            line_image = self.crop_image( image, box )
-
-            line = TextLine(
-                box=box,
-                content=self.manga_ocr( line_image )
-            )
-
-            results.append(
-                Result(
-                    box=box,
-                    text_lines=[line]
-                )
-            )
-
-        return results
+            return self.previous_recognition
     
 
     def crop_image( self, image: np.ndarray, box: Box ) -> Image.Image:
@@ -178,17 +248,22 @@ class MangaOcrService:
                    cv2.cvtColor( image, cv2.COLOR_BGR2RGB )
                 )
     
-    def detect( self, image: np.ndarray ) -> List[ Result ]:
+    def detect(
+        self,
+        image: np.ndarray,
+    ) -> List[ Result ]:
 
         detection_result = self.comic_text_detector.detect( image )
 
         text_blocks: List[Result] = []
 
-        for block in detection_result:
+        for block_idx, block in enumerate(detection_result):
             new_text_block = Result(
-                box=self.coordinates_to_box( block.coordinates ),
-                text_lines=[],
-                is_vertical=block.is_vertical
+                box= self.coordinates_to_box( block.coordinates ),
+                text_lines= [],
+                is_vertical= block.is_vertical,
+                id= str(block_idx),
+                recognition_state= "DETECTED"
             )
 
             for line in block.lines:
@@ -199,6 +274,8 @@ class MangaOcrService:
                 new_text_block.text_lines.append( new_text_line )
 
             text_blocks.append( new_text_block )
+
+            block_idx += 1
 
         return text_blocks
 

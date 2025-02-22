@@ -101,12 +101,16 @@ class Service( service_grpc.OCRServiceServicer ):
 
         results: List[Result] = []
 
+        response = None
+
         try:
             match request.ocr_engine:
                 case 'MangaOCR':
-                    results = self.manga_ocr_service.recognize(
-                        np.array( image ),
-                        request.boxes
+                    response = self.manga_ocr_service.recognize(
+                        image= image,
+                        request_id= request.id,
+                        boxes= request.boxes,
+                        detection_only= request.detection_only,
                     )
 
                 case 'AppleVision':
@@ -122,16 +126,15 @@ class Service( service_grpc.OCRServiceServicer ):
                     )
                     
                 case _:
-                    results = MangaOcrService(self.manga_ocr_service).recognize(
-                        np.array( image ),
-                        request.boxes
-                    )
                     print(f'{request.ocr_engine} is not supported')
 
         except Exception as error:
             print(error)
 
         self.processing = False
+
+        if response:
+            return response
 
         return service_pb.RecognizeDefaultResponse(
             context_resolution={
@@ -141,6 +144,50 @@ class Service( service_grpc.OCRServiceServicer ):
             id=request.id,
             results=results
         )
+    
+    def RecognizeBytesSelective(self, request: service_pb.RecognizeBytesSelectiveRequest, context):
+
+        self.processing = True
+
+        image: Image = None
+
+        if request.image_bytes:
+            image = self.bytesToPILImage( request.image_bytes )
+        
+        elif request.base64_image:
+            image = self.base64ToPILImage( request.base64_image )
+
+        response = None
+
+        try:
+            match request.ocr_engine:
+                case 'MangaOCR':
+                    response = self.manga_ocr_service.recognize_selective(
+                        image= image,
+                        request_id= request.id,
+                        result_ids= request.result_ids
+                    )
+                    
+                case _:
+                    print(f'{request.ocr_engine} is not supported')
+
+        except Exception as error:
+            print(error)
+
+        self.processing = False
+
+        if response:
+            return response
+
+        return service_pb.RecognizeDefaultResponse(
+            context_resolution={
+                'width': 0,
+                'height': 0
+            },
+            id=request.id,
+            results=[]
+        )
+
     
     def GetSupportedLanguages(self, request: service_pb.GetSupportedLanguagesRequest, context):
         self.last_rpc_time = time.time()
