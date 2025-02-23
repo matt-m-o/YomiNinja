@@ -29,6 +29,7 @@ import { HardwareAccelerationOption as HardwareAccelerationOption_grpc } from ".
 import { getNextPortAvailable } from "../../../util/port_check";
 import { sleep } from "../../../../../util/sleep.util";
 import fs from "fs";
+import { RecognizeBytesSelectiveRequest } from "../../../../../../grpc/rpc/ocr_service/RecognizeBytesSelectiveRequest";
 
 type OcrEnginesName = 'MangaOCR' | 'AppleVision' | string;
 
@@ -44,6 +45,7 @@ export class PyOcrService {
     private CUSTOM_MODULES_PATH: string;
     private MODELS_PATH: string;
     private pyExecutableName: string;
+    private previousRecognitionResult: RecognizeDefaultResponse__Output;
 
     constructor() {
 
@@ -87,11 +89,12 @@ export class PyOcrService {
             image: Buffer;
             ocrEngine: OcrEnginesName;
             languageCode: string;
-            boxes?: OcrItemBox[]
+            boxes?: OcrItemBox[],
+            detectionOnly?: boolean
         }
     ): Promise< OcrResult | null > {
 
-        const ok = await this.processStatusCheck();        
+        const ok = await this.processStatusCheck();
         if ( !ok ) return null;
 
         const requestInput: RecognizeBytesRequest = {
@@ -99,7 +102,8 @@ export class PyOcrService {
             image_bytes: input.image,
             ocr_engine: input.ocrEngine,
             boxes: input?.boxes || [],
-            language_code: input.languageCode
+            language_code: input.languageCode,
+            detection_only: Boolean(input.detectionOnly)
         };
 
         this.status = OcrAdapterStatus.Processing;
@@ -147,6 +151,89 @@ export class PyOcrService {
 
         return result;
 
+    }
+
+    async recognizeSelective(
+        input: {
+            id: string;
+            image?: Buffer;
+            ocrEngine: OcrEnginesName;
+            languageCode: string;
+            result_ids?: string[];
+        }
+    ): Promise< OcrResult | null > {
+
+        const ok = await this.processStatusCheck();        
+        if ( !ok ) return null;
+
+        let sendImage = true;
+
+        if (
+            input.id &&
+            this.previousRecognitionResult?.results?.length != 0 &&
+            this.previousRecognitionResult?.id == input.id
+        ) {
+            sendImage = false;
+        }
+
+        const requestInput: RecognizeBytesSelectiveRequest = {
+            id: input.id,
+            ocr_engine: input.ocrEngine,
+            language_code: input.languageCode,
+            result_ids: input.result_ids,
+        };
+
+        if (sendImage) {
+            requestInput.image_bytes = input.image;
+        }
+
+        this.status = OcrAdapterStatus.Processing;
+        // console.time('PpOcrAdapter.recognize');        
+        const clientResponse = await new Promise< RecognizeDefaultResponse__Output | undefined >(
+            (resolve, reject) => this.ocrServiceClient?.RecognizeBytesSelective( requestInput, ( error, response ) => {
+                if (error) {
+                    this.restart( () => {} );
+                    return reject(error)
+                }
+                resolve(response);
+            })
+        ).catch( console.error );
+        // console.timeEnd('PpOcrAdapter.recognize');
+        this.status = OcrAdapterStatus.Enabled;
+
+        if ( !clientResponse )
+            return null;
+        
+        if (
+            !clientResponse?.context_resolution ||
+            !clientResponse?.results
+        )
+            return null;
+
+        this.previousRecognitionResult = clientResponse;
+        
+        const ocrItems: OcrItem[] = clientResponse.results.map( ( item ) => {
+            const textLines: OcrTextLine[] = item.text_lines.map( text_line => {
+                return {
+                    content: text_line.content,
+                    box: text_line.box || undefined
+                } as OcrTextLine;
+            });
+
+            return {
+                ...item,
+                text: textLines
+            } as OcrItem;
+        });
+
+        const result = OcrResult.create({
+            id: clientResponse.id,
+            context_resolution: clientResponse.context_resolution,
+            results: ocrItems,
+            image: input.image
+        });
+
+        return result;
     }
 
     async getSupportedLanguages( ocrEngineName: OcrEnginesName ): Promise< string[] > {
