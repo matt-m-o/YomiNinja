@@ -76,7 +76,7 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
 
             page.blocks?.forEach( block => {
 
-                block.paragraphs?.forEach( paragraph => {
+                block.paragraphs?.forEach( (paragraph, paragraphIdx) => {
 
                     const { words, boundingBox } = paragraph;
 
@@ -176,11 +176,13 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
                     if ( !boundingBox?.vertices ) return;
 
                     ocrResultItems.push({
+                        id: paragraphIdx.toString(),
                         recognition_score: 1,
                         classification_score: 1,
                         classification_label: 0,
                         box: paragraphOcrBox,
-                        text: lines
+                        text: lines,
+                        recognition_state: 'RECOGNIZED'
                     });
                 });
 

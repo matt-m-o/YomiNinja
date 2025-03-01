@@ -12,6 +12,7 @@ const ocrTestAdapterResultProps: OcrResult_CreationInput = {
     },
     results: [
         {
+            id: '1',
             text: [{ content: "recognized_text" }],
             recognition_score: 0.99,
             classification_score: 0.99,

@@ -252,7 +252,7 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
 
         if ( !rawParagraphs ) return [];
 
-        const paragraphs: OcrItemScalable[] = rawParagraphs?.map( paragraphData => {
+        const paragraphs: OcrItemScalable[] = rawParagraphs?.map( (paragraphData, paragraphIdx) => {
 
             let paragraphIsVertical = (
                 paragraphData.writingDirection === lens.WritingDirection.WRITING_DIRECTION_TOP_TO_BOTTOM
@@ -366,6 +366,7 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
             }
 
             const paragraph: OcrItemScalable = {
+                id: paragraphIdx.toString(),
                 text: paragraphLines,
                 box: {
                     position: {
@@ -383,7 +384,8 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
                 },
                 classification_label: 0,
                 classification_score: 1,
-                recognition_score: 1
+                recognition_score: 1,
+                recognition_state: 'RECOGNIZED'
             };
 
             return paragraph;

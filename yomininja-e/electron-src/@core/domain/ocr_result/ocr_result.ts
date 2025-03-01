@@ -30,13 +30,17 @@ export type OcrTextLine = {
     words?: OcrTextLineWord[];
 };
 
+export type OcrRecognitionState = "DETECTED" | "RECOGNIZED";
+
 export type OcrItem = {
+    id : string;
     text: OcrTextLine[];
     recognition_score: number; // Text confidence
     classification_score: number; // Text direction confidence
     classification_label: number; // Text direction
     box: OcrItemBox;
     is_vertical?: boolean;
+    recognition_state?: OcrRecognitionState;
 };
 
 export type OcrResultContextResolution = {

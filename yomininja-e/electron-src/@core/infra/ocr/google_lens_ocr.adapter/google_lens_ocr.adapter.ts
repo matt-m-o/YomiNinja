@@ -212,7 +212,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
 
         const blocksDataArr = data[2][3][0].slice( firstIdx );
 
-        const blocks: OcrItemScalable[] = blocksDataArr.map( ( blockData: any[] ) => {
+        const blocks: OcrItemScalable[] = blocksDataArr.map( ( blockData: any[], blockIdx: number ) => {
 
             let blockIsVertical = false;
 
@@ -310,6 +310,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
             }
 
             const block: OcrItemScalable = {
+                id: blockIdx.toString(),
                 text: blockLines,
                 box: {
                     position: {
@@ -326,7 +327,8 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                 },
                 classification_label: 0,
                 classification_score: 1,
-                recognition_score: 1
+                recognition_score: 1,
+                recognition_state: 'RECOGNIZED'
             };
 
             // console.log( block.box )

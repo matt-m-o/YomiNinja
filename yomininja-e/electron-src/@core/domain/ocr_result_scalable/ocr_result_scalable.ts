@@ -1,4 +1,5 @@
-import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrResult, OcrResultContextResolution, OcrTextLineSymbol } from "../ocr_result/ocr_result";
+import { Language } from "../language/language";
+import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrRecognitionState, OcrResult, OcrResultContextResolution, OcrTextLineSymbol } from "../ocr_result/ocr_result";
 
 // Position percentages
 export type OcrResultBoxPositionPcts = {
@@ -43,11 +44,13 @@ export type OcrTextLineScalable = {
 };
 
 export interface OcrItemScalable {
+    id: string;
     text: OcrTextLineScalable[];
     box: OcrResultBoxScalable;
     recognition_score: number,
     classification_score: number,
     classification_label: number,
+    recognition_state?: OcrRecognitionState;
 };
 
 export interface OcrRegion {
@@ -72,6 +75,8 @@ export type OcrResultScalable_CreationInput = {
     image?: Buffer | string;
     results?: OcrItemScalable[];
     ocr_regions?: OcrRegion[];
+    ocr_engine_name?: string;
+    language?: Language;
 };
 
 // Scalable version OcrResult. Uses percentages instead of pixel coordinates
@@ -83,6 +88,8 @@ export class OcrResultScalable {
     public image?: Buffer | string;
     // public results: OcrItemScalable[];
     public ocr_regions: OcrRegion[];
+    public ocr_engine_name?: string;
+    public language?: Language;
     
     private constructor( input: OcrResultScalable_CreationInput ) {
 
@@ -97,6 +104,8 @@ export class OcrResultScalable {
         this.ocr_regions = input?.ocr_regions ? input.ocr_regions : [];
         this.position = input.position;
         this.image = input.image;
+        this.ocr_engine_name = input.ocr_engine_name;
+        this.language = input.language;
     }
 
     static create( input: OcrResultScalable_CreationInput ): OcrResultScalable {
@@ -254,11 +263,13 @@ export class OcrResultScalable {
             });
 
             results.push({
+                id: item.id,
                 box: itemBox,
                 text,
                 recognition_score: item.recognition_score,
                 classification_score: item.classification_score,
-                classification_label: item.classification_label
+                classification_label: item.classification_label,
+                recognition_state: item.recognition_state
             });
 
         });

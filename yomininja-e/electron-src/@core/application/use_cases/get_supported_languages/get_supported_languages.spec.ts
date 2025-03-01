@@ -20,6 +20,7 @@ describe("Get Supported Languages Use Case tests", () => {
         },
         results: [
             {
+                id: '1',
                 text:[{ content: "recognized_text" }],
                 recognition_score: 0.99,
                 classification_score: 0.99,
