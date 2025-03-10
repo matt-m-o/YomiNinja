@@ -1,5 +1,5 @@
 import { OcrItem, OcrResult } from "../../../domain/ocr_result/ocr_result";
-import { HardwareAccelerationOption, OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, TextRecognitionModel, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
+import { HardwareAccelerationOption, OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, RecognizeSelectionInput, TextRecognitionModel, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 import { MangaOcrEngineSettings, getMangaOcrDefaultSettings, mangaOcrAdapterName } from "./manga_ocr_settings";
 import { pyOcrService } from "../ocr_services/py_ocr_service/_temp_index";
@@ -53,12 +53,18 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
         // this.status = OcrAdapterStatus.Processing;
         // console.time('MangaOcrAdapter.recognize');
 
+        const detection_only = Boolean(
+            input.detectionOnly ||
+            this.engineSettings.use_selective_recognition
+        );
+
         let result: OcrResult | null = null;
         try {
             result = await mangaOcrPyService.recognize({
                 id: this.idCounter.toString() + this.name,
                 image: input.imageBuffer,
-                text_detector: this.engineSettings.text_detector
+                text_detector: this.engineSettings.text_detector,
+                detection_only
             });
             
         } catch (error) {
@@ -80,9 +86,53 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
         };
 
         const resultScalable = OcrResultScalable.createFromOcrResult(result);
+        resultScalable.ocr_engine_name = this.name;
+        resultScalable.language = input.language;
         this.cacheResult( resultScalable );
 
         return this.postProcess(resultScalable);
+    }
+
+    async recognizeSelection( input: RecognizeSelectionInput ): Promise< OcrResultScalable | null > {
+
+        if ( this.status === OcrAdapterStatus.Processing )
+            return input.partialOcrResult;
+
+        const { partialOcrResult, selectedItemIds } = input;
+      
+        console.log('processing recognition selective input');
+        // this.status = OcrAdapterStatus.Processing;
+        // console.time('MangaOcrAdapter.recognize');
+
+        let result: OcrResult | null = null;
+        try {
+            result = await mangaOcrPyService.recognizeSelective({
+                id: partialOcrResult.id,
+                selectedItemIds
+            });
+        } catch (error) {
+            console.error( error );
+            // this.status = OcrAdapterStatus.Enabled
+        }
+
+        // console.log("MangaOcrAdapter result:")
+        // console.log(result);
+        // result?.results.forEach(console.log);
+
+        // console.timeEnd('PpOcrAdapter.recognize');
+        // this.status = OcrAdapterStatus.Enabled;
+
+        if ( !result ) {
+            this.cacheResult(null);
+            return null
+        };
+
+        const resultScalable = OcrResultScalable.createFromOcrResult(result);
+        resultScalable.ocr_engine_name = this.name;
+        resultScalable.language = partialOcrResult.language;
+        this.cacheResult( resultScalable );
+
+        return this.postProcess( resultScalable );
     }
 
     private postProcess( data: OcrResultScalable ): OcrResultScalable {
@@ -90,7 +140,7 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
             region.results.forEach( result => {
                 result.text.forEach(
                     line => { 
-                        line.content = line.content.replaceAll( '．．．', '…' );
+                        line.content = line.content?.replaceAll( '．．．', '…' ) || '';
                     }
                 )
             });

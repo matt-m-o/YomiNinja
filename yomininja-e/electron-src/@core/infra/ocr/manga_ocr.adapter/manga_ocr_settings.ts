@@ -9,6 +9,7 @@ export interface MangaOcrEngineSettings extends OcrEngineSettings {
     text_detector: string | 'PaddleTextDetector' | 'ComicTextDetector';
     cpu_threads: number;
     inference_runtime: string; // PyTorch | ONNX
+    use_selective_recognition: boolean;
     // det_db_thresh: number; // Only pixels with a score greater than this threshold will be considered as text pixels
     // det_db_box_thresh: number; // When the average score of all pixels is greater than the threshold, the result will be considered as a text area
     // det_db_unclip_ratio: number; // Expansion factor of the Vatti clipping algorithm, which is used to expand the text area
@@ -27,6 +28,7 @@ export function getMangaOcrDefaultSettings() {
         text_detector: 'ComicTextDetector',
         cpu_threads: os.cpus().length,
         inference_runtime: 'PyTorch',
+        use_selective_recognition: false,
         // max_image_width: 1600,
         // det_db_thresh: 0.3,
         // det_db_box_thresh: 0.6,

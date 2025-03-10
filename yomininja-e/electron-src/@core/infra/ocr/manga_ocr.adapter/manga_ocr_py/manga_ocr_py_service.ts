@@ -3,7 +3,7 @@ import { HardwareAccelerationOption, OcrAdapterStatus } from "../../../../applic
 import { OcrItemBox, OcrResult } from "../../../../domain/ocr_result/ocr_result";
 import { paddleOcrService } from "../../ocr_services/paddle_ocr_service/_temp_index";
 import { pyOcrService } from "../../ocr_services/py_ocr_service/_temp_index";
-import { MangaOcrRecognize_Input, MangaOcrService } from "../manga_ocr_service";
+import { MangaOcrRecognize_Input, MangaOcrRecognizeSelective_Input, MangaOcrService } from "../manga_ocr_service";
 
 
 export class MangaOcrPyService implements MangaOcrService {
@@ -35,7 +35,22 @@ export class MangaOcrPyService implements MangaOcrService {
             image: input.image,
             languageCode: 'ja',
             ocrEngine: this.ocrEngineName,
-            boxes
+            boxes,
+            detectionOnly: Boolean(input.detection_only)
+        });
+        console.timeEnd("MangaOCR Recognize");
+
+        return result;
+    };
+
+    async recognizeSelective( input: MangaOcrRecognizeSelective_Input ): Promise< OcrResult | null > {
+
+        console.time("MangaOCR Recognize");
+        const result = await pyOcrService.recognizeSelective({
+            id: input.id,
+            languageCode: 'ja',
+            ocrEngine: this.ocrEngineName,
+            result_ids: input.selectedItemIds
         });
         console.timeEnd("MangaOCR Recognize");
 

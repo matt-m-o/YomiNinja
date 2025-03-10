@@ -6,9 +6,16 @@ export type MangaOcrRecognize_Input = {
     image: Buffer;
     boxes?: OcrItemBox[];
     text_detector?: string;
+    detection_only?: boolean;
+};
+
+export type MangaOcrRecognizeSelective_Input = {
+    id: string;
+    selectedItemIds?: string[];
 };
 
 
 export interface MangaOcrService {
     recognize: ( input: MangaOcrRecognize_Input ) => Promise< OcrResult | null >;
+    recognizeSelective?: ( input: MangaOcrRecognizeSelective_Input ) => Promise< OcrResult | null >;
 };
