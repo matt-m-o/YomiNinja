@@ -9,7 +9,7 @@ import { HardwareAccelerationOption, OcrAdapter, TextRecognitionModel } from "..
 import { Language } from "../@core/domain/language/language";
 import { CaptureSource, ExternalWindow } from "./common/types";
 import sharp from 'sharp';
-import { GetSupportedLanguagesUseCaseInstance, RecognizeImageUseCaseInstance } from "../@core/infra/types/use_case_instance.types";
+import { GetSupportedLanguagesUseCaseInstance, RecognizeImageUseCaseInstance, RecognizeSelectionUseCaseInstance } from "../@core/infra/types/use_case_instance.types";
 import { PpOcrAdapter } from "../@core/infra/ocr/ppocr.adapter/ppocr.adapter";
 import { OcrEngineSettingsU } from "../@core/infra/types/entity_instance.types";
 import { OcrEngineSettings } from "../@core/domain/settings_preset/settings_preset";
@@ -26,6 +26,7 @@ export const entireScreenAutoCaptureSource: CaptureSource = {
 export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = OcrEngineSettings > {
 
     private recognizeImageUseCase: RecognizeImageUseCaseInstance;
+    private recognizeSelectionUseCase: RecognizeSelectionUseCaseInstance;
     private getSupportedLanguagesUseCase: GetSupportedLanguagesUseCaseInstance;
     private getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;    
     private ocrAdapters: OcrAdapter< TOcrSettings >[];    
@@ -33,12 +34,14 @@ export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = Oc
     constructor(
         input: {
             recognizeImageUseCase: RecognizeImageUseCaseInstance;
+            recognizeSelectionUseCase: RecognizeSelectionUseCaseInstance;
             getSupportedLanguagesUseCase: GetSupportedLanguagesUseCaseInstance;
-            getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;            
+            getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;
             ocrAdapters: OcrAdapter< TOcrSettings >[];
         }
     ){
         this.recognizeImageUseCase = input.recognizeImageUseCase;
+        this.recognizeSelectionUseCase = input.recognizeSelectionUseCase;
         this.getSupportedLanguagesUseCase = input.getSupportedLanguagesUseCase;
         this.getActiveSettingsPresetUseCase = input.getActiveSettingsPresetUseCase;
         this.ocrAdapters = input.ocrAdapters;
@@ -49,6 +52,7 @@ export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = Oc
         profileId: string;
         engineName?: string;
         autoMode?: boolean;
+
     }): Promise< OcrResultScalable | null > {
         
         if (isDev)
@@ -73,6 +77,21 @@ export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = Oc
             ocrAdapterName: engineName,
             autoMode: Boolean( input.autoMode ),
         });
+    }
+
+    async getSelectiveResult(
+        input: {
+            partialResult: OcrResultScalable;
+            selectedItemIds: string[];
+        } 
+    ): Promise<OcrResultScalable | null> {
+
+        const result = await this.recognizeSelectionUseCase.execute({
+            partialResult: input.partialResult,
+            selectedItemIds: input.selectedItemIds
+        });
+
+        return result;
     }
 
     async getActiveSettingsPreset() {

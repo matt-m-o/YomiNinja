@@ -101,6 +101,20 @@ export class OcrRecognitionController {
                 return this.result;
             }
         );
+
+        ipcMain.handle( 'ocr_recognition:recognize_selection',
+            async ( event: IpcMainInvokeEvent, ids: string[] ): Promise<OcrResultScalable | null> => {
+
+                if ( !this.result ) return null;
+
+                const result = await this.ocrRecognitionService.getSelectiveResult({
+                    partialResult: this.result,
+                    selectedItemIds: ids
+                });
+
+                return result || this.result;
+            }
+        );
     }
 
     recognize = async ( input: Recognition_Input ): Promise< Recognition_Output > => {
