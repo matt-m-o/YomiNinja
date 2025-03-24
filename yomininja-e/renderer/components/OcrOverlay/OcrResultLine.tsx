@@ -209,13 +209,13 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         if ( box.isVertical ) {
             [ '．．．', '...', '･･･', '・・・' ]
                 .forEach( item => {
-                    line.content = line.content.replaceAll(item, '…' );
+                    line.content = line.content?.replaceAll(item, '…' );
                 });
         }
         else {
             [ '・・・' ]
                 .forEach( item => {
-                    line.content = line.content.replaceAll(item, '...' );
+                    line.content = line.content?.replaceAll(item, '...' );
                 });
         }
 
