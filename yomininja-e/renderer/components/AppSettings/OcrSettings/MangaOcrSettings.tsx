@@ -23,6 +23,8 @@ export default function MangaOcrSettings( props: MangaOcrSettingsProps ) {
         installHardwareAcceleration
     } = useContext( SettingsContext );
 
+
+    const [ selectiveRecognition, setSelectiveRecognition ] = useState<boolean>(false);
     const [ textDetector, setTextDetector ] = useState( ocrEngineSettings?.text_detector || 'ComicTextDetector' );
     const [ HWOptions, setHWOptions ] = useState<HardwareAccelerationOption[]|undefined>([]);
     const [ activeHWOption, setActiveHWOption ] = useState<string|undefined>('');
@@ -39,7 +41,7 @@ export default function MangaOcrSettings( props: MangaOcrSettingsProps ) {
         if ( !ocrEngineSettings ) return;
 
         setTextDetector( ocrEngineSettings?.text_detector );
-        // setCpuThreads( ocrEngineSettings?.cpu_threads );
+        setSelectiveRecognition( ocrEngineSettings?.use_selective_recognition );
 
         refreshHWOptions();
 
@@ -147,6 +149,22 @@ export default function MangaOcrSettings( props: MangaOcrSettingsProps ) {
                     marginTop: '40px'
                 }}
             >
+
+                <FormControlLabel label='Partial recognition mode'
+                    title="Detect all text boxes first. Choose which ones you want to recognize."
+                    sx={{ mb: 4 }}
+                    control={
+                        <Switch
+                            checked={ Boolean( selectiveRecognition ) }
+                            onChange={ ( event ) => {
+                                setSelectiveRecognition( event.target.checked );
+                                handleEngineSettingsUpdate({
+                                    use_selective_recognition: event.target.checked
+                                });
+                            }}
+                        /> 
+                    }
+                />
             
                 <FormControl fullWidth 
                     sx={{
