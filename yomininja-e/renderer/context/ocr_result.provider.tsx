@@ -8,6 +8,7 @@ export type OcrResultContextType = {
     ocrResult: OcrResultScalable;
     showResults: boolean;
     processing: boolean;
+    recognizeSelection: ( itemId: string ) => Promise<OcrResultScalable | null>;
 };
 
 export const OcrResultContext = createContext( {} as OcrResultContextType );
@@ -28,6 +29,18 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
 
         setOcrResult(data);
         previousResultId = data?.id;
+
+        console.log(data)
+    }
+
+    async function recognizeSelection( selectedItemId: string ) {
+        console.log({selectedItemId})
+        const result = await ipcRenderer.invoke(
+            'ocr_recognition:recognize_selection',
+            [ selectedItemId ]
+        );
+        ocrResultHandler( null, result );
+        return result;
     }
     
     useEffect( () => {
@@ -69,7 +82,8 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
             value={{
                 ocrResult,
                 showResults,
-                processing
+                processing,
+                recognizeSelection
             }}
         >
             {children}

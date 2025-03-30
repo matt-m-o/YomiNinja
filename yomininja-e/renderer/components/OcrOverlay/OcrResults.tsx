@@ -31,7 +31,7 @@ export default function OcrResults( props: OcrResultsProps ) {
 
     const { activeSettingsPreset } = useContext( SettingsContext );
     const { profile } = useContext( ProfileContext );
-    const { ocrResult } = useContext( OcrResultContext );
+    const { ocrResult, recognizeSelection } = useContext( OcrResultContext );
     const { activeOcrTemplate } = useContext( OcrTemplatesContext );
     const { speak, getVoices } = useContext( TTSContext );
     const [ isPopup, setIsPopup ] = useState(false);
@@ -62,6 +62,10 @@ export default function OcrResults( props: OcrResultsProps ) {
     }, [] );
 
     const handleBoxMouseEnter = ( item: OcrItemScalable, ocrRegionId?: string ) => {
+
+        if ( item.recognition_state == 'DETECTED' ) {
+            recognizeSelection( item.id );
+        }
         
         const hoveredText = getOcrItemText( item );
         // console.log({ hoveredText });
