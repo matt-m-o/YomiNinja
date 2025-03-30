@@ -34,7 +34,7 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                     text: {
                         color: "#ffffff", // White
                         font_size_factor: 100,
-                        font_weight: 500,
+                        font_weight: 400,
                         letter_spacing: 1,
                         letter_spacing_factor: 100,
                         outline_width: 0,
