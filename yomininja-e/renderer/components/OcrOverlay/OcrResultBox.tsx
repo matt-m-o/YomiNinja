@@ -239,6 +239,7 @@ export default function OcrResultBox( props: {
                 transform: boxTransform,
                 minWidth: ( minWidth + sizeExpansionWidthPct ) + '%',
                 minHeight: ( box.dimensions.height + sizeExpansionHeightPct ) + '%',
+                cursor: ocrItem.recognition_state === 'DETECTED' ? 'progress' : 'unset'
             }}
             onMouseEnter={ () => props.onMouseEnter( ocrItem, ocrRegionId ) }
             onMouseLeave={ props.onMouseLeave }
