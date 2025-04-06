@@ -5,7 +5,6 @@ import * as grpc from '@grpc/grpc-js';
 import { HardwareAccelerationOption, OcrAdapterStatus } from "../../../../application/adapters/ocr.adapter";
 import { OcrItem, OcrItemBox, OcrResult, OcrTextLine } from "../../../../domain/ocr_result/ocr_result";
 import { RecognizeDefaultResponse__Output } from "../../../../../../grpc/rpc/ocr_service/RecognizeDefaultResponse";
-import { RecognizeBase64Request } from "../../../../../../grpc/rpc/ocr_service/RecognizeBase64Request";
 import os from 'os';
 import path, { join } from "path";
 import isDev from 'electron-is-dev';
@@ -24,12 +23,11 @@ import { TextRecognitionModel } from "../../../../../../grpc/rpc/ocr_service/Tex
 
 import { GetHardwareAccelerationOptionsRequest } from "../../../../../../grpc/rpc/ocr_service/GetHardwareAccelerationOptionsRequest";
 import { GetHardwareAccelerationOptionsResponse__Output } from "../../../../../../grpc/rpc/ocr_service/GetHardwareAccelerationOptionsResponse";
-import { HardwareAccelerationOption as HardwareAccelerationOption_grpc } from "../../../../../../grpc/rpc/ocr_service/HardwareAccelerationOption"
 
 import { getNextPortAvailable } from "../../../util/port_check";
 import { sleep } from "../../../../../util/sleep.util";
 import fs from "fs";
-import { RecognizeBytesSelectiveRequest } from "../../../../../../grpc/rpc/ocr_service/RecognizeBytesSelectiveRequest";
+import { RecognizeSelectiveRequest } from "../../../../../../grpc/rpc/ocr_service/RecognizeSelectiveRequest";
 
 type OcrEnginesName = 'MangaOCR' | 'AppleVision' | string;
 
@@ -176,7 +174,7 @@ export class PyOcrService {
             sendImage = false;
         }
 
-        const requestInput: RecognizeBytesSelectiveRequest = {
+        const requestInput: RecognizeSelectiveRequest = {
             id: input.id,
             ocr_engine: input.ocrEngine,
             language_code: input.languageCode,
@@ -190,7 +188,7 @@ export class PyOcrService {
         this.status = OcrAdapterStatus.Processing;
         // console.time('PpOcrAdapter.recognize');        
         const clientResponse = await new Promise< RecognizeDefaultResponse__Output | undefined >(
-            (resolve, reject) => this.ocrServiceClient?.RecognizeBytesSelective( requestInput, ( error, response ) => {
+            (resolve, reject) => this.ocrServiceClient?.RecognizeSelective( requestInput, ( error, response ) => {
                 if (error) {
                     this.restart( () => {} );
                     return reject(error)

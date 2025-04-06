@@ -145,7 +145,7 @@ class Service( service_grpc.OCRServiceServicer ):
             results=results
         )
     
-    def RecognizeBytesSelective(self, request: service_pb.RecognizeBytesSelectiveRequest, context):
+    def RecognizeSelective(self, request: service_pb.RecognizeSelectiveRequest, context):
 
         self.processing = True
 
