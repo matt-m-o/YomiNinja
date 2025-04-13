@@ -29,12 +29,9 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
 
         setOcrResult(data);
         previousResultId = data?.id;
-
-        console.log(data)
     }
 
     async function recognizeSelection( selectedItemId: string ) {
-        console.log({selectedItemId})
         const result = await ipcRenderer.invoke(
             'ocr_recognition:recognize_selection',
             [ selectedItemId ]
