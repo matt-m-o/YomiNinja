@@ -1,3 +1,4 @@
+import { sleep } from "../../../../util/sleep.util";
 import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 import { OcrEngineSettings, SettingsPreset } from "../../../domain/settings_preset/settings_preset";
 import { OcrAdapter, OcrAdapterStatus } from "../../adapters/ocr.adapter";
@@ -29,6 +30,20 @@ export class RecognizeSelectionUseCase< TOcrSettings extends OcrEngineSettings >
         )
             return partialResult;
         
+        const timeout = 60_000;
+        const sleepTimeMs = 25;
+        let totalSleep = 0;
+
+        while (
+            ocrAdapter.status !== OcrAdapterStatus.Enabled &&
+            totalSleep < timeout
+        ) {
+            await sleep(sleepTimeMs);
+            totalSleep += sleepTimeMs;
+        }
+        if ( ocrAdapter.status !== OcrAdapterStatus.Enabled )
+            return partialResult;
+
         const ocrResult = await ocrAdapter.recognizeSelection({
             partialOcrResult: input.partialResult,
             selectedItemIds: input.selectedItemIds,
