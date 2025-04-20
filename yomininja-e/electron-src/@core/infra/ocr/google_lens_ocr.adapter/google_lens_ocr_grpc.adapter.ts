@@ -279,7 +279,9 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
                 const lineAngle = Number(lineBoxData?.rotationZ);//! radians
 
                 let words: OcrTextWordScalable[] = [];
-                let text: string = lineTextData?.join('') || '';
+                let text: string = lineTextData?.map( ( word ) => {
+                    return word.plainText + ( word.textSeparator || '' );
+                }).join('') || '';
 
                 // console.log( lineTextData );
                 // console.log( lineBoxData );
