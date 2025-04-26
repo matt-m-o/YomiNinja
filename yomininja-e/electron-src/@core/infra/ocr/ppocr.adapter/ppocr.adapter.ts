@@ -61,7 +61,11 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
         if ( !result )
             return null;
 
-        return OcrResultScalable.createFromOcrResult( result )
+        const resultScalable = OcrResultScalable.createFromOcrResult( result );
+        resultScalable.ocr_engine_name = this.name;
+        resultScalable.language = language;
+
+        return resultScalable;
     }
 
     async getSupportedLanguages(): Promise< string[] > {

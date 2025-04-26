@@ -94,6 +94,9 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
             ]
         });
 
+        result.ocr_engine_name = this.name;
+        result.language = input.language;
+
         this.cacheResult( result );
 
         return result;

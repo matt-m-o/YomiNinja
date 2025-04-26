@@ -196,7 +196,11 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
             image: input.imageBuffer
         });
 
-        return OcrResultScalable.createFromOcrResult( ocrResult );
+        const resultScalable = OcrResultScalable.createFromOcrResult( ocrResult );
+        resultScalable.ocr_engine_name = this.name;
+        resultScalable.language = input.language;
+
+        return resultScalable;
     }
 
     async getSupportedLanguages(): Promise< string[] > {
