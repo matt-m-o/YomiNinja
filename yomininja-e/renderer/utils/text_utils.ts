@@ -1,5 +1,22 @@
+import { LanguageJson } from "../../electron-src/@core/domain/language/language";
 import { OcrItemScalable, OcrTextLineScalable } from "../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 
+
+export function getDefaultFontFamily( language?: LanguageJson | string ) {
+
+    const tag = typeof language === 'object' ? 
+        language.bcp47_tag :
+        language;
+
+    const fonts = {
+        'zh-Hans': '-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Heiti SC", "Noto Sans SC", sans-serif',
+        'zh-Hant': '-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", sans-serif',
+        'ja-JP': '"Segoe UI", Meiryo, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+        // 'ja-JP': "arial"
+    };
+    
+    return tag in fonts ? fonts[tag] : fonts['ja-JP'];
+}
 
 export function isEolCharacter( char: string ): boolean {
     return [
@@ -97,6 +114,7 @@ export function getBestFontStyle( input: {
     initialFontSize: number;
     initialSpacing?: number;
     isVertical: boolean;
+    fontFamily?: string;
 }): { fontSize: number, letterSpacing: number } {
 
     let { text } = input;
@@ -109,7 +127,7 @@ export function getBestFontStyle( input: {
         isVertical,
     } = input;
 
-    const fontFamily = 'arial';
+    const fontFamily = input.fontFamily || 'arial';
 
     let maxSideLength = isVertical ? maxHeight : maxWidth;
     let maxFontSize = initialFontSize;
