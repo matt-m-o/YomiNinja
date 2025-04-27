@@ -15,7 +15,7 @@ import { OcrEngineSettingsU } from "../@core/infra/types/entity_instance.types";
 import { InAppNotification } from "../common/types/in_app_notification";
 import { ipcMain } from "../common/ipc_main";
 import { bufferToDataURL } from "../util/image.util";
-import { OcrResultScalable } from "../@core/domain/ocr_result_scalable/ocr_result_scalable";
+import { OcrResultScalable, OcrResultScalableJson } from "../@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { cloneDeep, find } from 'lodash';
 import { Notification } from 'electron';
 import { pushInAppNotification } from "../common/notification_helpers";
@@ -97,13 +97,15 @@ export class OcrRecognitionController {
         );
 
         ipcMain.handle( 'ocr_recognition:get_result',
-            ( event: IpcMainInvokeEvent ): OcrResultScalable | null => {
-                return this.result;
+            ( event: IpcMainInvokeEvent ): OcrResultScalableJson | null => {
+                if (this.result)
+                    return this.result.toJson()
+                return null;
             }
         );
 
         ipcMain.handle( 'ocr_recognition:recognize_selection',
-            async ( event: IpcMainInvokeEvent, ids: string[] ): Promise<OcrResultScalable | null> => {
+            async ( event: IpcMainInvokeEvent, ids: string[] ): Promise<OcrResultScalableJson | null> => {
 
                 if ( !this.result ) return null;
 
@@ -112,7 +114,14 @@ export class OcrRecognitionController {
                     selectedItemIds: ids
                 });
 
-                return result || this.result;
+                if ( result ) {
+                    this.result = await this.ocrResultToJson( result );
+                    return result.toJson();
+                }
+                else if ( this.result )
+                    return this.result.toJson();
+
+                return null;
             }
         );
     }
@@ -204,7 +213,7 @@ export class OcrRecognitionController {
             ipcMain.send(
                 this.overlayWindow,
                 'ocr:result',
-                this.result
+                this.result?.toJson() || null
             );
 
         } catch (error) {

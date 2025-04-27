@@ -476,4 +476,21 @@ export class OcrResultScalable {
 
         return distance - symbolLength;
     }
+
+    toJson( serializeImage?: boolean ): OcrResultScalableJson {
+
+        const image = ( serializeImage && this.image && typeof this.image !== 'string' ) ?
+            'data:image/png;base64,'+Buffer.from(this.image).toString('base64'): undefined;
+
+        return {
+            ...this,
+            image,
+            language: this.language?.toJson()
+        };
+    }
 }
+
+export interface OcrResultScalableJson extends Omit<
+    OcrResultScalable, 
+    'toJson' | 'addRegionResult' | 'calculateEuclideanDistance'
+> {}
