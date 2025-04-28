@@ -18,6 +18,7 @@ export type OcrResultsProps = {
     ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
     overlayHotkeys: OverlayHotkeys;
     overlayBehavior: OverlayBehavior;
+    fontFamily: string;
 };
 
 
@@ -279,6 +280,7 @@ export default function OcrResults( props: OcrResultsProps ) {
                                         onDoubleClick={ () => handleBoxDoubleClick( id ) }
                                         onBlur={ handleBoxBlur }
                                         contentEditable={ editableBoxId === id }
+                                        fontFamily={props.fontFamily}
                                     />
                                 )
                             })

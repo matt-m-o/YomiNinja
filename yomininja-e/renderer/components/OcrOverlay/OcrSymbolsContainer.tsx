@@ -21,6 +21,7 @@ type OcrSymbolsContainerProps = {
     style?: CSSProperties;
     EOLSymbol?: JSX.Element;
     includesGeneratedFurigana: boolean;
+    fontFamily?: string;
 }
 
 export default function OcrSymbolsContainer( props: OcrSymbolsContainerProps ) {
@@ -61,7 +62,8 @@ export default function OcrSymbolsContainer( props: OcrSymbolsContainerProps ) {
         maxWidth: lineBoxWidthPx / 100,
         maxHeight: lineBoxHeightPx / 100,
         initialFontSize: lineFontSize,
-        isVertical: Boolean(textBlockBox?.isVertical)
+        isVertical: Boolean(textBlockBox?.isVertical),
+        fontFamily: props.fontFamily
     });
     lineFontSize = bestFontStyle.fontSize;
     lineFontSize = lineFontSize * fontSizeFactor;

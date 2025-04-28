@@ -1,9 +1,9 @@
 import { styled, SxProps } from "@mui/material";
 import { OcrResultBoxScalable, OcrTextLineScalable, OcrTextLineSymbolScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
-import { CSSProperties, useContext, useEffect } from "react";
+import { CSSProperties, useContext, useEffect, useRef, useState } from "react";
 import { ProfileContext } from "../../context/profile.provider";
-import { getBestFontStyle, getSymbolPositionOffset, isEolCharacter } from "../../utils/text_utils";
+import { getBestFontStyle, getDefaultFontFamily, getSymbolPositionOffset, isEolCharacter } from "../../utils/text_utils";
 import OcrWordsContainer from "./OcrWordsContainer";
 import OcrSymbolsContainer from "./OcrSymbolsContainer";
 
@@ -19,6 +19,7 @@ export type OcrResultLineProps = {
     contentEditable: boolean;
     isLastLine: boolean;
     includesGeneratedFurigana: boolean;
+    fontFamily?: string;
     onBlur?: () => void;
 };
 
@@ -37,7 +38,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         ocrItemBoxVisuals,
         contentEditable,
         sizeExpansionPx,
-        includesGeneratedFurigana
+        includesGeneratedFurigana,
     } = props;
 
     const { profile } = useContext( ProfileContext );
@@ -60,7 +61,8 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             zIndex: '9000000',
         }
     }
-    
+
+    const fontFamily = props.fontFamily || getDefaultFontFamily( active_ocr_language?.bcp47_tag );
 
     const Container = styled('span')(containerStyle);
 
@@ -68,6 +70,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         // transformOrigin: line.box.transform_origin || 'top left',
         whiteSpace: 'pre',
         width: 'max-content',
+        fontFamily
     });
 
 
@@ -177,6 +180,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             isLastLine={isLastLine}
             EOLSymbol={EOLSymbol}
             includesGeneratedFurigana={includesGeneratedFurigana}
+            fontFamily={fontFamily}
             style={{
                 fontSize: lineFontSize
             }}
@@ -197,6 +201,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             isLastLine={isLastLine}
             EOLSymbol={EOLSymbol}
             includesGeneratedFurigana={includesGeneratedFurigana}
+            fontFamily={fontFamily}
             style={{
                 transform: containerTransform,
                 fontSize: lineFontSize
@@ -229,7 +234,8 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             maxHeight: lineBoxHeightPx,
             initialFontSize: lineFontSize,
             isVertical: Boolean(box?.isVertical),
-            initialSpacing: 0
+            initialSpacing: 0,
+            fontFamily
         });
         
         lineFontSize = bestFontStyle.fontSize;

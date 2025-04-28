@@ -22,6 +22,7 @@ import ProcessingIndicator from "./ProcessingIndicator";
 import { ipcRenderer } from "../../utils/ipc-renderer";
 import { isElectronBrowser } from '../../utils/environment';
 import { AppInfoContext } from "../../context/app_info.provider";
+import { getDefaultFontFamily } from "../../utils/text_utils";
 
 
 
@@ -163,13 +164,15 @@ export default function OcrOverlay() {
         />
     );
   });
+  const fontFamily = getDefaultFontFamily(ocrResult?.language);
 
   const OverlayFrame = styled('div')({
     border: 'solid 1px',
     height: isElectron ? '100vh' : '100%',
     overflow: 'hidden',
     boxSizing: 'border-box',
-    '-webkit-app-region': 'no-drag'
+    '-webkit-app-region': 'no-drag',
+    fontFamily
   });
   
 
@@ -201,6 +204,7 @@ export default function OcrOverlay() {
         ocrItemBoxVisuals={ocrItemBoxVisuals}
         overlayHotkeys={overlayHotkeys}
         overlayBehavior={overlayBehavior}
+        fontFamily={fontFamily}
       />
 
       { overlayMouseVisuals?.show_custom_cursor && ocrResult &&

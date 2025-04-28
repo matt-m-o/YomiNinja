@@ -19,6 +19,7 @@ type OcrWordsContainerProps = {
     style?: CSSProperties;
     EOLSymbol?: JSX.Element;
     includesGeneratedFurigana: boolean;
+    fontFamily?: string;
 }
 
 export default function OcrWordsContainer( props: OcrWordsContainerProps ) {
@@ -64,7 +65,8 @@ export default function OcrWordsContainer( props: OcrWordsContainerProps ) {
             maxHeight: wordBoxHeightPx / 100,
             initialFontSize: textBlockBox.isVertical ? wordBoxWidthPx : wordBoxHeightPx,
             initialSpacing: 0,
-            isVertical: isVertical
+            isVertical: isVertical,
+            fontFamily: props.fontFamily
         });
         
         let fontSize = bestFontStyle.fontSize * fontSizeFactor;

@@ -9,7 +9,7 @@ const BaseOcrResultBox = styled('div')({
     // border: 'solid',
     outline: 'solid',
     position: 'absolute',
-    fontFamily: "arial",
+    // fontFamily: "arial",
     // color: 'transparent',
     contentVisibility: 'hidden',
     transformOrigin: 'top left',
@@ -37,6 +37,7 @@ export default function OcrResultBox( props: {
     overlayBehavior: OverlayBehavior;
     contentEditable: boolean;
     isElectron: boolean;
+    fontFamily: string;
     onMouseEnter?: ( item: OcrItemScalable, ocrRegionId?: string ) => void;
     onMouseLeave?: () => void;
     onClick?: ( item: OcrItemScalable, ocrRegionId?: string ) => void;
@@ -281,6 +282,7 @@ export default function OcrResultBox( props: {
                         ocrItemBoxVisuals={ocrItemBoxVisuals}
                         sizeExpansionPx={sizeExpansionPx}
                         includesGeneratedFurigana={includesGeneratedFurigana}
+                        fontFamily={props.fontFamily}
                     />
                 )
             }) }
