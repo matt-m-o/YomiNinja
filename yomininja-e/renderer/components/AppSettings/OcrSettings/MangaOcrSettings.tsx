@@ -5,6 +5,7 @@ import { MangaOcrEngineSettings } from "../../../../electron-src/@core/infra/ocr
 import CommonOcrSettings from "./CommonOcrSettings";
 import { ipcRenderer } from "../../../utils/ipc-renderer";
 import { HardwareAccelerationOption } from "../../../../electron-src/@core/application/adapters/ocr.adapter";
+import AlertDialog from "../../common/AlertDialog";
 
 
 type MangaOcrSettingsProps = {
@@ -30,6 +31,7 @@ export default function MangaOcrSettings( props: MangaOcrSettingsProps ) {
     const [ activeHWOption, setActiveHWOption ] = useState<string|undefined>('');
     const [ selectedHWOption, setSelectedHWOption ] = useState<string|undefined>('');
 
+    const [ openDialog, setOpenDialog ] = useState< boolean >( false );
 
     const paddleOcrSettings = activeSettingsPreset?.ocr_engines
             .find( engineSettings => {
@@ -131,6 +133,19 @@ export default function MangaOcrSettings( props: MangaOcrSettingsProps ) {
 
     return (
         <Box sx={{ flexGrow: 1, margin: 1, }}>
+
+            <AlertDialog
+                title={'Are you sure you want to replace the current runtime?'}
+                message="This operation might take a few minutes to complete."
+                okButtonText="Yes"
+                cancelButtonText="No"
+                open={ openDialog }
+                handleCancel={ () => {
+                    setOpenDialog( false );
+                }}
+                handleOk={ applyHWSelection }
+                handleClose={ () => setOpenDialog( false ) }
+            />
 
             <Typography component="div" fontSize='1.0rem'
                 mt={1} mb={4}
@@ -241,7 +256,7 @@ export default function MangaOcrSettings( props: MangaOcrSettingsProps ) {
                         <Button disabled={activeHWOption == selectedHWOption}
                             variant="contained"
                             sx={{ ml: 3 }}
-                            onClick={applyHWSelection}
+                            onClick={ () => setOpenDialog( true )}
                         >
                             Apply
                         </Button>
