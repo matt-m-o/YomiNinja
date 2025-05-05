@@ -100,7 +100,7 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
 
         const { partialOcrResult, selectedItemIds } = input;
       
-        console.log('processing recognition selective input');
+        // console.log('processing recognition selective input');
         // this.status = OcrAdapterStatus.Processing;
         // console.time('MangaOcrAdapter.recognize');
 
