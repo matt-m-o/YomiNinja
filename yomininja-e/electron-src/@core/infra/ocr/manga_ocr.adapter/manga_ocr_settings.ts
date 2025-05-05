@@ -28,7 +28,7 @@ export function getMangaOcrDefaultSettings() {
         text_detector: 'ComicTextDetector',
         cpu_threads: os.cpus().length,
         inference_runtime: 'PyTorch',
-        use_selective_recognition: false,
+        use_selective_recognition: true,
         // max_image_width: 1600,
         // det_db_thresh: 0.3,
         // det_db_box_thresh: 0.6,
