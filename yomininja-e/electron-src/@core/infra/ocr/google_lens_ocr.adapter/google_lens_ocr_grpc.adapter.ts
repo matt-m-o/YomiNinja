@@ -237,7 +237,7 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
                 'sec-fetch-site': 'none',
                 'sec-fetch-mode': 'no-cors',
                 'sec-fetch-dest': 'empty',
-                'user-agent': 'Mozilla/5.0 (Macintosh; ARM Mac OS X 15_0_1) AppleWebKit/619.1.26.31.7 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/619.1.26.31.7',
+                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
                 'accept-encoding': 'gzip, deflate, br, zstd',
                 'accept-language': 'en-US,en;q=0.9,ja-JP;q=0.8,ja;q=0.7',
                 // 'cookie': // Required?
