@@ -15,7 +15,7 @@ export function getGoogleLensDefaultSettings(): GoogleLensOcrEngineSettings {
         hotkey: 'Alt+G',
         invert_colors: false,
         image_scaling_factor: 1,
-        api_key: ''
+        api_key: 'AIzaSyA2KlwBX3mkFo30om9LUFYQhpqLoa_BNhE'
     }
 
     return defaultSettings;
