@@ -40,7 +40,7 @@ export function removeIncompatibleFiles() {
     
     // Binaries
     fs.rmSync(
-        join( USER_DATA_DIR, '/bin' ),
+        join( USER_DATA_DIR, '/bin/py_ocr_service/python' ),
         { recursive: true, force: true }
     );
 }
