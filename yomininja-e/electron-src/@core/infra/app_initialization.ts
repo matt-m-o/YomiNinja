@@ -24,6 +24,7 @@ import { LaunchConfig } from './types/launch_config';
 import { httpServer } from '../../common/server';
 import { detectHttpCliToolCmd } from '../../util/environment.util';
 import { removeIncompatibleFiles, isUserDataCompatible, updateUserDataVersion, updateUserDataStructure } from '../../util/user_data.util';
+import { Notification } from 'electron';
 import isDev from 'electron-is-dev';
 
 const isMacOS = process.platform === 'darwin';
@@ -213,6 +214,11 @@ async function postInstallSetup() {
 
     if ( isUserDataCompatible() )
         return;
+
+    (new Notification({
+        title: 'Setting things up…',
+        body: "Initial setup in progress.\nThis may take a moment."
+    })).show();
 
     updateUserDataStructure();
     
