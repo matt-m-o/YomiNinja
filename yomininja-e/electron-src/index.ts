@@ -29,7 +29,7 @@ else {
   app.on('ready', async () => {
 
     if ( process.platform === 'win32' ) {
-      app.setAppUserModelId(`com.yomininja.${app.getName()}`);
+      app.setAppUserModelId(app.name);
     }
   
     // Prepare the renderer once the app is ready
