@@ -79,6 +79,7 @@ export class OverlayController {
         });
 
         this.overlayService.initWebSocket();
+        this.applyTitleBarHideWorkaround();
 
         return this.overlayWindow;
     }
@@ -971,5 +972,15 @@ export class OverlayController {
         const displayNearestPoint = screen.getDisplayNearestPoint(cursorScreenPoint);
         
         return displayNearestPoint;
+    }
+
+    applyTitleBarHideWorkaround() {
+        // Hide the title bar in Electron v33+ (https://www.electronjs.org/blog/migrate-to-webcontentsview)
+        this.overlayWindow.on( 'focus', () => {
+            this.overlayWindow.setBackgroundColor('#00000000');
+        });
+        this.overlayWindow.on( 'blur', () => {
+            this.overlayWindow.setBackgroundColor('#00000000');
+        });
     }
 }
