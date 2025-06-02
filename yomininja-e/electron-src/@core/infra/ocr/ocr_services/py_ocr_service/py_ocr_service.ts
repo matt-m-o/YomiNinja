@@ -38,7 +38,7 @@ export class PyOcrService {
     private serviceProcess: ChildProcessWithoutNullStreams;
     private serverAddress: string;
     private binRoot: string;
-    private userBinRoot: string;
+    private serviceRoot: string;
     private serviceKeepAlive: NodeJS.Timeout;
     private CUSTOM_MODULES_PATH: string;
     private MODELS_PATH: string;
@@ -56,14 +56,25 @@ export class PyOcrService {
             ? join( BIN_DIR, `/${os.platform()}${arch}/py_ocr_service` )
             : join( process.resourcesPath, '/bin/py_ocr_service' );
 
-        this.pyExecutableName = os.platform() === 'win32' ? 'python.exe' : 'python';
+        this.pyExecutableName = os.platform() === 'win32' ?
+            'python.exe' : '/bin/python3.12';
 
 
-        this.userBinRoot = join( USER_DATA_DIR, "/bin/py_ocr_service" )
+        this.serviceRoot = join( USER_DATA_DIR, "/bin/py_ocr_service" )
 
-        this.CUSTOM_MODULES_PATH = join( this.binRoot, "/python/Lib/site-packages" )
+        if ( os.platform() === 'win32' ) {
+            this.CUSTOM_MODULES_PATH = join(
+                this.binRoot, "/python/Lib/site-packages" 
+            );
+        }
+        else {
+            this.CUSTOM_MODULES_PATH = join(
+                this.binRoot,
+                "/python/lib/python3.12/site-packages"
+            );
+        }
 
-        this.MODELS_PATH = join( this.userBinRoot, '/models' );
+        this.MODELS_PATH = join( this.serviceRoot, '/models' );
     }
 
     connect( serviceAddress: string ) {
@@ -347,9 +358,9 @@ export class PyOcrService {
 
         const executableName = this.pyExecutableName; // python or py_ocr_service
 
-        const executablePath = join( this.userBinRoot + `/python/${this.pyExecutableName}` );
-        const srcPath = join( this.binRoot + `/src` )
-        const pyScript = join( this.binRoot + `/src/py_ocr_service.py` );
+        const executablePath = join( this.serviceRoot, `/python/${this.pyExecutableName}` );
+        const srcPath = join( this.binRoot, `/src` )
+        const pyScript = join( this.binRoot, `/src/py_ocr_service.py` );
 
         // console.log({
         //     pythonExecutable: executablePath,
@@ -362,7 +373,8 @@ export class PyOcrService {
             [ '-u', pyScript, port.toString() ],
             {
                 cwd: srcPath,
-                detached: false, //platform === 'win32',
+                detached: platform !== 'win32',
+                // stdio: ['ignore', 'pipe', 'pipe'], // macOS
                 //@ts-ignore
                 env: {
                     CUSTOM_MODULES_PATH: this.CUSTOM_MODULES_PATH,
@@ -408,20 +420,9 @@ export class PyOcrService {
                 this.restart( () => {} );
         });
 
-        process.on('exit', () => {
-            // Ensure the child process is killed before exiting
-            this.disable();
-        });
-        
-        process.on('SIGSEGV', ( error: Error ) => {
-            console.error( error );
-            this.disable();
-            process.exit(1);
-        });
-
-        process.on( 'exit', this.disable );
-        process.on( 'SIGINT', this.disable );
-        process.on( 'SIGTERM', this.disable );
+        // process.on( 'exit', this.disable );
+        // process.on( 'SIGINT', this.disable );
+        // process.on( 'SIGTERM', this.disable );
     }
 
     async processStatusCheck(): Promise< boolean > {
@@ -493,21 +494,22 @@ export class PyOcrService {
     killServiceProcess = () => {
         if (this.serviceProcess && this.serviceProcess.pid) {
 
-            if (os.platform() == 'win32') {
+            if ( os.platform() == 'win32' ) {
                 const { exec } = require('child_process');
                 exec(`taskkill /PID ${this.serviceProcess.pid} /T /F`, (err: Error) => {
                     if (err) {
                         console.error('Failed to taskkill process:', err);
                     }
                 });
-                return
+                return;
             }
             else {
                 try {
-                    process.kill(-this.serviceProcess.pid); // kill process group
+                    process.kill( -this.serviceProcess.pid ); // kill process group
                 } catch (e) {
                     console.error('Failed to kill service process group:', e);
                 }
+                this.serviceProcess.kill();
             }
         }
     }
@@ -527,11 +529,7 @@ export class PyOcrService {
         }
     }
 
-    private disable = () => {
-        this.status = OcrAdapterStatus.Disabled;
-        this.killServiceProcess();
-    }
-    private async enable( callback?: () => void ) {
+    private enable = async ( callback?: () => void ) => {
         this.status = OcrAdapterStatus.Enabled;
         try {
             await new Promise( resolve => {
@@ -547,11 +545,15 @@ export class PyOcrService {
 
         callback();
     }
+    disable = () => {
+        this.status = OcrAdapterStatus.Disabled;
+        this.killServiceProcess();
+    }
 
     installPython() {
 
         const pyPath = join( this.binRoot, '/python' );
-        const userPyPath = join( this.userBinRoot, '/python' );
+        const userPyPath = join( this.serviceRoot, '/python' );
 
         fs.mkdirSync( userPyPath, { recursive: true } )
 
@@ -567,7 +569,7 @@ export class PyOcrService {
             }
         }
 
-        const pyExecutablePath = join( this.userBinRoot + `/python/${this.pyExecutableName}` );
+        const pyExecutablePath = join( this.serviceRoot + `/python/${this.pyExecutableName}` );
 
         const getPip = spawnSync(
             pyExecutablePath,
@@ -589,7 +591,7 @@ export class PyOcrService {
     }
 
     isPythonInstalled(): boolean {
-        const userPyPath = join( this.userBinRoot, '/python' );
+        const userPyPath = join( this.serviceRoot, '/python' );
         return fs.existsSync( userPyPath );
     }
 
@@ -610,7 +612,7 @@ export class PyOcrService {
             // this.serviceProcess.kill('SIGTERM');
             this.disable();
 
-            const pyExecutablePath = join( this.userBinRoot + `/python/${this.pyExecutableName}` );
+            const pyExecutablePath = join( this.serviceRoot + `/python/${this.pyExecutableName}` );
 
             const uninstallCmd = option.installCommand
                 .split(' --index-url')[0]
