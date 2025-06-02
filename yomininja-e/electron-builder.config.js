@@ -77,7 +77,10 @@ let buildConfig = {
             {
                 "from": "../bin/linux",
                 "to": "bin",
-                "filter": "**/*"
+                "filter": [
+                    "**/*",
+                    "!py_ocr_service/models/manga_ocr/**/*"
+                ]
             }
         ],
         "target": [
@@ -95,9 +98,12 @@ let buildConfig = {
         ],
         "extraResources": [
             {
-                "from": `../bin/darwin/x64`, // "from": `../bin/darwin/${TARGET_ARCH}`,
+                "from": `../bin/darwin/${TARGET_ARCH}`,
                 "to": "bin",
-                "filter": "**/*"
+                "filter": [
+                    "**/*",
+                    "!py_ocr_service/models/manga_ocr/**/*"
+                ]
             }
         ],
         "target": [
