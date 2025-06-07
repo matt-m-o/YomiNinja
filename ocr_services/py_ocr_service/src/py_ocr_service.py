@@ -326,7 +326,7 @@ def serve( port: str = '23456', executor: ProcessPoolExecutor = None ):
 
 
 if __name__ == "__main__":
-    freeze_support()
+    # freeze_support()
     logging.basicConfig()
 
     server_port = '33456'
