@@ -231,9 +231,27 @@ export class PaddleOcrService {
             }
         });
 
-        process.on( 'exit', this.killServiceProcess );
-        process.on( 'SIGINT', this.killServiceProcess );
-        process.on( 'SIGTERM', this.killServiceProcess );
+    }
+
+    enable = async ( callback?: () => void ) => {
+        this.status = OcrAdapterStatus.Enabled;
+        try {
+            await new Promise( resolve => {
+                this.startProcess( resolve );
+            });
+        } catch (error) {
+            console.log(error);
+        }
+        
+        await this.processStatusCheck();
+        
+        if (!callback) return;
+
+        callback();
+    }
+    disable = () => {
+        this.status = OcrAdapterStatus.Disabled;
+        this.killServiceProcess();
     }
 
     // Checks if the ppocrService is enabled.
