@@ -24,13 +24,16 @@ import { LaunchConfig } from './types/launch_config';
 import { httpServer } from '../../common/server';
 import { detectHttpCliToolCmd } from '../../util/environment.util';
 import { removeIncompatibleFiles, isUserDataCompatible, updateUserDataVersion, updateUserDataStructure } from '../../util/user_data.util';
-import { Notification } from 'electron';
-import isDev from 'electron-is-dev';
+import { app, Notification } from 'electron';
+import { AppExitHandler } from './util/app_exit_handler';
 
+import isDev from 'electron-is-dev';
 const isMacOS = process.platform === 'darwin';
 export let activeProfile: Profile;
 export let windowManager: WindowManager;
 export let launchConfig: LaunchConfig;
+
+const appExitHandler = new AppExitHandler();
 
 
 async function populateLanguagesRepository( languageRepo: LanguageTypeOrmRepository ) {
@@ -242,6 +245,14 @@ async function startServices() {
 
     await Promise.all( serviceStartupPromises );
     await servicesHealthCheck();
+
+    const quit = () => {
+        paddleOcrService.disable();
+        pyOcrService.disable();
+        // app.quit();
+    };
+
+    appExitHandler.setAppExitHandler( quit );
 }
 
 async function servicesHealthCheck() {
