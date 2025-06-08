@@ -15,14 +15,22 @@ export function getUserDataVersion(): string | undefined {
     return userDataVersion;
 }
 
+export function getExpectedUserDataVersion(): string {
+    return app.getVersion()+';'+process.arch;
+}
+
 export function updateUserDataVersion() {
-    fs.writeFileSync( userDataVersionPath, app.getVersion(), 'utf-8' );
+    fs.writeFileSync(
+        userDataVersionPath,
+        getExpectedUserDataVersion(),
+        'utf-8'
+    );
 }
 
 export function isUserDataCompatible(): boolean {
     const userDataVersion = getUserDataVersion();
 
-    if ( userDataVersion !== app.getVersion() )
+    if ( userDataVersion !== getExpectedUserDataVersion() )
         return false
 
     if ( !pyOcrService.isPythonInstalled() )
@@ -46,6 +54,7 @@ export function removeIncompatibleFiles() {
 }
 
 export function updateUserDataStructure() {
+    // The databases in the directory returned by app.getPath('userData'), it will be deleted when Electron v32+ is first run.
 
     const oldDbDirPath = join( USER_DATA_DIR, '/databases' );
     const newDbPath = get_MainDataSource().options.database;
@@ -68,13 +77,11 @@ export function updateUserDataStructure() {
 
     const files = fs.readdirSync( oldDbDirPath, { withFileTypes: true } );
     for ( const file of files ) {
-        if ( file.name !== 'Lib' ) {
-            fs.cpSync(
-                join( file.parentPath, file.name ),
-                join( newDbDirPath, file.name ),
-                { recursive: true, force: false }
-            )
-        }
+        fs.cpSync(
+            join( file.parentPath, file.name ),
+            join( newDbDirPath, file.name ),
+            { recursive: true, force: false }
+        )
     }
 
     fs.existsSync( userDataVersionPath )
