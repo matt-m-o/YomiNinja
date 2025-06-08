@@ -51,10 +51,12 @@ export interface OcrItemScalable {
     classification_score: number,
     classification_label: number,
     recognition_state?: OcrRecognitionState;
+    region_id?: string;
 };
 
 export interface OcrRegion {
-    id?: string,
+    id: string,
+    result_id?: string; // id of request of result
     results: OcrItemScalable[],
     image?: Buffer | string,
     position: { // Percentages
@@ -134,6 +136,8 @@ export class OcrResultScalable {
 
         const rescaledRegionResults = regionResult.ocr_regions[0].results.map( result => {
 
+            result.region_id = input.regionId;
+
             if ( !globalScaling )
                 return result;
 
@@ -159,13 +163,30 @@ export class OcrResultScalable {
             return result;
         });
 
-        this.ocr_regions.push({
+        const newRegionData: OcrRegion = {
+            id: input.regionId || '0',
+            result_id: input.regionResult.id,
             results: rescaledRegionResults,
             position: regionPosition,
             size: regionSize,
-            id: input.regionId,
-            image: regionImage
-        });
+            image: regionImage,
+        };
+
+        let regionExists = this.ocr_regions.find( region => region.id == input.regionId );
+
+        if ( regionExists != undefined ) {
+
+            this.ocr_regions = this.ocr_regions.map( region => {
+                if ( region.id == input.regionId ) {
+                    return newRegionData;
+                }
+                return region;
+            });
+
+            return;
+        }
+
+        this.ocr_regions.push( newRegionData );
 
         // this.results = [ ...this.results, ...rescaledRegionResults ];
     }
@@ -277,6 +298,7 @@ export class OcrResultScalable {
         // console.timeEnd("createFromOcrResult"); // ~0.154ms to ~0.332ms
 
         ocr_regions.push({
+            id: '0',
             results,
             position: {
                 left: 0,

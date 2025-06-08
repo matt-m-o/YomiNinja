@@ -80,6 +80,7 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
             context_resolution: contextResolution,
             ocr_regions: [
                 {
+                    id: '0',
                     position: {
                         top: 0,
                         left: 0,
