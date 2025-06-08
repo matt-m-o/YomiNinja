@@ -14,6 +14,14 @@ import platform
 
 torch.set_num_threads( os.cpu_count() )
 
+class PartialRecognition:
+    image: np.ndarray
+    partial_response: RecognizeDefaultResponse
+
+    def __init__( self, image: np.ndarray, partial_response: RecognizeDefaultResponse ):
+        self.image = image
+        self.partial_response = partial_response
+
 class MangaOcrService:
 
     manga_ocr: MangaOcr = None
@@ -23,15 +31,12 @@ class MangaOcrService:
     custom_model_path = None
 
     previous_image: np.ndarray
-    previous_recognition: RecognizeDefaultResponse
+    partial_recognitions: Dict[ str, PartialRecognition ] = {}
 
     def __init__(self) -> None:
         self.is_model_downloaded()
 
     def init( self ):
-
-        self.previous_recognition = RecognizeDefaultResponse() 
-
 
         custom_model_exists = self.custom_model_exists()
 
@@ -108,21 +113,22 @@ class MangaOcrService:
             self.init()
     
         if detection_only:
-            self.previous_recognition.Clear()
+            pass # self.remove_old_recognitions()
 
-        self.previous_image = np.array( image )
+
+        arr_image = np.array( image )
 
         text_blocks: List[ Result ] = []
 
         if len(boxes) == 0:
-            text_blocks = self.detect( self.previous_image )
+            text_blocks = self.detect( arr_image )
 
             if not detection_only:
                 for block_idx, block in enumerate(text_blocks):
                     # print(f'\nProcessing text block {block_idx+1} of {len(text_blocks)}')
                     
-                    for line_idx, line in enumerate(block.text_lines):
-                        line_image = self.crop_image( self.previous_image, line.box )
+                    for line_idx, line in enumerate( block.text_lines ):
+                        line_image = self.crop_image( arr_image, line.box )
                         line.content = self.manga_ocr( line_image )
 
                     block.recognition_state = "RECOGNIZED"
@@ -130,7 +136,7 @@ class MangaOcrService:
         else:
             for block_idx, box in enumerate(boxes):
                 # print(f'\nProcessing text block {box_idx+1} of {len(boxes)}')
-                line_image = self.crop_image( self.previous_image, box )
+                line_image = self.crop_image( arr_image, box )
 
                 line = TextLine(
                     box=box,
@@ -155,7 +161,12 @@ class MangaOcrService:
             )
         
         if detection_only:
-            self.previous_recognition = response
+            self.add_partial_recognition(
+                PartialRecognition(
+                    image= arr_image,
+                    partial_response= response
+                )
+            )
 
         return response
     
@@ -169,14 +180,19 @@ class MangaOcrService:
         if not self.manga_ocr:
             self.init()
 
-        if self.previous_recognition.id != request_id:
-            self.previous_recognition.Clear()
+        previous_recognition = self.partial_recognitions.get( request_id )
+
+        if not previous_recognition:
+            pass # self.previous_recognition.Clear()
+        
+        arr_image: np.ndarray = None
+        response: RecognizeDefaultResponse
 
         if image:
-            self.previous_image = np.array( image )
-            text_blocks = self.detect( self.previous_image )
+            arr_image = np.array( image )
+            text_blocks = self.detect( arr_image )
 
-            self.previous_recognition = RecognizeDefaultResponse(
+            response = RecognizeDefaultResponse(
                 context_resolution= {
                     'width': image.width,
                     'height': image.height
@@ -184,10 +200,14 @@ class MangaOcrService:
                 id= request_id,
                 results= text_blocks
             )
-        
-        if self.previous_recognition.id == request_id:
 
-            for block in self.previous_recognition.results:
+        if previous_recognition and not image:
+            response = previous_recognition.partial_response
+            arr_image = previous_recognition.image
+
+        if result_ids and len(result_ids) > 0:
+
+            for block in response.results:
                 
                 if block.id not in result_ids or block.recognition_state == 'RECOGNIZED':
                     continue
@@ -197,13 +217,29 @@ class MangaOcrService:
                     if ( bool(line.content) ):
                         continue
 
-                    line_image = self.crop_image( self.previous_image, line.box )
+                    line_image = self.crop_image( previous_recognition.image, line.box )
                     line.content = self.manga_ocr( line_image )
                 
                 block.recognition_state = 'RECOGNIZED'
+        
+        self.add_partial_recognition(
+                PartialRecognition(
+                    image= arr_image,
+                    partial_response= response
+                )
+            )
 
-            return self.previous_recognition
+        return response
+
     
+    def add_partial_recognition( self, recognition: PartialRecognition ):
+
+        id = recognition.partial_response.id
+        self.partial_recognitions[id] = recognition
+
+        if len(self.partial_recognitions) > 20:
+            oldest_key = next( iter(self.partial_recognitions) )
+            del self.partial_recognitions[ oldest_key ]
 
     def crop_image( self, image: np.ndarray, box: Box ) -> Image.Image:
 
