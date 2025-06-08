@@ -100,8 +100,6 @@ export async function initializeApp() {
     try {
 
         // createServer();
-
-        await postInstallSetup();
         const serviceStartupPromise = startServices();
 
         // Initializing database
@@ -211,25 +209,6 @@ export async function initializeApp() {
 
 export function getActiveProfile(): Profile {
     return activeProfile;
-}
-
-async function postInstallSetup() {
-
-    if ( isUserDataCompatible() )
-        return;
-
-    (new Notification({
-        title: 'Setting things up…',
-        body: "Initial setup in progress.\nThis may take a moment."
-    })).show();
-
-    updateUserDataStructure();
-    
-    removeIncompatibleFiles();
-
-    pyOcrService.installPython();
-
-    updateUserDataVersion();
 }
 
 async function startServices() {
