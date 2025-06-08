@@ -1,6 +1,6 @@
 {
   "name": "yomininja-e",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "private": true,
   "type": "commonjs",
   "main": "main/electron-src/index.js",
