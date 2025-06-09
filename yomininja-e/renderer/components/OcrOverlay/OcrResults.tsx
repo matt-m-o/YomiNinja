@@ -65,7 +65,10 @@ export default function OcrResults( props: OcrResultsProps ) {
     const handleBoxMouseEnter = ( item: OcrItemScalable, ocrRegionId?: string ) => {
 
         if ( item.recognition_state == 'DETECTED' ) {
-            recognizeSelection( item.id );
+            recognizeSelection({
+                regionId: item.region_id,
+                selectedItemIds: [ item.id ]
+            });
         }
         
         const hoveredText = getOcrItemText( item );

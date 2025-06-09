@@ -126,7 +126,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
         }
     ): Promise< OcrResultScalable | null > {
 
-        const { image, template, ocrAdapter, language: languageCode } = input;
+        const { image, template, ocrAdapter, language } = input;
 
         const { target_regions } = template;
 
@@ -138,7 +138,9 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
                 width: metadata.width,
                 height: metadata.height,
             },
-            image
+            image,
+            language,
+            ocr_engine_name: ocrAdapter.name,
         });
 
         
@@ -286,7 +288,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
 
             const regionResult = await ocrAdapter.recognize({
                     imageBuffer: regionImage,
-                    language: languageCode,
+                    language,
                 })
                 .catch( console.error );
 

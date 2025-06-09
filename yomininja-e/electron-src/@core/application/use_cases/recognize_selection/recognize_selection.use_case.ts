@@ -1,3 +1,4 @@
+import { result } from "lodash";
 import { sleep } from "../../../../util/sleep.util";
 import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 import { OcrEngineSettings, SettingsPreset } from "../../../domain/settings_preset/settings_preset";
@@ -7,8 +8,9 @@ import { OcrAdapter, OcrAdapterStatus } from "../../adapters/ocr.adapter";
 
 export type RecognizeSelectionInput = {    
     partialResult: OcrResultScalable;
+    regionId?: string;
     selectedItemIds: string[];
-} 
+}
 
 export class RecognizeSelectionUseCase< TOcrSettings extends OcrEngineSettings > {
 
@@ -18,7 +20,7 @@ export class RecognizeSelectionUseCase< TOcrSettings extends OcrEngineSettings >
 
     async execute( input: RecognizeSelectionInput ): Promise< OcrResultScalable | null > {
 
-        const { partialResult } = input;
+        const { partialResult, regionId, selectedItemIds } = input;
 
         let ocrAdapter = this.getAdapter( partialResult.ocr_engine_name );
 
@@ -44,13 +46,32 @@ export class RecognizeSelectionUseCase< TOcrSettings extends OcrEngineSettings >
         if ( ocrAdapter.status !== OcrAdapterStatus.Enabled )
             return partialResult;
 
+        const targetRegion = partialResult.ocr_regions.find( region => region.id == regionId );
+
         const ocrResult = await ocrAdapter.recognizeSelection({
-            partialOcrResult: input.partialResult,
-            selectedItemIds: input.selectedItemIds,
+            partialOcrResult: partialResult,
+            selectedItemIds: selectedItemIds,
+            resultId: targetRegion?.result_id
         });
 
         if ( !ocrResult )
             return partialResult;
+
+        if ( regionId && partialResult.ocr_regions.length > 0 ) {
+
+            if ( !targetRegion )
+                return partialResult;
+
+            partialResult.addRegionResult({
+                regionId: targetRegion?.id,
+                regionResult: ocrResult,
+                regionPosition: targetRegion.position,
+                regionSize: targetRegion.size,
+                globalScaling: false,
+            });
+
+            return partialResult;
+        }
 
         return ocrResult;
     }

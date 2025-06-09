@@ -4,6 +4,7 @@ import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_resul
 import { MangaOcrEngineSettings, getMangaOcrDefaultSettings, mangaOcrAdapterName } from "./manga_ocr_settings";
 import { pyOcrService } from "../ocr_services/py_ocr_service/_temp_index";
 import { mangaOcrPyService } from "./manga_ocr_py/_temp_index";
+import { sleep } from "../../../../util/sleep.util";
 
 export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
     
@@ -107,7 +108,7 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
         let result: OcrResult | null = null;
         try {
             result = await mangaOcrPyService.recognizeSelective({
-                id: partialOcrResult.id,
+                id: input.resultId || partialOcrResult.id,
                 selectedItemIds
             });
         } catch (error) {
@@ -129,7 +130,7 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
 
         const resultScalable = OcrResultScalable.createFromOcrResult(result);
         resultScalable.ocr_engine_name = this.name;
-        resultScalable.language = partialOcrResult.language;
+        resultScalable.language = input.language || partialOcrResult.language;
         this.cacheResult( resultScalable );
 
         return this.postProcess( resultScalable );

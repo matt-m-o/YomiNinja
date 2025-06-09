@@ -83,12 +83,14 @@ export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = Oc
         input: {
             partialResult: OcrResultScalable;
             selectedItemIds: string[];
+            regionId?: string;
         } 
     ): Promise<OcrResultScalable | null> {
 
         const result = await this.recognizeSelectionUseCase.execute({
             partialResult: input.partialResult,
-            selectedItemIds: input.selectedItemIds
+            selectedItemIds: input.selectedItemIds,
+            regionId: input.regionId,
         });
 
         return result;

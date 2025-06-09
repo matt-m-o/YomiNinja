@@ -12,6 +12,8 @@ export type OcrRecognitionInput = {
 export type RecognizeSelectionInput = {
     partialOcrResult: OcrResultScalable;
     selectedItemIds: string[];
+    resultId?: string;
+    language?: Language;
 };
 
 export interface OcrEngineSettingsOptions {

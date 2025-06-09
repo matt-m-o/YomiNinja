@@ -26,6 +26,10 @@ export type Recognition_Output = {
     status: 'complete' | 'replaced' | 'failed';
 };
 
+export type RecognizeSelection_IPC_Input = {
+    regionId?: string; selectedItemIds: string[];
+};
+
 export class OcrRecognitionController {
     
     private ocrRecognitionService: OcrRecognitionService<OcrEngineSettingsU>;
@@ -105,13 +109,19 @@ export class OcrRecognitionController {
         );
 
         ipcMain.handle( 'ocr_recognition:recognize_selection',
-            async ( event: IpcMainInvokeEvent, ids: string[] ): Promise<OcrResultScalableJson | null> => {
+            async (
+                event: IpcMainInvokeEvent,
+                input: RecognizeSelection_IPC_Input,
+            ): Promise<OcrResultScalableJson | null> => {
 
                 if ( !this.result ) return null;
 
+                const { regionId, selectedItemIds } = input;
+
                 const result = await this.ocrRecognitionService.getSelectiveResult({
                     partialResult: this.result,
-                    selectedItemIds: ids
+                    selectedItemIds,
+                    regionId
                 });
 
                 if ( result ) {
