@@ -376,6 +376,15 @@ class MangaOcrService:
                 "install_command": "--index-url https://download.pytorch.org/whl/rocm6.3"
             }
         ]
+
+        mac_opts_dict = [
+            {
+                "backend": "Torch",
+                "compute_platform": "MPS",
+                "install_command": "--index-url https://download.pytorch.org/whl/cpu",
+                "installed": os_platform == 'darwin'
+            },
+        ]
         
         for option in linux_opts_dict:
 
@@ -403,7 +412,7 @@ class MangaOcrService:
                     compute_platform_version= option.get('compute_platform_version'),
                     installed= bool( option.get('installed') ),
                     install_command= base_command +' '+ option['install_command'],
-                ) for option in linux_opts_dict if option['compute_platform'] != 'ROCm'
+                )
             ]
         
         if os_platform == 'windows':
@@ -416,6 +425,18 @@ class MangaOcrService:
                     install_command= option['install_command'],
                 ) for option in linux_opts_dict if option['compute_platform'] != 'ROCm'
             ]
+        
+        if os_platform == 'darwin':
+            return [
+                HardwareAccelerationOption(
+                    backend= option.get('backend'),
+                    compute_platform= option.get('compute_platform'),
+                    compute_platform_version= option.get('compute_platform_version'),
+                    installed= bool( option.get('installed')),
+                    install_command= base_command +' '+ option['install_command'],
+                ) for option in mac_opts_dict
+            ]
+        
         
         return []
                 
