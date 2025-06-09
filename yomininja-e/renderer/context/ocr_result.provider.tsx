@@ -33,12 +33,19 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
     }
 
     async function recognizeSelection( input: RecognizeSelection_IPC_Input ) {
-        const result = await ipcRenderer.invoke(
-            'ocr_recognition:recognize_selection',
-            input
-        );
-        ocrResultHandler( null, result );
-        return result;
+        try {
+            setProcessing(true);
+            const result = await ipcRenderer.invoke(
+                'ocr_recognition:recognize_selection',
+                input
+            );
+            ocrResultHandler( null, result );
+            setProcessing(false);
+            return result;
+        } catch (error) {
+            console.error(error);
+        }
+        setProcessing(false);
     }
     
     useEffect( () => {
