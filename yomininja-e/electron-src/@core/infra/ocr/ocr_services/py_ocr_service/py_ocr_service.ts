@@ -564,30 +564,37 @@ export class PyOcrService {
                 fs.cpSync(
                     join( pyPath, file.name ),
                     join( userPyPath, file.name ),
-                    { recursive: true }
+                    { 
+                        recursive: true,
+                        filter: ( src ) => {
+                            return path.basename(src) !== 'site-packages';
+                        }
+                    }
                 )
             }
         }
 
-        const pyExecutablePath = join( this.serviceRoot + `/python/${this.pyExecutableName}` );
-
-        const getPip = spawnSync(
-            pyExecutablePath,
-            [ '-u', './get-pip.py' ],
-            {
-                cwd: path.dirname(pyExecutablePath),
-            },
-        );
-        
-        console.log("Installing python requirements...")
-        const installRequirements = spawnSync(
-            pyExecutablePath,
-            '-u -m pip install -r ./requirements.txt'.split(' '),
-            {
-                cwd: path.dirname(pyExecutablePath),
-                // detached: os.platform() === 'win32',
-            },
-        );
+        if ( process.platform == 'win32' ) {
+            const pyExecutablePath = join( this.serviceRoot + `/python/${this.pyExecutableName}` );
+    
+            const getPip = spawnSync(
+                pyExecutablePath,
+                [ '-u', './get-pip.py' ],
+                {
+                    cwd: path.dirname(pyExecutablePath),
+                },
+            );
+            
+            console.log("Installing python requirements...")
+            const installRequirements = spawnSync(
+                pyExecutablePath,
+                '-u -m pip install -r ./requirements.txt'.split(' '),
+                {
+                    cwd: path.dirname(pyExecutablePath),
+                    // detached: os.platform() === 'win32',
+                },
+            );
+        }
     }
 
     isPythonInstalled(): boolean {
