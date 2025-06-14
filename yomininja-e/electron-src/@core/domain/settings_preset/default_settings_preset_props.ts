@@ -81,7 +81,7 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
             behavior: {
                 copy_text_on_hover: false,
                 copy_text_on_click: true,
-                always_on_top: false,
+                always_on_top: process.platform == 'darwin',
                 click_through_mode: 'auto',
                 show_window_on_copy: {
                     enabled: false,

@@ -84,7 +84,10 @@ export class OverlayController {
         return this.overlayWindow;
     }
 
-    private createOverlayWindow() {
+    private createOverlayWindow( alwaysOnTop?: boolean ) {
+
+        if ( alwaysOnTop !== undefined )
+            this.overlayAlwaysOnTop = alwaysOnTop;
 
         const useFullscreenMode = !isMacOS && !isLinux;
 
@@ -153,7 +156,17 @@ export class OverlayController {
             this.clickThroughMode = 'disabled';
         }
         
-        this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop && !showDevTools, "normal" ); // normal, pop-up-menu och screen-saver
+        if ( !isMacOS ) {
+            this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop && !showDevTools, "normal" ); // normal, pop-up-menu och screen-saver
+        }
+        else {
+            this.overlayWindow.once( 'ready-to-show', () => {
+                this.overlayWindow.setAlwaysOnTop(
+                    this.overlayAlwaysOnTop && !showDevTools,
+                    'floating'
+                );
+            });
+        }
         if ( !useFullscreenMode ) {
             this.overlayWindow.setBounds(
                 screen.getPrimaryDisplay().bounds
@@ -976,11 +989,14 @@ export class OverlayController {
 
     applyTitleBarHideWorkaround() {
         // Hide the title bar in Electron v33+ (https://www.electronjs.org/blog/migrate-to-webcontentsview)
-        this.overlayWindow.on( 'focus', () => {
-            this.overlayWindow.setBackgroundColor('#00000000');
-        });
-        this.overlayWindow.on( 'blur', () => {
-            this.overlayWindow.setBackgroundColor('#00000000');
-        });
+
+        if ( isWindows ) {
+            this.overlayWindow.on( 'focus', () => {
+                this.overlayWindow.setBackgroundColor('#00000000');
+            });
+            this.overlayWindow.on( 'blur', () => {
+                this.overlayWindow.setBackgroundColor('#00000000');
+            });
+        }
     }
 }
