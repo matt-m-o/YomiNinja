@@ -30,7 +30,6 @@ class MangaOcrService:
     embedded_model_path = '../models/manga_ocr/'
     custom_model_path = None
 
-    previous_image: np.ndarray
     partial_recognitions: Dict[ str, PartialRecognition ] = {}
 
     def __init__(self) -> None:
