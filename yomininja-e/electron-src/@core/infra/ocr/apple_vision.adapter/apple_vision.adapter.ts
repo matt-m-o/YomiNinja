@@ -84,6 +84,7 @@ export class AppleVisionAdapter implements OcrAdapter< AppleVisionOcrEngineSetti
         throw new Error('AppleVisionAdapter.getSettingsOptions() not implemented');
     }
     restart( callback: () => void ): void {
+        callback();
     }
 
 }
