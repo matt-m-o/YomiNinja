@@ -6,7 +6,7 @@ import { PpOcrEngineSettings } from "../ocr/ppocr.adapter/ppocr_settings";
 import { FakeOcrEngineSettings } from "../test/fake_ocr.adapter/fake_ocr.adapter";
 
 // Ocr engine settings union type
-export type OcrEngineSettingsU = PpOcrEngineSettings | CloudVisionOcrEngineSettings | OcrEngineSettings;
+export type OcrEngineSettingsU = PpOcrEngineSettings | CloudVisionOcrEngineSettings | GoogleLensOcrEngineSettings | MangaOcrEngineSettings | OcrEngineSettings;
 
 export type SettingsPresetInstanceProps = SettingsPresetProps< OcrEngineSettingsU >;
 
