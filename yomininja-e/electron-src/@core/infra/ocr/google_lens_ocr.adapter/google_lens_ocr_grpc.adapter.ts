@@ -22,6 +22,8 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
     private prevImage: Buffer = Buffer.from('');
     private prevResult: OcrResultScalable | null = null;
     private prevResultTime: Date = new Date();
+    private maxImageArea: number = 1_000_000;
+    private maxImageDimension: number = 1000; // Width or Height
 
 
     constructor() {
@@ -41,13 +43,7 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
         else
             this.prevImage = input.imageBuffer;
 
-        const imageBuffer = await this.rescaleImage(
-            input.imageBuffer,
-            // 4_000_000,
-            // 2000
-        );
-
-        const imageMetadata = await sharp( imageBuffer ).metadata();
+        const imageMetadata = await sharp( input.imageBuffer ).metadata();
 
         // console.log({
         //     imageWidth: imageMetadata.width,
@@ -56,7 +52,7 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
 
         console.log();
         console.time("Google Lens request time");
-        const data = await this.sendRequest( imageBuffer );
+        const data = await this.sendRequest( input.imageBuffer );
         console.timeEnd("Google Lens request time");
         console.log();
 
@@ -163,8 +159,9 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
 
     async createRequest( image: Buffer ) {
 
-        const imageBytes = await this.rescaleImage( image );
-        const imageMetadata = await sharp( imageBytes ).metadata();
+        const imageData = await this.rescaleImage( image );
+        const imageBytes = imageData.image;
+        const imageMetadata = imageData.size;
 
         const rpcRequest = new lens.LensOverlayServerRequest({
 
@@ -403,30 +400,36 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
 
     async rescaleImage(
         image: Buffer,
-        maxArea = 1_000_000, // kMaxAreaForImageSearch
-        maxPixels = 1000, // kMaxPixelsForImageSearch 
-    ): Promise< Buffer > {
+        maxArea?: number,
+        maxDimension?: number,
+    ): Promise< {
+        image: Buffer,
+        size: { width: number, height: number }
+    } > {
         // 2_764_800 of area is equivalent to 1080p (21:9)
+
+        maxArea = maxArea || this.maxImageArea;
+        maxDimension = maxDimension || this.maxImageDimension;
 
         const sharpImage = sharp(image);
 
-        const { width, height } = await sharpImage.metadata();
+        const metadata = await sharpImage.metadata();
+        const { width, height } = metadata;
 
         console.log({ width, height });
 
         if ( !width || !height )
-            return image;
-
+            return { image, size: { width, height  } };
 
         let newWidth = width;
         let newHeight = height;
 
-        if ( width > height && width > maxPixels ) {
-            newWidth = maxPixels;
+        if ( width > height && width > maxDimension ) {
+            newWidth = maxDimension;
             newHeight = Math.floor( height * (newWidth / width) );
         }
-        else if ( height > width && height > maxPixels ) {
-            newHeight = maxPixels;
+        else if ( height > width && height > maxDimension ) {
+            newHeight = maxDimension;
             newHeight = Math.floor( width * (newHeight / height) );
         }
 
@@ -437,7 +440,7 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
             newHeight == height &&
             area < maxArea
         )
-            return image;
+            return { image, size: { width, height } };
         
 
         const newArea = newWidth * newHeight;
@@ -453,10 +456,18 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
 
         console.log({ newWidth, newHeight });
         
-        return await sharpImage.resize({
+        const newImage = await sharpImage.resize({
             width: newWidth,
             height: newHeight
         }).toBuffer();
+
+        return {
+            image: newImage,
+            size: {
+                width: newWidth,
+                height: newHeight
+            }
+        };
     }
 
     async getSupportedLanguages(): Promise< string[] > {
@@ -481,6 +492,12 @@ export class GoogleLensOcrGrpcAdapter implements OcrAdapter< GoogleLensOcrEngine
 
         if ( lensSettings?.api_key )
             this.apiKey = lensSettings?.api_key;
+
+        if ( lensSettings?.max_image_area )
+            this.maxImageArea = lensSettings.max_image_area;
+
+        if ( lensSettings?.max_image_dimension )
+            this.maxImageDimension = lensSettings.max_image_dimension;
 
         return {
             restart: false,
