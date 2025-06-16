@@ -1,5 +1,6 @@
 import { Box, Slider, Stack, styled, Typography } from "@mui/material";
 import ResetParameterButton from "./common/ResetParameterButton";
+import { Mark } from "@mui/material/Slider/useSlider.types";
 
 export const MainDiv = styled( `div` )({
     marginTop: 25,
@@ -17,7 +18,7 @@ type OcrSettingsSliderProps = {
     rightLabel?: string;
     title?: string;
     icon?: JSX.Element;
-    marks?: boolean;
+    marks?: boolean | Mark[];
     value: number;
     min: number;
     max: number;
