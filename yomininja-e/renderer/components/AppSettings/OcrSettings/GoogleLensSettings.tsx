@@ -82,7 +82,10 @@ export default function GoogleLensSettings( props: GoogleLensSettingsProps ) {
                         step={1000}
                         marks={[
                             { value: 250_000, label: "250K px" },
-                            { value: defaultMaxImageArea },
+                            {
+                                value: defaultMaxImageArea,
+                                label: `${defaultMaxImageArea/1_000_000}M px`
+                            },
                             { value: 3_000_000, label: "3M px" },
                         ]}
                         value={ maxImageArea }
@@ -114,7 +117,10 @@ export default function GoogleLensSettings( props: GoogleLensSettingsProps ) {
                         step={1}
                         marks={[
                             { value: 100, label: "100 px" },
-                            { value: defaultMaxImageDimension },
+                            {
+                                value: defaultMaxImageDimension,
+                                label: `${defaultMaxImageDimension/1000}K px`
+                            },
                             { value: 5000, label: "5K px" },
                         ]}
                         value={ maxImageDimension }
