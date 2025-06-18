@@ -989,14 +989,14 @@ export class OverlayController {
 
     applyTitleBarHideWorkaround() {
         // Hide the title bar in Electron v33+ (https://www.electronjs.org/blog/migrate-to-webcontentsview)
+        const workaround = () => {
+            this.overlayWindow.setBackgroundColor('#00000000');
+        }
 
         if ( isWindows ) {
-            this.overlayWindow.on( 'focus', () => {
-                this.overlayWindow.setBackgroundColor('#00000000');
-            });
-            this.overlayWindow.on( 'blur', () => {
-                this.overlayWindow.setBackgroundColor('#00000000');
-            });
+            this.overlayWindow.on( 'focus', workaround );
+            this.overlayWindow.on( 'blur', workaround );
+            this.overlayWindow.on( 'always-on-top-changed', workaround );
         }
     }
 }
