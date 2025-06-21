@@ -111,7 +111,7 @@ export class UpdateSettingsPresetUseCase< TOcrSettings extends OcrEngineSettings
         
         if ( options?.restartOcrEngine ) {
 
-            await new Promise( resolve => setTimeout( resolve, 500 ) );
+            // await new Promise( resolve => setTimeout( resolve, 500 ) );
 
             for ( const adapterName of ocrAdaptersToBeRestarted ) {
 
