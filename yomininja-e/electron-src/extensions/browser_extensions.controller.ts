@@ -94,6 +94,12 @@ export class BrowserExtensionsController {
             }
         );
 
+        ipcMain.handle( 'extensions:clear_extension_data', 
+            async ( event: IpcMainInvokeEvent, extension: BrowserExtensionJson ): Promise< void > => {
+                return await this.browserExtensionsService.clearExtensionData( extension );
+            }
+        );
+
         ipcMain.handle( 'extensions:toggle_extension', 
             async ( event: IpcMainInvokeEvent, extension: BrowserExtensionJson ): Promise< void > => {
                 return await this.browserExtensionsService.toggleExtension( extension );

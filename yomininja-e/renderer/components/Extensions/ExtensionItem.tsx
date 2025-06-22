@@ -9,13 +9,14 @@ import { SimpleConsoleLogger } from "typeorm";
 export type ExtensionItemProps = {
     extension: BrowserExtensionJson;
     openOptions: () => void;
+    clearData: () => void;
     uninstall: () => void;
     onToggle: ( extension: BrowserExtensionJson ) => void;
 }
 
 export default function ExtensionItem( props: ExtensionItemProps ) {
 
-    const { extension, openOptions, uninstall, onToggle } = props;
+    const { extension, openOptions, uninstall, clearData, onToggle } = props;
 
     const [ enabled, setEnabled ] = useState(true);
 
@@ -115,6 +116,15 @@ export default function ExtensionItem( props: ExtensionItemProps ) {
                             disabled={ !extension?.optionsUrl }
                         >
                             Options
+                        </Button>
+
+                        <Button
+                            variant="outlined"
+                            onClick={ clearData }
+                            // color="error"
+                            sx={{ textTransform: 'capitalize', mr: '10px' }}
+                        >
+                            Clear data
                         </Button>
 
                         <Button

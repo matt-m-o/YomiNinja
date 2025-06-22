@@ -3,7 +3,7 @@ import buildChromeContextMenu from "electron-chrome-context-menu";
 import { ElectronChromeExtensions } from "electron-chrome-extensions";
 import { PopupView } from "electron-chrome-extensions/dist/browser/popup";
 import path, { join } from "path";
-import fs from 'fs/promises';
+import fsP from 'fs/promises';
 import sharp from 'sharp';
 import { USER_EXTENSIONS_DIR } from "../util/directories.util";
 import isDev from "electron-is-dev";
@@ -198,7 +198,7 @@ export class BrowserExtensionsService {
         });
         this.installedExtensions.clear();
 
-        const subDirectories = await fs.readdir( USER_EXTENSIONS_DIR, {
+        const subDirectories = await fsP.readdir( USER_EXTENSIONS_DIR, {
             withFileTypes: true,
         });
       
@@ -213,7 +213,7 @@ export class BrowserExtensionsService {
                         return extPath;
                     }
             
-                    const extSubDirs = await fs.readdir(extPath, {
+                    const extSubDirs = await fsP.readdir(extPath, {
                         withFileTypes: true,
                     });
             
@@ -269,7 +269,7 @@ export class BrowserExtensionsService {
     
         try {
             const manifestPath = path.join(dirPath, 'manifest.json');
-            return ( await fs.stat(manifestPath) ).isFile();
+            return ( await fsP.stat(manifestPath) ).isFile();
         } catch {
             return false;
         }
@@ -506,8 +506,23 @@ export class BrowserExtensionsService {
         });
 
         if ( !enabled )
-            this.session.removeExtension( extension.id );
+            this.session.extensions.removeExtension( extension.id );
         else
             await this.loadExtensions();
+    }
+
+    clearExtensionData = async ( extension: BrowserExtensionJson ) => {
+
+        try {
+
+            await this.session.clearStorageData({
+                origin: `chrome-extension://${extension.id}/`,
+                storages: ['indexdb', 'localstorage', 'serviceworkers']
+            });
+            
+        } catch (error) {
+            console.error(error);
+        }
+       
     }
 }
