@@ -96,8 +96,8 @@ async function postInstallSetup() {
       return;
 
   (new Notification({
-      title: 'Setting things up…',
-      body: "Initial setup in progress.\nThis may take a moment."
+      title: 'Initial setup in progress...',
+      body: 'This may take a moment.'
   })).show();
 
   updateUserDataStructure();
