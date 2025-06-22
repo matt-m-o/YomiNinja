@@ -1,4 +1,4 @@
-import { BrowserWindow, IpcMainInvokeEvent, MouseInputEvent, clipboard, globalShortcut } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, MouseInputEvent, app, clipboard, globalShortcut } from "electron";
 import { OverlayService } from "./overlay.service";
 import { join } from "path";
 import isDev from 'electron-is-dev';
@@ -987,16 +987,21 @@ export class OverlayController {
         return displayNearestPoint;
     }
 
-    applyTitleBarHideWorkaround() {
-        // Hide the title bar in Electron v33+ (https://www.electronjs.org/blog/migrate-to-webcontentsview)
-        const workaround = () => {
+    private titleBarHideWorkaround = () => {
+         // Hide the title bar in Electron v33+ (https://www.electronjs.org/blog/migrate-to-webcontentsview)
+         if ( isWindows && !this.overlayWindow?.isDestroyed() ) {
             this.overlayWindow.setBackgroundColor('#00000000');
+         }
+    }
+    private applyTitleBarHideWorkaround = () => {
+        if ( isWindows && !this.overlayWindow?.isDestroyed() ) {
+            this.overlayWindow.on( 'focus', this.titleBarHideWorkaround );
+            this.overlayWindow.on( 'always-on-top-changed', this.titleBarHideWorkaround );
+            app.on( 'browser-window-blur', this.titleBarHideWorkaround );
+            app.on( 'browser-window-created', ( e, window ) => {
+                window.on( 'closed', this.titleBarHideWorkaround );
+            });
         }
-
-        if ( isWindows ) {
-            this.overlayWindow.on( 'focus', workaround );
-            this.overlayWindow.on( 'blur', workaround );
-            this.overlayWindow.on( 'always-on-top-changed', workaround );
-        }
+        this.titleBarHideWorkaround();
     }
 }
