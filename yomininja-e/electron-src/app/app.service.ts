@@ -86,7 +86,10 @@ export class AppService {
 
             sources = await desktopCapturer.getSources({
                 types,
-                thumbnailSize
+                thumbnailSize: {
+                    width: thumbnailSize.width || 1,
+                    height: thumbnailSize.height || 1
+                }
             });
         }
         
