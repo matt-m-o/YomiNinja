@@ -1,6 +1,7 @@
 #include <napi.h>
 #include <windows.h> // ! Platform specific
 #include <dwmapi.h> // ! Platform specific
+#include <iostream>
 
 #pragma comment(lib, "Dwmapi.lib") // Link with Dwmapi.lib
 
@@ -38,7 +39,7 @@ WindowProps getWindowProps( HWND &hwnd ) {
   DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, &rect, sizeof(RECT));
 
   wchar_t w_title[256];
-  GetWindowTextW(hwnd, w_title, sizeof(w_title));
+  GetWindowTextW(hwnd, w_title, _countof(w_title));
   auto const title_ws = std::wstring(w_title);
 
   auto const utf8Title = titleToUtf8( title_ws );
