@@ -75,7 +75,7 @@ let buildConfig = {
         ],
         "extraResources": [
             {
-                "from": "../bin/linux",
+                "from": `../bin/linux/${TARGET_ARCH}`,
                 "to": "bin",
                 "filter": [
                     "**/*",
