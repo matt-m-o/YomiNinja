@@ -1,4 +1,4 @@
-import { BrowserWindow, IpcMainInvokeEvent, Tray, nativeImage, app, clipboard, globalShortcut, Menu, DisplayBalloonOptions, NativeImage, systemPreferences } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, Tray, nativeImage, app, clipboard, globalShortcut, Menu, DisplayBalloonOptions, NativeImage, systemPreferences, Notification } from "electron";
 import { UiohookKey, uIOhook } from "uiohook-napi";
 import { CaptureSource, ExternalWindow } from "../ocr_recognition/common/types";
 import { TaskbarProperties } from "../../gyp_modules/window_management/window_manager";
@@ -37,7 +37,7 @@ import { appleVisionAdapterName } from "../@core/infra/ocr/apple_vision.adapter/
 import { cloudVisionOcrAdapterName } from "../@core/infra/ocr/cloud_vision_ocr.adapter/cloud_vision_ocr_settings";
 import url from "url";
 
-let startupTimer: NodeJS.Timeout;
+// let startupTimer: NodeJS.Timeout;
 
 export class AppController {
 
@@ -53,6 +53,10 @@ export class AppController {
     private userSelectedWindowId: number | undefined;
 
     private activeCaptureSource: CaptureSource;
+
+    private slowInitNotificationTimeout: NodeJS.Timeout;
+    private quitTimeout: NodeJS.Timeout;
+
     
     private taskbar: TaskbarProperties;
 
@@ -78,20 +82,20 @@ export class AppController {
     }
 
     async init() {
-        console.time('YomiNinja Startup time');
+        console.time('App Startup time');
 
-        if ( !isDev ) {
-            startupTimer = setTimeout( () => {
+        if ( !isDev ) { 
+            this.slowInitNotificationTimeout = setTimeout( () => {
+                console.log('Startup is taking longer than expected');
+                new Notification({
+                    title: 'Startup is taking longer than expected',
+                    body: 'Please restart the app if it doesn’t respond soon.'
+                }).show();
+            }, 90_000 ); // 1:30 minutes
+            this.quitTimeout = setTimeout( () => {
                 console.log('Initialization took too long. Closing the app.');
-                this.displayBalloon({
-                    content: 'The app is about to exit in 10 seconds. Please restart the app once it has exited.'
-                });
-                sleep(10_000)
-                    .then( () => {
-                        app.quit();
-                        process.exit();
-                    });
-            }, 60_000 );//
+                app.quit();
+            }, 3 * 60_000 ); // 3 minutes
         }
 
         this.mainWindow = await mainController.init();
@@ -138,8 +142,11 @@ export class AppController {
                     await browserExtensionsController.loadExtensions();
                 // }, 500 );
 
-                if ( startupTimer ) {
-                    clearTimeout( startupTimer );
+                if ( this.slowInitNotificationTimeout ) {
+                    clearTimeout( this.slowInitNotificationTimeout );
+                }
+                if ( this.quitTimeout ) {
+                    clearTimeout( this.quitTimeout );
                 }
             });
                 
