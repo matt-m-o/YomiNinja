@@ -71,7 +71,9 @@ export default function ExtensionItem( props: ExtensionItemProps ) {
                             >
                                 {extension.name}
                             </Typography>
-                            <Typography color='InactiveCaptionText'>
+                            <Typography color='InactiveCaptionText'
+                                title={`Local ID: ${extension.id}`}
+                            >
                                 {extension.version}
                             </Typography>
                         </Box>
