@@ -109,9 +109,7 @@ let buildConfig = {
         "target": [
             {
                 "target": "default",
-                "arch": [
-                    TARGET_ARCH
-                ]
+                "arch": TARGET_ARCH
             }
         ]
     }
