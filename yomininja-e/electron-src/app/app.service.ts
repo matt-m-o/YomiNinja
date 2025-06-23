@@ -56,7 +56,7 @@ export class AppService {
         // console.time('getAllCaptureSources time');
 
         const types: ("screen" | "window")[] = sourceTypes || ['screen', 'window'];
-        const thumbnailSize = { width: 0, height: 0 };
+        const thumbnailSize = { width: 1, height: 1 }; // Using "1" instead of "0" to avoid a electron bug
         
         let sources: Electron.DesktopCapturerSource[] = [];
 
@@ -86,10 +86,7 @@ export class AppService {
 
             sources = await desktopCapturer.getSources({
                 types,
-                thumbnailSize: {
-                    width: thumbnailSize.width || 1,
-                    height: thumbnailSize.height || 1
-                }
+                thumbnailSize
             });
         }
         
@@ -133,8 +130,8 @@ export class AppService {
         const sources = await desktopCapturer.getSources({
             types: [ 'window' ],
             thumbnailSize: {
-                width: 0,
-                height: 0
+                width: 1,
+                height: 1
             },
         });
 
