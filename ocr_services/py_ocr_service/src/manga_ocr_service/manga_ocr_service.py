@@ -58,22 +58,32 @@ class MangaOcrService:
                 repo_id= self.recognition_model_id,
                 local_dir= self.get_custom_model_path()
             )
+            
             return True
+        
         except Exception as error:
             print(error)
             return False
 
     def is_model_downloaded( self ):
 
-        # Verify if model is available
-        custom_model_exists = self.custom_model_exists()
-        embedded_model_exists = self.embedded_model_exists()
-        cached_model_exists = self.cached_model_exists()
+        try:
+            # Verify if model is available
+            custom_model_exists = self.custom_model_exists()
+            embedded_model_exists = self.embedded_model_exists()
+            cached_model_exists = self.cached_model_exists()
 
-        # print(f'embedded_model_exists: {embedded_model_exists}')
-        # print(f'cached_model_exists: {cached_model_exists}')
+            # print(f'embedded_model_exists: {embedded_model_exists}')
+            # print(f'cached_model_exists: {cached_model_exists}')
 
-        return custom_model_exists or embedded_model_exists or cached_model_exists
+            return custom_model_exists or embedded_model_exists or cached_model_exists
+        
+        except Exception as error:
+            print(error)
+            
+        return False
+
+        
     
     def embedded_model_exists(self):
         return os.path.exists( self.embedded_model_path+'pytorch_model.bin' )
