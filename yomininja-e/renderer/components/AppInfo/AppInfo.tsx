@@ -3,7 +3,7 @@ import { AppInfoContext, GithubReleasesLink } from "../../context/app_info.provi
 import { Box, Fade, Grid, Modal, Paper, Popover, Popper, PopperPlacementType, Typography, styled } from "@mui/material";
 import Image  from 'next/image';
 import Link from "next/link";
-import { Stick, Sirin_Stencil } from 'next/font/google'
+// import { Stick, Sirin_Stencil } from 'next/font/google'
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import patreonIcon from "../../public/logos/PATREON_SYMBOL_1_WHITE_RGB.svg";
 import githubIcon from "../../public/logos/github-mark-white.svg";
@@ -12,10 +12,11 @@ import React from "react";
 import Backdrop from '@mui/material/Backdrop';
 
 
-const AppNameFont = Stick({ // Stick | Sirin_Stencil
-    weight: '400',
-    subsets: ['latin'],
-})
+// const AppNameFont = Stick({ // Stick | Sirin_Stencil
+//     weight: '400',
+//     subsets: ['latin'],
+//     display: 'swap'
+// })
 
 const AppNameFirstLetter = styled('span')({
     marginRight: -3,
