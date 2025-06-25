@@ -502,7 +502,7 @@ export class OcrResultScalable {
     toJson( serializeImage?: boolean ): OcrResultScalableJson {
 
         const image = ( serializeImage && this.image && typeof this.image !== 'string' ) ?
-            'data:image/png;base64,'+Buffer.from(this.image).toString('base64'): undefined;
+            'data:image/png;base64,'+Buffer.from(this.image).toString('base64'): this.image;
 
         return {
             ...this,
