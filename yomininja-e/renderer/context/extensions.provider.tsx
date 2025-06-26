@@ -59,7 +59,7 @@ export const ExtensionsProvider = ( { children }: PropsWithChildren ) => {
     }
 
     function refreshUI() {
-        ipcRenderer.invoke( 'refresh_all_windows' );
+        ipcRenderer.invoke( 'refresh_window', ['main', 'overlay'] );
     }
 
     function getExtensionActionButton( extensionId: string ): Element {
