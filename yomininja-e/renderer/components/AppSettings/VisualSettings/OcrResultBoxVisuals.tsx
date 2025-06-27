@@ -17,15 +17,16 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
 
     const ocrItemBoxVisuals: OverlayOcrItemBoxVisuals = activeSettingsPreset?.overlay?.visuals.ocr_item_box;
 
-    const updateOcrItemBoxVisuals = debounce( ( update: Partial< OverlayOcrItemBoxVisuals>  ) => {    
+    const updateOcrItemBoxVisuals = ( update: Partial< OverlayOcrItemBoxVisuals>  ) => {
         updateActivePresetVisuals({
             ocr_item_box: {
                 ...activeSettingsPreset.overlay.visuals.ocr_item_box,
                 ...update
             }
         });
-    }, 100 );
+    };
 
+    const updateOcrItemBoxVisualsDeb = debounce( updateOcrItemBoxVisuals, 100 );
 
     return ( <>
         <Typography gutterBottom component="div" mb={1} fontSize='1.1rem'>
@@ -48,7 +49,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                     onChange={ ( event ) => {
                         const { value } = event.target;
                         if (typeof value === 'string') {
-                            updateOcrItemBoxVisuals({
+                            updateOcrItemBoxVisualsDeb({
                                 text: {
                                     ...ocrItemBoxVisuals.text,
                                     positioning: {
@@ -96,7 +97,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                     <Switch
                         checked={ Boolean( ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled ) }
                         onChange={ ( event ) => {
-                            updateOcrItemBoxVisuals({
+                            updateOcrItemBoxVisualsDeb({
                                 text: {
                                     ...ocrItemBoxVisuals.text,
                                     sentence_ending_punctuation: {
@@ -117,7 +118,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                         disabled={ !Boolean( ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled ) }
                         checked={ Boolean( ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.hidden ) }
                         onChange={ ( event ) => {
-                            updateOcrItemBoxVisuals({
+                            updateOcrItemBoxVisualsDeb({
                                 text: {
                                     ...ocrItemBoxVisuals.text,
                                     sentence_ending_punctuation: {
@@ -132,14 +133,14 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
             />
         </Container>
 
-        <Container sx={{ ml: 1.5,  mt: 0, mb: 2 }}>
+        <Container sx={{ ml: 1.5,  mt: 3, mb: 3 }}>
             <FormControlLabel label='Filter out extracted furigana'
                 title='Removes pieces of text that can potentially be furigana (experiemental)'
                 control={
                     <Switch
                         checked={ Boolean( ocrItemBoxVisuals?.text?.furigana_filter?.enabled ) }
                         onChange={ ( event ) => {
-                            updateOcrItemBoxVisuals({
+                            updateOcrItemBoxVisualsDeb({
                                 text: {
                                     ...ocrItemBoxVisuals.text,
                                     furigana_filter: {
@@ -151,7 +152,32 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                         }}
                     /> 
                 }
+                sx={{ mt: 1 }}
             />
+
+            <TextField label="Threshold" sx={textFieldSx}                      
+                size='small'
+                type="number"
+                inputProps={{ style: { textAlign: 'center' } }}
+                value={
+                    Number(ocrItemBoxVisuals?.text.furigana_filter?.threshold) || 0
+                }
+                onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
+                    let newValue = Number( event.target.value );
+                    newValue = newValue > 0 ? newValue : 10;
+                    newValue = newValue < 200 ? newValue : 200;
+                    updateOcrItemBoxVisuals({                                
+                        text: {
+                            ...ocrItemBoxVisuals?.text,
+                            furigana_filter: {
+                                ...ocrItemBoxVisuals.text.furigana_filter,
+                                threshold: newValue
+                            }
+                        }
+                    });
+                }}
+            />
+
         </Container>
 
         <Container sx={{ ml: 1,  mt: 2, mb: 2 }}>
@@ -170,7 +196,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                     onChange={ ( event ) => {
                         const { value } = event.target;
                         if (typeof value === 'string') {
-                            updateOcrItemBoxVisuals({
+                            updateOcrItemBoxVisualsDeb({
                                 text: {
                                     ...ocrItemBoxVisuals.text,
                                     generated_furigana: {
@@ -209,7 +235,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
             <ColorPicker label="Text Color" sx={textFieldSx}
                 value={ ocrItemBoxVisuals?.text.color || '' }
                 onChangeComplete={ (color) => {
-                    updateOcrItemBoxVisuals({                                
+                    updateOcrItemBoxVisualsDeb({                                
                         text: {
                             ...ocrItemBoxVisuals?.text,
                             color
@@ -221,7 +247,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
             <ColorPicker label="Outline Color" sx={textFieldSx}
                 value={ ocrItemBoxVisuals?.text.outline_color || '' }
                 onChangeComplete={ (color) => {
-                    updateOcrItemBoxVisuals({                                
+                    updateOcrItemBoxVisualsDeb({                                
                         text: {
                             ...ocrItemBoxVisuals?.text,
                             outline_color: color
@@ -310,7 +336,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
             <ColorPicker label="Text Color" sx={textFieldSx}
                 value={ ocrItemBoxVisuals?.selected_text?.color || '' }
                 onChangeComplete={ (color) => {
-                    updateOcrItemBoxVisuals({                                
+                    updateOcrItemBoxVisualsDeb({                                
                         selected_text: {
                             ...ocrItemBoxVisuals?.selected_text,
                             color
@@ -322,7 +348,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
             <ColorPicker label="Highlight Color" sx={textFieldSx}
                 value={ ocrItemBoxVisuals?.selected_text?.background_color || '' }
                 onChangeComplete={ (color) => {
-                    updateOcrItemBoxVisuals({                                
+                    updateOcrItemBoxVisualsDeb({                                
                         selected_text: {
                             ...ocrItemBoxVisuals?.selected_text,
                             background_color: color
@@ -342,7 +368,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
             <ColorPicker label="Inactive BG"
                 value={ ocrItemBoxVisuals?.background_color_inactive || '' }
                 onChangeComplete={ ( color: string ) => {
-                    updateOcrItemBoxVisuals({
+                    updateOcrItemBoxVisualsDeb({
                         background_color_inactive: color
                     });
                 }}
@@ -352,7 +378,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
             <ColorPicker label="Active BG"
                 value={ ocrItemBoxVisuals?.background_color || '' }
                 onChangeComplete={ ( color: string ) => {
-                    updateOcrItemBoxVisuals({
+                    updateOcrItemBoxVisualsDeb({
                         background_color: color
                     });
                 }}
@@ -362,7 +388,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
             <ColorPicker label="Inactive Border"
                 value={ ocrItemBoxVisuals?.inactive_border_color || '' }
                 onChangeComplete={ ( color: string ) => {
-                    updateOcrItemBoxVisuals({
+                    updateOcrItemBoxVisualsDeb({
                         inactive_border_color: color
                     });
                 }}
@@ -372,7 +398,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
             <ColorPicker label="Active Border" sx={textFieldSx}
                 value={ ocrItemBoxVisuals?.active_border_color || '' }
                 onChangeComplete={ ( color: string ) => {
-                    updateOcrItemBoxVisuals({                                
+                    updateOcrItemBoxVisualsDeb({                                
                         active_border_color: color
                     });
                 }}
