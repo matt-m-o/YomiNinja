@@ -193,11 +193,10 @@ export default function OcrResults( props: OcrResultsProps ) {
 
                 const ocrTemplateRegion = getOcrTemplateTargetRegion( ocrRegion.id );
 
-                const furiganaFilterThreshold = ocrItemBoxVisuals?.text?.furigana_filter?.threshold;
-
-                if ( Boolean( ocrItemBoxVisuals?.text.furigana_filter?.enabled ) ) {
-                    removeFurigana(ocrRegion.results, furiganaFilterThreshold || 0.6);
-                }
+                const furiganaFilterThreshold = (
+                    Number(ocrItemBoxVisuals?.text?.furigana_filter?.threshold || 80) / 100
+                );
+                const enableFuriganaFilter = ocrItemBoxVisuals?.text?.furigana_filter.enabled;
 
                 // const regionAspectRatio = ocrRegion.size.width / ocrRegion.size.height;
                 const regionWidth = isElectron ?
@@ -248,7 +247,11 @@ export default function OcrResults( props: OcrResultsProps ) {
                         } */}
                         {
 
-                            ocrRegion.results.map( ( item, resultIdx ) => {
+                            (
+                                enableFuriganaFilter ?
+                                removeFurigana( ocrRegion.results, furiganaFilterThreshold ) :
+                                ocrRegion.results
+                            ).map( ( item, resultIdx ) => {
                                 if ( !item?.text ) return;
 
                                 if ( ocrTemplateRegion?.text_to_speech_options?.automatic ) {
