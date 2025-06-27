@@ -116,7 +116,7 @@ export default function AppSettingsHotkeys() {
         baseCmdLine += ' -o- '+cmdLineBaseUrl;
 
     const getCmdLine = ( path: string ) => {
-        return `${baseCmdLine}${path}?key=${overlayHotkeys.remote_control_key}`
+        return `${baseCmdLine}${path}?key=${overlayHotkeys?.remote_control_key}`
     }
     
     return (

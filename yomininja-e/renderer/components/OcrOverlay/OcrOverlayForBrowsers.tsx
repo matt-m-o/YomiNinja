@@ -186,8 +186,8 @@ export default function OcrOverlayForBrowsers() {
           }
     
           const newPosition = {
-            x: position.left - (widthOffset / 2),
-            y: position.top - heightOffset + 9
+            x: Number(position?.left) - (widthOffset / 2),
+            y: Number(position?.top) - heightOffset + 9
           };
     
           
