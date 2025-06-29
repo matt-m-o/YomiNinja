@@ -1,9 +1,17 @@
-import { Container, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, SxProps, TextField, Theme, Typography, debounce } from "@mui/material";
+import { Container, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, SxProps, TextField, Theme, Typography, debounce, styled } from "@mui/material";
 import { useContext } from "react";
 import { SettingsContext } from "../../../context/settings.provider";
 import { GeneratedFuriganaVisibility, OverlayOcrItemBoxVisuals, TextPositioningMode } from "../../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import ColorPicker from "../../common/ColorPicker";
+import ResetParameterButton from "../OcrSettings/common/ResetParameterButton";
 
+export const CustomContainer = styled(Container)({
+    '&:hover': {
+        '& .reset-parameter-btn': {
+            visibility: 'visible !important'
+        }
+    }
+});
 
 type OcrResultBoxVisualSettingsProps = {
     textFieldSx: SxProps< Theme >
@@ -133,7 +141,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
             />
         </Container>
 
-        <Container sx={{ ml: 1.5,  mt: 3, mb: 3 }}>
+        <CustomContainer sx={{ ml: 1.5,  mt: 3, mb: 5, flexDirection: 'row', display: 'flex' }}>
             <FormControlLabel label='Filter out extracted furigana'
                 title='Removes pieces of text that can potentially be furigana (experiemental)'
                 control={
@@ -152,7 +160,7 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                         }}
                     /> 
                 }
-                sx={{ mt: 1 }}
+                sx={{ mt: 0 }}
             />
 
             <TextField label="Threshold" sx={textFieldSx}                      
@@ -178,7 +186,21 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                 }}
             />
 
-        </Container>
+            <ResetParameterButton
+                onClick={ () => {
+                    updateOcrItemBoxVisuals({                                
+                        text: {
+                            ...ocrItemBoxVisuals?.text,
+                            furigana_filter: {
+                                ...ocrItemBoxVisuals.text.furigana_filter,
+                                threshold: 85
+                            }
+                        }
+                    });
+                }}
+            />
+
+        </CustomContainer>
 
         <Container sx={{ ml: 1,  mt: 2, mb: 2 }}>
             <FormControl fullWidth 
