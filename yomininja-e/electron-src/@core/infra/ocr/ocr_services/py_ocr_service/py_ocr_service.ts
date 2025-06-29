@@ -403,6 +403,9 @@ export class PyOcrService {
 
         this.serviceProcess.stderr.on('data', (data) => {
             console.error(`stderr: ${data}`);
+            if ( data.includes('Terminating') ) {
+                this.restart( () => {} );
+            }
         });
 
         // Handle process exit
