@@ -402,6 +402,8 @@ export class BrowserExtensionsService {
         this.windows.forEach( window => {
             window.reload();
         });
+
+        await this.clearExtensionData( extension );
     }
 
     handleActionButtonClick = async () => {
