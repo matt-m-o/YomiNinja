@@ -30,7 +30,7 @@ export class ScreenCapturerController {
         
         const { captureSource } = input ; 
         
-        if ( captureSource.name.includes('Entire screen') ) {
+        if ( captureSource?.name?.includes('Entire screen') ) {
             const displays = screen.getAllDisplays();
             if ( displays.length > 1 )
                 return false;

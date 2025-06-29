@@ -9,6 +9,7 @@ import fs from 'fs';
 import { cloneDeep } from 'lodash';
 import sharp from "sharp";
 import { windowManager } from "../@core/infra/app_initialization";
+import { isMacOS } from "../util/environment.util";
 
 export class ScreenCapturerService {
 
@@ -257,6 +258,12 @@ export class ScreenCapturerService {
             if ( overHeight > 0 )
                 region.height = region.height - overHeight;
 
+            if ( isMacOS ) {
+                region.left = workArea.x - display.bounds.x;
+                region.top = workArea.y - display.bounds.y;
+                region.width = workArea.width <= imageMetadata.width ? workArea.width : imageMetadata.width;
+                region.height = workArea.height <= imageMetadata.height ? workArea.height: imageMetadata.height;
+            }
 
             console.log({
                 workAreaSharpRegion: region

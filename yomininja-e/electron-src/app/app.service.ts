@@ -6,7 +6,7 @@ import { CaptureSource, ExternalWindow } from "./types";
 import { screen } from 'electron';
 import sharp from "sharp";
 const isMacOs = process.platform === 'darwin';
-import { isLinux, isWaylandDisplay } from "../util/environment.util";
+import { isLinux, isMacOS, isWaylandDisplay } from "../util/environment.util";
 
 
 export const entireScreenAutoCaptureSource: CaptureSource = {
@@ -291,7 +291,21 @@ export class AppService {
             (imageSize.height > display.workArea.height ||
              imageSize.width > display.workArea.width)
         ) {
-            const workAreaImage = source.thumbnail.crop(display.workArea);
+            const workArea: Electron.Rectangle = {
+                width: display.workArea.width,
+                height: display.workArea.height,
+                x: display.workArea.x,
+                y: display.workArea.y,
+            };
+
+            if ( isMacOS ) { //! Add this tix to the main project
+                workArea.x = workArea.x - display.bounds.x;
+                workArea.y = workArea.y - display.bounds.y;
+            }
+
+            // console.log({ workArea });
+
+            const workAreaImage = source.thumbnail.crop(workArea);
             return workAreaImage.toPNG();
         }
 
