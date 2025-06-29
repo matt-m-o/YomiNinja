@@ -91,11 +91,11 @@ export class AppController {
                     title: 'Startup is taking longer than expected',
                     body: 'Please restart the app if it doesn’t respond soon.'
                 }).show();
-            }, 90_000 ); // 1:30 minutes
+            }, 2 * 60_000 ); // 2 minutes
             this.quitTimeout = setTimeout( () => {
                 console.log('Initialization took too long. Closing the app.');
                 app.quit();
-            }, 3 * 60_000 ); // 3 minutes
+            }, 4 * 60_000 ); // 4 minutes
         }
 
         this.mainWindow = await mainController.init();
