@@ -421,7 +421,7 @@ class MangaOcrService:
                     compute_platform_version= option.get('compute_platform_version'),
                     installed= bool( option.get('installed') ),
                     install_command= base_command +' '+ option['install_command'],
-                )
+                ) for option in linux_opts_dict
             ]
         
         if os_platform == 'windows':
