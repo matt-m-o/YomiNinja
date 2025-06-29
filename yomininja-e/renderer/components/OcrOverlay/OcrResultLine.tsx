@@ -3,7 +3,7 @@ import { OcrResultBoxScalable, OcrTextLineScalable, OcrTextLineSymbolScalable } 
 import { OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import { CSSProperties, useContext, useEffect, useRef, useState } from "react";
 import { ProfileContext } from "../../context/profile.provider";
-import { getBestFontStyle, getDefaultFontFamily, getSymbolPositionOffset, isEolCharacter } from "../../utils/text_utils";
+import { FontStyle, getBestFontStyle, getDefaultFontFamily, getSymbolPositionOffset, isEolCharacter } from "../../utils/text_utils";
 import OcrWordsContainer from "./OcrWordsContainer";
 import OcrSymbolsContainer from "./OcrSymbolsContainer";
 
@@ -240,22 +240,36 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             fontFamily,
             fontWeight: ocrItemBoxVisuals.text.font_weight
         }
+
+        let bestFontStyle: FontStyle;
         
         if ( positioningMode === 'block-based' ) {
             const lineSegments = getBestFontStyle_input.text.split('\u200B');
-            let longestSegment = lineSegments[0].trim();
 
-            lineSegments.forEach( segment => {
-                if ( segment.trim().length > longestSegment.length )
-                    longestSegment = segment;
-            });
-            getBestFontStyle_input.text = longestSegment;
             getBestFontStyle_input.maxWidth = textBlockBoxWidthPx;
             getBestFontStyle_input.maxHeight = textBlockBoxHeightPx;
-        }
 
-        const bestFontStyle = getBestFontStyle(getBestFontStyle_input);
+            lineSegments.forEach( segment => {
+                const fontStyle = getBestFontStyle({
+                    ...getBestFontStyle_input,
+                    text: segment.trim()
+                });
+
+                if ( !fontStyle ) return;
+
+                if ( 
+                    !bestFontStyle ||
+                    bestFontStyle?.fontSize > fontStyle?.fontSize
+                ) {
+                    bestFontStyle = fontStyle;
+                    return;
+                }
+            });
+        }
         
+        if ( !bestFontStyle?.fontSize )
+            bestFontStyle = getBestFontStyle( getBestFontStyle_input );
+                
         lineFontSize = bestFontStyle.fontSize;
         lineFontSize *= fontSizeFactor;
         letterSpacing = bestFontStyle.letterSpacing * letterSpacingFactor;
