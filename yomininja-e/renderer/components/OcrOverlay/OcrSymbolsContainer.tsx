@@ -63,7 +63,8 @@ export default function OcrSymbolsContainer( props: OcrSymbolsContainerProps ) {
         maxHeight: lineBoxHeightPx / 100,
         initialFontSize: lineFontSize,
         isVertical: Boolean(textBlockBox?.isVertical),
-        fontFamily: props.fontFamily
+        fontFamily: props.fontFamily,
+        fontWeight: ocrItemBoxVisuals.text.font_weight
     });
     lineFontSize = bestFontStyle.fontSize;
     lineFontSize = lineFontSize * fontSizeFactor;

@@ -66,7 +66,8 @@ export default function OcrWordsContainer( props: OcrWordsContainerProps ) {
             initialFontSize: textBlockBox.isVertical ? wordBoxWidthPx : wordBoxHeightPx,
             initialSpacing: 0,
             isVertical: isVertical,
-            fontFamily: props.fontFamily
+            fontFamily: props.fontFamily,
+            fontWeight: ocrItemBoxVisuals.text.font_weight
         });
         
         let fontSize = bestFontStyle.fontSize * fontSizeFactor;

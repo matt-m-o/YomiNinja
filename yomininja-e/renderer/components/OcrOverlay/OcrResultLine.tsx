@@ -237,7 +237,8 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             initialFontSize: lineFontSize,
             isVertical: Boolean(box?.isVertical),
             initialSpacing: 0,
-            fontFamily
+            fontFamily,
+            fontWeight: ocrItemBoxVisuals.text.font_weight
         }
         
         if ( positioningMode === 'block-based' ) {

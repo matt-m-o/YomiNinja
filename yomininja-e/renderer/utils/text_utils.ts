@@ -112,6 +112,7 @@ export function getBestFontStyle( input: {
     initialSpacing?: number;
     isVertical: boolean;
     fontFamily?: string;
+    fontWeight?: number;
 }): FontStyle {
 
     let { text } = input;
@@ -189,6 +190,15 @@ export function getBestFontStyle( input: {
             console.log(`Breaking size iterations | text: "${text}"`);
             break;
         }
+
+        let font = '';
+        if ( input.fontWeight )
+            font += input.fontWeight;
+
+        font += ` ${fontSize}px`;
+
+        if ( fontFamily )
+            font += ' '+fontFamily;
 
         context.font = `${fontSize}px ${fontFamily}`;
         metrics = context.measureText(text);
