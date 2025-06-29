@@ -257,7 +257,7 @@ export function getBestFontStyle( input: {
 
         spacingIterations++;
         if (spacingIterations > 50) {
-            console.log(`Breaking spacing iterations | text: "${text}"`);
+            // console.log(`Breaking spacing iterations | text: "${text}"`);
             break;
         }
         
