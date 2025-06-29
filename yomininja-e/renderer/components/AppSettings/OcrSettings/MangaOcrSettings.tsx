@@ -165,8 +165,8 @@ export default function MangaOcrSettings( props: MangaOcrSettingsProps ) {
                 }}
             >
 
-                <FormControlLabel label='Partial recognition mode'
-                    title="Detect all text boxes first. Choose which ones you want to recognize."
+                <FormControlLabel label='Recognition on-demand'
+                    title="Detect all text boxes first. Choose which ones you want to recognize (faster)"
                     sx={{ mb: 4 }}
                     control={
                         <Switch
