@@ -49,7 +49,7 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                         },
                         furigana_filter: {
                             enabled: true,
-                            threshold: 0.8
+                            threshold: 85
                         },
                         generated_furigana: {
                             visibility: 'visible-on-line-hover'
