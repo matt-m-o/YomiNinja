@@ -53,6 +53,8 @@ export default function HomeContent() {
     const ocrEngineOptions = Object.values( supportedOcrEngines );
     const selectedOcrEngine = supportedOcrEngines[ profile?.selected_ocr_adapter_name ] || '';
 
+    console.log(languageOptions)
+
     useEffect( () => {
         getSupportedOcrEngines()
             .then( dict => {
@@ -210,6 +212,7 @@ export default function HomeContent() {
 
                         <Autocomplete autoHighlight
                             fullWidth
+                            title={activeOcrLanguage}
                             renderInput={ (params) => {
                                 return <TextFieldCapitalize {...params}
                                     label='OCR Language'
@@ -267,9 +270,28 @@ export default function HomeContent() {
                             marginLeft: 15
                         }}
                     >
+                        <li>
+                            <strong> Lens OCR engine is functional again. </strong>
+                        </li>
 
                         <li>
                             <strong> Added image preprocessing options (OCR Templates).</strong>
+                        </li>
+
+                        <li>
+                            <strong> Now supports VOICEVOX TTS natively on Windows, Linux, and macOS (OCR Templates).</strong>
+                        </li>
+
+                        <li>
+                            <strong> Added On-Demand Recognition Mode for MangaOCR, reducing processing time by recognizing text only when needed.</strong>
+                        </li>
+
+                        <li>
+                            <strong> MangaOCR can now be accelerated using GPU runtimes like CUDA and ROCm, installable from the settings screen. </strong>
+                        </li>
+
+                        <li>
+                            <strong> Furigana filtering is now more accurate and can be fine-tuned by adjusting its threshold. </strong>
                         </li>
 
                         <li>
@@ -314,6 +336,18 @@ export default function HomeContent() {
 
                         <li>
                             <strong> Updated the built-in 10ten Reader extension to version 1.22.0. </strong>
+                        </li>
+
+                        <li>
+                            <strong>Improved text rendering with language-specific fonts for Japanese and Chinese.</strong>
+                        </li>
+
+                        <li>
+                            <strong> Improved compatibility with the Migaku extension when using the web overlay. </strong>
+                        </li>
+
+                        <li>
+                            <strong> Improved overall stability, including fixes for hanging processes and first-run freezes. </strong> 
                         </li>
 
                         {/* <li> Clipboard options menu (WIP) </li> */}
