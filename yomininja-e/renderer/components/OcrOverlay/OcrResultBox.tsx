@@ -1,5 +1,5 @@
 import { CSSProperties, useEffect, useRef, useState } from "react";
-import { OcrItemScalable, OcrTextLineSymbolScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
+import { OcrItemScalable, OcrTextLineScalable, OcrTextLineSymbolScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { styled } from "@mui/material";
 import { OverlayBehavior, OverlayHotkeys, OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import OcrResultLine from "./OcrResultLine";
@@ -229,6 +229,27 @@ export default function OcrResultBox( props: {
         `rotate( ${box.angle_radians}rad )` :
         `rotate( ${box.angle_degrees}deg )`;
 
+        
+    let text: OcrTextLineScalable[];
+
+    if (
+        ocrItem.text.length > 1 &&
+        ocrItemBoxVisuals.text?.positioning?.mode === 'block-based'
+    ) {
+        const firstLine = {
+            ...ocrItem.text[0]
+        };
+
+        for( let i=1; i < ocrItem.text.length; i++ ) {
+            firstLine.content += `\u200B${ocrItem.text[i].content}`
+        }
+
+        text = [firstLine];
+    }
+    else {
+        text = ocrItem.text;
+    }
+
     return (
         <Box className={ `extracted-text ${contentEditable ? 'editable' : ''}` } ref={boxRef}
             role="textbox"
@@ -256,7 +277,7 @@ export default function OcrResultBox( props: {
             // }}
             suppressContentEditableWarning
         >
-            { ocrItem.text.map( ( line, lIdx ) => {
+            { text.map( ( line, lIdx ) => {
 
                 const isLastLine = ocrItem.text.length - 1 === lIdx;
 
@@ -272,6 +293,7 @@ export default function OcrResultBox( props: {
                     <OcrResultLine
                         contentEditable={contentEditable}
                         box={box}
+                        textBlockBoxWidthPx={boxWidthPx}
                         textBlockBoxHeightPx={boxHeightPx}
                         line={line}
                         isLastLine={isLastLine}

@@ -11,6 +11,7 @@ import OcrSymbolsContainer from "./OcrSymbolsContainer";
 export type OcrResultLineProps = {
     line: OcrTextLineScalable;
     box: OcrResultBoxScalable; // Text block bounding box
+    textBlockBoxWidthPx: number;
     textBlockBoxHeightPx: number;
     regionWidthPx: number;
     regionHeightPx: number;
@@ -32,6 +33,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         line,
         box,
         isLastLine,
+        textBlockBoxWidthPx,
         textBlockBoxHeightPx,
         regionWidthPx,
         regionHeightPx,
@@ -227,8 +229,8 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         if ( !lineFontSize && (lineBoxWidthPx || lineBoxHeightPx) ) {
             lineFontSize = box.isVertical ? lineBoxWidthPx : lineBoxHeightPx;
         }
-        
-        const bestFontStyle = getBestFontStyle({
+
+        const getBestFontStyle_input = {
             text: line.content.trim(),
             maxWidth: lineBoxWidthPx,
             maxHeight: lineBoxHeightPx,
@@ -236,7 +238,22 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             isVertical: Boolean(box?.isVertical),
             initialSpacing: 0,
             fontFamily
-        });
+        }
+        
+        if ( positioningMode === 'block-based' ) {
+            const lineSegments = getBestFontStyle_input.text.split('\u200B');
+            let longestSegment = lineSegments[0].trim();
+
+            lineSegments.forEach( segment => {
+                if ( segment.trim().length > longestSegment.length )
+                    longestSegment = segment;
+            });
+            getBestFontStyle_input.text = longestSegment;
+            getBestFontStyle_input.maxWidth = textBlockBoxWidthPx;
+            getBestFontStyle_input.maxHeight = textBlockBoxHeightPx;
+        }
+
+        const bestFontStyle = getBestFontStyle(getBestFontStyle_input);
         
         lineFontSize = bestFontStyle.fontSize;
         lineFontSize *= fontSizeFactor;
@@ -291,6 +308,21 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         lineBaseCSS.transformOrigin = line.box.transform_origin || 'bottom left';
     }
 
+    if ( positioningMode === 'block-based' ) {
+
+        const nLineBreaks = line.content.split('\u200B').length;
+
+        if ( box.isVertical ) {
+            lineBaseCSS.maxHeight = textBlockBoxHeightPx + 'px';
+            lineBaseCSS.lineHeight = (textBlockBoxWidthPx / nLineBreaks) +'px';
+        }
+        else {
+            lineBaseCSS.maxWidth = textBlockBoxWidthPx;
+            lineBaseCSS.lineHeight = (textBlockBoxHeightPx / nLineBreaks) + 'px';
+        }
+        lineBaseCSS.textAlign = 'left';
+    }
+
     const margin = props.sizeExpansionPx / 2 + 'px';
 
     { ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled && EOLSymbol }
@@ -319,7 +351,8 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         {
             symbolsContainer ||
             wordsContainer ||
-            <Line
+            <Line className="ocr-line"
+
                 contentEditable={contentEditable}
                 onBlur={ ( e ) => {
                     line.content = e.target.textContent;
@@ -337,7 +370,14 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                     // border: 'solid 1px green'
                 }}
             >
-                { line.content.trim()}
+                { line.content.trim()
+                    .split('\u200B')
+                    .flatMap( (part, i, arr) => (
+                        i < arr.length - 1
+                            ? [part, <wbr key={i} />]
+                            : [part]
+                    ))
+                }
                 { ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled && EOLSymbol }
             </Line>
         }
