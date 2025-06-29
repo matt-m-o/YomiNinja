@@ -104,6 +104,13 @@ let buildConfig = {
                     "**/*",
                     "!py_ocr_service/models/manga_ocr/**/*"
                 ]
+            },
+            {
+                "from": `./node_modules/uiohook-napi/prebuilds/darwin-${TARGET_ARCH}/node.napi.node`,
+                "to": "app.asar.unpacked/node_modules/uiohook-napi/build/Release/uiohook_napi.node",
+                "filter": [
+                    "**/*",
+                ]
             }
         ],
         "target": [
