@@ -57,7 +57,7 @@ let buildConfig = {
         ],
         "extraResources": [
             {
-                "from": "../bin/win32",
+                "from": `../bin/win32/${TARGET_ARCH}`,
                 "to": "bin",
                 "filter": [
                     "**/*",

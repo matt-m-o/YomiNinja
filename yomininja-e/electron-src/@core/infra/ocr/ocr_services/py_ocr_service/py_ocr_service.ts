@@ -47,13 +47,10 @@ export class PyOcrService {
 
     constructor() {
 
-        let arch = '';
-
-        if ( process.platform === 'darwin' )
-            arch = `/${process.arch}`;
+        const arch = `${process.arch}`;
 
         this.binRoot = isDev
-            ? join( BIN_DIR, `/${os.platform()}${arch}/py_ocr_service` )
+            ? join( BIN_DIR, `/${os.platform()}/${arch}/py_ocr_service` )
             : join( process.resourcesPath, '/bin/py_ocr_service' );
 
         this.pyExecutableName = os.platform() === 'win32' ?

@@ -33,8 +33,11 @@ export class PaddleOcrService {
     private autoRestartCount = 0;
 
     constructor() {
+        
+        const arch = `${process.arch}`;
+
         this.binRoot = isDev
-            ? join( BIN_DIR, `/${os.platform()}/ppocr` )
+            ? join( BIN_DIR, `/${os.platform()}/${arch}/ppocr` )
             : join( process.resourcesPath, '/bin/ppocr/' );
     }
 
