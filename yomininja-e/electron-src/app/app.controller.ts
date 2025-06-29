@@ -645,6 +645,8 @@ export class AppController {
         if ( overlayController.isOverlayMovableResizable )
             return;
 
+        ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
+        
         if ( !input.image ) {
             this.previousOcrCommandData = input;
             const screenshotSuccess = screenCapturerController.screenshot({
@@ -653,8 +655,6 @@ export class AppController {
 
             if ( screenshotSuccess ) return;
         }
-
-        ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
         ipcMain.send( this.overlayWindow, 'ocr:processing_started' );
         
         await this.handleCaptureSourceSelection();
