@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ipcRenderer } from "../utils/ipc-renderer";
 
 
 
@@ -8,7 +9,7 @@ export default function Debugging() {
 
     useEffect( () => {
 
-        global.ipcRenderer.on( 'debugging:image', ( event: Electron.IpcRendererEvent, image: string ) => {            
+        ipcRenderer.on( 'debugging:image', ( event: Electron.IpcRendererEvent, image: string ) => {            
         
             console.log({
                 image,                
@@ -17,7 +18,7 @@ export default function Debugging() {
             setImage( image );
         });
 
-    }, [ global.ipcRenderer ] );
+    }, [ ipcRenderer ] );
 
     return (
         <img src={`data:image/png;base64,${image}`} />

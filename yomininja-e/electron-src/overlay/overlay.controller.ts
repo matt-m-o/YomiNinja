@@ -1,4 +1,4 @@
-import { BrowserWindow, IpcMainInvokeEvent, MouseInputEvent, clipboard, globalShortcut, ipcMain } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, MouseInputEvent, clipboard, globalShortcut } from "electron";
 import { OverlayService } from "./overlay.service";
 import { join } from "path";
 import isDev from 'electron-is-dev';
@@ -11,6 +11,12 @@ import { getBrowserWindowHandle } from "../util/browserWindow.util";
 import { matchUiohookMouseEventButton } from "../common/mouse_helpers";
 import { ClickThroughMode, ShowWindowOnCopy } from "../@core/domain/settings_preset/settings_preset_overlay";
 import { screen } from 'electron';
+import { ipcMain } from "../common/ipc_main";
+import { CaptureSource } from "../app/types";
+import { httpServerPort } from "../common/server";
+import os from 'os';
+import { ExternalWindow } from "../ocr_recognition/common/types";
+import { WindowProperties } from "../../gyp_modules/window_management/window_manager";
 
 const isMacOS = process.platform === 'darwin';
 const isLinux = process.platform === 'linux';
@@ -38,11 +44,13 @@ export class OverlayController {
 
     private hoveredText: string = '';
 
-    isOverlayBoundsLocked: boolean = false;
+    automaticOverlayBounds: boolean = true;
 
     isOverlayWindowInTray: boolean = false;
 
     isOverlayMovableResizable: boolean = false;
+
+    activeCaptureSource?: CaptureSource;
 
     constructor( input: {
         overlayService: OverlayService
@@ -66,7 +74,7 @@ export class OverlayController {
         }
 
         this.overlayWindow.on( 'show', ( ) => {
-            this.showOverlayWindow();
+            this.showOverlayWindow({ isElectronEvent: true });
         });
 
         this.overlayService.initWebSocket();
@@ -93,8 +101,9 @@ export class OverlayController {
                 nodeIntegration: false, // false
                 contextIsolation: false,
                 preload: join(__dirname, '../preload.js'),
+                backgroundThrottling: false // potential fix for the black overlay issue
             },
-            titleBarStyle: 'hidden',
+            titleBarStyle: 'customButtonsOnHover',
             titleBarOverlay: false,
             title: 'OCR Overlay - YomiNinja'
         };
@@ -110,6 +119,9 @@ export class OverlayController {
 
         this.overlayWindow = new BrowserWindow( windowOptions );
 
+        if ( isMacOS )
+            this.overlayWindow.setWindowButtonVisibility(false);
+
         this.overlayWindow.on( 'close', ( e ) => {
             e.preventDefault();
         });
@@ -123,16 +135,12 @@ export class OverlayController {
             if ( !this.hideResultsOnBlur ) return;
 
             this.showResults = false;
-            this.overlayWindow.webContents.send( 'user_command:toggle_results', false );
+            ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
         });
 
-        const url = isDev
-        ? 'http://localhost:8000/ocr-overlay'
-        : format({
-            pathname: join( PAGES_DIR, '/ocr-overlay.html' ),
-            protocol: 'file:',
-            slashes: true,
-        });
+        const url = isDev ?
+            'http://localhost:8000/ocr-overlay':
+            `http://localhost:${httpServerPort}/ocr-overlay.html`;
 
         this.overlayWindow.loadURL(url);
         // this.overlayWindow.maximize();
@@ -193,6 +201,10 @@ export class OverlayController {
                     { forward: true }
                 );
             }
+        });
+
+        ipcMain.handle( 'overlay:hide_browser_window', ( event: IpcMainInvokeEvent, data ) => {
+            this.hideBrowserPopupOverlayWindow();
         });
     }
 
@@ -364,38 +376,114 @@ export class OverlayController {
         this.globalShortcutAccelerators = [];
     }
 
-    private showOverlayWindow() {
+    private async showBrowserPopupOverlayWindow(): Promise<boolean> {
+        const window = await this.getBrowserPopupWindow();
+
+        if ( !window ) return false;
+
+        windowManager.setForegroundWindow( window.handle );
+
+        return true;
+    }
+
+    private async hideBrowserPopupOverlayWindow(): Promise< void > {
+
+        if ( !this.activeCaptureSource?.window?.id ) return;
+
+        const window = await this.getBrowserPopupWindow();
+
+        if ( !window ) return;
+
+        windowManager.setForegroundWindow( this.activeCaptureSource.window.id );
+        
+    }
+
+    showOverlayWindow = (
+        options?: {
+            isElectronEvent: boolean;
+            showInactive?: boolean;
+            forceActivation?: boolean;
+            displayResults?: boolean;
+        }
+    ) => {
         // console.log("OverlayController.showOverlayWindow");
 
-        if ( this.isOverlayWindowInTray ) {
-            this.isOverlayWindowInTray = false
-            this.overlayWindow.showInactive();
-        }
+        this.showBrowserPopupOverlayWindow()
+            .then( success => {
 
-        this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
-        
-        const overlayWindowHandle = getBrowserWindowHandle( this.overlayWindow );
-        
-        console.log({ overlayWindowHandle });
-        
-        if ( !this.showWindowWithoutFocus ) {
+                if (success) return;
+                
+                const overlayWindowHandle = getBrowserWindowHandle( this.overlayWindow );
 
-            this.overlayWindow.setVisibleOnAllWorkspaces(
-                true,
-                {
-                    visibleOnFullScreen: true,
-                    skipTransformProcessType: true
+                if ( !options?.isElectronEvent ) {
+
+                    if ( options ) {
+                        if ( typeof options?.displayResults === 'undefined' ) {
+                            options = {
+                                ...options,
+                                displayResults: true
+                            };
+                        }
+                    }
+
+                    if ( isMacOS && this.overlayWindow.isFocused() )
+                        this.overlayWindow.blur();
+
+                    if ( this.showWindowWithoutFocus || options?.showInactive )
+                        this.overlayWindow.showInactive();
+                    else {
+                        if ( isMacOS )
+                            this.overlayWindow.showInactive();
+                        else
+                            this.overlayWindow.show();
+
+                        if ( options?.forceActivation )
+                            windowManager.setForegroundWindow( overlayWindowHandle );
+                        else if ( isMacOS && this.activeCaptureSource?.type === "window" )
+                            this.overlayWindow.moveAbove( this.activeCaptureSource.id );
+                    }
+
+                    ipcMain.send(
+                        this.overlayWindow,
+                        'user_command:toggle_results',
+                        typeof options?.displayResults !== 'undefined' ? options.displayResults : true
+                    );
+
+                    return;
                 }
-            );
-            // if ( process.platform !== 'linux' ) {
-            windowManager.setForegroundWindow( overlayWindowHandle );
-            // }
-        }
 
-        this.overlayWindow.setAlwaysOnTop( false, "normal" );
-        this.overlayWindow.setAlwaysOnTop( true, "screen-saver" ); // normal, pop-up-menu, och, screen-saver
-        
-        this.overlayWindow.setAlwaysOnTop( this.overlayAlwaysOnTop, "screen-saver" );
+                if ( this.isOverlayWindowInTray ) {
+                    this.isOverlayWindowInTray = false
+                    this.overlayWindow.showInactive();
+                    return;
+                }
+                
+                console.log({ overlayWindowHandle });
+                
+                if ( !this.showWindowWithoutFocus ) {
+
+                    this.overlayWindow.setVisibleOnAllWorkspaces(
+                        true,
+                        {
+                            visibleOnFullScreen: true,
+                            skipTransformProcessType: true
+                        }
+                    );
+                    
+                    if ( !isMacOS || options?.forceActivation ) {
+                        windowManager.setForegroundWindow( overlayWindowHandle );
+                    }
+                }
+
+                const level = isMacOS ? 'pop-up-menu' : 'screen-saver';
+
+                this.overlayWindow.setAlwaysOnTop( false, "normal" );
+                this.overlayWindow.setAlwaysOnTop( true, level ); // normal, pop-up-menu, och, screen-saver
+
+                if ( this.overlayAlwaysOnTop ) return;
+
+                this.overlayWindow.setAlwaysOnTop( false, level );
+            });   
     }
 
     async applySettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
@@ -414,6 +502,9 @@ export class OverlayController {
         this.showWindowWithoutFocus = Boolean( settingsPresetJson.overlay.behavior.show_window_without_focus );
         this.hideResultsOnBlur = Boolean( settingsPresetJson.overlay.behavior.hide_results_on_blur );
 
+        if ( typeof settingsPresetJson.overlay.behavior.automatic_adjustment !== 'undefined' )
+            this.automaticOverlayBounds = Boolean( settingsPresetJson.overlay.behavior.automatic_adjustment );
+
         this.overlayWindow?.setAlwaysOnTop( this.overlayAlwaysOnTop, "normal" );
         this.overlayWindow.setIgnoreMouseEvents( this.clickThroughMode !== 'disabled', {
             forward: true,
@@ -421,36 +512,39 @@ export class OverlayController {
 
         this.registerGlobalShortcuts( settingsPresetJson );
 
-        this.overlayWindow?.webContents.send( 'settings_preset:active_data', settingsPresetJson );
+        ipcMain.send( this.overlayWindow, 'settings_preset:active_data', settingsPresetJson );
     }
 
     private toggleOverlayHotkeyHandler = () => {        
 
         this.showResults = !this.showResults;
-        this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
+        ipcMain.send( this.overlayWindow, 'user_command:toggle_results', this.showResults );
 
         if ( this.showResults )
             this.showOverlayWindow();
 
-        else if ( this.overlayWindow.isFocused() ) 
+        else if ( this.overlayWindow.isFocused() )
             this.overlayWindow.blur();
+
+        this.hideBrowserPopupOverlayWindow();
     }
 
     private showOverlayHotkeyHandler = () => {
         this.showOverlayWindow();
-        // this.overlayWindow.webContents.send( 'user_command:copy_to_clipboard' );
 
         this.showResults = true;
-        this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
+        ipcMain.send( this.overlayWindow, 'user_command:toggle_results', this.showResults );
     }
 
     private hideOverlayHotkeyHandler = () => {
         // this.showOverlayWindow();
         this.showResults = false;
-        this.overlayWindow.webContents.send( 'user_command:toggle_results', this.showResults );
+        ipcMain.send( this.overlayWindow, 'user_command:toggle_results', this.showResults );
         
         if ( this.overlayWindow.isFocused() )
             this.overlayWindow.blur();
+
+        this.hideBrowserPopupOverlayWindow();
     }
 
     private async copyText( text: string ) {
@@ -509,7 +603,7 @@ export class OverlayController {
             }
         );
 
-        this.overlayWindow.webContents.send( 'set_movable', newMovableState );
+        ipcMain.send( this.overlayWindow, 'set_movable', newMovableState );
         this.overlayWindow.show();
 
         if ( newMovableState ) {
@@ -528,12 +622,153 @@ export class OverlayController {
         return newMovableState;
     }
 
-    lockOverlayBounds( newState: boolean = true ) {
-        this.isOverlayBoundsLocked = newState;
+    setOverlayBounds(
+        input: {
+            entireScreenMode?: 'fullscreen' | 'maximized',
+            captureSourceDisplay?: Electron.Display,
+            captureSourceWindow?: ExternalWindow,
+            preventNegativeCoordinates?: boolean,
+            isTaskbarVisible?: boolean
+        }
+    ) {
+        input.entireScreenMode = input.entireScreenMode || 'fullscreen';
+
+        const {
+            entireScreenMode,
+            captureSourceDisplay,
+            captureSourceWindow
+        } = input;
+
+        // console.time("setOverlayBounds");
+
+        if ( !this.automaticOverlayBounds )
+            return;
+
+        const isFullscreen = entireScreenMode === 'fullscreen';
+        
+        if ( captureSourceDisplay ) {
+
+            if ( isMacOS ) {
+                this.overlayWindow.setVisibleOnAllWorkspaces(
+                    true,
+                    {
+                        visibleOnFullScreen: true,
+                        skipTransformProcessType: true
+                    }
+                );
+            }
+            
+            this.overlayWindow.setBounds({                
+                ...captureSourceDisplay?.workArea,
+            });
+            this.setBrowserPopupOverlayBounds({
+                ...captureSourceDisplay?.workArea
+            })
+
+            if ( isFullscreen ) {
+                if ( !isMacOS ) {
+                    this.overlayWindow.setFullScreen( true );
+                }
+                else {
+                    this.overlayWindow.setBounds(
+                        screen.getPrimaryDisplay().bounds
+                    );
+                    this.setBrowserPopupOverlayBounds(
+                        screen.getPrimaryDisplay().bounds
+                    )
+                }
+            }
+            
+            if ( entireScreenMode === 'maximized' )
+                this.overlayWindow.maximize();
+        }
+
+        else if ( captureSourceWindow ) {
+
+            let targetWindowBounds = {
+                width: captureSourceWindow.size.width,
+                height: captureSourceWindow.size.height,
+                x: captureSourceWindow.position.x,
+                y: captureSourceWindow.position.y
+            };
+
+            if ( input.preventNegativeCoordinates === true ) {
+                if ( targetWindowBounds.x < 0 ) {
+                    if ( input.isTaskbarVisible === false )
+                        targetWindowBounds.width -= Math.abs(targetWindowBounds.x)
+                    targetWindowBounds.x = 0;
+                }
+
+                if ( targetWindowBounds.y < 0 ) {
+                    if ( input.isTaskbarVisible === false )
+                        targetWindowBounds.height -= Math.abs(targetWindowBounds.y)
+                    targetWindowBounds.y = 0;
+                }
+            }
+
+            if ( os.platform() === 'linux' )
+                this.overlayWindow.setFullScreen( false );
+
+            if ( os.platform() === 'win32' ) {
+                // Handling potential issues with DIP
+                targetWindowBounds = screen.screenToDipRect( this.overlayWindow, targetWindowBounds );
+            }
+
+            this.overlayWindow.setBounds( targetWindowBounds );
+            this.setBrowserPopupOverlayBounds( targetWindowBounds );
+
+            // console.log({ targetWindowBounds });
+
+            // Might be necessary to calculate and set twice
+            // dipRect = screen.screenToDipRect( this.overlayWindow, targetWindowBounds )
+            // this.overlayWindow.setBounds( dipRect );
+        }
+
+        // console.timeEnd("setOverlayBounds");
+    }
+
+    async setBrowserPopupOverlayBounds( bounds: Partial<Electron.Rectangle> ): Promise< boolean > {
+        
+        const window = await this.getBrowserPopupWindow();
+
+        if ( !window ) return false;
+
+        windowManager.setForegroundWindow( window.handle );
+        windowManager.setWindowBounds(
+            window.handle,
+            {
+                x: bounds.x,
+                y: bounds.y
+            }
+        );
+
+        return true;
+    }
+
+    setAutomaticOverlayBounds( newState: boolean = true ) {
+        this.automaticOverlayBounds = newState;
     }
 
     minimizeOverlayWindowToTray() {
         this.overlayWindow.hide();
         this.isOverlayWindowInTray = true;
+    }
+
+    async getBrowserPopupWindow(): Promise<WindowProperties | undefined> {
+        const windowTitle = '(Browser pop pup)';
+
+        let windows: WindowProperties[] = [];
+
+        try {
+            windows = await windowManager.searchWindow(windowTitle);    
+        } catch (error) {
+            console.error(error);
+        }
+        
+        return windows.find( window => {
+            if ( window.title.includes(windowTitle) ) {
+                return true;
+            }
+        });
     }
 }

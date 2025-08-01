@@ -2,7 +2,7 @@ import { Box, Container, Divider, FormControlLabel, FormGroup, Switch, Typograph
 import { SettingsContext } from "../../context/settings.provider";
 import { useContext, useEffect, useState } from "react";
 import HotkeyFields, { HotkeyCombination } from "./HotkeyFields";
-import { OcrEngineSettings } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import { OcrEngineSettings, SettingsPresetJson } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
 
 
 // Settings section component
@@ -10,27 +10,31 @@ export default function AppSettingsHotkeys() {
 
     const {
         activeSettingsPreset,
+        defaultSettingsPreset,
         updateActivePresetHotkeys,
         updateActivePresetOcrEngine
     } = useContext( SettingsContext );
 
-    const ppOcrSettings = activeSettingsPreset?.ocr_engines
-        .find( engineSettings => {
-            return engineSettings.ocr_adapter_name === 'PpOcrAdapter'
-        });
-    const cloudVisionSettings = activeSettingsPreset?.ocr_engines
-        .find( engineSettings => {
-            return engineSettings.ocr_adapter_name === 'CloudVisionOcrAdapter'
-        });
-    const googleLensSettings = activeSettingsPreset?.ocr_engines
-        .find( engineSettings => {
-            return engineSettings.ocr_adapter_name === 'GoogleLensOcrAdapter'
-        });
+    const appleVisionSettings = getOcrEngineSettings('AppleVisionAdapter');
+    const appleVisionDefaultSettings = getOcrEngineSettings('AppleVisionAdapter', true);
+
+    const ppOcrSettings = getOcrEngineSettings('PpOcrAdapter');
+    const ppOcrDefaultSettings = getOcrEngineSettings('PpOcrAdapter', true);
+
+    const mangaOcrSettings = getOcrEngineSettings('MangaOcrAdapter');
+    const mangaOcrDefaultSettings = getOcrEngineSettings('MangaOcrAdapter', true);
+
+    const cloudVisionSettings = getOcrEngineSettings('CloudVisionOcrAdapter');
+    const cloudVisionDefaultSettings = getOcrEngineSettings('CloudVisionOcrAdapter', true);
+
+    const googleLensSettings = getOcrEngineSettings('GoogleLensOcrAdapter');
+    const googleLensDefaultSettings = getOcrEngineSettings('GoogleLensOcrAdapter', true);
     
     // const [ copyTextKeys, setCopyTextKeys ] = useState< HotkeyCombination >();
     
     
     const overlayHotkeys = activeSettingsPreset?.overlay.hotkeys;
+    const overlayDefaultHotkeys = defaultSettingsPreset?.overlay.hotkeys;
     
     const ocrKeys = stringToHotkeyCombination( overlayHotkeys?.ocr );
     const copyTextKeys = stringToHotkeyCombination( overlayHotkeys?.copy_text );
@@ -40,7 +44,9 @@ export default function AppSettingsHotkeys() {
     // const [ ocrOnPrintScreen, setOcrOnPrintScreen ] = useState< boolean >( Boolean(overlayHotkeys?.ocr_on_screen_shot) );
     const ocrOnPrintScreen = Boolean(overlayHotkeys?.ocr_on_screen_shot);
 
+    const appleVisionKeys = stringToHotkeyCombination( appleVisionSettings?.hotkey );
     const paddleOcrKeys = stringToHotkeyCombination( ppOcrSettings?.hotkey );
+    const mangaOcrKeys = stringToHotkeyCombination( mangaOcrSettings?.hotkey );
     const cloudVisionKeys = stringToHotkeyCombination( cloudVisionSettings?.hotkey );
     const googleLensKeys = stringToHotkeyCombination( googleLensSettings?.hotkey );
 
@@ -52,6 +58,17 @@ export default function AppSettingsHotkeys() {
         const combination = keys.join('+');
         console.log({ combination });
         return combination;
+    }
+
+    function getOcrEngineSettings( ocrAdapterName: string, getDefault = false ) {
+        const preset = getDefault ? defaultSettingsPreset : activeSettingsPreset;
+
+        if ( !preset?.ocr_engines ) return;
+
+        return preset.ocr_engines
+            .find( engineSettings => {
+                return engineSettings.ocr_adapter_name === ocrAdapterName
+            });
     }
 
     const ocrOnPrintScreenSwitch = (
@@ -106,6 +123,7 @@ export default function AppSettingsHotkeys() {
                     label='Primary OCR'
                     title='Triggers the currently selected OCR engine'
                     keyCombination={ ocrKeys }
+                    defaultKeys={overlayDefaultHotkeys?.ocr}
                     // setStateAction={ setOcrKeys }
                     onChangeHandler={ ( input?: string[]  ) => {
                         if ( !input ) return;
@@ -130,24 +148,55 @@ export default function AppSettingsHotkeys() {
                     }
                 />
                 {ocrOnPrintScreenSwitch}
+                
+                { appleVisionSettings &&
+                    <HotkeyFields
+                        label='Apple Vision'
+                        keyCombination={ appleVisionKeys }
+                        defaultKeys={appleVisionDefaultSettings?.hotkey}
+                        onChangeHandler={ ( input?: string[]  ) => {
+                            if ( !input ) return;
+                            updateActivePresetOcrEngine({
+                                ...appleVisionSettings,
+                                hotkey: hotkeyCombinationToString( input )
+                            });
+                        }}
+                    />
+                }
+
+                { ppOcrSettings &&
+                    <HotkeyFields
+                        label='PaddleOCR'
+                        keyCombination={ paddleOcrKeys }
+                        defaultKeys={ppOcrDefaultSettings?.hotkey}
+                        // setStateAction={ setOcrKeys }
+                        onChangeHandler={ ( input?: string[]  ) => {
+                            if ( !input ) return;
+                            updateActivePresetOcrEngine({
+                                ...ppOcrSettings,
+                                hotkey: hotkeyCombinationToString( input )
+                            });
+                        }}
+                    />
+                }
 
                 <HotkeyFields
-                    label='PaddleOCR'
-                    keyCombination={ paddleOcrKeys }
-                    // setStateAction={ setOcrKeys }
+                    label='MangaOCR'
+                    keyCombination={ mangaOcrKeys }
+                    defaultKeys={mangaOcrDefaultSettings?.hotkey}
                     onChangeHandler={ ( input?: string[]  ) => {
                         if ( !input ) return;
                         updateActivePresetOcrEngine({
-                            ...ppOcrSettings,
+                            ...mangaOcrSettings,
                             hotkey: hotkeyCombinationToString( input )
                         });
                     }}
-                    // sx={{ mb: 0 }}
                 />
 
                 <HotkeyFields
                     label='Google Lens'
                     keyCombination={ googleLensKeys }
+                    defaultKeys={googleLensDefaultSettings?.hotkey}
                     // setStateAction={ setOcrKeys }
                     onChangeHandler={ ( input?: string[]  ) => {
                         if ( !input ) return;
@@ -156,12 +205,12 @@ export default function AppSettingsHotkeys() {
                             hotkey: hotkeyCombinationToString( input )
                         });
                     }}
-                    // sx={{ mb: 0 }}
                 />
 
                 <HotkeyFields
                     label='Cloud Vision'
                     keyCombination={ cloudVisionKeys }
+                    defaultKeys={cloudVisionDefaultSettings?.hotkey}
                     // setStateAction={ setOcrKeys }
                     onChangeHandler={ ( input?: string[]  ) => {
                         if ( !input ) return;
@@ -170,12 +219,12 @@ export default function AppSettingsHotkeys() {
                             hotkey: hotkeyCombinationToString( input )
                         });
                     }}
-                    // sx={{ mb: 0 }}
                 />
 
                 <HotkeyFields
                     label='Toggle overlay'
                     keyCombination={ toggleOverlayKeys }
+                    defaultKeys={overlayDefaultHotkeys?.toggle}
                     onChangeHandler={ ( input?: string[]  ) => {
                         if ( !input ) return;
                         updateActivePresetHotkeys({ toggle: hotkeyCombinationToString( input ) })
@@ -185,6 +234,7 @@ export default function AppSettingsHotkeys() {
                 <HotkeyFields
                     label='Show overlay'
                     keyCombination={ showOverlayKeys }
+                    defaultKeys={overlayDefaultHotkeys?.show}
                     onChangeHandler={ ( input?: string[]  ) => {
                         if ( !input ) return;
                         updateActivePresetHotkeys({ show: hotkeyCombinationToString( input ) })
@@ -194,6 +244,7 @@ export default function AppSettingsHotkeys() {
                 <HotkeyFields
                     label='Hide overlay'
                     keyCombination={ clearOverlayKeys }
+                    defaultKeys={ overlayDefaultHotkeys?.clear }
                     onChangeHandler={ ( input?: string[]  ) => {
                         if ( !input ) return;
                         updateActivePresetHotkeys({ clear: hotkeyCombinationToString( input ) })
@@ -203,6 +254,7 @@ export default function AppSettingsHotkeys() {
                 <HotkeyFields
                     label='Copy text'
                     keyCombination={ copyTextKeys }
+                    defaultKeys={ overlayDefaultHotkeys?.copy_text }
                     onChangeHandler={ ( input?: string[]  ) => {
                         if ( !input ) return;
                         updateActivePresetHotkeys({ copy_text: hotkeyCombinationToString( input ) })

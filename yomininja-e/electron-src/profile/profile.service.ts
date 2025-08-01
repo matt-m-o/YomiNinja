@@ -33,11 +33,11 @@ export class ProfileService {
         return profile?.active_ocr_language || null;
     }
 
-    changeActiveOcrLanguage( input: { language: LanguageJson, profileId: string }): void {
+    async changeActiveOcrLanguage( input: { language: LanguageJson, profileId: string }): Promise<void> {
 
         const { language } = input
     
-        this.changeActiveOcrLanguageUseCase.execute({
+        await this.changeActiveOcrLanguageUseCase.execute({
             languageBcp47Tag: language.bcp47_tag || language.two_letter_code,
             profileId: input.profileId,
         });

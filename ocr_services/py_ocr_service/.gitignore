@@ -16,3 +16,4 @@ src/ocr_service_pb2.py
 src/ocr_service_pb2_grpc.py
 output/
 py_ocr_service/
+src/comic_text_detector/

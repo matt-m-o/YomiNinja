@@ -3,15 +3,21 @@ import { DictionarySettings, OcrEngineSettings, SettingsPresetJson, SettingsPres
 import { Alert, Backdrop, CircularProgress, Snackbar, debounce } from "@mui/material";
 import { OcrEngineSettingsU } from "../../electron-src/@core/infra/types/entity_instance.types";
 import { OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations } from "../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
+import { GeneralSettings } from "../../electron-src/@core/domain/settings_preset/settings_preset_general";
+import { ipcRenderer } from "../utils/ipc-renderer";
+import { CompatibilitySettings } from "../../electron-src/@core/domain/settings_preset/settings_preset_compatibility";
 
 export type SettingsContextType = {
     activeSettingsPreset: SettingsPresetJson;
+    defaultSettingsPreset: SettingsPresetJson;
     allSettingsPresets: SettingsPresetJson[];
     updateActivePreset: ( input: Partial<SettingsPresetJson> ) => void;
+    updateActivePresetGeneral: ( input: Partial< GeneralSettings > ) => void;
     updateActivePresetHotkeys: ( newHotkeys: Partial< OverlayHotkeys > ) => void;
     updateActivePresetVisuals: ( input: Partial< OverlayVisualCustomizations > ) => void;
     updateActivePresetBehavior: ( input: Partial< OverlayBehavior > ) => void; 
     updateActivePresetOcrEngine: ( input: Partial< OcrEngineSettingsU > ) => void; 
+    updateActivePresetCompatibility: ( input: Partial< CompatibilitySettings > ) => void;
     updateActivePresetDictionary: ( input: Partial< DictionarySettings > ) => void;
     triggerOcrEngineRestart: ( engineName: string ) => void;
     loadCloudVisionCredentialsFile: () => Promise< void >;
@@ -28,11 +34,12 @@ export const SettingsContext = createContext( {} as SettingsContextType );
 export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     
     const [ activeSettingsPreset, setActiveSettingsPreset ] = useState< SettingsPresetJson | null >( null );
+    const [ defaultSettingsPreset, setDefaultSettingsPreset ] = useState< SettingsPresetJson | null >( null );
     const [ allSettingsPresets, setAllSettingsPresets ] = useState< SettingsPresetJson[] >( [] );
     const [ hasGoogleCookies, setHasGoogleCookies ] = useState(false);
 
     const updateActivePresetIPC = debounce( async ( updatedPreset: SettingsPresetJson ) => {
-        const { restartOcrAdapter } = await global.ipcRenderer.invoke( 'settings_preset:update', updatedPreset );
+        const { restartOcrAdapter } = await ipcRenderer.invoke( 'settings_preset:update', updatedPreset );
         // console.log({ restartOcrAdapter });
     }, 1500 );
 
@@ -129,6 +136,26 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
 
         updateActivePreset( activeSettingsPreset );
     }
+
+    function updateActivePresetGeneral( newGeneral: Partial< GeneralSettings > ) {
+
+        activeSettingsPreset.general = {
+            ...activeSettingsPreset.general,
+            ...newGeneral,
+        };
+
+        updateActivePreset( activeSettingsPreset );
+    }
+
+    function updateActivePresetCompatibility( newSettings: Partial< CompatibilitySettings > ) {
+
+        activeSettingsPreset.compatibility = {
+            ...activeSettingsPreset.compatibility,
+            ...newSettings,
+        };
+
+        updateActivePreset( activeSettingsPreset );
+    }
     
     function updateActivePreset( updatedPreset: Partial<SettingsPresetJson> ) {
 
@@ -142,7 +169,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
             ...updatedPreset,
         });
         
-        // global.ipcRenderer.invoke( 'settings_preset:update', updatedPreset );
+        // ipcRenderer.invoke( 'settings_preset:update', updatedPreset );
         updateActivePresetIPC( activeSettingsPreset );
     }
 
@@ -153,22 +180,22 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     }
 
     async function loadCloudVisionCredentialsFile() {
-        await global.ipcRenderer.invoke( 'settings_preset:load_cloud_vision_cred_file' );
+        await ipcRenderer.invoke( 'settings_preset:load_cloud_vision_cred_file' );
 
         setTimeout( getActiveSettingsPreset, 1000 );
     }
 
     async function openCloudVisionPage() {
-        global.ipcRenderer.invoke( 'settings_preset:open_cloud_vision_page' );
+        ipcRenderer.invoke( 'settings_preset:open_cloud_vision_page' );
     }
 
     async function openGooglePage() {
-        global.ipcRenderer.invoke( 'settings_preset:open_google_page' );
+        ipcRenderer.invoke( 'settings_preset:open_google_page' );
     }
 
     async function getGoogleCookies(): Promise< Electron.Cookie[] > {
 
-        const cookies: Electron.Cookie[] = await global.ipcRenderer.invoke( 'settings_preset:get_google_cookies' );
+        const cookies: Electron.Cookie[] = await ipcRenderer.invoke( 'settings_preset:get_google_cookies' );
 
         return cookies;
     }
@@ -180,7 +207,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
 
     async function removeGoogleCookies() {
 
-        await global.ipcRenderer.invoke(
+        await ipcRenderer.invoke(
             'settings_preset:remove_google_cookies'
         );
         
@@ -189,9 +216,19 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
 
     async function getActiveSettingsPreset(): Promise< SettingsPresetJson > {
 
-        const settings = await global.ipcRenderer.invoke( 'settings_preset:get_active' ) as SettingsPresetJson;
+        const settings = await ipcRenderer.invoke( 'settings_preset:get_active' ) as SettingsPresetJson;
 
         activeSettingsPresetHandler( settings );
+
+        return settings;
+    }
+
+    async function getDefaultSettingsPreset(): Promise< SettingsPresetJson > {
+
+        const settings = await ipcRenderer.invoke( 'settings_preset:get_default' ) as SettingsPresetJson;
+
+        setDefaultSettingsPreset( settings );
+        // console.log(settings );
 
         return settings;
     }
@@ -199,22 +236,23 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     
     useEffect( () => {
 
-        global.ipcRenderer.on( 'settings_preset:active_data', ( event, data: SettingsPresetJson ) => {
+        ipcRenderer.on( 'settings_preset:active_data', ( event, data: SettingsPresetJson ) => {
             activeSettingsPresetHandler( data );
         });
 
-        global.ipcRenderer.on( 'settings_preset:google_window_closed', ( event ) => {
+        ipcRenderer.on( 'settings_preset:google_window_closed', ( event ) => {
             checkGoogleCookies();
         });
 
         getActiveSettingsPreset();
+        getDefaultSettingsPreset();
         checkGoogleCookies();
 
         return () => {
-            global.ipcRenderer.removeAllListeners( 'settings_preset:active_data' );
-            global.ipcRenderer.removeAllListeners( 'settings_preset:google_window_closed' );
+            ipcRenderer.removeAllListeners( 'settings_preset:active_data' );
+            ipcRenderer.removeAllListeners( 'settings_preset:google_window_closed' );
         }
-    }, [ global.ipcRenderer ] );
+    }, [] );
 
     const [ openBackdrop, setOpenBackdrop ] = useState(false);
     const backdrop = (
@@ -242,33 +280,36 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
     )
 
     function triggerOcrEngineRestart( engineName: string ) {
-        global.ipcRenderer.invoke( 'ocr_recognition:restart_engine', engineName );
+        ipcRenderer.invoke( 'ocr_recognition:restart_engine', engineName );
         setOpenBackdrop( true );
     }
 
     useEffect( () => {
 
-        global.ipcRenderer.on( 'ocr_recognition:ocr_engine_restarted', ( ) => {
+        ipcRenderer.on( 'ocr_recognition:ocr_engine_restarted', ( ) => {
             setOpenBackdrop( false );
             setOpenSnackbar( true );
         });
         
         return () => {
-            global.ipcRenderer.removeAllListeners( 'ocr_recognition:ocr_engine_restarted' );            
+            ipcRenderer.removeAllListeners( 'ocr_recognition:ocr_engine_restarted' );            
         }
-    }, [ global.ipcRenderer ] );
+    }, [] );
     
     
     return (
         <SettingsContext.Provider
             value={{
                 activeSettingsPreset,
+                defaultSettingsPreset,
                 allSettingsPresets,
                 updateActivePreset,
+                updateActivePresetGeneral,
                 updateActivePresetHotkeys,
                 updateActivePresetVisuals,
                 updateActivePresetBehavior,
                 updateActivePresetOcrEngine,
+                updateActivePresetCompatibility,
                 updateActivePresetDictionary,
                 triggerOcrEngineRestart,
                 loadCloudVisionCredentialsFile,

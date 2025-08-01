@@ -1,4 +1,4 @@
-import { IpcMainInvokeEvent, clipboard, ipcMain, shell } from "electron";
+import { IpcMainInvokeEvent, clipboard, shell } from "electron";
 import { SettingsPresetJson } from "./@core/domain/settings_preset/settings_preset";
 import { settingsController } from "./settings/settings.index";
 import { ocrRecognitionController } from "./ocr_recognition/ocr_recognition.index";
@@ -6,6 +6,7 @@ import { overlayController } from "./overlay/overlay.index";
 import { mainController } from "./main/main.index";
 import { uIOhook } from 'uiohook-napi'
 import { PpOcrAdapter } from "./@core/infra/ocr/ppocr.adapter/ppocr.adapter";
+import { ipcMain } from "./common/ipc_main";
 
 // Handlers used by multiple controllers
 

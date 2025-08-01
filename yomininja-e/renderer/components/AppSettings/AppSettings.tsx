@@ -5,6 +5,7 @@ import AppSettingsHotkeys from "./AppSettingsHotkeys";
 import AppSettingsVisuals from "./AppSettingsVisuals";
 import AppSettingsOthers from "./AppSettingsOthers";
 import AppSettingsOcrEngine from "./AppSettingsOcrEngine";
+import AppSettingsGeneral from "./AppSettingsGeneral";
 
 
 export default function AppSettingsMenu() {
@@ -26,6 +27,12 @@ export default function AppSettingsMenu() {
 
     return (
         <Container maxWidth='lg'>
+
+            <SettingsSection>
+
+                <AppSettingsGeneral/>
+                
+            </SettingsSection>
 
             <SettingsSection>
 

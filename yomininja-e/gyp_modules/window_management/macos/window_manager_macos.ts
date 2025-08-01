@@ -1,5 +1,5 @@
 import { systemPreferences } from 'electron';
-import { TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
+import { Rectangle, TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
 import { windowManager } from 'node-window-manager';
 import os from 'os';
 
@@ -23,7 +23,7 @@ export class WindowManagerMacOS implements WindowManagerNativeInterface {
         if ( !this.hasAccessibilityAccess )
             return this.requestAccessibility();
 
-        console.log(`searchWindowByTitle: ${title}`);
+        // console.log(`searchWindowByTitle: ${title}`);
 
         return this.getAllWindows()
             .filter( window => window.title.includes( title ) );
@@ -116,6 +116,15 @@ export class WindowManagerMacOS implements WindowManagerNativeInterface {
         }
     }
 
+    setWindowBounds = ( windowHandle: number, bounds: Partial<Rectangle> ) => {
+        windowManager.getWindows()
+            .find( w => {
+                if ( w.id !== windowHandle ) return;
+                w.setBounds(bounds);
+                return true;
+            });
+    }
+
 
     activateWindow( windowId: number ) {
 
@@ -129,6 +138,7 @@ export class WindowManagerMacOS implements WindowManagerNativeInterface {
                     return;
 
                 window.bringToTop();
+                // window.show();
 
                 return true;
             });

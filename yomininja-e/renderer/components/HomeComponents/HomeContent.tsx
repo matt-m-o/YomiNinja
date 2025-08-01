@@ -10,6 +10,9 @@ import OcrTemplateSelector from "./OcrTemplateSelector";
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import { AppInfoContext } from "../../context/app_info.provider";
+import { ipcRenderer } from "../../utils/ipc-renderer";
+import { isElectronBrowser, isInPWAMode, onDisplayModeChange } from "../../utils/environment";
 
 const ButtonInput = styled(TextField)({
     minWidth: '500px',
@@ -30,6 +33,7 @@ const TextFieldCapitalize = styled(TextField)({
 export default function HomeContent() {
 
     const { languages } = useContext( LanguagesContext );
+    const { systemInfo } = useContext( AppInfoContext );
     const {
         profile,
         changeActiveOcrLanguage,
@@ -43,23 +47,41 @@ export default function HomeContent() {
 
     // {Adapter_name : Engine_name}
     const [ supportedOcrEngines, setSupportedOcrEngines ] = useState<{ [key: string]: string; }>({});
+    const [ overlayLink, setOverlayLink ] = useState<string>();
+    const [ isPWA, setIsPWA ] = useState(false);
 
     const ocrEngineOptions = Object.values( supportedOcrEngines );
     const selectedOcrEngine = supportedOcrEngines[ profile?.selected_ocr_adapter_name ] || '';
-
 
     useEffect( () => {
         getSupportedOcrEngines()
             .then( dict => {
                 setSupportedOcrEngines( dict );
             });
+        
+        if ( location.href.endsWith('index.html') )
+            setOverlayLink( location.href.replace('index', 'ocr-overlay-browser') );
+        else
+            setOverlayLink( location.href + "ocr-overlay-browser.html" );
+
+        setIsPWA( isInPWAMode( window ) );
+
+        const off = onDisplayModeChange( window, ( mode ) => {
+            setIsPWA( isInPWAMode( window ) );
+        });
+
+        return () => {
+            off();
+        };
     }, [] );
 
-    function handleLanguageSelectChange( languageName: string ) {
+    function handleLanguageSelectChange( selectedName: string ) {
 
-        if (!languageName) return;
+        if (!selectedName) return;
 
-        const language = languages?.find( language => language.name === languageName.toLowerCase() );
+        const language = languages?.find(
+            language => language.name.toLowerCase() === selectedName.toLowerCase()
+        );
 
         if ( !language ) return;
         
@@ -67,11 +89,11 @@ export default function HomeContent() {
     }
 
     function openCaptureSourceSelectionWindow() {
-        global.ipcRenderer.invoke('main:show_capture_source_selection');
+        ipcRenderer.invoke('main:show_capture_source_selection');
     }
 
     async function getSupportedOcrEngines(): Promise< { [key: string]: string; } > {
-        const result = await global.ipcRenderer.invoke( 'ocr_recognition:get_supported_ocr_engines' ) as { [key: string]: string; };
+        const result = await ipcRenderer.invoke( 'ocr_recognition:get_supported_ocr_engines' ) as { [key: string]: string; };
         return result;
     }
 
@@ -109,6 +131,25 @@ export default function HomeContent() {
     const selectListBoxCSS: CSSProperties = {
         backgroundColor: '#121212',
     };
+
+    function viewOverlayInBrowser() {
+
+        if ( isPWA && window ) {
+            const { screenLeft, screenTop } = window;
+            const windowFeatures = `left=${screenLeft},top=${screenTop},width=${1200},height=${700},titlebar=no,location=0`;
+            const overlayWindow = window.open(
+                overlayLink,
+                "overlayWindow",
+                windowFeatures
+            );
+            return;
+        }
+
+        if ( isElectronBrowser() ) {
+            console.log({ overlayLink })
+            ipcRenderer.invoke( 'open_link', overlayLink );
+        }
+    }
 
     return (
         
@@ -183,6 +224,7 @@ export default function HomeContent() {
                             }}
                             value={ activeOcrLanguage || '' }
                             onChange={( event: any, newValue: string | null ) => {
+                                console.log(newValue)
                                 handleLanguageSelectChange( newValue );
                             }}
                             options={ languageOptions || [] }
@@ -199,6 +241,15 @@ export default function HomeContent() {
                         <OcrTemplateSelector
                             listBoxCSS={selectListBoxCSS}
                         />
+
+                        <Button variant="outlined" title="experimental"
+                            href= { !isElectronBrowser() && !isPWA && overlayLink }
+                            target="_blank"
+                            fullWidth
+                            onClick={ viewOverlayInBrowser }
+                        >
+                            View Overlay in Your Browser
+                        </Button>
                         
                     </Container>
 
@@ -216,39 +267,59 @@ export default function HomeContent() {
                             marginLeft: 15
                         }}
                     >
+
+                        { systemInfo?.platform === 'darwin' &&
+                            <li>
+                                <strong> MangaOCR integration. </strong>
+                            </li>
+                        }
+
                         <li>
-                            <strong> MangaOCR integration. </strong>
+                            <strong> Comic Text Detector (MangaOCR only). </strong>
+                        </li>
+
+                        { systemInfo?.platform === 'darwin' && 
+                            <li>
+                                <strong> The Apple Vision engine now supports vertical text recognition. </strong>
+                            </li>
+                        }
+
+                        <li>
+                            <strong> The positioning and sizing of extracted text have been improved. </strong>
                         </li>
 
                         <li>
-                            <strong> Initial support for macOS. </strong>
+                            <strong> The overlay can now be viewed in web browsers and installed on Chromium-based browsers. </strong>
                         </li>
 
                         <li>
-                            <strong> Apple's Vision Framework OCR engine integration (macOS only). </strong>
+                            <strong> Option to filter out extracted furigana. </strong>
                         </li>
 
                         <li>
-                            <strong> Auto OCR (OCR Templates): </strong>
-                            Monitors your screen and automatically runs OCR whenever it detects meaningful changes.
+                            <strong> Option to automatically append ending punctuation marks to the extracted text to avoid potential sentence-mining issues. </strong>
                         </li>
 
                         <li>
-                            <strong> Text-to-Speech (OCR Templates). </strong>
+                            <strong> Option to switch text positioning modes (Block-based, Line-based, Word-based, or Character-based). </strong>
                         </li>
 
                         <li>
-                            <strong> System tray icon. </strong>
-                        </li>
-
-                        <li> 
-                            <strong> Overlay Adjustment Option: </strong>
-                            You can now manually move or resize the overlay either from the tray icon or by pressing <strong>Ctrl+Shift+M</strong>. 
+                            <strong> Option to control the visibility of furigana generated by extensions. </strong>
                         </li>
 
                         <li>
-                            <strong> Added PaddleOCR languages: </strong> Chinese (traditional), Latin, and Cyrillic. 
+                            <strong> Option to run YomiNinja at system startup. </strong>
                         </li>
+
+                        <li>
+                            <strong> Option to disable hardware acceleration, potentially solving the issue where the overlay turns black.</strong>
+                        </li>
+
+                        <li>
+                            <strong> Button to restore default hotkeys. </strong>
+                        </li>
+
                         {/* <li> Clipboard options menu (WIP) </li> */}
                     </ul>
 
@@ -274,11 +345,11 @@ export default function HomeContent() {
                             marginTop: 56,
                         }}
                     >
-                        <li>Achieve the lowest latency by using the "PrintScreen" key.</li>
+                        <li>Achieve the lowest latency by using the <strong>PrintScreen</strong> key.</li>
                         <li>Customize hotkeys, text auto-copy, and more in the settings menu.</li>
                         <li>The copied text is also transmitted via WebSockets on port 6677.</li>
                         <li>If the game hides the mouse cursor, enable the custom cursor in the settings menu.</li>
-                        <li>Edit extracted text with Ctrl + Double Click. </li>
+                        <li>Edit extracted text with <strong>Ctrl + Double Click</strong>. </li>
                     </ul>
 
                 </CardContent>

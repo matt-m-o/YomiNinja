@@ -6,6 +6,13 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
     return {
         name: SettingsPreset.default_name,
         version: "0.6.0",
+        general: {
+            run_at_system_startup: 'no',
+        },
+        compatibility: {
+            hardware_acceleration: true,
+            gpu_compositing: true,
+        },
         overlay: {
             visuals: {
                 frame: {
@@ -20,17 +27,32 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                     background_color_inactive: '#5b7eff00', // transparent
                     inactive_border_color: "#e21212", // Red
                     active_border_color: "#e21212", // Red
-                    border_radius: 10,
+                    border_radius: 7,
                     border_width: 1,
-                    size_factor: 35,
+                    size_factor: 5,
                     text: {
                         color: "#ffffff", // White
                         font_size_factor: 100,
                         font_weight: 500,
                         letter_spacing: 1,
+                        letter_spacing_factor: 100,
                         outline_width: 0,
                         outline_color: '#000000',
                         character_positioning: true,
+                        positioning: {
+                            mode: 'line-based',
+                        },
+                        sentence_ending_punctuation: {
+                            enabled: true,
+                            hidden: true
+                        },
+                        furigana_filter: {
+                            enabled: false,
+                            threshold: 0.6
+                        },
+                        generated_furigana: {
+                            visibility: 'visible-on-line-hover'
+                        }
                     },
                     selected_text: {
                         color: '#ffffff', // White
@@ -65,6 +87,7 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                 always_forward_mouse_clicks: false,
                 show_window_without_focus: false,
                 hide_results_on_blur: false,
+                automatic_adjustment: true,
             }
         },
         ocr_engines: [],

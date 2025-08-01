@@ -97,6 +97,20 @@ export default function AppSettingsOthers() {
                         }
                     />
 
+                    <FormControlLabel label='Automatic positioning and resizing'
+                        sx={ switchFormControlLabelSx }
+                        control={
+                            <Switch
+                                checked={ Boolean( overlayBehavior?.automatic_adjustment ) }
+                                onChange={ ( event ) => {
+                                    updateActivePresetBehavior({
+                                        automatic_adjustment: event.target.checked
+                                    });
+                                }}
+                            /> 
+                        }
+                    />
+
                     <FormControlLabel label='Show overlay without stealing focus'
                         sx={{
                             ...switchFormControlLabelSx,

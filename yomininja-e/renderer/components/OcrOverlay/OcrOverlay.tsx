@@ -11,7 +11,7 @@ import {
 import { SettingsContext } from "../../context/settings.provider";
 import { CircularProgress, Typography, debounce } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import FullscreenOcrResult from "./OcrResults";
+import OcrResults from "./OcrResults";
 import { DictionaryContext } from "../../context/dictionary.provider";
 import CustomCursor from "./CustomCursor/CustomCursor";
 import { OcrResultContext } from "../../context/ocr_result.provider";
@@ -19,15 +19,11 @@ import { OcrTemplateJson } from "../../../electron-src/@core/domain/ocr_template
 import { OcrTargetRegionDiv, toCssPercentage } from "../OcrTemplates/OcrTargetRegion";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 import ProcessingIndicator from "./ProcessingIndicator";
+import { ipcRenderer } from "../../utils/ipc-renderer";
+import { isElectronBrowser } from '../../utils/environment';
 
 
-const OverlayFrame = styled('div')({
-  border: 'solid 1px',
-  height: '100vh',
-  overflow: 'hidden',
-  boxSizing: 'border-box',
-  '-webkit-app-region': 'no-drag'
-});
+
 
 const ProgressContainer = styled('div')({
   position: 'absolute',
@@ -67,6 +63,7 @@ export default function OcrOverlay() {
   const overlayBehavior: OverlayBehavior = activeSettingsPreset?.overlay?.behavior;
 
   let [ showDragArea, setShowDragArea ] = useState(false);
+  const isElectron = isElectronBrowser();
 
   useEffect( () => {
 
@@ -86,10 +83,7 @@ export default function OcrOverlay() {
 
     let value = false;
 
-    if (
-      element.id === 'overlay-frame' ||
-      element.classList.contains('ocr-region')
-    )
+    if ( element?.classList.contains('ignore-mouse') )
       value = true;
       
     else
@@ -101,23 +95,45 @@ export default function OcrOverlay() {
     // console.log( currentElement );
     // console.log( value );
 
-    global.ipcRenderer.invoke( 'overlay:set_ignore_mouse_events', value );
+    ipcRenderer.invoke( 'overlay:set_ignore_mouse_events', value );
   };
 
-  useEffect( () => {
+  function handleBrowserClickThrough( event: MouseEvent ) {
+    const element = document.elementFromPoint(
+      event.clientX,
+      event.clientY
+    );
 
-    document.addEventListener( 'mousemove', handleClickThrough );
+    const eventElement = event.target as HTMLElement;
+
+    if (
+      eventElement.id.includes('MigakuShadowDom') ||
+      eventElement.id.includes('close-overlay-menu')
+    )
+      return;
+
+    if ( element?.classList.contains('ignore-mouse') ) {
+      ipcRenderer.invoke( 'overlay:hide_browser_window' );
+    }
+  }
+
+  useEffect( () => {
+    
+    if ( isElectron )
+      document.addEventListener( 'mousemove', handleClickThrough );
+    else
+      document.addEventListener( 'click', handleBrowserClickThrough );
     
     if ( !window ) return;
 
-    global.ipcRenderer.on( 'set_movable', ( event, value ) => {
+    ipcRenderer.on( 'set_movable', ( event, value ) => {
       console.log({ value })
       setShowDragArea( value );
     });
 
     return () => {
       document.removeEventListener( 'mousemove', handleClickThrough );
-      global.ipcRenderer.removeAllListeners( 'set_movable' );
+      ipcRenderer.removeAllListeners( 'set_movable' );
     };
 
   }, [] );
@@ -141,14 +157,22 @@ export default function OcrOverlay() {
     );
   });
 
+  const OverlayFrame = styled('div')({
+    border: 'solid 1px',
+    height: isElectron ? '100vh' : '100%',
+    overflow: 'hidden',
+    boxSizing: 'border-box',
+    '-webkit-app-region': 'no-drag'
+  });
   
 
   return ( <>
-    <OverlayFrame id='overlay-frame'
+    <OverlayFrame id='overlay-frame' className="ignore-mouse"
       sx={{
         borderColor: overlayFrameVisuals?.border_color || 'red',
         borderWidth: overlayFrameVisuals?.border_width + 'px',
-        contentVisibility: showResults ? 'visible' : 'hidden'
+        contentVisibility: showResults ? 'visible' : 'hidden',
+        borderRadius: '12px'
       }}
     >
       { showDragArea &&
@@ -166,7 +190,7 @@ export default function OcrOverlay() {
         </DragArea>
       }
       {templateRegions}
-      <FullscreenOcrResult
+      <OcrResults
         ocrItemBoxVisuals={ocrItemBoxVisuals}
         overlayHotkeys={overlayHotkeys}
         overlayBehavior={overlayBehavior}

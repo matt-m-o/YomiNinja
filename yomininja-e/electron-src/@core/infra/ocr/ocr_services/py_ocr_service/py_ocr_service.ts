@@ -1,20 +1,22 @@
-import { OCRServiceClient } from "../../../../../grpc/rpc/ocr_service/OCRService";
+import { OCRServiceClient } from "../../../../../../grpc/rpc/ocr_service/OCRService";
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
-import { ocrServiceProto } from "../../../../../grpc/grpc_protos";
+import { ocrServiceProto } from "../../../../../../grpc/grpc_protos";
 import * as grpc from '@grpc/grpc-js';
-import { OcrAdapterStatus } from "../../../application/adapters/ocr.adapter";
-import { OcrItem, OcrItemBox, OcrResult } from "../../../domain/ocr_result/ocr_result";
-import { RecognizeDefaultResponse__Output } from "../../../../../grpc/rpc/ocr_service/RecognizeDefaultResponse";
-import { RecognizeBase64Request } from "../../../../../grpc/rpc/ocr_service/RecognizeBase64Request";
+import { OcrAdapterStatus } from "../../../../application/adapters/ocr.adapter";
+import { OcrItem, OcrItemBox, OcrResult, OcrTextLine } from "../../../../domain/ocr_result/ocr_result";
+import { RecognizeDefaultResponse__Output } from "../../../../../../grpc/rpc/ocr_service/RecognizeDefaultResponse";
+import { RecognizeBase64Request } from "../../../../../../grpc/rpc/ocr_service/RecognizeBase64Request";
 import os from 'os';
 import { join } from "path";
 import isDev from 'electron-is-dev';
-import { BIN_DIR } from "../../../../util/directories.util";
-import { GetSupportedLanguagesRequest } from "../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesRequest";
-import { GetSupportedLanguagesResponse__Output } from "../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesResponse";
-import { MotionDetectionRequest } from "../../../../../grpc/rpc/ocr_service/MotionDetectionRequest";
-import { MotionDetectionResponse__Output } from "../../../../../grpc/rpc/ocr_service/MotionDetectionResponse";
-import { RecognizeBytesRequest } from "../../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
+import { BIN_DIR } from "../../../../../util/directories.util";
+import { GetSupportedLanguagesRequest } from "../../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesRequest";
+import { GetSupportedLanguagesResponse__Output } from "../../../../../../grpc/rpc/ocr_service/GetSupportedLanguagesResponse";
+import { MotionDetectionRequest } from "../../../../../../grpc/rpc/ocr_service/MotionDetectionRequest";
+import { MotionDetectionResponse__Output } from "../../../../../../grpc/rpc/ocr_service/MotionDetectionResponse";
+import { RecognizeBytesRequest } from "../../../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
+import { getNextPortAvailable } from "../../../util/port_check";
+import { sleep } from "../../../../../util/sleep.util";
 
 type OcrEnginesName = 'MangaOCR' | 'AppleVision' | string;
 
@@ -28,8 +30,14 @@ export class PyOcrService {
     private serviceKeepAlive: NodeJS.Timeout;
 
     constructor() {
+
+        let arch = '';
+
+        if ( process.platform === 'darwin' )
+            arch = `/${process.arch}`;
+
         this.binRoot = isDev
-            ? join( BIN_DIR, `/${os.platform()}/py_ocr_service/service` )
+            ? join( BIN_DIR, `/${os.platform()}${arch}/py_ocr_service/service` )
             : join( process.resourcesPath, '/bin/py_ocr_service/service' );
     }
 
@@ -79,7 +87,7 @@ export class PyOcrService {
                 }
                 resolve(response);
             })
-        );
+        ).catch( console.error );
         // console.timeEnd('PpOcrAdapter.recognize');
         this.status = OcrAdapterStatus.Enabled;
 
@@ -93,18 +101,23 @@ export class PyOcrService {
             return null;
         
         const ocrItems: OcrItem[] = clientResponse.results.map( ( item ) => {
+            const textLines: OcrTextLine[] = item.text_lines.map( text_line => {
+                return {
+                    content: text_line.content,
+                    box: text_line.box || undefined
+                } as OcrTextLine;
+            });
             return {
                 ...item,
-                text: [{
-                    content: item.text
-                }],
-            } as OcrItem
+                text: textLines,
+            } as OcrItem;
         });
 
         const result = OcrResult.create({
             id: clientResponse.id,
             context_resolution: clientResponse.context_resolution,
             results: ocrItems,
+            image: input.image
         });
 
         return result;
@@ -158,7 +171,7 @@ export class PyOcrService {
     }
     
 
-    startProcess( onInitialized?: ( input?: any ) => void ) {
+    async startProcess( onInitialized?: ( input?: any ) => void ) {
 
         const platform = os.platform();
 
@@ -168,15 +181,17 @@ export class PyOcrService {
             executableName = 'py_ocr_service';
 
         const executable = join( this.binRoot + `/${executableName}` );
+
+        let port: string | number| undefined = (await getNextPortAvailable( 53_000 )) || 32346;
         
         this.serviceProcess = spawn(
             executable,
-            [],
-            { cwd: this.binRoot }
+            [ port.toString() ],
+            { cwd: this.binRoot, detached: true }
         );
 
         // Handle stdout data
-        this.serviceProcess.stdout.on('data', ( data: string ) => {
+        this.serviceProcess.stdout.on('data', async ( data: string ) => {
 
             console.log(`stdout: ${data.toString()}`);        
 
@@ -186,6 +201,7 @@ export class PyOcrService {
 
                 if ( 'server_address' in jsonData ) {
                     this.serverAddress = jsonData.server_address;
+                    await sleep( isDev ? 5000 : 2500 );
                     this.connect( jsonData.server_address );
                     this.keepAlive();
                     if ( onInitialized )
@@ -217,6 +233,10 @@ export class PyOcrService {
             this.serviceProcess.kill();
             process.exit(1);
         });
+
+        process.on( 'exit', this.killServiceProcess );
+        process.on( 'SIGINT', this.killServiceProcess );
+        process.on( 'SIGTERM', this.killServiceProcess );
     }
 
     async processStatusCheck(): Promise< boolean > {
@@ -282,5 +302,17 @@ export class PyOcrService {
 
         }, ( timeoutSeconds - 10 ) * 1000 ); // Executes every 1000 milliseconds = 1 second
 
+    }
+
+    killServiceProcess = () => {
+        if ( !this.serviceProcess ) return;
+        console.log(`Killing PyOCRService`);
+
+        try {
+            this.serviceProcess.kill("SIGTERM");
+            process.kill( -this.serviceProcess.pid );
+        } catch (error) {
+            console.error(error);
+        }
     }
 }

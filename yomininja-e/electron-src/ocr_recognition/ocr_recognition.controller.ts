@@ -1,4 +1,4 @@
-import { BrowserWindow, globalShortcut, screen, desktopCapturer, clipboard, ipcMain, IpcMainInvokeEvent } from "electron";
+import { BrowserWindow, globalShortcut, screen, desktopCapturer, clipboard, IpcMainInvokeEvent } from "electron";
 import isDev from 'electron-is-dev';
 import { join } from "path";
 import { format } from 'url';
@@ -13,6 +13,15 @@ import sharp from "sharp";
 import os from 'os';
 import { OcrEngineSettingsU } from "../@core/infra/types/entity_instance.types";
 import { InAppNotification } from "../common/types/in_app_notification";
+import { ipcMain } from "../common/ipc_main";
+import { bufferToDataURL } from "../util/image.util";
+import { OcrResultScalable } from "../@core/domain/ocr_result_scalable/ocr_result_scalable";
+import { cloneDeep } from 'lodash';
+
+export type Recognition_Output = {
+    result: OcrResultScalable | null;
+    status: 'complete' | 'replaced' | 'failed';
+};
 
 export class OcrRecognitionController {
     
@@ -20,7 +29,9 @@ export class OcrRecognitionController {
     
     private mainWindow: BrowserWindow;
     private overlayWindow: BrowserWindow;
-    private recognizing: boolean = false; 
+    private recognizing: boolean = false;
+    private result: OcrResultScalable | null = null;
+    private recognitionCallOnHold: Recognition_Input | undefined;
 
     constructor( input: {        
         ocrRecognitionService: OcrRecognitionService< OcrEngineSettingsU >;        
@@ -58,16 +69,120 @@ export class OcrRecognitionController {
                 return this.ocrRecognitionService.getSupportedOcrEngines();
             }
         );
+
+        ipcMain.handle( 'ocr_recognition:get_result',
+            ( event: IpcMainInvokeEvent ): OcrResultScalable | null => {
+                return this.result;
+            }
+        );
     }
 
-    async recognize(
+    recognize = async ( input: Recognition_Input ): Promise< Recognition_Output > => {
+        const { image, engineName } = input;
+        
+        if ( this.recognizing ) {
+            this.recognitionCallOnHold = cloneDeep(input);
+            console.log('Replacing current recognition request!');
+            return {
+                result: null,
+                status: 'replaced'
+            };
+        }
+        else {
+            this.recognitionCallOnHold = undefined;            
+        }
+        
+        const response: Recognition_Output = {
+            result: null,
+            status: 'failed'
+        };
+        
+        this.recognizing = true;
+        
+        try {
+            // console.log('');
+            console.time('Recognition time');
+            // console.log(activeProfile);
+            // console.log('OcrRecognitionController.recognize')
+
+            const ocrResultScalable = await this.ocrRecognitionService.recognize({
+                imageBuffer: image,
+                profileId: getActiveProfile().id,
+                engineName,
+                autoMode: false
+            });
+            this.recognizing = false;
+
+            // Throwing away current response an returning newest call result
+            if ( this.recognitionCallOnHold ){
+                const newInput = cloneDeep( this.recognitionCallOnHold );
+                this.recognitionCallOnHold = undefined;
+                return await this.recognize( newInput );
+            }
+
+            response.result = ocrResultScalable;
+
+            response.status = 'complete';
+
+            // console.timeEnd('controller.recognize');
+            // console.log('');
+            if (
+                ( !ocrResultScalable ||
+                  !ocrResultScalable?.ocr_regions?.length ||
+                  !ocrResultScalable?.ocr_regions?.some( region => region?.results?.length ) )
+            ) {
+                
+                const notification: InAppNotification = {
+                    type: 'info',
+                    message: 'No text recognized! Please try again.',
+                    autoHideDuration: 3000
+                };
+
+                ipcMain.send(
+                    this.overlayWindow,
+                    'notifications:show',
+                    notification
+                );
+
+                response.status = 'failed';
+            }
+
+            let resultJson = ocrResultScalable;
+
+            if ( ocrResultScalable ) {
+                const overlayBounds = this.overlayWindow.getBounds();
+                ocrResultScalable.position = {
+                    top: overlayBounds.y,
+                    left: overlayBounds.x
+                };
+                resultJson = await this.ocrResultToJson( ocrResultScalable );
+            }
+
+            this.result = resultJson || null;
+
+            ipcMain.send(
+                this.overlayWindow,
+                'ocr:result',
+                this.result
+            );
+
+        } catch (error) {
+            console.error( error );
+        }
+        
+        this.recognizing = false;
+
+        console.timeEnd('Recognition time');
+        return response;
+    }
+
+    async autoRecognize(
         input: {
             image: Buffer,
             engineName?: string;
-            autoOcr?: boolean;
         }
     ) {
-        const { image, engineName, autoOcr } = input;
+        const { image, engineName } = input;
         
         this.recognizing = true;
         
@@ -81,32 +196,31 @@ export class OcrRecognitionController {
                 imageBuffer: image,
                 profileId: getActiveProfile().id,
                 engineName,
-                autoMode: input.autoOcr
+                autoMode: true
             });
             // console.log({ ocrResultScalable });
 
             // console.timeEnd('controller.recognize');
             // console.log('');
 
-            if (
-                !autoOcr &&
-                ( !ocrResultScalable ||
-                  !ocrResultScalable?.ocr_regions?.length ||
-                  !ocrResultScalable?.ocr_regions?.some( region => region?.results?.length ) )
-            ) {
-                const notification: InAppNotification = {
-                    type: 'info',
-                    message: 'No text recognized! Please try again.',
-                    autoHideDuration: 3000
-                };
+            let resultJson = ocrResultScalable;
 
-                this.overlayWindow.webContents.send(
-                    'notifications:show',
-                    notification
-                );
+            if ( ocrResultScalable ) {
+                const overlayBounds = this.overlayWindow.getBounds();
+                ocrResultScalable.position = {
+                    top: overlayBounds.y,
+                    left: overlayBounds.x
+                };
+                resultJson = await this.ocrResultToJson( ocrResultScalable );
             }
 
-            this.overlayWindow.webContents.send( 'ocr:result', ocrResultScalable );
+            this.result = resultJson || null;
+
+            ipcMain.send(
+                this.overlayWindow,
+                'ocr:result',
+                this.result
+            );
 
         } catch (error) {
             console.error( error );
@@ -135,7 +249,7 @@ export class OcrRecognitionController {
 
                     if ( !this.mainWindow ) return;
 
-                    this.mainWindow.webContents.send( 'ocr_recognition:ocr_engine_restarted' );
+                    ipcMain.send( this.mainWindow, 'ocr_recognition:ocr_engine_restarted' );
                 }
             );
         }, 3000 );
@@ -145,4 +259,30 @@ export class OcrRecognitionController {
         return this.recognizing;
     }
 
+    async ocrResultToJson( result: OcrResultScalable ): Promise<OcrResultScalable > {
+
+        if ( result?.image && typeof result.image !== 'string' ) {
+            result.image = await bufferToDataURL({
+                image: result.image,
+                format: 'png',
+                quality: 100
+            });
+        }
+
+        for ( const region of result.ocr_regions ) {
+            if ( !region.image || !Buffer.isBuffer(region.image) )
+                continue;
+            region.image = await bufferToDataURL({
+                image: region.image
+            });
+        }
+
+        return result;
+    }
 }
+
+export type Recognition_Input = {
+    image: Buffer;
+    engineName?: string;
+    autoOcr?: boolean;
+};

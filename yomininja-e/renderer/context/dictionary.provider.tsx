@@ -7,6 +7,7 @@ import { LanguageJson } from "../../electron-src/@core/domain/language/language"
 import { DictionaryImportProgress } from "../../electron-src/dictionaries/common/dictionary_import_progress";
 import { Dictionary } from "../../electron-src/@core/domain/dictionary/dictionary";
 import { BrowserExtensionJson } from "../../electron-src/@core/domain/browser_extension/browser_extension";
+import { ipcRenderer } from "../utils/ipc-renderer";
 
 
 
@@ -49,7 +50,7 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
     const search = debounce( async ( text: string ) => {
 
         console.time("dict-search");
-        const result: DictionaryHeadword[] = await global.ipcRenderer.invoke( 'dictionaries:search', text );
+        const result: DictionaryHeadword[] = await ipcRenderer.invoke( 'dictionaries:search', text );
         console.timeEnd("dict-search");
 
         // console.log({ result });
@@ -206,8 +207,8 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
 
     async function getDictionaries() {
 
-        const dictionaries = await global.ipcRenderer.invoke( 'dictionaries:get_all_installed' );
-        const extensions = await global.ipcRenderer.invoke( 'extensions:get_all_extensions' );
+        const dictionaries = await ipcRenderer.invoke( 'dictionaries:get_all_installed' );
+        const extensions = await ipcRenderer.invoke( 'extensions:get_all_extensions' );
 
         // console.log({ extensions })
 
@@ -216,12 +217,12 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
     }
 
     async function deleteAllDictionaries() {
-        await global.ipcRenderer.invoke( 'dictionaries:delete_all' );
+        await ipcRenderer.invoke( 'dictionaries:delete_all' );
         getDictionaries();
     }
 
     async function openExtensionOptions( browserExtension: BrowserExtensionJson ): Promise< void > {
-        await global.ipcRenderer.invoke( 'extensions:open_extension_options', browserExtension );
+        await ipcRenderer.invoke( 'extensions:open_extension_options', browserExtension );
     }
     
     useEffect( () => {
@@ -230,11 +231,11 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
 
         document.addEventListener( 'mousemove', textScannerListener );
 
-        global.ipcRenderer.on( 'dictionaries:import_progress', importProgressReportHandler );
+        ipcRenderer.on( 'dictionaries:import_progress', importProgressReportHandler );
         
         return () => {
             document.removeEventListener( 'mousemove', textScannerListener );
-            global.ipcRenderer.removeAllListeners( 'dictionaries:import_progress' );            
+            ipcRenderer.removeAllListeners( 'dictionaries:import_progress' );            
         }
     }, [] )
 
@@ -258,7 +259,7 @@ export const DictionaryProvider = ( { children }: PropsWithChildren ) => {
     async function importDictionary( input: ImportDictionaryDto ) {        
 
         const dto: ImportDictionaryDto = { ...input };
-        const path: string = await global.ipcRenderer.invoke( 'dictionaries:import', dto );
+        const path: string = await ipcRenderer.invoke( 'dictionaries:import', dto );
 
         console.log({ path });
 

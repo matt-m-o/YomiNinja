@@ -6,6 +6,7 @@ import { OcrTargetRegion, OcrTargetRegionCreationInput } from "../../../../domai
 import { OcrTemplateTypeOrmSchema } from '../../../../infra/db/typeorm/ocr_template/ocr_template.schema';
 import { OcrTargetRegionTypeOrmSchema } from '../../../../infra/db/typeorm/ocr_template/ocr_target_region/ocr_target_region.schema';
 import { UpdateOcrTemplateUseCase, UpdateOcrTemplate_Input } from './update_ocr_template.use_case';
+import { FakeImageProcessingAdapter } from '../../../../infra/test/fake_image_processing.adapter/fake_image_processing.adapter.adapter';
 
 
 describe("UpdateOcrTemplateUseCase tests", () => {    
@@ -45,7 +46,8 @@ describe("UpdateOcrTemplateUseCase tests", () => {
 
         useCase = new UpdateOcrTemplateUseCase({
             ocrTemplateRepo,
-            ocrTargetRegionRepo
+            ocrTargetRegionRepo,
+            imageProcessing: new FakeImageProcessingAdapter()
         });
         
 

@@ -1,7 +1,8 @@
-import { BrowserWindow, IpcMainInvokeEvent, dialog, ipcMain } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, dialog } from "electron";
 import { BrowserExtensionsService } from "./browser_extensions.service";
 import { InAppNotification } from "../common/types/in_app_notification";
 import { BrowserExtensionJson } from "../@core/domain/browser_extension/browser_extension";
+import { ipcMain } from "../common/ipc_main";
 
 
 
@@ -60,7 +61,8 @@ export class BrowserExtensionsController {
                             message: 'Extension installation has failed!'
                         };
 
-                        this.mainWindow.webContents.send(
+                        ipcMain.send(
+                            this.mainWindow,
                             'notifications:show',
                             notification
                         );

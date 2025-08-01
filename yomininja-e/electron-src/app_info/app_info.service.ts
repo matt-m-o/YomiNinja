@@ -1,5 +1,7 @@
 import { CheckForAppUpdatesUseCase, CheckForAppUpdates_Output } from "../@core/application/use_cases/check_for_app_updates/check_for_app_updates.use_case";
 import { differenceInMinutes } from 'date-fns';
+import os, { platform } from 'os';
+import { app } from 'electron';
 
 export class AppInfoService {
 
@@ -28,4 +30,23 @@ export class AppInfoService {
 
         return this.latestAppVersionCheck;
     }
+
+    getSystemInfo(): SystemInfo {
+        const info: SystemInfo = {
+            platform: os.platform(),
+            osVersion: os.version(),
+            cpuModel: os.cpus()[0].model,
+            cpuArch: os.arch(),
+            appArch: process.arch
+        };
+        return info;
+    }
+}
+
+export type SystemInfo = {
+    platform: NodeJS.Platform;
+    osVersion: string;
+    cpuModel: string;
+    cpuArch: string;
+    appArch: string;
 }

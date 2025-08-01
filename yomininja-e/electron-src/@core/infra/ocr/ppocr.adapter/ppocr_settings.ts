@@ -26,7 +26,7 @@ export function getPpOcrDefaultSettings() {
         max_image_width: 1600,
         cpu_threads: os.cpus().length,
         invert_colors: false,
-        inference_runtime: 'Open_VINO',
+        inference_runtime: 'ONNX_CPU', // Open_VINO | ONNX_CPU
         det_db_thresh: 0.3,
         det_db_box_thresh: 0.6,
         det_db_unclip_ratio: 1.6,

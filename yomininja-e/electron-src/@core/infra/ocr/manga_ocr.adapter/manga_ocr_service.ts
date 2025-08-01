@@ -5,6 +5,7 @@ export type MangaOcrRecognize_Input = {
     id: string;
     image: Buffer;
     boxes?: OcrItemBox[];
+    text_detector?: string;
 };
 
 

@@ -2,6 +2,7 @@ import { OcrTargetRegion } from "../../../../domain/ocr_template/ocr_target_regi
 import { OcrTargetRegionRepository } from "../../../../domain/ocr_template/ocr_target_region/ocr_target_region.repository";
 import { OcrTemplate, OcrTemplateJson } from "../../../../domain/ocr_template/ocr_template";
 import { OcrTemplateRepository } from "../../../../domain/ocr_template/ocr_template.repository";
+import { ImageMetadata, ImageProcessingAdapter } from "../../../adapters/image_processing.adapter";
 
 
 export interface UpdateOcrTemplate_Input extends Omit<
@@ -13,13 +14,16 @@ export class UpdateOcrTemplateUseCase {
 
     public ocrTemplateRepo: OcrTemplateRepository;
     public ocrTargetRegionRepo: OcrTargetRegionRepository;
+    public imageProcessing: ImageProcessingAdapter;
 
     constructor( input: {
         ocrTemplateRepo: OcrTemplateRepository,
         ocrTargetRegionRepo: OcrTargetRegionRepository,
+        imageProcessing: ImageProcessingAdapter,
     }) {
         this.ocrTemplateRepo = input.ocrTemplateRepo;
         this.ocrTargetRegionRepo = input.ocrTargetRegionRepo;
+        this.imageProcessing = input.imageProcessing;
     }
 
     async execute( input: UpdateOcrTemplate_Input ): Promise< OcrTemplate | undefined > {
@@ -30,6 +34,13 @@ export class UpdateOcrTemplateUseCase {
             console.log(`ocr template not found: ${input.id}`);
             return;
         }
+
+        let templateImageMetadata: ImageMetadata | undefined;
+
+        template.name = input.name;
+        template.image = input.image;
+        template.capture_source_name = input.capture_source_name;
+        template.capturer_options = input.capturer_options;
 
         const changedRegions = input.target_regions.filter( item => {
 
@@ -55,8 +66,17 @@ export class UpdateOcrTemplateUseCase {
 
         for ( const regionData of changedRegions ) {
 
-            const region = new OcrTargetRegion(regionData);
+            let region = new OcrTargetRegion(regionData);
             template.updateTargetRegion( region  );
+
+            if ( !templateImageMetadata )
+                templateImageMetadata = await this.imageProcessing.getMetadata(template.image);
+
+            region = await this.applyPreprocessingPipeline(
+                templateImageMetadata,
+                template.image,
+                region
+            );
             
             await this.ocrTargetRegionRepo.update( region );
         }
@@ -75,11 +95,6 @@ export class UpdateOcrTemplateUseCase {
             await this.ocrTargetRegionRepo.delete( region.id );
         }
 
-        template.name = input.name;
-        template.image = input.image;
-        template.capture_source_name = input.capture_source_name;
-        template.capturer_options = input.capturer_options;
-
         await this.ocrTemplateRepo.update( template );
 
         const updatedTemplate = await this.ocrTemplateRepo.findOne({ id: template.id });
@@ -88,5 +103,38 @@ export class UpdateOcrTemplateUseCase {
             throw new Error('ocr-template-not-found');
 
         return updatedTemplate;
+    }
+
+    private async applyPreprocessingPipeline(
+        templateMetadata: ImageMetadata,
+        templateImage: Buffer,
+        region: OcrTargetRegion
+    ): Promise< OcrTargetRegion > {
+
+        const targetRegionPixels = region.toPixels({
+            width: templateMetadata.width,
+            height: templateMetadata.height,
+        });
+
+        const pipeline = region.preprocessing_pipeline;
+
+        const regionImage = await this.imageProcessing.extract({
+            image: templateImage,
+            position: targetRegionPixels.position,
+            size: targetRegionPixels.size,
+        })
+
+        console.time("Image preprocessing time");
+        try {
+            region.image = await this.imageProcessing.applyPipeline(
+                regionImage,
+                pipeline
+            );
+        } catch (error) {
+            console.error(error);
+        }
+        console.timeEnd("Image preprocessing time");
+
+        return region;
     }
 }

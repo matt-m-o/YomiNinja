@@ -1,5 +1,6 @@
 import { BrowserWindow } from "electron";
 import { InAppNotification } from "./types/in_app_notification";
+import { ipcMain } from "./ipc_main";
 
 export function pushInAppNotification(
     input: {
@@ -7,8 +8,10 @@ export function pushInAppNotification(
         windows: BrowserWindow[]
     }
 ) {
+    
     input.windows.forEach( window => {
-        window.webContents.send(
+        ipcMain.send(
+            window,
             'notifications:show',
             input.notification
         );

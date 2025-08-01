@@ -23,6 +23,16 @@ export const SettingsPresetTypeOrmSchema = new EntitySchema< SettingsPresetInsta
             length: 100,
         },
 
+        general: {
+            type: 'json',
+            nullable: true
+        },
+
+        compatibility: {
+            type: 'json',
+            nullable: true
+        },
+
         overlay: {
             type: 'json',
         },

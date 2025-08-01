@@ -8,24 +8,58 @@ import OcrResultBox from "./OcrResultBox";
 import { TTSContext } from "../../context/text-to-speech.provider";
 import { OcrTemplatesContext } from "../../context/ocr_templates.provider";
 import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
+import { removeFurigana } from "../../utils/text_utils";
+import { ipcRenderer } from "../../utils/ipc-renderer";
+import { isElectronBrowser, isFullscreenWindow } from "../../utils/environment";
+import { ProfileContext } from "../../context/profile.provider";
+import { SettingsContext } from "../../context/settings.provider";
 
-export type FullscreenOcrResultProps = {
+export type OcrResultsProps = {
     ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
     overlayHotkeys: OverlayHotkeys;
     overlayBehavior: OverlayBehavior;
 };
 
 
-export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
+export default function OcrResults( props: OcrResultsProps ) {
 
-    const { ocrItemBoxVisuals, overlayHotkeys, overlayBehavior } = props;
+    const {
+        ocrItemBoxVisuals,
+        overlayHotkeys,
+        overlayBehavior
+    } = props;
 
+    const { activeSettingsPreset } = useContext( SettingsContext );
+    const { profile } = useContext( ProfileContext );
     const { ocrResult } = useContext( OcrResultContext );
     const { activeOcrTemplate } = useContext( OcrTemplatesContext );
     const { speak, getVoices } = useContext( TTSContext );
+    const [ isPopup, setIsPopup ] = useState(false);
+    const [ isFullscreen, setIsFullscreen ] = useState(false);
     
+    const overlayVisuals = activeSettingsPreset?.overlay?.visuals;
     const [ editableBoxId, setEditableBoxId ] = useState< string | undefined >(undefined);
 
+    const isElectron = isElectronBrowser();
+
+    const activeLang = profile?.active_ocr_language;
+
+    useEffect( () => {
+        if ( !parent ) return;
+        
+        setIsPopup( Boolean( parent.window.opener ) );
+        setIsFullscreen( isFullscreenWindow(parent.window) );
+
+        const iframe = parent.document.getElementById('iframe-container');
+        
+        if ( iframe ) {
+            iframe.addEventListener('fullscreenchange', ( e ) => {
+                console.log(e);
+                setIsFullscreen( Boolean(parent.document.fullscreenElement) );
+            });
+        }
+        // console.log({ isPopup, isFullscreen });
+    }, [] );
 
     const handleBoxMouseEnter = ( item: OcrItemScalable, ocrRegionId?: string ) => {
         
@@ -63,11 +97,11 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
     }
 
     const sendHoveredText = ( hoveredText: string ) => {
-        global.ipcRenderer.invoke( 'overlay:set_hovered_text', hoveredText );
+        ipcRenderer.invoke( 'overlay:set_hovered_text', hoveredText );
     }
 
     const copyText = ( text: string ) => {
-        global.ipcRenderer.invoke( 'user_command:copy_to_clipboard', text );
+        ipcRenderer.invoke( 'user_command:copy_to_clipboard', text );
     }
 
 
@@ -92,9 +126,9 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
         if ( !overlayBehavior.copy_text_on_click || !item?.text )
             return;
 
-        const text = item.text.map( line => line.content ).join(' ');
+        const text = getOcrItemText(item);
 
-        copyText( text );;
+        copyText( text );
     }
 
     function handleBoxDoubleClick( id: string | undefined ) {
@@ -114,27 +148,96 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
     }
 
     function getOcrItemText( item: OcrItemScalable ) {
-        return item.text.map( line => line.content ).join(' ');
+        let sep = '';
+        if (
+            !([ 'ja-JP', 'zh-Hans', 'zh-Hant', 'yue-Hans', 'yue-Hant' ]
+            .some( tag => activeLang?.bcp47_tag === tag ))
+        )
+            sep = ' ';
+
+        return item.text.map( line => line.content ).join(sep);
     }
 
+    const context_resolution = ocrResult?.context_resolution;
+
+    const resultAspectRatio = ocrResult ?
+        context_resolution.width / context_resolution.height :
+        16/9;
+
     return ( <>
+        { !isElectron && typeof ocrResult?.image === 'string' &&
+            <img className="ignore-mouse"
+                src={ocrResult.image}
+                style={{
+                    minWidth: (context_resolution && isPopup) || isFullscreen ? context_resolution.width+'px' : '100%',
+                    minHeight: (context_resolution && isPopup) || isFullscreen ? context_resolution.height+'px' : '100%',
+                    marginTop: -overlayVisuals.frame.border_width+'px',
+                    marginLeft: -overlayVisuals.frame.border_width+'px',
+                    maxWidth: '105%',
+                    maxHeight: '105%',
+                    // aspectRatio: resultAspectRatio,
+                    imageResolution: 'from-image'
+                }}
+            />
+        }
         { ocrResult?.ocr_regions?.map(
             ( ocrRegion, regionIdx ) => {
 
                 const ocrTemplateRegion = getOcrTemplateTargetRegion( ocrRegion.id );
+
+                const furiganaFilterThreshold = ocrItemBoxVisuals?.text?.furigana_filter?.threshold;
+
+                if ( Boolean( ocrItemBoxVisuals?.text.furigana_filter?.enabled ) ) {
+                    removeFurigana(ocrRegion.results, furiganaFilterThreshold || 0.6);
+                }
+
+                // const regionAspectRatio = ocrRegion.size.width / ocrRegion.size.height;
+                const regionWidth = isElectron ?
+                    ( ocrRegion.size.width * 100 ) + "%" :
+                    ( ocrRegion.size.width * context_resolution.width ) + "px";
+
+                const regionHeight = isElectron ?
+                    ( ocrRegion.size.height * 100 ) + "%" :
+                    ( ocrRegion.size.height * context_resolution.height ) + "px";
+
+                let regionPosition: CSSProperties;
+
+                if ( isElectron ) {
+                    regionPosition = {
+                        top: ( ocrRegion.position.top * 100 ) + "%",
+                        left: ( ocrRegion.position.left * 100 ) + "%",
+                    }
+                }
+                else {
+                    regionPosition = {
+                        top: ocrRegion.position.top * context_resolution.height + 'px',
+                        left: ocrRegion.position.left * context_resolution.width + 'px',
+                    }
+                }
             
                 return (
-                    <div className="ocr-region" key={regionIdx}
+                    <div className="ocr-region ignore-mouse" key={regionIdx}
                         style={{
                             // border: 'solid 2px yellow',
+                            ...regionPosition,
                             position: 'absolute',
-                            top: ( ocrRegion.position.top * 100 ) + "%",
-                            left: ( ocrRegion.position.left * 100 ) + "%",
-                            width: ( ocrRegion.size.width * 100 ) + "%",
-                            height: ( ocrRegion.size.height * 100 ) + "%",
+                            width: regionWidth,
+                            height: regionHeight,
                             boxSizing: 'border-box'
                         }}
                     >
+                        {/* { !ocrResult.image && typeof ocrRegion.image === 'string' && !isElectron &&
+                            <img className="ignore-mouse"
+                                src={ocrRegion.image}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    marginTop: 1,
+                                    marginLeft: 1,
+                                    aspectRatio: regionAspectRatio
+                                }}
+                            />
+                        } */}
                         {
 
                             ocrRegion.results.map( ( item, resultIdx ) => {
@@ -142,9 +245,9 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
 
                                 if ( ocrTemplateRegion?.text_to_speech_options?.automatic ) {
                                     const { voice_uri, volume, speed, pitch } = ocrTemplateRegion.text_to_speech_options;
-                                    const text = item.text.map( line => line.content ).join(' ');
+                                    const text = getOcrItemText( item );
                                     speak({
-                                        text: item.text.map( line => line.content ).join(' '),
+                                        text,
                                         voiceURI: voice_uri,
                                         volume, 
                                         speed,
@@ -160,10 +263,12 @@ export default function FullscreenOcrResult( props: FullscreenOcrResultProps ) {
                                         key={resultIdx}
                                         ocrItem={item}
                                         ocrRegionSize={ocrRegion.size}
+                                        contextResolution={ocrResult.context_resolution}
                                         ocrRegionId={ocrRegion.id}
                                         ocrItemBoxVisuals={ocrItemBoxVisuals}
                                         overlayBehavior={overlayBehavior}
                                         overlayHotkeys={overlayHotkeys}
+                                        isElectron={isElectron}
                                         onClick={ handleBoxClick }
                                         onMouseEnter={ handleBoxMouseEnter }
                                         onMouseLeave={ handleBoxMouseLeave }

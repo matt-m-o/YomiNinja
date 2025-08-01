@@ -1,4 +1,4 @@
-import { OcrItem, OcrItemBox, OcrResult } from "../../../../domain/ocr_result/ocr_result";
+import { OcrItem, OcrItemBox, OcrResult, OcrTextLine } from "../../../../domain/ocr_result/ocr_result";
 import { OcrAdapterStatus, UpdateOcrAdapterSettingsOutput } from "../../../../application/adapters/ocr.adapter";
 import * as grpc from '@grpc/grpc-js';
 import { OCRServiceClient } from "../../../../../../grpc/rpc/ocr_service/OCRService";
@@ -18,6 +18,8 @@ import { PpOcrEngineSettings } from "../../ppocr.adapter/ppocr_settings";
 import { UpdateSettingsResponse__Output } from "../../../../../../grpc/rpc/ocr_service/UpdateSettingsResponse";
 import { DetectRequest } from "../../../../../../grpc/rpc/ocr_service/DetectRequest";
 import { DetectResponse__Output } from "../../../../../../grpc/rpc/ocr_service/DetectResponse";
+import { getNextPortAvailable } from "../../../util/port_check";
+import { TextLine__Output } from "../../../../../../grpc/rpc/ocr_service/TextLine";
 
 export class PaddleOcrService {
     
@@ -26,6 +28,8 @@ export class PaddleOcrService {
     private serviceProcess: ChildProcessWithoutNullStreams;
     private settingsPresetsRoot: string;
     private binRoot: string;
+
+    private autoRestartCount = 0;
 
     constructor() {
         this.binRoot = isDev
@@ -38,7 +42,7 @@ export class PaddleOcrService {
         if ( !serviceAddress )
             return;
     
-        console.log("initializing wih address: "+ serviceAddress );
+        console.log("initializing PaddleOcrService | Address: "+ serviceAddress );
 
         this.ocrServiceClient = new ocrServiceProto.ocr_service.OCRService(
             serviceAddress,
@@ -50,7 +54,7 @@ export class PaddleOcrService {
 
     async recognize( input: RecognizeBytesRequest ): Promise< OcrResult | null > {
         
-        const ok = await this.processStatusCheck();        
+        const ok = await this.processStatusCheck();
         if ( !ok ) return null;
 
         this.status = OcrAdapterStatus.Processing;
@@ -63,7 +67,7 @@ export class PaddleOcrService {
                 }
                 resolve(response);
             })
-        );
+        ).catch( console.error );
         // console.timeEnd('PaddleOcrService.recognize');
         this.status = OcrAdapterStatus.Enabled;
         
@@ -76,19 +80,34 @@ export class PaddleOcrService {
         )
             return null;
         
-        const ocrItems: OcrItem[] = clientResponse.results.map( ( item ) => {
-            return {
+        const ocrItems: OcrItem[] = [];
+
+        for ( const item of clientResponse.results ) {
+
+            const lines: OcrTextLine[] = [];
+
+            if ( !item?.text_lines?.length ) continue;
+            
+            for ( const line of item.text_lines ) {
+                if ( !line?.content?.length ) continue;
+                lines.push({
+                    content: line.content,
+                    box: line.box || undefined
+                } as OcrTextLine );
+            }
+
+            ocrItems.push({
                 ...item,
-                text: [{
-                    content: item.text
-                }],
-            } as OcrItem
-        });
+                text: lines,
+                is_vertical: undefined // Not supported
+            } as OcrItem);
+        }
 
         const result = OcrResult.create({
             id: clientResponse.id,
             context_resolution: clientResponse.context_resolution,
             results: ocrItems,
+            image: input.image_bytes as Buffer
         });
 
 
@@ -96,6 +115,9 @@ export class PaddleOcrService {
     }
 
     async detect( input: DetectRequest, id: string ): Promise< OcrItemBox[] > {
+
+        const ok = await this.processStatusCheck();
+        if ( !ok ) return [];
 
         const clientResponse = await new Promise< DetectResponse__Output | undefined >(
             (resolve, reject) => this.ocrServiceClient?.Detect( input, ( error, response ) => {
@@ -137,23 +159,36 @@ export class PaddleOcrService {
         return clientResponse.language_codes;
     }
 
-    startProcess( onInitialized?: ( input?: any ) => void ) {
+    async startProcess( onInitialized?: ( input?: any ) => void ) {
 
         this.handleSettingsPreset();
 
         const platform = os.platform();
 
         const executableName = platform === 'win32'
-            ? 'ppocr_infer_service_grpc.exe'
+            ? 'ppocr_infer_service_grpc.exe' // !
             : 'start.sh'; // start.sh | ppocr_infer_service_grpc
 
         const executable = join( this.binRoot + `/${executableName}` );
-        
+
+        let port: string | number| undefined = (await getNextPortAvailable( 52_000 )) || 22345;
+
+        this.status = OcrAdapterStatus.Starting;
         this.serviceProcess = spawn(
             executable,
-            [ this.settingsPresetsRoot ],
+            [ this.settingsPresetsRoot, 'default', port.toString() ],
             { cwd: this.binRoot }
         );
+        this.serviceProcess.on('error', error => {
+            console.error(error);
+            this.killServiceProcess();
+            if ( this.status === OcrAdapterStatus.Starting ) {
+                this.status = OcrAdapterStatus.Disabled
+                console.log("Warning: PaddleOCR service couldn't be started!")
+            }
+            if (onInitialized) onInitialized();
+        });
+        
 
         // Handle stdout and stderr data
         this.serviceProcess.stdout.on('data', ( data: string ) => {
@@ -178,21 +213,33 @@ export class PaddleOcrService {
 
         // Handle process exit
         this.serviceProcess.on('close', (code) => {
-            console.log(`ppocr_infer_service_grpc.exe process exited with code ${code}`);
+            console.log(`ppocr_infer_service_grpc process exited with code ${code}`);
+            this.killServiceProcess();
 
-            if ( this.status != OcrAdapterStatus.Restarting )
+            if ( 
+                this.status != OcrAdapterStatus.Restarting &&
+                this.status != OcrAdapterStatus.Disabled &&
+                this.autoRestartCount < 1
+            ) {
                 this.restart( () => {} );
+                this.autoRestartCount++;
+            }
+            if ( this.autoRestartCount >= 1 ) {
+                this.status = OcrAdapterStatus.Disabled;
+                if (onInitialized) onInitialized();
+            }
         });
 
-        process.on('exit', () => {
-            // Ensure the child process is killed before exiting
-            this.serviceProcess.kill('SIGTERM'); // You can use 'SIGINT' or 'SIGKILL' as well
-        });
-          
+        process.on( 'exit', this.killServiceProcess );
+        process.on( 'SIGINT', this.killServiceProcess );
+        process.on( 'SIGTERM', this.killServiceProcess );
     }
 
     // Checks if the ppocrService is enabled.
     async processStatusCheck(): Promise< boolean > {
+
+        if ( this.status === OcrAdapterStatus.Disabled )
+            return false;
         
         let triesCounter = 0;
 
@@ -204,7 +251,11 @@ export class PaddleOcrService {
 
             console.log('ppocrServiceProcessStatusCheck: '+ triesCounter);
 
-            if ( triesCounter > 15 ) return false;
+            if ( triesCounter > 5 )  {
+                this.status = OcrAdapterStatus.Disabled;
+                console.log('Warning: PaddleOCR service is not running!')
+                return false;
+            }
         }
 
         return true
@@ -272,7 +323,7 @@ export class PaddleOcrService {
         callback();
 
         if ( !ok ) {
-            console.log("PaddleOCR service failed to restart");
+            console.log("PaddleOCR service failed to restart!");
             return;
         }
 
@@ -281,7 +332,7 @@ export class PaddleOcrService {
 
     private restartProcess() {
         this.status = OcrAdapterStatus.Restarting;
-        this.serviceProcess.kill('SIGTERM');
+        this.killServiceProcess();
         this.startProcess();
     }
 
@@ -307,17 +358,29 @@ export class PaddleOcrService {
         if ( !dirExists )
             fs.mkdirSync( this.settingsPresetsRoot, { recursive: true } );
     
-        // if ( !fileExists ) {
+        if ( !fileExists ) {
             const baseFilePath = join( this.binRoot, '/presets/default.json' );
             const dest = join( this.settingsPresetsRoot, 'default.json' );
             fs.copyFileSync(
                 baseFilePath,
                 dest
             );
-        // }
+        }
     }
 
     handleLanguageTags( tag: string ) {
         
+    }
+
+    killServiceProcess = () => {
+        if ( !this.serviceProcess ) return;
+        console.log('Killing PaddleOCRService');
+
+        try {
+            // Ensure the child process is killed before exiting
+            this.serviceProcess.kill('SIGTERM'); // You can use 'SIGINT' or 'SIGKILL' as well
+        } catch (error) {
+            console.error(error);
+        }
     }
 }

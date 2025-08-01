@@ -7,7 +7,7 @@ import { Profile } from "../../../domain/profile/profile";
 import { ProfileRepository } from "../../../domain/profile/profile.repository";
 import { OcrEngineSettings, SettingsPreset } from "../../../domain/settings_preset/settings_preset";
 import { ImageProcessingAdapter } from "../../adapters/image_processing.adapter";
-import { OcrAdapter } from "../../adapters/ocr.adapter";
+import { OcrAdapter, OcrAdapterStatus } from "../../adapters/ocr.adapter";
 import { VideoAnalyzerAdapter } from "../../adapters/video_analyzer.adapter";
 
 
@@ -111,6 +111,8 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
         if ( !ocrResult )
             return null;
 
+        ocrResult.image = imageBuffer;
+
         return ocrResult;
     }
 
@@ -135,7 +137,8 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
             context_resolution: {
                 width: metadata.width,
                 height: metadata.height,
-            }
+            },
+            image
         });
 
         
@@ -163,7 +166,7 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
 
             const { auto_ocr_options } = targetRegion;
 
-            refreshAllRegions = refreshAllRegions || auto_ocr_options.refresh_all_regions;
+            refreshAllRegions = Boolean( refreshAllRegions || auto_ocr_options?.refresh_all_regions );
 
             const targetRegionPixels = targetRegion.toPixels({
                 width: metadata.width,
@@ -313,7 +316,16 @@ export class RecognizeImageUseCase< TOcrSettings extends OcrEngineSettings > {
         return adapter;
     }
 
-    getSupportedOcrEngines(): string[] {
-        return this.ocrAdapters.map( adapter => adapter.name );
+    getSupportedOcrEngines = (): string[] => {
+        // this.ocrAdapters.forEach( adapter => {
+        //     console.log({
+        //         name: adapter.name,
+        //         status: adapter.status
+        //     })
+        // } )
+        const enabledEngines = this.ocrAdapters.filter(
+            adapter => adapter.status !== OcrAdapterStatus.Disabled
+        );
+        return enabledEngines.map( adapter => adapter.name );
     }
 }

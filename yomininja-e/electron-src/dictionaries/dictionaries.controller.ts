@@ -1,4 +1,4 @@
-import { BrowserWindow, IpcMainInvokeEvent, dialog, ipcMain, shell } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, dialog, shell } from "electron";
 import { YomichanImportService } from "./yomichan/yomichan_import.service";
 import { Language, LanguageJson } from "../@core/domain/language/language";
 import { DictionaryDefinition } from "../@core/domain/dictionary/dictionary_definition/dictionary_definition";
@@ -8,6 +8,7 @@ import { JmdictImportService } from "./Jmdict/Jmdict_import.service";
 import path from "path";
 import { DictionaryImportProgress } from "./common/dictionary_import_progress";
 import { Dictionary } from "../@core/domain/dictionary/dictionary";
+import { ipcMain } from "../common/ipc_main";
 
 export type DictionaryFormats = 'yomichan' | 'jmdictFurigana';
 
@@ -162,8 +163,11 @@ export class DictionariesController {
     }
 
     private importProgressCallBack = ( input: DictionaryImportProgress ) => {
-
-        this.mainWindow.webContents.send( 'dictionaries:import_progress', input );
+        ipcMain.send(
+            this.mainWindow,
+            'dictionaries:import_progress',
+            input
+        );
     }
 
 }

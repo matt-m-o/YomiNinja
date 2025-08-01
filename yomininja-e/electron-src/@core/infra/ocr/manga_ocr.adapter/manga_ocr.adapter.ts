@@ -2,14 +2,14 @@ import { OcrItem, OcrResult } from "../../../domain/ocr_result/ocr_result";
 import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 import { MangaOcrEngineSettings, getMangaOcrDefaultSettings, mangaOcrAdapterName } from "./manga_ocr_settings";
-import { pyOcrService } from "../py_ocr_service/_temp_index";
+import { pyOcrService } from "../ocr_services/py_ocr_service/_temp_index";
 import { mangaOcrPyService } from "./manga_ocr_py/_temp_index";
 
 export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
     
     static _name: string = mangaOcrAdapterName;
     public readonly name: string = MangaOcrAdapter._name;
-    public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
+    // public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
     private idCounter: number = 0;
     private recognitionCallOnHold: OcrRecognitionInput | undefined;
 
@@ -17,11 +17,16 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
     private prevResult: OcrResultScalable | null = null;
     private prevResultTime: Date = new Date();
 
+    private engineSettings: MangaOcrEngineSettings;
+
+    get status(): OcrAdapterStatus {
+        return mangaOcrPyService.status;
+    }
+
     constructor() {}
 
     initialize() {
-
-        this.status = OcrAdapterStatus.Enabled;
+        // this.status = OcrAdapterStatus.Enabled;
     }
 
     async recognize( input: OcrRecognitionInput ): Promise< OcrResultScalable | null > {
@@ -45,7 +50,7 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
             this.prevImage = input.imageBuffer;
       
         console.log('processing recognition input');
-        this.status = OcrAdapterStatus.Processing;
+        // this.status = OcrAdapterStatus.Processing;
         // console.time('MangaOcrAdapter.recognize');
 
         let result: OcrResult | null = null;
@@ -53,16 +58,16 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
             result = await mangaOcrPyService.recognize({
                 id: this.idCounter.toString() + this.name,
                 image: input.imageBuffer,
-                boxes: [],
+                text_detector: this.engineSettings.text_detector
             });
             
         } catch (error) {
             console.error( error );
-            this.status = OcrAdapterStatus.Enabled
+            // this.status = OcrAdapterStatus.Enabled
         }
 
         // console.timeEnd('PpOcrAdapter.recognize');
-        this.status = OcrAdapterStatus.Enabled;
+        // this.status = OcrAdapterStatus.Enabled;
         
         // Throwing away current response an returning latest call result
         if ( this.recognitionCallOnHold ){
@@ -77,7 +82,21 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
         const resultScalable = OcrResultScalable.createFromOcrResult(result);
         this.cacheResult( resultScalable );
 
-        return resultScalable;
+        return this.postProcess(resultScalable);
+    }
+
+    private postProcess( data: OcrResultScalable ): OcrResultScalable {
+        data.ocr_regions.forEach( region => {
+            region.results.forEach( result => {
+                result.text.forEach(
+                    line => { 
+                        line.content = line.content.replaceAll( '．．．', '…' );
+                    }
+                )
+            });
+        });
+
+        return data;
     }
 
     async getSupportedLanguages(): Promise< string[] > {
@@ -88,6 +107,11 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
         settingsUpdate: MangaOcrEngineSettings,
         oldSettings?: MangaOcrEngineSettings | undefined
     ): Promise< UpdateOcrAdapterSettingsOutput <MangaOcrEngineSettings> > {
+
+        this.engineSettings = settingsUpdate;
+
+        this.resetCache();
+
         return {
             settings: settingsUpdate,
             restart: false
@@ -116,10 +140,16 @@ export class MangaOcrAdapter implements OcrAdapter< MangaOcrEngineSettings > {
         if ( this.getCacheAge() > 30 )
             return false;
 
+        if ( !this.prevImage?.equals ) return false;
+
         const isSameImage = this.prevImage.equals( image );
 
         if ( !isSameImage ) return false;
 
         return true;
+    }
+
+    private resetCache() {
+        this.prevImage = Buffer.from('');
     }
 }

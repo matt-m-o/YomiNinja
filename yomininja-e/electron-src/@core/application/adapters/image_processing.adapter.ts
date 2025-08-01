@@ -1,3 +1,4 @@
+import { ImagePreprocessingOperation } from "../../domain/ocr_template/ocr_target_region/ocr_target_region";
 
 export type ImageResizeInput = {    
     imageBuffer: Buffer;
@@ -32,4 +33,5 @@ export interface ImageProcessingAdapter {
     invertColors: ( image: Buffer ) => Promise< Buffer >;
     extract: ( input: ImageExtractInput ) => Promise< Buffer >;
     getMetadata: ( image: Buffer ) => Promise< ImageMetadata >;
+    applyPipeline: ( image: Buffer, pipelineOperations: ImagePreprocessingOperation[] ) => Promise< Buffer >;
 }

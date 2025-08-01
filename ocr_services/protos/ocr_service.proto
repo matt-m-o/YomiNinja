@@ -43,12 +43,17 @@ message Box {
   Vertex top_left = 3;
   Vertex top_right = 4;
 }
+message TextLine {
+  string content = 1;
+  Box box = 2;
+}
 message Result {
-  string text = 1;
+  repeated TextLine text_lines = 1;
   float recognition_score = 2;
   float classification_score = 3;
   int32 classification_label = 4; // Text direction
   Box box = 5;
+  bool is_vertical = 6;
 }
 message ContextResolution {
   int32 width = 1;
@@ -77,13 +82,14 @@ message DetectRequest {
   string ocr_engine = 5; // MangaOCR | PaddleOCR | AppleVision
 }
 
-message DetectResult {
+message DetectionResult {
   bytes image_bytes = 1;
   Box box = 2;
+  repeated TextLine text_lines = 3;
 }
 message DetectResponse {
   string id = 1;
-  repeated DetectResult results = 2;
+  repeated DetectionResult results = 2;
   ContextResolution context_resolution = 3;
 }
 

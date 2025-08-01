@@ -2,7 +2,7 @@
 import { join } from 'path';
 import { format } from 'url';
 
-import { BrowserWindow, IpcMainInvokeEvent, Menu, MenuItem, app, dialog, ipcMain } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, Menu, MenuItem, app, dialog } from "electron";
 import isDev from 'electron-is-dev';
 import { PAGES_DIR } from '../util/directories.util';
 import { WindowManager } from '../../gyp_modules/window_management/window_manager';
@@ -10,6 +10,8 @@ import { windowManager } from '../@core/infra/app_initialization';
 import { getBrowserWindowHandle } from '../util/browserWindow.util';
 import { overlayController } from '../overlay/overlay.index';
 import { uIOhook } from 'uiohook-napi';
+import { ipcMain } from '../common/ipc_main';
+import { httpServerPort } from '../common/server';
 
 export class MainController {
 
@@ -166,18 +168,15 @@ export class MainController {
         
     }
 
-    async loadMainPage(): Promise< void >  {
+    async loadMainPage( showWindow = true ): Promise< void >  {
         this.mainWindowUrl = isDev ?
             'http://localhost:8000/' :
-            format({
-                pathname: join( PAGES_DIR, '/index.html'),
-                protocol: 'file:',
-                slashes: true,
-            });
+            `http://localhost:${httpServerPort}/index.html`;
 
         await this.mainWindow.loadURL (this.mainWindowUrl );
 
-        this.mainWindow.show();
+        if ( showWindow )
+            this.mainWindow.show();
     }
 
     refreshPage(): void {

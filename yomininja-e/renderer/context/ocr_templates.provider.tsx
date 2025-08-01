@@ -3,6 +3,7 @@ import { OcrTemplate, OcrTemplateId, OcrTemplateJson } from "../../electron-src/
 import { GetOcrTemplates_Input } from "../../electron-src/@core/application/use_cases/ocr_template/get_ocr_template/get_ocr_templates.use_case";
 import { CreateOcrTemplate_Input } from "../../electron-src/@core/application/use_cases/ocr_template/create_ocr_template/create_ocr_template.use_case";
 import { OcrTargetRegion, OcrTargetRegionId, OcrTargetRegionJson } from "../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
+import { ipcRenderer } from "../utils/ipc-renderer";
 
 
 
@@ -35,7 +36,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
 
     async function createOcrTemplate( data: CreateOcrTemplate_Input ): Promise< OcrTemplateJson > {
 
-        const template = await global.ipcRenderer.invoke( 'ocr_templates:create', data );
+        const template = await ipcRenderer.invoke( 'ocr_templates:create', data );
 
         await getOcrTemplates();
 
@@ -44,11 +45,11 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
 
     async function getOcrTemplates( input?: GetOcrTemplates_Input ) {
 
-        const templates = await global.ipcRenderer.invoke( 'ocr_templates:get', input );
+        const templates = await ipcRenderer.invoke( 'ocr_templates:get', input );
         // console.log({ templates })
         setOcrTemplates( templates );
 
-        const activeTemplate = await global.ipcRenderer.invoke( 'ocr_templates:get_active' );
+        const activeTemplate = await ipcRenderer.invoke( 'ocr_templates:get_active' );
         // console.log({ activeTemplate });
         setActiveOcrTemplate( activeTemplate );
 
@@ -57,7 +58,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
 
     async function deleteOcrTemplate( id: OcrTemplateId ) {
 
-        await global.ipcRenderer.invoke( 'ocr_templates:delete', id );
+        await ipcRenderer.invoke( 'ocr_templates:delete', id );
 
         if ( id === activeOcrTemplate?.id )
             loadOcrTemplate( null );
@@ -67,7 +68,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
 
     async function loadOcrTemplate( id: OcrTemplateId | null ) {
 
-        const template = await global.ipcRenderer.invoke( 'ocr_templates:change_active', id );
+        const template = await ipcRenderer.invoke( 'ocr_templates:change_active', id );
 
         if ( id )
             setActiveOcrTemplate( template );
@@ -86,7 +87,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
 
         // console.log( data );
 
-        const result = await global.ipcRenderer.invoke( 'ocr_templates:update', data );
+        const result = await ipcRenderer.invoke( 'ocr_templates:update', data );
         // console.log( result );
 
         if ( result ) {
@@ -168,7 +169,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
     }
 
     function handleActiveOcrTemplateChange( event, template: OcrTemplateJson | null ) {
-        console.log( template );
+        // console.log( template );
         setActiveOcrTemplate( template );
     }
     
@@ -176,10 +177,10 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
 
         getOcrTemplates();
 
-        global.ipcRenderer.on( 'ocr_templates:active_template', handleActiveOcrTemplateChange );
+        ipcRenderer.on( 'ocr_templates:active_template', handleActiveOcrTemplateChange );
 
         return () => {
-            global.ipcRenderer.removeAllListeners( 'ocr_templates:active_template' );
+            ipcRenderer.removeAllListeners( 'ocr_templates:active_template' );
         };
 
     }, [] );
