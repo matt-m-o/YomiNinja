@@ -34,6 +34,7 @@ export interface OcrAdapter< TSettings extends OcrEngineSettings = OcrEngineSett
 export enum OcrAdapterStatus {
     Enabled = "Enabled",
     Disabled = "Disabled",
+    Starting = "Starting",
     Restarting = "Restarting",
     Processing = "Processing",
 }

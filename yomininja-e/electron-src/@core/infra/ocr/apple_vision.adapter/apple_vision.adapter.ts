@@ -2,19 +2,26 @@ import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionI
 import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 import { AppleVisionOcrEngineSettings, getAppleVisionDefaultSettings, appleVisionAdapterName } from "./apple_vision_settings";
 import { appleVisionPyService } from "./apple_vision_py/_temp_index";
+import { pyOcrService } from "../ocr_services/py_ocr_service/_temp_index";
 
 export class AppleVisionAdapter implements OcrAdapter< AppleVisionOcrEngineSettings > {
     
     static _name: string = appleVisionAdapterName;
     public readonly name: string = AppleVisionAdapter._name;
-    public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
+    // public status: OcrAdapterStatus = OcrAdapterStatus.Disabled;
     private idCounter: number = 0;
     private recognitionCallOnHold: OcrRecognitionInput | undefined;
+
+    get status(): OcrAdapterStatus {
+        if ( process.platform !== 'darwin' )
+            return OcrAdapterStatus.Disabled;
+        return pyOcrService.status;
+    }
 
     constructor() {}
 
     initialize() {
-        this.status = OcrAdapterStatus.Enabled;
+        // this.status = OcrAdapterStatus.Enabled;
     }
 
     async recognize( input: OcrRecognitionInput ): Promise< OcrResultScalable | null > {
@@ -33,7 +40,7 @@ export class AppleVisionAdapter implements OcrAdapter< AppleVisionOcrEngineSetti
         const { language } = input
       
         console.log('processing recognition input');
-        this.status = OcrAdapterStatus.Processing;
+        // this.status = OcrAdapterStatus.Processing;
         // console.time('AppleVisionAdapter.recognize');
         const result = await appleVisionPyService.recognize({
             id: this.idCounter.toString() + this.name,
@@ -41,7 +48,7 @@ export class AppleVisionAdapter implements OcrAdapter< AppleVisionOcrEngineSetti
             languageCode: language.bcp47_tag || language.two_letter_code
         });
         // console.timeEnd('AppleVisionAdapter.recognize');
-        this.status = OcrAdapterStatus.Enabled;
+        // this.status = OcrAdapterStatus.Enabled;
         
         // Throwing away current response an returning newest call result
         if ( this.recognitionCallOnHold ){

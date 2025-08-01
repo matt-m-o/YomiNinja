@@ -1,4 +1,5 @@
 import { ImageExtractInput, ImageMetadata, ImageProcessingAdapter, ImageResizeInput, ImageResizeOutput } from "../../../application/adapters/image_processing.adapter";
+import { ImagePreprocessingOperation } from "../../../domain/ocr_template/ocr_target_region/ocr_target_region";
 
 
 export class FakeImageProcessingAdapter implements ImageProcessingAdapter {
@@ -42,4 +43,6 @@ export class FakeImageProcessingAdapter implements ImageProcessingAdapter {
             height: 1000
         };
     };
+
+    applyPipeline: (image: Buffer, operations: ImagePreprocessingOperation[]) => Promise<Buffer>;
 }

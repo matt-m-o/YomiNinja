@@ -42,6 +42,16 @@ export const OcrTargetRegionTypeOrmSchema = new EntitySchema< OcrTargetRegion >(
             type: 'json',
             nullable: true
         },
+
+        preprocessing_pipeline: {
+            type: 'json',
+            nullable: true
+        },
+
+        image: {
+            type: 'blob',
+            nullable: true
+        }
     },
 
     relations: {

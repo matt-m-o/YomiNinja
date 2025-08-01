@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { CaptureSourceContext, CaptureSourceProvider } from '../context/capture_source.provider';
+import { ipcRenderer } from "../utils/ipc-renderer";
 
 
 class Capturer {
@@ -127,7 +128,7 @@ function ScreenCapturerElement() {
         if ( capturer.keepStreaming )
             return;
 
-        global.ipcRenderer.invoke( 'screen_capturer:get_display_size')
+        ipcRenderer.invoke( 'screen_capturer:get_display_size')
             .then( displaySize => {
 
                 const windowSize = activeCaptureSource?.window?.size;
@@ -138,11 +139,11 @@ function ScreenCapturerElement() {
                         // This makes the render independent
                         capturer.startStream( sendFrame );
 
-                        global.ipcRenderer.on( 'screen_capturer:set_interval', ( _, interval: number ) => {
+                        ipcRenderer.on( 'screen_capturer:set_interval', ( _, interval: number ) => {
                             capturer.setIntervalBetweenFrames( interval );
                         });
 
-                        global.ipcRenderer.on( 'screen_capturer:grab_frame', async () => {
+                        ipcRenderer.on( 'screen_capturer:grab_frame', async () => {
                 
                             const frame = await capturer.grabFrame();
                             
@@ -150,11 +151,11 @@ function ScreenCapturerElement() {
                                 sendFrame( frame );
                         });
 
-                        global.ipcRenderer.on( 'screen_capturer:stop_stream', async () => {
+                        ipcRenderer.on( 'screen_capturer:stop_stream', async () => {
                             capturer.stopStream();
                         });
 
-                        const interval = await global.ipcRenderer.invoke( 'screen_capturer:get_interval');
+                        const interval = await ipcRenderer.invoke( 'screen_capturer:get_interval');
                         capturer.setIntervalBetweenFrames( interval );
                     });
 
@@ -163,8 +164,8 @@ function ScreenCapturerElement() {
         
         
         return () => {
-            global.ipcRenderer.removeAllListeners( 'screen_capturer:set_interval' );
-            global.ipcRenderer.removeAllListeners( 'screen_capturer:grab_frame' );
+            ipcRenderer.removeAllListeners( 'screen_capturer:set_interval' );
+            ipcRenderer.removeAllListeners( 'screen_capturer:grab_frame' );
         };
         
 
@@ -190,7 +191,7 @@ function ScreenCapturerElement() {
     // }
 
     async function sendFrame( frame: Buffer ) {
-        await global.ipcRenderer.invoke(
+        await ipcRenderer.invoke(
             'screen_capturer:frame',
             frame
         );

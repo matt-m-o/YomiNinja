@@ -1,5 +1,6 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { CaptureSource } from '../../electron-src/ocr_recognition/common/types';
+import { ipcRenderer } from "../utils/ipc-renderer";
 
 export type CaptureSourceContextType = {
     activeCaptureSource: CaptureSource;
@@ -29,11 +30,11 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
         // console.log( captureSource );
 
         setActiveCaptureSource( captureSource );
-        global.ipcRenderer.invoke( 'app:set_capture_source', captureSource );
+        ipcRenderer.invoke( 'app:set_capture_source', captureSource );
     }
 
     async function getCaptureSources() {
-        const result: CaptureSource[] = await global.ipcRenderer.invoke( 'app:get_capture_sources' );
+        const result: CaptureSource[] = await ipcRenderer.invoke( 'app:get_capture_sources' );
 
         console.log( result );
 
@@ -41,7 +42,7 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
     }
 
     async function getActiveCaptureSource( ) {
-        const source = await global.ipcRenderer.invoke( 'app:get_active_capture_source' );
+        const source = await ipcRenderer.invoke( 'app:get_active_capture_source' );
         // console.log(source);
         setActiveCaptureSource(source);
     }
@@ -59,20 +60,20 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
 
         getActiveCaptureSource();
 
-        global.ipcRenderer.on( 'app:active_capture_source', ( event, data: CaptureSource ) => {
+        ipcRenderer.on( 'app:active_capture_source', ( event, data: CaptureSource ) => {
             setActiveCaptureSource( data );
         });
 
-        global.ipcRenderer.on( 'app:capture_source_image', ( event, data: { image: Buffer, imageBase64: string } ) => {
+        ipcRenderer.on( 'app:capture_source_image', ( event, data: { image: Buffer, imageBase64: string } ) => {
             setCaptureSourceImage( data.image );
             setCaptureSourceImageBase64( data.imageBase64 );
         });
         
         return () => {
-            global.ipcRenderer.removeAllListeners( 'app:active_capture_source' );
-            global.ipcRenderer.removeAllListeners( 'app:capture_source_image' );
+            ipcRenderer.removeAllListeners( 'app:active_capture_source' );
+            ipcRenderer.removeAllListeners( 'app:capture_source_image' );
         }
-    }, [ global.ipcRenderer ] );
+    }, [ ipcRenderer ] );
 
     
     return (

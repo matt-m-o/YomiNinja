@@ -1,6 +1,7 @@
 // import * as x11 from 'x11';
-import { TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
+import { Rectangle, TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
 import { exec } from 'child_process';
+import { windowManager } from 'node-window-manager';
 
 
 type XDoToolWindowGeometry = {
@@ -17,7 +18,7 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
 
     async searchWindowByTitle( title: string ): Promise<WindowProperties[]> {
 
-        console.log(`searchWindowByTitle: ${title}`);
+        // console.log(`searchWindowByTitle: ${title}`);
 
         const ids = await this.searchWindowByName( title );
         const windows: WindowProperties[] = [];
@@ -99,9 +100,20 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
         }
     }
 
+    setWindowBounds = ( windowHandle: number, bounds: Partial<Rectangle> ) => {
+        windowManager.getWindows()
+            .find( w => {
+                if ( w.id !== windowHandle ) return;
+                w.setBounds(bounds);
+                return true;
+            });
+    }
+
 
     activateWindow( windowId: number ) {
         const command = `xdotool windowactivate ${windowId}`;
+
+        // console.log({ command });
         
         exec( command, ( error, stdout, stderr ) => {
 
@@ -114,6 +126,8 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
     searchWindowByName( windowName: string ): Promise< number[] > {
 
         const command = `xdotool search --onlyvisible --name "${windowName}"`;
+
+        // console.log({ command });
 
         return new Promise( ( resolve, reject ) => {
 
@@ -138,6 +152,8 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
 
         const command = `xdotool getwindowname ${windowHandle}`;
 
+        // console.log({ command });
+
         return new Promise( ( resolve, reject ) => {
 
             exec( command, ( error, stdout, stderr ) => {
@@ -157,6 +173,8 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
     async getWindowGeometry( windowHandle: number ): Promise< XDoToolWindowGeometry | null > {
 
         const command = `xdotool getwindowgeometry --shell ${windowHandle}`;
+
+        // console.log({ command });
 
         return new Promise( ( resolve, reject ) => {
 
@@ -182,6 +200,44 @@ export class WindowManagerLinuxXDoTool implements WindowManagerNativeInterface {
                     HEIGHT: values[4],
                     SCREEN: values[5],
                 };
+    
+                resolve( geometry );
+            });
+        });
+   
+    }
+
+    async getWindowGeometryAlt( windowHandle: number ) {
+        const command = `xwininfo -id ${windowHandle}`;
+
+        // console.log({ command });
+
+        return new Promise( ( resolve, reject ) => {
+
+            exec( command, (error, stdout, stderr) => {
+
+                if ( error ) {
+                    console.error(`Error executing xwininfo: ${stderr}`);
+                    reject( null );
+                }
+
+                const outputLines = stdout.trim().split('\n').slice(1);
+
+                const values = outputLines.map( line => {
+                    const value = line.split(':')[1];
+                    return parseInt( value, 10 );
+                });
+    
+                const geometry: XDoToolWindowGeometry = {
+                    WINDOW: windowHandle,
+                    X:  values[1],
+                    Y: values[2],
+                    WIDTH: values[5],
+                    HEIGHT: values[6],
+                    SCREEN: 0,
+                };
+
+                console.log(geometry);
     
                 resolve( geometry );
             });

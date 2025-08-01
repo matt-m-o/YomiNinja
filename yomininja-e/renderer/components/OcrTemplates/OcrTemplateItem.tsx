@@ -8,7 +8,7 @@ import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
 import { OcrTargetRegionDiv, toCssPercentage } from "./OcrTargetRegion";
-import { TemplateDiv } from "./OcrTemplateEditor";
+import { TemplateDiv } from "./OcrTemplateEditor/OcrTemplateEditor";
 
 const TemplateActionBtn = styled( Button )({
     minWidth:'fit-content',

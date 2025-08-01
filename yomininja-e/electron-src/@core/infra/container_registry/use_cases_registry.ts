@@ -31,12 +31,12 @@ import { PyVideoAnalyzerAdapter } from "../ocr/py_video_analyzer.adapter/py_vide
 export let enabledOcrEngines: symbol[] = [
     Registry.CloudVisionOcrAdapter,
     Registry.GoogleLensOcrAdapter,
+    Registry.MangaOcrAdapter
 ];
 if ( process.platform !== 'darwin' ) {
     enabledOcrEngines = [
         ...enabledOcrEngines,
         Registry.PpOcrAdapter,
-        Registry.MangaOcrAdapter
     ];
 }
 if ( process.platform === 'darwin' ) {
@@ -221,6 +221,9 @@ container_registry.bind( Registry.UpdateOcrTemplateUseCase )
             ),
             ocrTargetRegionRepo: context.container.get(
                 Registry.OcrTargetRegionTypeOrmRepository
+            ),
+            imageProcessing: context.container.get(
+                Registry.SharpImageProcessingAdapter
             ),
         })
     });

@@ -1,9 +1,10 @@
-import { BrowserWindow, IpcMainInvokeEvent, ipcMain } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent } from "electron";
 import { OcrTemplatesService } from "./ocr_templates.service";
 import { OcrTemplate, OcrTemplateId, OcrTemplateJson } from "../@core/domain/ocr_template/ocr_template";
 import { GetOcrTemplates_Input } from "../@core/application/use_cases/ocr_template/get_ocr_template/get_ocr_templates.use_case";
 import { InAppNotification } from "../common/types/in_app_notification";
 import { ocrTemplateEvents } from "./ocr_templates.index";
+import { ipcMain } from "../common/ipc_main";
 
 
 export class OcrTemplatesController {
@@ -127,8 +128,8 @@ export class OcrTemplatesController {
 
         const json = template?.toJson();
 
-        this.overlayWindow.webContents.send( 'ocr_templates:active_template', json );
-        // this.mainWindow.webContents.send( eventName, json );
+        ipcMain.send( this.overlayWindow, 'ocr_templates:active_template', json );
+        // ipcMain.send( this.mainWindow, eventName );
         ocrTemplateEvents.emit( 'active_template', template );
 
         // console.log( json?.target_regions );

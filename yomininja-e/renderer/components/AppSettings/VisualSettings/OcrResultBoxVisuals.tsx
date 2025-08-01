@@ -1,7 +1,7 @@
-import { Container, FormControlLabel, Switch, SxProps, TextField, Theme, Typography, debounce } from "@mui/material";
+import { Container, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, SxProps, TextField, Theme, Typography, debounce } from "@mui/material";
 import { useContext } from "react";
 import { SettingsContext } from "../../../context/settings.provider";
-import { OverlayOcrItemBoxVisuals } from "../../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
+import { GeneratedFuriganaVisibility, OverlayOcrItemBoxVisuals, TextPositioningMode } from "../../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import ColorPicker from "../../common/ColorPicker";
 
 
@@ -32,17 +32,98 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
             Extracted text
         </Typography>
 
-        <Container sx={{ ml: 1.5,  mt: 0, mb: 2 }}>
-            <FormControlLabel label='Individual character positioning (not supported by all OCR engines)'
-                title="Currently only supported by Google Cloud Vision. Breaks JPDB Reader."
+        <Container sx={{ ml: 1,  mt: 2, mb: 1 }}>
+            <FormControl fullWidth 
+                sx={{
+                    display:'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    width: 300
+                }}>
+                
+                <Select
+                    value={ ocrItemBoxVisuals?.text?.positioning?.mode || '' }
+                    label="Positioning Mode"
+                    title="In case the selected mode is not supported by the OCR engine, 'line-based' mode will be used"
+                    onChange={ ( event ) => {
+                        const { value } = event.target;
+                        if (typeof value === 'string') {
+                            updateOcrItemBoxVisuals({
+                                text: {
+                                    ...ocrItemBoxVisuals.text,
+                                    positioning: {
+                                        ...ocrItemBoxVisuals.text?.positioning,
+                                        mode: value as TextPositioningMode
+                                    }
+                                }
+                            });
+                        }
+                    }}
+                    sx={{ minWidth: !ocrItemBoxVisuals?.text?.positioning?.mode ? 220 : 150 }}
+                >
+                    <MenuItem value='block-based'
+                        title="Supported by all OCR Engines; Position text based on the detected text block position/size."
+                    >
+                        Block-based
+                    </MenuItem>
+                    <MenuItem value='line-based'
+                        title="Supported by all OCR Engines; Might break JPDB Reader."
+                    >
+                        Line-based
+                    </MenuItem>
+                    <MenuItem value='word-based'
+                        title="Supported by Google Lens and Cloud Vision; Might break JPDB Reader."
+                    >
+                        Word-based
+                    </MenuItem>
+                    <MenuItem value='character-based'
+                        title="Supported by Cloud Vision; Breaks JPDB Reader."
+                    >
+                        Character-based
+                    </MenuItem>
+                </Select>
+
+                <InputLabel>Positioning Mode</InputLabel>
+
+            </FormControl>
+            
+        </Container>
+            
+        <Container sx={{ ml: 1.5,  mt: 0, mb: 0 }}>
+            <FormControlLabel label='Add end-of-sentence punctuation'
+                title="Fixes Yomitan sentence mining issues"
                 control={
                     <Switch
-                        checked={ Boolean( ocrItemBoxVisuals?.text.character_positioning ) }
+                        checked={ Boolean( ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled ) }
                         onChange={ ( event ) => {
                             updateOcrItemBoxVisuals({
                                 text: {
                                     ...ocrItemBoxVisuals.text,
-                                    character_positioning: event.target.checked
+                                    sentence_ending_punctuation: {
+                                        ...ocrItemBoxVisuals?.text.sentence_ending_punctuation,
+                                        enabled: event.target.checked
+                                    }
+                                }
+                            });
+                        }}
+                    /> 
+                }
+            />
+
+            <FormControlLabel label='Invisible'
+                title="Hide the added punctuation"
+                control={
+                    <Switch
+                        disabled={ !Boolean( ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled ) }
+                        checked={ Boolean( ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.hidden ) }
+                        onChange={ ( event ) => {
+                            updateOcrItemBoxVisuals({
+                                text: {
+                                    ...ocrItemBoxVisuals.text,
+                                    sentence_ending_punctuation: {
+                                        ...ocrItemBoxVisuals?.text.sentence_ending_punctuation,
+                                        hidden: event.target.checked
+                                    }
                                 }
                             });
                         }}
@@ -50,6 +131,78 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                 }
             />
         </Container>
+
+        <Container sx={{ ml: 1.5,  mt: 0, mb: 2 }}>
+            <FormControlLabel label='Filter out extracted furigana'
+                title='Removes pieces of text that can potentially be furigana (experiemental)'
+                control={
+                    <Switch
+                        checked={ Boolean( ocrItemBoxVisuals?.text?.furigana_filter?.enabled ) }
+                        onChange={ ( event ) => {
+                            updateOcrItemBoxVisuals({
+                                text: {
+                                    ...ocrItemBoxVisuals.text,
+                                    furigana_filter: {
+                                        ...ocrItemBoxVisuals.text?.furigana_filter,
+                                        enabled: event.target.checked
+                                    }
+                                }
+                            });
+                        }}
+                    /> 
+                }
+            />
+        </Container>
+
+        <Container sx={{ ml: 1,  mt: 2, mb: 2 }}>
+            <FormControl fullWidth 
+                sx={{
+                    display:'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    width: 300
+                }}>
+                
+                <Select
+                    value={ ocrItemBoxVisuals?.text?.generated_furigana?.visibility || '' }
+                    label="Generated Furigana Visibility"
+                    title="Affects furigana generated by extensions (JPDBReader)"
+                    onChange={ ( event ) => {
+                        const { value } = event.target;
+                        if (typeof value === 'string') {
+                            updateOcrItemBoxVisuals({
+                                text: {
+                                    ...ocrItemBoxVisuals.text,
+                                    generated_furigana: {
+                                        ...ocrItemBoxVisuals.text?.generated_furigana,
+                                        visibility: value as GeneratedFuriganaVisibility
+                                    }
+                                }
+                            });
+                        }
+                    }}
+                    sx={{ minWidth: !ocrItemBoxVisuals?.text?.generated_furigana?.visibility ? 250 : 185 }}
+                >
+                    <MenuItem value='visible'>
+                        Visible
+                    </MenuItem>
+                    <MenuItem value='invisible'>
+                        Invisible
+                    </MenuItem>
+                    <MenuItem value='visible-on-line-hover'>
+                        Visible on Line Hover
+                    </MenuItem>
+                    <MenuItem value='visible-on-word-hover'>
+                        Visible on Word Hover
+                    </MenuItem>
+                </Select>
+
+                <InputLabel>Generated Furigana Visibility</InputLabel>
+
+            </FormControl>
+            
+        </Container>
+        
 
         <Container sx={{ mt: 0, mb: 2 }}>
 
@@ -110,19 +263,23 @@ export default function OcrResultBoxVisualSettings( props: OcrResultBoxVisualSet
                 sx={{ ...textFieldSx, width: 'min-content'}}
             />
 
-            <TextField label="Letter Spacing" sx={textFieldSx}                      
+            <TextField label="Letter Spacing (%)"
                 size='small'
                 type="number"
                 inputProps={{ style: { textAlign: 'center' } }}
-                value={ ocrItemBoxVisuals?.text.letter_spacing || 0 }
+                value={
+                    typeof ocrItemBoxVisuals?.text?.letter_spacing_factor === 'number' ? 
+                    ocrItemBoxVisuals?.text?.letter_spacing_factor : 100 
+                }
                 onInput={ (event: React.ChangeEvent<HTMLInputElement>) => {
                     updateOcrItemBoxVisuals({                                
                         text: {
                             ...ocrItemBoxVisuals?.text,
-                            letter_spacing: Number( event.target.value )
+                            letter_spacing_factor: Number( event.target.value )
                         }
                     });
                 }}
+                sx={{ ...textFieldSx, minWidth: '126px' }}
             />
 
             <TextField label="Outline Width" sx={textFieldSx}                      

@@ -21,8 +21,15 @@ export type OcrResultBoxScalable = {
     transform_origin?: 'top' | 'bottom' | 'center';
 };
 
+// TODO: Rename to OcrTextSymbolScalable and add to OcrTextWordScalable
 export type OcrTextLineSymbolScalable = {
     symbol: string;
+    box: OcrResultBoxScalable;
+    letter_spacing: number;
+};
+
+export type OcrTextWordScalable = {
+    word: string; // OcrTextLineSymbolScalable[]
     box: OcrResultBoxScalable;
     letter_spacing: number;
 };
@@ -30,6 +37,7 @@ export type OcrTextLineSymbolScalable = {
 export type OcrTextLineScalable = {
     content: string;
     box?: OcrResultBoxScalable;
+    words?: OcrTextWordScalable[];
     symbols?: OcrTextLineSymbolScalable[];
 };
 
@@ -44,6 +52,7 @@ export interface OcrItemScalable {
 export interface OcrRegion {
     id?: string,
     results: OcrItemScalable[],
+    image?: Buffer | string,
     position: { // Percentages
         top: number; 
         left: number;
@@ -58,6 +67,8 @@ export interface OcrRegion {
 export type OcrResultScalable_CreationInput = {
     id: string;
     context_resolution?: OcrResultContextResolution;
+    position?: OcrResultBoxPositionPcts;
+    image?: Buffer | string;
     results?: OcrItemScalable[];
     ocr_regions?: OcrRegion[];
 };
@@ -67,6 +78,8 @@ export class OcrResultScalable {
 
     public id: string;
     public context_resolution: OcrResultContextResolution;
+    public position?: OcrResultBoxPositionPcts;
+    public image?: Buffer | string;
     // public results: OcrItemScalable[];
     public ocr_regions: OcrRegion[];
     
@@ -81,6 +94,8 @@ export class OcrResultScalable {
 
         // this.results = input.results ? [ ...input?.results ] : [];
         this.ocr_regions = input?.ocr_regions ? input.ocr_regions : [];
+        this.position = input.position;
+        this.image = input.image;
     }
 
     static create( input: OcrResultScalable_CreationInput ): OcrResultScalable {
@@ -104,6 +119,8 @@ export class OcrResultScalable {
         }
     ) {
         const { regionResult, regionPosition, regionSize, globalScaling } = input;
+
+        let regionImage = regionResult.ocr_regions[0].image;
 
         const rescaledRegionResults = regionResult.ocr_regions[0].results.map( result => {
 
@@ -136,7 +153,8 @@ export class OcrResultScalable {
             results: rescaledRegionResults,
             position: regionPosition,
             size: regionSize,
-            id: input.regionId
+            id: input.regionId,
+            image: regionImage
         });
 
         // this.results = [ ...this.results, ...rescaledRegionResults ];
@@ -157,15 +175,40 @@ export class OcrResultScalable {
                 item.box,
                 ocrResult.context_resolution
             );
+
+            if (typeof item.is_vertical === "boolean" )
+                itemBox.isVertical = Boolean(item.is_vertical);
             
             const text = item.text.map( line => {
 
                 const lineScalable: OcrTextLineScalable = {
                     content: line.content,
-                    symbols: []
+                    symbols: [],
+                    words: []
                 };
-                
-                // TODO: Calculate position and dimensions
+
+                if (line.box) {
+                    lineScalable.box = OcrResultScalable.getBoxScalable(
+                        line.box,
+                        ocrResult.context_resolution
+                    );
+                }
+
+                // TODO: Words
+                line?.words?.forEach( ( word, idx ) => {
+                    if ( !line?.words?.length ) return;
+
+                    const box = OcrResultScalable.getBoxScalable(
+                        word.box,
+                        context_resolution
+                    );
+
+                    lineScalable.words?.push({
+                        word: word.word,
+                        box,
+                        letter_spacing: 0
+                    });
+                });
 
                 // Symbols
                 line?.symbols?.forEach( ( symbol, sIdx ) => {
@@ -204,7 +247,7 @@ export class OcrResultScalable {
                         letter_spacing: letterSpacing
                     });
 
-                })
+                });
 
                 return lineScalable;
             });
@@ -230,7 +273,8 @@ export class OcrResultScalable {
             size: {
                 height: 1,
                 width: 1
-            }
+            },
+            image: ocrResult.image
         });
 
         return OcrResultScalable.create({
@@ -327,7 +371,7 @@ export class OcrResultScalable {
         return ( topToBottomHypot / contextResolution.height ) * 100;
     }
 
-    private static getBoxScalable(
+    static getBoxScalable(
         box: OcrItemBox,
         contextResolution: OcrResultContextResolution
     ): OcrResultBoxScalable {

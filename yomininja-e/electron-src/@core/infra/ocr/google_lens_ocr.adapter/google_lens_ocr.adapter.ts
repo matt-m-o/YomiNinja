@@ -5,7 +5,7 @@ import { googleLensOcrAdapterName, GoogleLensOcrEngineSettings, getGoogleLensDef
 import { OcrEngineSettingsU } from "../../types/entity_instance.types";
 import FormData from 'form-data';
 import axios from 'axios';
-import { OcrItemScalable, OcrResultBoxScalable, OcrResultScalable, OcrTextLineScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
+import { OcrItemScalable, OcrResultBoxScalable, OcrResultScalable, OcrTextLineScalable, OcrTextWordScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
 import sharp from "sharp";
 import fs from 'fs';
 import vm from 'vm';
@@ -24,7 +24,9 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
     private prevResultTime: Date = new Date();
 
 
-    constructor() {}
+    constructor() {
+        this.status = OcrAdapterStatus.Enabled;
+    }
 
     initialize( _?: string | undefined ) {}
 
@@ -80,7 +82,8 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                         width: 1,
                         height: 1
                     },
-                    results: ocrResultItems
+                    results: ocrResultItems,
+                    image: input.imageBuffer
                 }
             ]
         });
@@ -217,7 +220,8 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                 const lineTextData = lineData[0];
                 const lineBoxData = lineData[1];
 
-                const text: string = lineTextData.map( ( word: any[] ) => word[0] + ( word[3] || '' )  ).join('');
+                let words: OcrTextWordScalable[] = [];
+                let text: string = lineTextData.map( ( word: any[] ) => word[0] + ( word[3] || '' )  ).join('');
 
                 // console.log( lineTextData );
                 // console.log( lineBoxData );
@@ -230,6 +234,40 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                     heightPx > ( widthPx * 1.20 ) &&
                     text?.length > 1
                 );
+                
+                if (!isVertical) {
+                    text = lineTextData
+                        .sort( ( a: any, b: any ) => {
+                            const aPositionLeft = a[1][1];
+                            const bPositionLeft = b[1][1];
+                            return aPositionLeft - bPositionLeft;
+                        })
+                        .map(
+                            ( word: any[] ) =>  {
+                                const wordScalable: OcrTextWordScalable  = {
+                                    word: word[0],
+                                    box: {
+                                        position: {
+                                            top: word[1][0] * 100,
+                                            left: word[1][1] * 100,
+                                        },
+                                        dimensions: {
+                                            width: word[1][2] * 100,
+                                            height: word[1][3] * 100
+                                        },
+                                        angle_degrees: word[1][5],
+                                        isVertical,
+                                        transform_origin: 'center'
+                                    },
+                                    letter_spacing: 0
+                                }
+
+                                words.push(wordScalable);
+
+                                return word[0] + ( word[3] || '' );
+                            } 
+                        ).join('');
+                }
 
                 blockIsVertical =  blockIsVertical || isVertical;
 
@@ -251,6 +289,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                 const line: OcrTextLineScalable = {
                     content: text,
                     box,
+                    words
                 };
 
                 // console.log( line );
@@ -262,7 +301,11 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
 
             if ( !blockBoxData ) return;
 
-            // if ( blockIsVertical ) blockLines.reverse();
+            if ( blockIsVertical ) {
+                blockLines.sort( ( a: OcrTextLineScalable, b: OcrTextLineScalable ) => {
+                    return Number(b.box?.position.left) - Number(a.box?.position.left);
+                });
+            }
 
             const block: OcrItemScalable = {
                 text: blockLines,
@@ -369,6 +412,8 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
 
         if ( this.getCacheAge() > 30 )
             return false;
+
+        if ( !this.prevImage?.equals ) return false;
 
         const isSameImage = this.prevImage.equals( image );
 

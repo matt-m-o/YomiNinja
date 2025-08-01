@@ -3,6 +3,7 @@ import { OcrItemScalable, OcrTextLineSymbolScalable } from "../../../electron-sr
 import { styled } from "@mui/material";
 import { OverlayBehavior, OverlayHotkeys, OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import OcrResultLine from "./OcrResultLine";
+import { OcrResultContextResolution } from "../../../electron-src/@core/domain/ocr_result/ocr_result";
 
 const BaseOcrResultBox = styled('div')({
     // border: 'solid',
@@ -29,11 +30,13 @@ export default function OcrResultBox( props: {
         width: number;
         height: number;
     };
+    contextResolution: OcrResultContextResolution;
     ocrRegionId?: string;
     ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
     overlayHotkeys: OverlayHotkeys;
     overlayBehavior: OverlayBehavior;
     contentEditable: boolean;
+    isElectron: boolean;
     onMouseEnter?: ( item: OcrItemScalable, ocrRegionId?: string ) => void;
     onMouseLeave?: () => void;
     onClick?: ( item: OcrItemScalable, ocrRegionId?: string ) => void;
@@ -44,9 +47,11 @@ export default function OcrResultBox( props: {
     const {
         ocrItem,
         ocrRegionSize,
+        contextResolution,
         ocrItemBoxVisuals,
         contentEditable,
-        ocrRegionId
+        ocrRegionId,
+        isElectron
     } = props;
     const { box } = ocrItem;
 
@@ -54,8 +59,10 @@ export default function OcrResultBox( props: {
 
     const lineCount = ocrItem.text.length;
     const isMultiline = lineCount > 1;
+    const generatedFuriganaSettings = ocrItemBoxVisuals.text?.generated_furigana;
     
     const [ alignItems, setAlignItems ] = useState( 'center' );
+    const [ includesGeneratedFurigana, setIncludesGeneratedFurigana ] = useState( false );
 
     useEffect( () => {
 
@@ -79,13 +86,14 @@ export default function OcrResultBox( props: {
 
                 const addedNodes = Array.from( mutation.addedNodes );
                 
-                if ( !addedNodes.some( node => node.nodeName === 'RUBY' ) ) 
+                if ( !addedNodes.some( node => node.nodeName === 'RUBY' ) )
                     return;
 
                 console.log('A <ruby> child was added!');
+                setIncludesGeneratedFurigana(true);
 
                 if ( alignItems !== 'flex-start' )
-                    setAlignItems( 'flex-start' );                                        
+                    setAlignItems( 'flex-start' );
             });
         });
     
@@ -95,9 +103,15 @@ export default function OcrResultBox( props: {
     }, [] );
 
     // const fontSize = isVertical ? box.dimensions.width * 90 : box.dimensions.height * 65;
-    
-    const regionWidthPx = ocrRegionSize.width * window.innerWidth;
-    const regionHeightPx = ocrRegionSize.height * window.innerHeight;
+
+    const regionWidthPx = isElectron ?
+        ocrRegionSize.width * window.innerWidth:
+        ocrRegionSize.width * contextResolution.width;
+
+    const regionHeightPx = isElectron ?
+        ocrRegionSize.height * window.innerHeight :
+        ocrRegionSize.height * contextResolution.height;
+
     
     const boxWidthPx = regionWidthPx * ( box.dimensions.width / 100 );
     const boxHeightPx = regionHeightPx * ( box.dimensions.height / 100 );
@@ -128,13 +142,43 @@ export default function OcrResultBox( props: {
         fontSize: adjustedFontSize + 'px', // isVertical ? fontSize * 0.8 : fontSize * 0.85
         lineHeight: adjustedFontSize + 'px',
         fontWeight: ocrItemBoxVisuals?.text?.font_weight,
-        letterSpacing: ocrItemBoxVisuals.text.letter_spacing || 'inherit',
+        letterSpacing: ocrItemBoxVisuals?.text.letter_spacing || 'inherit',
         contentVisibility: 'visible',
         zIndex: 10,
         // @ts-expect-error
         '-webkit-text-stroke-width': ocrItemBoxVisuals?.text?.outline_width,
         '-webkit-text-stroke-color': ocrItemBoxVisuals?.text?.outline_color,
+        '& ruby': {
+            backgroundColor: ocrItemBoxVisuals.background_color
+        },
+        '& ruby rt': {
+            backgroundColor: ocrItemBoxVisuals.background_color
+        }
     };
+
+    
+
+    if ( 
+        generatedFuriganaSettings &&
+        generatedFuriganaSettings?.visibility !== 'visible'
+    ) {
+        activeBoxCss['& rt'] = {
+            display: 'none'
+        };
+
+        if ( generatedFuriganaSettings.visibility === 'visible-on-word-hover' ) {
+            activeBoxCss['& ruby:hover rt'] = {
+                display: 'ruby-text',
+                backgroundColor: ocrItemBoxVisuals?.background_color
+            };
+        }
+        else if ( generatedFuriganaSettings.visibility === 'visible-on-line-hover' ) {
+            activeBoxCss['& .ocr-line-container:hover rt'] = {
+                display: 'ruby-text',
+                backgroundColor: ocrItemBoxVisuals?.background_color
+            };
+        }
+    }
 
     const Box = styled( BaseOcrResultBox )({
         "&:hover": activeBoxCss,
@@ -210,6 +254,8 @@ export default function OcrResultBox( props: {
         >
             { ocrItem.text.map( ( line, lIdx ) => {
 
+                const isLastLine = ocrItem.text.length - 1 === lIdx;
+
                 let lineFontSize = 0;
 
                 line?.symbols?.forEach( symbol => {
@@ -222,13 +268,16 @@ export default function OcrResultBox( props: {
                     <OcrResultLine
                         contentEditable={contentEditable}
                         box={box}
+                        textBlockBoxHeightPx={boxHeightPx}
                         line={line}
+                        isLastLine={isLastLine}
                         regionWidthPx={regionWidthPx}
                         regionHeightPx={regionHeightPx}
                         key={lIdx}
                         onBlur={props.onBlur}
                         ocrItemBoxVisuals={ocrItemBoxVisuals}
                         sizeExpansionPx={sizeExpansionPx}
+                        includesGeneratedFurigana={includesGeneratedFurigana}
                     />
                 )
             }) }

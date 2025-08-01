@@ -5,4 +5,14 @@ Pillow
 pyinstaller
 opencv-python
 
+transformers==4.41.2
 manga-ocr
+
+# comic-text-detector requirements
+torchvision
+tqdm
+torchsummary
+wandb
+#trdg
+pyclipper
+shapely

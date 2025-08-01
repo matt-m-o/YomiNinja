@@ -15,12 +15,18 @@ import { getDefaultSettingsPresetProps } from '../domain/settings_preset/default
 import semver from 'semver';
 import { cloudVisionOcrAdapterName, getCloudVisionDefaultSettings } from './ocr/cloud_vision_ocr.adapter/cloud_vision_ocr_settings';
 import { getGoogleLensDefaultSettings, googleLensOcrAdapterName } from './ocr/google_lens_ocr.adapter/google_lens_ocr_settings';
-import { pyOcrService } from './ocr/py_ocr_service/_temp_index';
+import { pyOcrService } from './ocr/ocr_services/py_ocr_service/_temp_index';
 import { paddleOcrService } from './ocr/ocr_services/paddle_ocr_service/_temp_index';
+import fs from 'fs';
+import path from 'path';
+import { USER_DATA_DIR } from '../../util/directories.util';
+import { LaunchConfig } from './types/launch_config';
+import { httpServer } from '../../common/server';
 
 const isMacOS = process.platform === 'darwin';
 export let activeProfile: Profile;
 export let windowManager: WindowManager;
+export let launchConfig: LaunchConfig;
 
 
 async function populateLanguagesRepository( languageRepo: LanguageTypeOrmRepository ) {
@@ -85,6 +91,8 @@ async function populateLanguagesRepository( languageRepo: LanguageTypeOrmReposit
 export async function initializeApp() {
     
     try {
+
+        // createServer();
 
         const serviceStartupPromise = startServices();
 
@@ -195,6 +203,7 @@ export async function initializeApp() {
 
         // console.log('Initialization completed!');
     } catch (error) {
+        console.log("Error: App initialization failed!")
         console.error( error )
     }
 }
@@ -229,4 +238,42 @@ async function servicesHealthCheck() {
     serviceHealthCheckPromises.push( pyOcrService.processStatusCheck() )
 
     await Promise.all( serviceHealthCheckPromises );
+}
+
+
+export function getLaunchConfig(): LaunchConfig {
+
+    const filePath = path.join(USER_DATA_DIR, 'launch_config.json');
+    const fileExists = fs.existsSync(filePath);
+
+    let fileData: string | undefined;
+    
+    if (fileExists) {
+        fileData = fs.readFileSync(
+            path.join(
+                USER_DATA_DIR,
+                'launch_config.json'
+            ),
+            'utf8'
+        );
+    }
+
+    if ( fileData )
+        launchConfig = JSON.parse(fileData);
+
+    if ( !launchConfig ) {
+        launchConfig = {
+            hardware_acceleration: true,
+            gpu_compositing: true,
+            enable_devtools: true
+        };
+        fs.writeFileSync(
+            filePath,
+            JSON.stringify( launchConfig, null, '\t' )
+        );
+    }
+
+    console.log({ launchConfig });
+
+    return launchConfig;
 }

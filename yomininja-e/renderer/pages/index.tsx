@@ -22,6 +22,8 @@ import ViewComfyRoundedIcon from '@mui/icons-material/ViewComfyRounded';
 import OcrTemplates from "../components/OcrTemplates/OcrTemplates";
 import { OcrTemplatesProvider } from '../context/ocr_templates.provider';
 import { TTSProvider } from '../context/text-to-speech.provider';
+import Head from 'next/head';
+import { AppInstallationProvider } from '../context/app_installation.provider';
 
 
 export default function IndexPage() {
@@ -114,16 +116,20 @@ export default function IndexPage() {
   }, [] );
 
   return ( <>
-    <title>YomiNinja</title>
+    <Head>
+      <title>YomiNinja</title>
+    </Head>
     <ProfileProvider>
       <AppInfoProvider>
         <SettingsProvider>
           <ExtensionsProvider>
             <NotificationsProvider>
               <TTSProvider>
+                <AppInstallationProvider>
+                  
+                  <Layout {...layoutProps}/>
 
-                <Layout {...layoutProps}/>
-
+                </AppInstallationProvider>
               </TTSProvider>
             </NotificationsProvider>
           </ExtensionsProvider>

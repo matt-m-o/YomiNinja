@@ -12,6 +12,12 @@ type Position = {
     x: number;
     y: number;
 };
+export type Rectangle = {
+    width: number;
+    height: number;
+    x: number;
+    y: number;
+}
 
 export type WindowProperties = {
     title: string;
@@ -33,6 +39,7 @@ export interface WindowManagerNativeInterface {
     getAllWindows(): WindowProperties[] | Promise< WindowProperties[] >;
     searchWindowByTitle( title: string ): WindowProperties[] | Promise< WindowProperties[] >;
     getTaskBarProps(): TaskbarProperties;
+    setWindowBounds?: ( handle: number, bounds: Partial<Rectangle> ) => void;
 };
 
 export class WindowManager {
@@ -87,5 +94,8 @@ export class WindowManager {
         return this.windowManager.getTaskBarProps();
     }
 
-    
+    setWindowBounds( handle: number, bounds: Partial<Rectangle> ): void {
+        if ( this.windowManager.setWindowBounds )
+            return this.windowManager.setWindowBounds( handle, bounds );
+    }
 }

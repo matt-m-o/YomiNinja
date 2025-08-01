@@ -1,5 +1,7 @@
 import path from "path";
 import fs from 'fs';
+import { PopupView } from "electron-chrome-extensions/dist/browser/popup";
+import { BrowserWindow } from "electron";
 
 
 export function applyYomiWorkaround( extensionPath: string  ) {
@@ -10,16 +12,16 @@ export function applyYomiWorkaround( extensionPath: string  ) {
     );
 
     try {
-        const fileContent = fs.readFileSync( permissionsUtilPath, 'utf-8' );
+        const fileContents = fs.readFileSync( permissionsUtilPath, 'utf-8' );
 
-        const indexOfGetAllPermissions = fileContent.indexOf('getAllPermissions() {');
+        const indexOfGetAllPermissions = fileContents.indexOf('getAllPermissions() {');
 
         if (indexOfGetAllPermissions === -1) {
             console.error('Function getAllPermissions() not found in the file.');
             return;
         }
 
-        const contentBefore = fileContent.slice(
+        const contentsBefore = fileContents.slice(
             0,
             indexOfGetAllPermissions +
             'getAllPermissions() {'.length
@@ -45,13 +47,13 @@ export function applyYomiWorkaround( extensionPath: string  ) {
             ]
         };`;
 
-        const rest = fileContent.slice(
+        const rest = fileContents.slice(
             indexOfGetAllPermissions + 'getAllPermissions() {'.length
         );
 
-        const updatedFileContent = contentBefore + workaroundCode + rest;
+        const updatedFileContents = contentsBefore + workaroundCode + rest;
 
-        fs.writeFileSync( permissionsUtilPath, updatedFileContent, 'utf-8' );
+        fs.writeFileSync( permissionsUtilPath, updatedFileContents, 'utf-8' );
 
         applyManifestV2Patch( extensionPath );
 
@@ -74,4 +76,77 @@ function applyManifestV2Patch( extensionPath: string ) {
     catch (error) {
         console.error(error);
     }
+}
+
+export function handleYomitanPopup( popup: PopupView, openWindow?: ( url: string ) => BrowserWindow ) {
+
+    const { browserWindow: popupWindow } = popup;
+
+    if ( !popupWindow ) return;
+
+    const fixButtons = () => {
+        
+        document.querySelectorAll('.nav-button').forEach( button => {
+
+            if ( button.classList.contains('action-open-settings' )) {
+                button.addEventListener( 'click', () => {
+                    const href = button.getAttribute('href');
+                    if ( !href ) return;
+                    location.href = href;
+                });
+            }
+
+            if ( button.classList.contains('action-open-search' )) {
+                button.addEventListener( 'click', () => {
+                    const href = button.getAttribute('href');
+                    if ( !href ) return;
+                    location.href = href;
+                });
+            }
+
+            if ( button.classList.contains('action-open-info' )) {
+                button.addEventListener( 'click', () => {
+                    const href = button.getAttribute('href');
+                    if ( !href ) return;
+                    location.href = href;
+                });
+            }
+
+        });
+    }
+
+
+    const applyFixes = ( window: BrowserWindow ) => {
+
+        window.webContents.executeJavaScript(`
+            (${fixButtons.toString()})();
+        `);
+
+        window.webContents.on('update-target-url', ( e, url ) => {
+
+            setTimeout( () => {
+                
+                if ( window.isDestroyed() ) return;
+
+                window.webContents.executeJavaScript(`
+                    (${fixButtons.toString()})();
+                `);
+
+            }, 2000 );
+        });
+
+    }
+
+    popup.whenReady()
+        .then( () => {
+
+            applyFixes(popupWindow);
+
+            popupWindow.webContents.on('will-navigate', ( e, url ) => {
+                if ( !openWindow ) return;
+                e.preventDefault();
+                const extensionWindow = openWindow( url );
+            });
+            
+        });
 }

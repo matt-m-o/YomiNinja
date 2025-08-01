@@ -9,6 +9,7 @@ import AlertDialog from "../common/AlertDialog";
 import { BrowserExtensionJson } from "../../../electron-src/@core/domain/browser_extension/browser_extension";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { CustomAccordion } from "../common/CustomAccordion";
+import { ipcRenderer } from "../../utils/ipc-renderer";
 
 const SectionDivider = styled( Divider )({
     marginTop: '30px',
@@ -93,7 +94,7 @@ export default function Extensions() {
     );
 
     function openLink( link: string ) {
-        global.ipcRenderer.invoke( 'open_link', link );
+        ipcRenderer.invoke( 'open_link', link );
     }
 
     const accordionStyle: CSSProperties = {
@@ -197,12 +198,17 @@ export default function Extensions() {
                                     <li> Click on <strong>Options</strong>. </li>
                                 </OL>
 
-                                For a better experience, it's recommended to enable <strong>"Hide popup on cursor exit"</strong>:
-
+                                For a better experience, it's recommended to change some settings:
                                 <OL>
                                     <li> Open Yomitan/Yomichan settings. </li>
-                                    <li> Go to the <strong>Scanning</strong> section. </li>
+                                    <li> Go to the <strong>Popup Behavior</strong> section. </li>
                                     <li> Enable <strong>"Hide popup on cursor exit"</strong>. </li>
+                                    <li> Go to the <strong>"Scanning"</strong> section. </li>
+                                    <li> Disable <strong>"Layout-aware scanning"</strong>. </li>
+                                    <li> Go to YomiNinja settings screen. </li>
+                                    <li> Go to the <strong>"Overlay Appearance"</strong> section. </li>
+                                    <li> Enable <strong>"Add end-of-sentence punctuation"</strong>. </li>
+                                    <li> Check the <strong>"Invisible"</strong> option. </li>
                                 </OL>
                             </CustomAccordion>
 

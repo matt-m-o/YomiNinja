@@ -1,7 +1,7 @@
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { google } from "@google-cloud/vision/build/protos/protos";
 import { CloudVisionAPICredentials, CloudVisionApi } from "./cloud_vision_api";
-
+import fs from 'fs';
 
 
 export class CloudVisionNodeAPI implements CloudVisionApi {
@@ -24,6 +24,13 @@ export class CloudVisionNodeAPI implements CloudVisionApi {
                 client_email: input.clientEmail,
             }
         });
+        // this.client.getProjectId()
+        //     .then( id => {
+        //             console.log({
+        //                 google_cloud_project_id: id
+        //             });
+        //             console.log('\n');
+        //         });
 
         this.hasCredentials = Boolean( input?.privateKey && input?.clientEmail );
     }
@@ -36,11 +43,14 @@ export class CloudVisionNodeAPI implements CloudVisionApi {
 
             const [ result ] = await this.client.textDetection( input );
 
+            // fs.writeFileSync('./data/google_cloud_vision_result.json', JSON.stringify(result));
+
             this.hasCredentials = true;
             
             return result;
 
         } catch (error) {
+            console.error(error);
             this.hasCredentials = false;
         }
     }

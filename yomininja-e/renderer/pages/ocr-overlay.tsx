@@ -1,12 +1,14 @@
 import { useContext, useEffect, useState } from 'react';
 import { OcrResultContext, OcrResultProvider } from '../context/ocr_result.provider';
-import FullscreenOcrResult from '../components/OcrOverlay/OcrResults';
+import OcrResults from '../components/OcrOverlay/OcrResults';
 import { SettingsContext, SettingsProvider } from '../context/settings.provider';
 import OcrOverlay from '../components/OcrOverlay/OcrOverlay';
 import { DictionaryProvider } from '../context/dictionary.provider';
 import { OcrTemplatesProvider } from '../context/ocr_templates.provider';
 import { NotificationsProvider } from '../context/notifications.provider';
 import { TTSProvider } from '../context/text-to-speech.provider';
+import { ProfileProvider } from '../context/profile.provider';
+import Head from 'next/head';
 
 
 
@@ -22,16 +24,20 @@ export default function OcrOverlayPage() {
   
 
   return ( <>
-    <title>OCR Overlay - YomiNinja</title>
+    <Head>
+      <title>OCR Overlay - YomiNinja</title>
+    </Head>
     <SettingsProvider>
       <NotificationsProvider>
         <DictionaryProvider>
           <OcrResultProvider>
             <OcrTemplatesProvider>
               <TTSProvider>
+                <ProfileProvider>
 
-                <OcrOverlay/>
+                  <OcrOverlay/>
 
+                </ProfileProvider>
               </TTSProvider>
             </OcrTemplatesProvider>
           </OcrResultProvider>

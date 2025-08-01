@@ -1,4 +1,4 @@
-import { BrowserWindow, IpcMainInvokeEvent, Tray, nativeImage, app, clipboard, globalShortcut, ipcMain, Menu, DisplayBalloonOptions, NativeImage, systemPreferences } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, Tray, nativeImage, app, clipboard, globalShortcut, Menu, DisplayBalloonOptions, NativeImage, systemPreferences } from "electron";
 import { UiohookKey, uIOhook } from "uiohook-napi";
 import { CaptureSource, ExternalWindow } from "../ocr_recognition/common/types";
 import { TaskbarProperties } from "../../gyp_modules/window_management/window_manager";
@@ -27,6 +27,8 @@ import { screenCapturerController } from "../screen_capturer/screen_capturer.ind
 import { ICONS_DIR } from "../util/directories.util";
 import { join } from "path";
 import { sleep } from "../util/sleep.util";
+import electronIsDev from "electron-is-dev";
+import { ipcMain } from "../common/ipc_main";
 const isMacOS = process.platform === 'darwin';
 
 let startupTimer: NodeJS.Timeout;
@@ -106,7 +108,10 @@ export class AppController {
                 
                 settingsController.init( this.mainWindow );
                 appInfoController.init( this.mainWindow );
-                profileController.init( this.mainWindow );
+                profileController.init({
+                    mainWindow: this.mainWindow,
+                    overlayWindow: this.overlayWindow
+                });
                 dictionariesController.init({
                     mainWindow: this.mainWindow,
                     overlayWindow: this.overlayWindow
@@ -116,7 +121,7 @@ export class AppController {
                     overlayWindow: this.overlayWindow
                 });
 
-                await mainController.loadMainPage();
+                await mainController.loadMainPage( false );
                 
                 // setTimeout( () => { // The timeout seems unnecessary
                     browserExtensionsController.addBrowserWindow( this.mainWindow, true );
@@ -134,6 +139,21 @@ export class AppController {
         const settings = await this.appService.getActiveSettingsPreset();
         if ( !settings )
             throw new Error('no-active-settings-preset');
+
+
+        const isSystemStartup = process.argv.some( arg =>
+            arg.includes('systemStartup')
+        );
+
+        const startMinimized =  (
+            isSystemStartup &&
+            settings.general?.run_at_system_startup === 'minimized'
+        );
+        
+        if ( startMinimized )
+            overlayController.minimizeOverlayWindowToTray();
+        else 
+            this.mainWindow.show();
 
         this.showOverlayWindowWithoutFocus = Boolean( settings.overlay.behavior.show_window_without_focus );
 
@@ -155,6 +175,13 @@ export class AppController {
 
         this.destroyTemporaryTrayIcon();
         this.createTrayIcon();
+
+        if (
+            isMacOS &&
+            !systemPreferences.isTrustedAccessibilityClient(false)
+        ) {
+            systemPreferences.isTrustedAccessibilityClient(true);
+        }
         console.timeEnd('YomiNinja Startup time');
     }
 
@@ -215,7 +242,8 @@ export class AppController {
                     this.activeCaptureSource.window = this.captureSourceWindow;
                 }
 
-                this.mainWindow.webContents.send(
+                ipcMain.send(
+                    this.mainWindow,
                     'app:active_capture_source',
                     this.activeCaptureSource
                 );
@@ -223,7 +251,12 @@ export class AppController {
                 await this.handleCaptureSourceSelection()
                     .catch( console.error );
 
-                this.setOverlayBounds( 'maximized' );
+                overlayController.activeCaptureSource = this.activeCaptureSource;
+                
+                if ( this.activeCaptureSource.type === 'screen' )
+                    this.setOverlayBounds( 'fullscreen' );
+                else
+                    this.setOverlayBounds( 'maximized' );
                 
                 // console.log({
                 //     isAutoOcrEnabled: ocrTemplatesController.isAutoOcrEnabled
@@ -250,7 +283,9 @@ export class AppController {
     registerEventHandlers() {
         ocrTemplateEvents.on( 'active_template', async (template) => {
             const isAutoOcrEnabled = template?.isAutoOcrEnabled() || false;
-            console.log({ isAutoOcrEnabled });
+
+            if ( electronIsDev )
+                console.log({ isAutoOcrEnabled });
 
             if ( !isAutoOcrEnabled )
                 await screenCapturerController.destroyScreenCapturer();
@@ -380,12 +415,14 @@ export class AppController {
         this.globalShortcutAccelerators = [];
     }
 
-    private showOverlayWindow() {
-
-        if ( this.showOverlayWindowWithoutFocus )
-            this.overlayWindow.showInactive();
-        else
-            this.overlayWindow.show();
+    private showOverlayWindow( input?: { showInactive: boolean, displayResults: boolean }) {
+        if ( input ) {
+            return overlayController.showOverlayWindow({
+                ...input,
+                isElectronEvent: false,
+            });
+        }
+        overlayController.showOverlayWindow();
     }
 
     async applySettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
@@ -403,72 +440,18 @@ export class AppController {
         this.registerGlobalShortcuts( settingsPresetJson );
     }
 
-    setOverlayBounds( entireScreenMode: 'fullscreen' | 'maximized' = 'fullscreen' ) {
-        // console.time("setOverlayBounds");
+    setOverlayBounds(
+        entireScreenMode: 'fullscreen' | 'maximized' = 'fullscreen',
+        preventNegativeCoordinates: boolean = false
+    ) {
 
-        if ( overlayController.isOverlayBoundsLocked )
-            return;
-
-        const isFullscreen = entireScreenMode === 'fullscreen';
-        
-        if ( this.captureSourceDisplay ) {
-
-            if ( isMacOS ) {
-                this.overlayWindow.setVisibleOnAllWorkspaces(
-                    true,
-                    {
-                        visibleOnFullScreen: true,
-                        skipTransformProcessType: true
-                    }
-                );
-            }
-            
-            this.overlayWindow.setBounds({                
-                ...this.captureSourceDisplay?.workArea,
-            });
-
-            if ( isFullscreen ) {
-                if ( !isMacOS ) {
-                    this.overlayWindow.setFullScreen( true );
-                }
-                else {
-                    this.overlayWindow.setBounds(
-                        screen.getPrimaryDisplay().bounds
-                    );
-                }
-            }
-            
-            if ( entireScreenMode === 'maximized' )
-                this.overlayWindow.maximize();
-        }
-
-        else if ( this.captureSourceWindow ) {
-
-            let targetWindowBounds = {
-                width: this.captureSourceWindow.size.width,
-                height: this.captureSourceWindow.size.height,
-                x: this.captureSourceWindow.position.x,
-                y: this.captureSourceWindow.position.y,
-            };
-
-            if ( os.platform() === 'linux' )
-                this.overlayWindow.setFullScreen( false );
-
-            if ( os.platform() === 'win32' ) {
-                // Handling potential issues with DIP
-                targetWindowBounds = screen.screenToDipRect( this.overlayWindow, targetWindowBounds );
-            }
-
-            this.overlayWindow.setBounds( targetWindowBounds );
-
-            // console.log({ targetWindowBounds });
-
-            // Might be necessary to calculate and set twice
-            // dipRect = screen.screenToDipRect( this.overlayWindow, targetWindowBounds )
-            // this.overlayWindow.setBounds( dipRect );
-        }
-
-        // console.timeEnd("setOverlayBounds");
+        overlayController.setOverlayBounds({
+            entireScreenMode,
+            captureSourceDisplay: this.captureSourceDisplay,
+            captureSourceWindow: this.captureSourceWindow,
+            preventNegativeCoordinates,
+            isTaskbarVisible: !Boolean(this.taskbar?.auto_hide)
+        });
     }
 
 
@@ -552,10 +535,12 @@ export class AppController {
         if ( overlayController.isOverlayMovableResizable )
             return;
 
-        this.overlayWindow?.webContents.send( 'user_command:toggle_results', false );
-        this.overlayWindow?.webContents.send( 'ocr:processing_started' );
+        ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
+        ipcMain.send( this.overlayWindow, 'ocr:processing_started' );
         
         await this.handleCaptureSourceSelection();
+
+        const preventNegativeCoordinates = Boolean(image);
 
         image = await this.appService.getCaptureSourceImage({
             image,
@@ -569,12 +554,17 @@ export class AppController {
         let isFullScreenImage = true;
         if ( image && runFullScreenImageCheck)
             isFullScreenImage = await this.isFullScreenImage(image);
-        this.setOverlayBounds( isFullScreenImage ? 'fullscreen' :  'maximized' );
-        // this.showOverlayWindow(); // This can cause problems with JPDBReader extension // Warning: Unknown display value, please report this!
-        this.overlayWindow?.webContents.send( 'user_command:toggle_results', false );
+
+        this.setOverlayBounds(
+            isFullScreenImage ? 'fullscreen' :  'maximized',
+            preventNegativeCoordinates
+        );
+        this.showOverlayWindow({ showInactive: true, displayResults: false }); // This can cause problems with JPDBReader extension // Warning: Unknown display value, please report this!
+        ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
 
         if ( this.isEditingOcrTemplate ) {
-            this.mainWindow.webContents.send(
+            ipcMain.send(
+                this.mainWindow,
                 'app:capture_source_image',
                 {
                     image,
@@ -584,16 +574,24 @@ export class AppController {
             this.mainWindow.show();
         }
         else {
-            await ocrRecognitionController.recognize({
-                image,
-                engineName
-            })
-                .catch( console.error );
+
+            try {
+                const response = await ocrRecognitionController.recognize({
+                    image,
+                    engineName
+                });
+
+                if ( response.status === 'replaced' )
+                    return;
+            }
+            catch (error) {
+                console.error(error);
+            }
         }
 
-        this.overlayWindow?.webContents.send( 'ocr:processing_complete' );
+        ipcMain.send( this.overlayWindow, 'ocr:processing_complete' );
         this.showOverlayWindow();
-        this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
+        ipcMain.send( this.overlayWindow, 'user_command:toggle_results', true );
     };
 
     async _handleVideoStream( image: Buffer ) {
@@ -601,7 +599,7 @@ export class AppController {
         if ( isDev )
             console.log('AppController._handleVideoStream');
 
-        // this.overlayWindow?.webContents.send( 'ocr:processing_started' );
+        // ipcMain.send( this.overlayWindow, 'ocr:processing_started' );
         
         // await this.handleCaptureSourceSelection();
 
@@ -621,16 +619,15 @@ export class AppController {
             if ( ocrRecognitionController.isRecognizing() )
                 return;
 
-            await ocrRecognitionController.recognize({
-                    image,
-                    autoOcr: true
+            await ocrRecognitionController.autoRecognize({
+                    image
                 })
                 .catch( console.error );
         }
 
-        // this.overlayWindow?.webContents.send( 'ocr:processing_complete' );
+        // ipcMain.send( this.overlayWindow, 'ocr:processing_complete' );
         // this.showOverlayWindow();
-        // this.overlayWindow?.webContents.send( 'user_command:toggle_results', true );
+        // ipcMain.send( this.overlayWindow, 'user_command:toggle_results', true );
     }
 
     toggleMainWindow = ( show?: boolean ) => {
@@ -694,14 +691,25 @@ export class AppController {
                 accelerator: 'Ctrl+Shift+M'
             },
             {
-                label: 'Overlay Automatic Adjustment',
+                label: 'Automatic Overlay Adjustment',
                 toolTip: 'Overlay Auto Positioning and Resizing',
                 type: 'checkbox',
-                checked: !overlayController.isOverlayBoundsLocked,
+                checked: overlayController.automaticOverlayBounds,
                 click: ( event ) => {
-                    overlayController.lockOverlayBounds( !event.checked );
-                    // event.checked = !overlayController.isOverlayBoundsLocked;
+                    event.checked = !overlayController.automaticOverlayBounds
+                    overlayController.setAutomaticOverlayBounds( event.checked );
                 },
+            },
+            {
+                label: 'Fullscreen Overlay',
+                toolTip: 'Toggle Fullscreen Mode',
+                type: 'checkbox',
+                checked: this.overlayWindow.isFullScreen(),
+                click: ( event ) => {
+                    const newState = !this.overlayWindow.isFullScreen();
+                    this.overlayWindow.setFullScreen( newState );
+                    event.checked = newState;
+                }
             },
             {
                 type: 'separator'

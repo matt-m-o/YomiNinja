@@ -1,5 +1,8 @@
 import { randomUUID } from "crypto";
 import { OverlaySettings } from "./settings_preset_overlay";
+import { GeneralSettings } from "./settings_preset_general";
+import { getDefaultSettingsPresetProps } from "./default_settings_preset_props";
+import { CompatibilitySettings } from "./settings_preset_compatibility";
 
 export type DictionarySettings = {
     enabled: boolean;
@@ -14,6 +17,8 @@ export interface OcrEngineSettings {
 
 export interface SettingsPresetProps < TOcrSettings extends OcrEngineSettings = OcrEngineSettings > {
     name: string;
+    general?: GeneralSettings;
+    compatibility: CompatibilitySettings;
     overlay: OverlaySettings;
     ocr_engines: TOcrSettings[];
     dictionary: DictionarySettings;
@@ -43,6 +48,7 @@ export class SettingsPreset < TProps extends SettingsPresetProps = SettingsPrese
 
         this.props = {
             name: SettingsPreset.default_name,
+            compatibility: {},
             dictionary: {
                 enabled: false,
             },
@@ -67,7 +73,9 @@ export class SettingsPreset < TProps extends SettingsPresetProps = SettingsPrese
         return new SettingsPreset<TProps>( input );
     }
     
-    get name(){ return this.props.name; }    
+    get name(){ return this.props.name; }
+    get general(){ return this.props.general; }
+    get compatibility(){ return this.props.compatibility; }
     get overlay(){ return this.props.overlay; }
     get ocr_engines() { return this.props.ocr_engines; }
     get version() { return this.props.version; }
@@ -78,6 +86,8 @@ export class SettingsPreset < TProps extends SettingsPresetProps = SettingsPrese
 
     set name( value: string ){ this.props.name = value; }
 
+    protected set general( data: GeneralSettings | undefined ){ this.props.general = data; }
+    protected set compatibility( data: CompatibilitySettings ){ this.props.compatibility = data; }
     protected set overlay( update: OverlaySettings ) {
 
         this.props.overlay = {
@@ -189,6 +199,30 @@ export class SettingsPreset < TProps extends SettingsPresetProps = SettingsPrese
         this.props.dictionary = {
             ...this.props.dictionary,
             ...update,
+        };
+    }
+
+    updateGeneralSettings( update: Partial< GeneralSettings > ) {
+
+        if ( !this.props.general ) {
+            this.props.general = getDefaultSettingsPresetProps().general as GeneralSettings;
+        }
+
+        this.props.general = {
+            ...this.props.general,
+            ...update
+        };
+    }
+
+    updateCompatibilitySettings( update: Partial< CompatibilitySettings > ) {
+
+        if ( !this.props.compatibility ) {
+            this.props.compatibility = getDefaultSettingsPresetProps().compatibility as CompatibilitySettings;
+        }
+
+        this.props.compatibility = {
+            ...this.props.compatibility,
+            ...update
         };
     }
 

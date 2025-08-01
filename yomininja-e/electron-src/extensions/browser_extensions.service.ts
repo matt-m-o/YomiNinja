@@ -13,6 +13,10 @@ import { UpdateBrowserExtensionUseCase } from "../@core/application/use_cases/br
 import { CreateBrowserExtensionUseCase } from "../@core/application/use_cases/browser_extension/create_browser_extension/create_browser_extension.use_case";
 import { GetBrowserExtensionsUseCase } from "../@core/application/use_cases/browser_extension/get_browser_extensions/get_browser_extensions.use_case";
 import { handleJPDBReaderPopup } from "./browser_extension_manager/workarounds/jpdb_reader";
+import { launchConfig, windowManager } from "../@core/infra/app_initialization";
+import { getBrowserWindowHandle } from "../util/browserWindow.util";
+import { handleMigakuPopup } from "./browser_extension_manager/workarounds/migaku_workarounds";
+import { handleYomitanPopup } from "./browser_extension_manager/workarounds/yomi_workaround";
 
 export class BrowserExtensionsService {
 
@@ -53,7 +57,7 @@ export class BrowserExtensionsService {
 
             webContents.on('context-menu', (e, params) => {
 
-                const extensionMenuItems = this.extensionsApi.getContextMenuItems(webContents, params);
+                let extensionMenuItems = this.extensionsApi.getContextMenuItems(webContents, params);
 
                 // Refreshing every window on extension click
                 extensionMenuItems.forEach( item => {
@@ -74,13 +78,30 @@ export class BrowserExtensionsService {
                 const menu = buildChromeContextMenu({
                     params,
                     webContents,
-                    extensionMenuItems,
+                    extensionMenuItems: [],
                     openLink: (url, disposition) => {
                         this.createExtensionWindow( url );
                     }
                 });
 
+                if (
+                    webContents.getURL().includes('overlay') &&
+                    !launchConfig.enable_devtools
+                ) { 
+
+                    menu.items.forEach( item => {
+                        if ( !item ) return;
+
+                        if ( item.type == 'separator' )
+                            item.visible = false;
+
+                        if ( item.label.toLowerCase() == 'inspect' )
+                            item.visible = false;
+                    });
+                }
+
                 menu.popup();
+
             });
         });
 
@@ -109,6 +130,12 @@ export class BrowserExtensionsService {
 
             if ( extension?.name.includes('JPDBreader') )
                 handleJPDBReaderPopup( popup );
+
+            if ( extension?.name.includes('Migaku') )
+                handleMigakuPopup( popup, this.createExtensionWindow );
+
+            if ( extension?.name.includes('Yomitan') )
+                handleYomitanPopup( popup, this.createExtensionWindow )
         });
         
         // console.log({ EXTENSIONS_DIR });
@@ -258,7 +285,7 @@ export class BrowserExtensionsService {
         //   .replace(new RegExp(`\\s${app.getName()}/\\S+`), '');
     
         defaultSession.setUserAgent(
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'
         );
 
         // const browserPreload = path.join( __dirname, '../preload.js' )
@@ -315,16 +342,38 @@ export class BrowserExtensionsService {
             height: 700,
             autoHideMenuBar: true,
             webPreferences: {
-              sandbox: true,
-              nodeIntegration: false,
-              contextIsolation: true,
+                sandbox: true,
+                nodeIntegration: false,
+                contextIsolation: false,
+                backgroundThrottling: false
             }
         });
 
-        extensionWindow.show();
+        const alternativeUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 YomiNinja";
+
+        if ( url.includes('jpdb') )
+            extensionWindow.webContents.setUserAgent(alternativeUserAgent);
+        
+
+        extensionWindow.webContents.on( 'will-navigate', event => {
+            if ( event.url.includes('google') ) {;
+                if ( extensionWindow.webContents.userAgent !== alternativeUserAgent ) {
+                    extensionWindow.webContents.setUserAgent(alternativeUserAgent);
+                    extensionWindow.webContents.reload();
+                }
+            }
+        });
 
         if ( url )
             extensionWindow.loadURL( url );
+
+        if ( process.platform === 'linux' ) {
+            windowManager.setForegroundWindow(
+                getBrowserWindowHandle(extensionWindow)
+            );
+        }
+
+        extensionWindow.show();
 
         return extensionWindow;
     }

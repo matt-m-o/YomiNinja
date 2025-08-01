@@ -9,7 +9,7 @@ import { Box, CssBaseline } from '@mui/material';
 export default function CaptureSourceSelectionPage() {
 
 
-  return (    
+  return (
     <CaptureSourceProvider>    
       <Box
           component="main"
@@ -22,6 +22,7 @@ export default function CaptureSourceSelectionPage() {
             height: '100vh',
             overflow: 'auto',
             m: 0,
+            colorScheme:  ( theme ) => theme.palette.mode
           }}
         >
           <CssBaseline />

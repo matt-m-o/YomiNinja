@@ -1,7 +1,6 @@
 import { BrowserWindow, IpcMainInvokeEvent, dialog, session } from "electron";
 import { SettingsService } from "./settings.service";
 import { activeProfile } from "../@core/infra/app_initialization";
-import { ipcMain } from 'electron';
 import { SettingsPreset, SettingsPresetJson } from "../@core/domain/settings_preset/settings_preset";
 import path from "path";
 import fs from 'fs';
@@ -9,6 +8,7 @@ import { pushInAppNotification } from "../common/notification_helpers";
 import { InAppNotification } from "../common/types/in_app_notification";
 import { timingSafeEqual } from "crypto";
 import { UnorderedBulkOperation } from "typeorm";
+import { ipcMain } from "../common/ipc_main";
 
 
 
@@ -38,7 +38,18 @@ export class SettingsController {
             if ( !settingsPresetJson )
                 return;
             
-            this.mainWindow.webContents.send( 'settings_preset:active_data', settingsPresetJson ); 
+            ipcMain.send(
+                this.mainWindow,
+                'settings_preset:active_data',
+                settingsPresetJson
+            );
+
+            return settingsPresetJson;
+        });
+
+        ipcMain.handle( 'settings_preset:get_default', async ( event: IpcMainInvokeEvent ): Promise< SettingsPresetJson  > => {
+
+            const settingsPresetJson = await this.settingsService.getDefaultSettings().toJson();
 
             return settingsPresetJson;
         });
@@ -200,7 +211,11 @@ export class SettingsController {
             
             this.googleWindow = undefined;
             
-            this.mainWindow.webContents.send( 'settings_preset:google_window_closed' );
+            ipcMain.send(
+                this.mainWindow,
+                'settings_preset:google_window_closed'
+            );
+            // this.mainWindow.webContents.send( 'settings_preset:google_window_closed' );
         });
 
         this.googleWindow.loadURL('https://www.google.com');

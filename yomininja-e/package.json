@@ -1,6 +1,6 @@
 {
   "name": "yomininja-e",
-  "version": "0.7.2",
+  "version": "0.8.3",
   "private": true,
   "main": "main/electron-src/index.js",
   "productName": "YomiNinja",
@@ -23,7 +23,9 @@
     "copy-assets": "node ./copy_assets.js",
     "install-app-deps": "npx @electron/rebuild install-app-deps",
     "pack-app": "npm run build && electron-builder --dir",
-    "dist": "npm run generate-licenses && npm run build && electron-builder",
+    "dist": "npm run generate-licenses && npm run build && npm run dist:arm64 && npm run dist:x64",
+    "dist:x64": "cross-env TARGET_ARCH=x64 electron-builder --config electron-builder.config.js",
+    "dist:arm64": "cross-env TARGET_ARCH=arm64 electron-builder --config electron-builder.config.js",
     "type-check": "tsc -p ./renderer/tsconfig.json && tsc -p ./electron-src/tsconfig.json",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -31,15 +33,24 @@
     "grpc-types": "proto-loader-gen-types --longs=String --enums=String --defaults --keep-case --oneofs --grpcLib=@grpc/grpc-js --outDir=./grpc/rpc ../ocr_services/protos/ocr_service.proto",
     "gyp-build": "node-gyp clean && node-gyp configure && node-gyp build",
     "generate-licenses": "npx generate-license-file --input package.json --output third-party-licenses.txt --overwrite",
-    "types-workaround": "node ./types/types_workaround.js"
+    "types-workaround": "node ./types/types_workaround.js",
+    "apply-patches": "node ./patches/node_modules.js"
   },
   "dependencies": {
     "@google-cloud/vision": "^4.0.2",
     "@grpc/grpc-js": "^1.9.3",
     "@grpc/proto-loader": "^0.7.9",
+    "@img/sharp-darwin-arm64": "^0.33.5",
+    "@img/sharp-darwin-x64": "^0.33.5",
+    "@img/sharp-libvips-darwin-arm64": "^1.0.4",
+    "@img/sharp-libvips-darwin-x64": "^1.0.4",
+    "@img/sharp-libvips-linux-x64": "^1.0.4",
+    "@img/sharp-libvips-win32-x64": "^1.0.4",
+    "@img/sharp-linux-x64": "^0.33.5",
     "@types/language-tags": "^1.0.4",
     "axios": "^1.5.1",
     "bindings": "^1.5.0",
+    "cookies-next": "^4.2.1",
     "date-fns": "^2.30.0",
     "electron-chrome-context-menu": "^1.1.0",
     "electron-chrome-extensions": "^3.10.1",
@@ -51,17 +62,19 @@
     "kuromoji": "^0.1.2",
     "language-tags": "^1.0.9",
     "lodash": "^4.17.21",
+    "mime-types": "^2.1.35",
     "node-addon-api": "^7.0.0",
     "node-cache": "^5.1.2",
     "node-stream-zip": "^1.15.0",
     "node-window-manager": "^2.2.4",
     "obs-websocket-js": "^5.0.5",
-    "onnxruntime-node": "^1.17.0",
     "reflect-metadata": "^0.1.13",
     "sanitize-filename": "^1.6.3",
     "semver": "^7.5.4",
-    "sharp": "^0.32.6",
-    "sqlite3": "^5.1.6",
+    "sharp": "^0.33.5",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.7.5",
+    "sqlite3": "^5.1.7",
     "typeorm": "^0.3.17",
     "uiohook-napi": "^1.5.2",
     "wanakana": "^5.2.0",
@@ -84,6 +97,7 @@
     "@types/jsesc": "^3.0.1",
     "@types/kuromoji": "^0.1.2",
     "@types/lodash": "^4.14.198",
+    "@types/mime-types": "^2.1.4",
     "@types/node": "^14.14.6",
     "@types/offscreencanvas": "^2019.7.3",
     "@types/react": "^18.2.0",
@@ -94,11 +108,14 @@
     "@types/wanakana": "^4.0.5",
     "@types/ws": "^8.5.8",
     "commander": "^11.1.0",
-    "electron": "^26.6.1",
+    "cross-env": "^7.0.3",
+    "dmg-license": "^1.0.11",
+    "electron": "^30.5.0",
     "electron-builder": "^23.0.3",
     "generate-license-file": "^3.0.1",
     "jest": "^29.7.0",
     "next": "^13.5.5",
+    "onnxruntime-node": "^1.19.2",
     "react": "^18.2.0",
     "react-color": "^2.19.3",
     "react-dom": "^18.2.0",
@@ -111,96 +128,6 @@
     "webpack-cli": "^5.1.4"
   },
   "gypfile": true,
-  "build": {
-    "asar": true,
-    "files": [
-      "main",
-      "renderer/out",
-      "**/*.proto",
-      "build"
-    ],
-    "extraResources": [
-      {
-        "from": "third-party-licenses.txt",
-        "to": "./"
-      },
-      {
-        "from": "extensions",
-        "to": "extensions",
-        "filter": "**/*"
-      },
-      {
-        "from": "electron_resources",
-        "to": "./",
-        "filter": "**/*"
-      }
-    ],
-    "directories": {
-      "buildResources": "electron_resources",
-      "output": "dist"
-    },
-    "forceCodeSigning": false,
-    "nsis": {
-      "oneClick": false,
-      "runAfterFinish": true,
-      "allowToChangeInstallationDirectory": true,
-      "include": "./electron_resources/uninstaller.nsh"
-    },
-    "win": {
-      "publisherName": "Matt M.",
-      "compression": "maximum",
-      "extraResources": [
-        {
-          "from": "../bin/win32",
-          "to": "bin",
-          "filter": "**/*"
-        }
-      ]
-    },
-    "linux": {
-      "icon": "./electron_resources/icon.icns",
-      "asarUnpack": [
-        "**/node_modules/sharp/**",
-        "**/node_modules/x11/**"
-      ],
-      "extraResources": [
-        {
-          "from": "../bin/linux",
-          "to": "bin",
-          "filter": "**/*"
-        }
-      ],
-      "target": [
-        "AppImage",
-        "deb",
-        "rpm",
-        "pacman"
-      ]
-    },
-    "mac": {
-      "icon": "./electron_resources/icon.icns",
-      "asarUnpack": [
-        "**/node_modules/sharp/**",
-        "**/node_modules/x11/**"
-      ],
-      "extraResources": [
-        {
-          "from": "../bin/darwin",
-          "to": "bin",
-          "filter": "**/*"
-        }
-      ],
-      "target": [
-        {
-          "target": "default",
-          "arch": [
-            "arm64",
-            "x64"
-          ]
-        }
-      ]
-    }
-  },
   "jest": {
     "moduleFileExtensions": [
       "js",

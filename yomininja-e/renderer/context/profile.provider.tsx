@@ -1,6 +1,7 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { ProfileJson } from '../../electron-src/@core/domain/profile/profile'
 import { LanguageJson } from "../../electron-src/@core/domain/language/language";
+import { ipcRenderer } from "../utils/ipc-renderer";
 
 
 export type ProfileContextType = {
@@ -21,7 +22,7 @@ export const ProfileProvider = ( { children }: PropsWithChildren ) => {
 
         setProfile({ ...profile, active_ocr_language: language })
 
-        global.ipcRenderer.invoke( 'profile:change_active_ocr_language', language );
+        ipcRenderer.invoke( 'profile:change_active_ocr_language', language );
     }
 
     async function changeSelectedOcrEngine( ocrEngineAdapterName: string ) {
@@ -31,14 +32,14 @@ export const ProfileProvider = ( { children }: PropsWithChildren ) => {
             selected_ocr_adapter_name: ocrEngineAdapterName
         });
 
-        await global.ipcRenderer.invoke(
+        await ipcRenderer.invoke(
             'profile:change_selected_ocr_engine',
             ocrEngineAdapterName
         );
     }
 
     function getActiveProfile() {
-        global.ipcRenderer.invoke( 'profile:get_profile' )
+        ipcRenderer.invoke( 'profile:get_profile' )
             .then( ( result: ProfileJson ) => {
                 // console.log(result)
                 setProfile(result);
@@ -47,7 +48,15 @@ export const ProfileProvider = ( { children }: PropsWithChildren ) => {
 
     useEffect( () => {
         getActiveProfile();
-    }, [ global.ipcRenderer ] );
+
+        ipcRenderer.on( 'profile:active_profile', ( event, data: ProfileJson ) => {
+            setProfile(data);
+        });
+
+        return () => {
+            ipcRenderer.removeAllListeners( 'profile:active_profile' );
+        }
+    }, [ ipcRenderer ] );
     
     return (
         <ProfileContext.Provider

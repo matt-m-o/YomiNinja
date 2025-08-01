@@ -1,19 +1,30 @@
+import { OcrAdapterStatus } from "../../../../application/adapters/ocr.adapter";
 import { OcrItemBox, OcrResult } from "../../../../domain/ocr_result/ocr_result";
 import { paddleOcrService } from "../../ocr_services/paddle_ocr_service/_temp_index";
-import { pyOcrService } from "../../py_ocr_service/_temp_index";
+import { pyOcrService } from "../../ocr_services/py_ocr_service/_temp_index";
 import { MangaOcrRecognize_Input, MangaOcrService } from "../manga_ocr_service";
 
 
 export class MangaOcrPyService implements MangaOcrService {
 
+    get status(): OcrAdapterStatus {
+        return pyOcrService.status;
+    }
+
     async recognize( input: MangaOcrRecognize_Input ): Promise< OcrResult | null > {
 
-        console.time("paddleOcrDetection");
-        const boxes: OcrItemBox[] = await this.paddleOcrDetection(
-            input.image,
-            input.id
-        );
-        console.timeEnd("paddleOcrDetection");
+        let boxes: OcrItemBox[] | undefined;
+
+        if ( input.text_detector === 'PaddleTextDetector' ) {
+            console.time("PaddleTextDetector");
+            boxes = await this.paddleOcrDetection(
+                input.image,
+                input.id
+            );
+            console.timeEnd("PaddleTextDetector");
+
+            if ( !boxes?.length ) return null;
+        }
 
         console.time("MangaOCR Recognize");
         const result = await pyOcrService.recognize({

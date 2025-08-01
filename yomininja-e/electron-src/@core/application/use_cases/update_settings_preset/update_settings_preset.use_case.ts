@@ -86,12 +86,20 @@ export class UpdateSettingsPresetUseCase< TOcrSettings extends OcrEngineSettings
         }
         
         settingsPreset.updateOverlaySettings({
-            ...defaultSettingsProps,
+            ...defaultSettingsProps.overlay,
             ...input.overlay,
         });
         settingsPreset.updateDictionarySettings({
-            ...defaultSettingsProps,
+            ...defaultSettingsProps.dictionary,
             ...input.dictionary,
+        });
+        settingsPreset.updateGeneralSettings({
+            ...defaultSettingsProps.general,
+            ...input.general,
+        });
+        settingsPreset.updateCompatibilitySettings({
+            ...defaultSettingsProps.compatibility,
+            ...input.compatibility,
         });
 
         // console.log( settingsPreset );

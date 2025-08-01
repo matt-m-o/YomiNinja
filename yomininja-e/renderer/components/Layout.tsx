@@ -10,7 +10,7 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import Divider from '@mui/material/Divider';
-import { ListItemIcon, ListItemText, SxProps, Tab, Tabs, Theme } from '@mui/material';
+import { Button, ListItemIcon, ListItemText, SxProps, Tab, Tabs, Theme } from '@mui/material';
 import TabContext from '@mui/lab/TabContext';
 import TabPanel from'@mui/lab/TabPanel';
 import TabList from '@mui/lab/TabList';
@@ -18,6 +18,9 @@ import { defaultTheme } from './Theme';
 import { ExtensionsContext } from '../context/extensions.provider';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { ipcRenderer } from '../utils/ipc-renderer';
+import { getDisplayMode, isElectronBrowser, onDisplayModeChange } from '../utils/environment';
+import { AppInstallationContext } from '../context/app_installation.provider';
 
 
 
@@ -66,7 +69,9 @@ export type LayoutProps = {
   }[]
 }
 
-export default function Layout( { contents }: LayoutProps) {  
+export default function Layout( { contents }: LayoutProps) { 
+
+  const { installButtonVisibility, install } = useContext( AppInstallationContext );
 
   const [ open, setOpen ] = useState(false);
   const toggleDrawer = () => {
@@ -77,9 +82,12 @@ export default function Layout( { contents }: LayoutProps) {
   const [ activeTab, setActiveTab ] = React.useState('0');
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setActiveTab(newValue);
-    global.ipcRenderer.invoke( 'main:set_active_tab', newValue );
+    ipcRenderer.invoke( 'main:set_active_tab', newValue );
   }; 
   const router = useRouter();
+  const [ displayMode, setDisplayMode ] = useState('browser');
+
+  // const isElectron = isElectronBrowser();
 
   function hashToTabIdx( hash: string ) {
     return hash.split('tab-')[1];
@@ -99,8 +107,15 @@ export default function Layout( { contents }: LayoutProps) {
 
     router.events.on("hashChangeStart", onHashChangeStart);
 
+    setDisplayMode( getDisplayMode( window) );
+
+    const off = onDisplayModeChange( window, ( mode ) => {
+      setDisplayMode(mode);
+    });
+
     return () => {
         router.events.off("hashChangeStart", onHashChangeStart);
+        off()
     };
   }, [router.events]);
 
@@ -111,7 +126,7 @@ export default function Layout( { contents }: LayoutProps) {
     // const tabIdx = hashToTabIdx( location.hash );
     // setActiveTab( tabIdx );
 
-    global.ipcRenderer.invoke( 'main:get_active_tab' )
+    ipcRenderer.invoke( 'main:get_active_tab' )
       .then( ( tabId: string ) => {
         console.log({ tabId });
 
@@ -154,7 +169,7 @@ export default function Layout( { contents }: LayoutProps) {
     </div>
   ));
 
-  const { browserActionList } = useContext( ExtensionsContext )
+  const { browserActionList } = useContext( ExtensionsContext );
 
   return (
     <TabContext value={activeTab}>
@@ -170,7 +185,8 @@ export default function Layout( { contents }: LayoutProps) {
               theme.palette.mode === 'light'
                 ? theme.palette.grey[100]
                 : theme.palette.grey[1000],
-              userSelect: 'none'
+              userSelect: 'none',
+              appRegion: displayMode === 'window-controls-overlay' ? 'drag' : 'unset'
             }}
             style={{ paddingRight: '12px' }}
           >
@@ -197,6 +213,18 @@ export default function Layout( { contents }: LayoutProps) {
             >
               { contents[activeTab].tabLabel.text }
             </Typography>
+
+            <Button
+              title="Install this WebApp for an enhanced overlay!"
+              variant='contained'
+              sx={{
+                display: installButtonVisibility ? 'inherit' : 'none',
+                minWidth: 100,
+              }}
+              onClick={install}
+            >
+              Install on this browser
+            </Button>
   
             {/* <IconButton color="inherit">
               <Badge badgeContent={6} color="secondary">
@@ -204,7 +232,7 @@ export default function Layout( { contents }: LayoutProps) {
               </Badge>
             </IconButton> */}
 
-            {browserActionList}
+            { browserActionList }
   
           </Toolbar>
         </AppBar>

@@ -2,6 +2,9 @@ export type OverlayOcrRegionVisuals = {
     border_width: number;
 };
 
+export type TextPositioningMode = 'block-based' | 'line-based' | 'word-based' | 'character-based';
+export type GeneratedFuriganaVisibility = 'visible' | 'hidden' | 'visible-on-line-hover' | 'visible-on-word-hover';
+
 export type OverlayOcrItemBoxVisuals = {
     inactive_border_color: string;
     active_border_color: string;
@@ -12,17 +15,32 @@ export type OverlayOcrItemBoxVisuals = {
     size_factor: number; // % 0 .. 100
     text: {
         color: string;
-        font_size_factor: number; // %
+        font_size_factor: number; // % 0 .. 100
         font_weight: number;
-        letter_spacing: number;
+        letter_spacing?: number; 
+        letter_spacing_factor: number; // % 0 .. 100
         outline_width: number; // pixels
-        outline_color: string
+        outline_color: string;
         character_positioning: boolean; // Individual character positioning
+        positioning?: {
+            mode: TextPositioningMode,
+        },
+        sentence_ending_punctuation: {
+            enabled: boolean;
+            hidden: boolean;
+        };
+        furigana_filter: {
+            enabled: boolean;
+            threshold: number;
+        };
+        generated_furigana: {
+            visibility: GeneratedFuriganaVisibility
+        }
     };
     selected_text: {
         color: string;
         background_color: string;
-    }
+    };
 };
 
 export type OverlayMouseVisuals = {
@@ -61,6 +79,7 @@ export type OverlayBehavior = {
     always_forward_mouse_clicks: boolean;
     show_window_without_focus: boolean;
     hide_results_on_blur: boolean;
+    automatic_adjustment: boolean; // Overlay automatic positioning and resizing
 };
 
 export type OverlayHotkeys = {
