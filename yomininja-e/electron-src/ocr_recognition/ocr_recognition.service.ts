@@ -5,11 +5,11 @@ import { RecognizeImageUseCase } from "../@core/application/use_cases/recognize_
 import { OcrResultScalable } from "../@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { GetActiveSettingsPresetUseCase } from "../@core/application/use_cases/get_active_settings_preset/get_active_settings_preset.use_case";
 import { getActiveProfile, windowManager } from "../@core/infra/app_initialization";
-import { OcrAdapter } from "../@core/application/adapters/ocr.adapter";
+import { HardwareAccelerationOption, OcrAdapter, TextRecognitionModel } from "../@core/application/adapters/ocr.adapter";
 import { Language } from "../@core/domain/language/language";
 import { CaptureSource, ExternalWindow } from "./common/types";
 import sharp from 'sharp';
-import { GetSupportedLanguagesUseCaseInstance, RecognizeImageUseCaseInstance } from "../@core/infra/types/use_case_instance.types";
+import { GetSupportedLanguagesUseCaseInstance, RecognizeImageUseCaseInstance, RecognizeSelectionUseCaseInstance } from "../@core/infra/types/use_case_instance.types";
 import { PpOcrAdapter } from "../@core/infra/ocr/ppocr.adapter/ppocr.adapter";
 import { OcrEngineSettingsU } from "../@core/infra/types/entity_instance.types";
 import { OcrEngineSettings } from "../@core/domain/settings_preset/settings_preset";
@@ -26,6 +26,7 @@ export const entireScreenAutoCaptureSource: CaptureSource = {
 export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = OcrEngineSettings > {
 
     private recognizeImageUseCase: RecognizeImageUseCaseInstance;
+    private recognizeSelectionUseCase: RecognizeSelectionUseCaseInstance;
     private getSupportedLanguagesUseCase: GetSupportedLanguagesUseCaseInstance;
     private getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;    
     private ocrAdapters: OcrAdapter< TOcrSettings >[];    
@@ -33,12 +34,14 @@ export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = Oc
     constructor(
         input: {
             recognizeImageUseCase: RecognizeImageUseCaseInstance;
+            recognizeSelectionUseCase: RecognizeSelectionUseCaseInstance;
             getSupportedLanguagesUseCase: GetSupportedLanguagesUseCaseInstance;
-            getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;            
+            getActiveSettingsPresetUseCase: GetActiveSettingsPresetUseCase;
             ocrAdapters: OcrAdapter< TOcrSettings >[];
         }
     ){
         this.recognizeImageUseCase = input.recognizeImageUseCase;
+        this.recognizeSelectionUseCase = input.recognizeSelectionUseCase;
         this.getSupportedLanguagesUseCase = input.getSupportedLanguagesUseCase;
         this.getActiveSettingsPresetUseCase = input.getActiveSettingsPresetUseCase;
         this.ocrAdapters = input.ocrAdapters;
@@ -49,6 +52,7 @@ export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = Oc
         profileId: string;
         engineName?: string;
         autoMode?: boolean;
+
     }): Promise< OcrResultScalable | null > {
         
         if (isDev)
@@ -73,6 +77,23 @@ export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = Oc
             ocrAdapterName: engineName,
             autoMode: Boolean( input.autoMode ),
         });
+    }
+
+    async getSelectiveResult(
+        input: {
+            partialResult: OcrResultScalable;
+            selectedItemIds: string[];
+            regionId?: string;
+        } 
+    ): Promise<OcrResultScalable | null> {
+
+        const result = await this.recognizeSelectionUseCase.execute({
+            partialResult: input.partialResult,
+            selectedItemIds: input.selectedItemIds,
+            regionId: input.regionId,
+        });
+
+        return result;
     }
 
     async getActiveSettingsPreset() {
@@ -141,5 +162,50 @@ export class OcrRecognitionService < TOcrSettings extends OcrEngineSettings = Oc
             });
 
         return dict;
+    }
+
+    async getSupportedModels( engineName: string ): Promise<TextRecognitionModel[]> {
+        const ocrEngine = this.ocrAdapters.find( i => i.name === engineName );
+
+        if (!ocrEngine) return [];
+
+        return await ocrEngine.getSupportedModels();
+    }
+
+    async installOcrModel( engineName: string, modelName: string ): Promise<boolean> {
+        const ocrEngine = this.ocrAdapters.find( i => i.name === engineName );
+
+        if ( !ocrEngine?.installModel ) return false;
+
+        console.log(`\nInstalling ${modelName} ...`);
+
+        const success = await ocrEngine.installModel( modelName );
+        console.log(`Model ${modelName} installation success: ${success}`);
+        return success;
+    }
+
+    async getHardwareAccelerationOptions( engineName: string ): Promise< HardwareAccelerationOption[] > {
+
+        const ocrEngine = this.ocrAdapters.find( i => i.name === engineName );
+
+        if ( !ocrEngine?.getHardwareAccelerationOptions )
+            return [];
+    
+        return ocrEngine.getHardwareAccelerationOptions();
+    }
+
+    async installHardwareAcceleration( engineName: string, option: HardwareAccelerationOption ): Promise< boolean > {
+        const ocrEngine = this.ocrAdapters.find( i => i.name === engineName );
+
+        if ( !ocrEngine?.installHardwareAcceleration ) {
+            return false;   
+        }
+
+        console.log(`\nInstalling ${engineName}: ${option.backend} ${option.computePlatform}`);
+
+        const success = await ocrEngine.installHardwareAcceleration( option );
+        console.log(`Installation success: ${success}`);
+
+        return success;
     }
 }

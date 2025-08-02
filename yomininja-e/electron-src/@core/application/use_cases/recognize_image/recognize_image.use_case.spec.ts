@@ -28,6 +28,7 @@ describe("Recognize Image Use Case tests", () => {
         },
         results: [
             {
+                id: '1',
                 text: [{ content: "recognized_text" }],
                 recognition_score: 0.99,
                 classification_score: 0.99,
@@ -40,6 +41,7 @@ describe("Recognize Image Use Case tests", () => {
                 }
             },
             {
+                id: '2',
                 text: [{ content: "recognized_text" }],
                 recognition_score: 0.99,
                 classification_score: 0.99,

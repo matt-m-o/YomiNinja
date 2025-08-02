@@ -1,5 +1,6 @@
 import { SettingsPresetInstanceProps } from "../../infra/types/entity_instance.types";
 import { SettingsPreset, SettingsPresetProps,  } from "./settings_preset";
+import crypto from 'crypto';
 
 export function getDefaultSettingsPresetProps(): SettingsPresetProps {
 
@@ -33,7 +34,7 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                     text: {
                         color: "#ffffff", // White
                         font_size_factor: 100,
-                        font_weight: 500,
+                        font_weight: 400,
                         letter_spacing: 1,
                         letter_spacing_factor: 100,
                         outline_width: 0,
@@ -47,8 +48,8 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                             hidden: true
                         },
                         furigana_filter: {
-                            enabled: false,
-                            threshold: 0.6
+                            enabled: true,
+                            threshold: 85
                         },
                         generated_furigana: {
                             visibility: 'visible-on-line-hover'
@@ -74,11 +75,13 @@ export function getDefaultSettingsPresetProps(): SettingsPresetProps {
                 show: 'Alt+B',
                 clear: 'Alt+V',
                 ocr_on_screen_shot: true,
+                manual_adjustment: 'Ctrl+Shift+M',
+                remote_control_key: crypto.randomUUID()
             },
             behavior: {
                 copy_text_on_hover: false,
                 copy_text_on_click: true,
-                always_on_top: false,
+                always_on_top: process.platform == 'darwin',
                 click_through_mode: 'auto',
                 show_window_on_copy: {
                     enabled: false,

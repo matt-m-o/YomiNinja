@@ -1,5 +1,5 @@
 import { OcrItem, OcrResult, OcrResultContextResolution, OcrResult_CreationInput } from "../../../domain/ocr_result/ocr_result";
-import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
+import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, TextRecognitionModel, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import { OcrEngineSettings } from "../../../domain/settings_preset/settings_preset";
 import { PpOcrEngineSettings, getPpOcrDefaultSettings } from "../../ocr/ppocr.adapter/ppocr_settings";
 import { OcrResultScalable } from "../../../domain/ocr_result_scalable/ocr_result_scalable";
@@ -12,6 +12,7 @@ const ocrTestAdapterResultProps: OcrResult_CreationInput = {
     },
     results: [
         {
+            id: '1',
             text: [{ content: "recognized_text" }],
             recognition_score: 0.99,
             classification_score: 0.99,
@@ -65,6 +66,10 @@ export class FakeOcrTestAdapter implements OcrAdapter< FakeOcrEngineSettings > {
     async getSupportedLanguages(): Promise< string[] > {        
         
         return this.supportedLanguages;
+    }
+
+    async getSupportedModels(): Promise<TextRecognitionModel[]> {
+        return [];
     }
 
     async updateSettings(

@@ -18,6 +18,7 @@ export type OcrResultsProps = {
     ocrItemBoxVisuals: OverlayOcrItemBoxVisuals;
     overlayHotkeys: OverlayHotkeys;
     overlayBehavior: OverlayBehavior;
+    fontFamily: string;
 };
 
 
@@ -31,7 +32,7 @@ export default function OcrResults( props: OcrResultsProps ) {
 
     const { activeSettingsPreset } = useContext( SettingsContext );
     const { profile } = useContext( ProfileContext );
-    const { ocrResult } = useContext( OcrResultContext );
+    const { ocrResult, recognizeSelection } = useContext( OcrResultContext );
     const { activeOcrTemplate } = useContext( OcrTemplatesContext );
     const { speak, getVoices } = useContext( TTSContext );
     const [ isPopup, setIsPopup ] = useState(false);
@@ -62,6 +63,13 @@ export default function OcrResults( props: OcrResultsProps ) {
     }, [] );
 
     const handleBoxMouseEnter = ( item: OcrItemScalable, ocrRegionId?: string ) => {
+
+        if ( item.recognition_state == 'DETECTED' ) {
+            recognizeSelection({
+                regionId: item.region_id,
+                selectedItemIds: [ item.id ]
+            });
+        }
         
         const hoveredText = getOcrItemText( item );
         // console.log({ hoveredText });
@@ -185,11 +193,10 @@ export default function OcrResults( props: OcrResultsProps ) {
 
                 const ocrTemplateRegion = getOcrTemplateTargetRegion( ocrRegion.id );
 
-                const furiganaFilterThreshold = ocrItemBoxVisuals?.text?.furigana_filter?.threshold;
-
-                if ( Boolean( ocrItemBoxVisuals?.text.furigana_filter?.enabled ) ) {
-                    removeFurigana(ocrRegion.results, furiganaFilterThreshold || 0.6);
-                }
+                const furiganaFilterThreshold = (
+                    Number(ocrItemBoxVisuals?.text?.furigana_filter?.threshold || 80) / 100
+                );
+                const enableFuriganaFilter = ocrItemBoxVisuals?.text?.furigana_filter.enabled;
 
                 // const regionAspectRatio = ocrRegion.size.width / ocrRegion.size.height;
                 const regionWidth = isElectron ?
@@ -240,7 +247,11 @@ export default function OcrResults( props: OcrResultsProps ) {
                         } */}
                         {
 
-                            ocrRegion.results.map( ( item, resultIdx ) => {
+                            (
+                                enableFuriganaFilter ?
+                                removeFurigana( ocrRegion.results, furiganaFilterThreshold ) :
+                                ocrRegion.results
+                            ).map( ( item, resultIdx ) => {
                                 if ( !item?.text ) return;
 
                                 if ( ocrTemplateRegion?.text_to_speech_options?.automatic ) {
@@ -275,6 +286,7 @@ export default function OcrResults( props: OcrResultsProps ) {
                                         onDoubleClick={ () => handleBoxDoubleClick( id ) }
                                         onBlur={ handleBoxBlur }
                                         contentEditable={ editableBoxId === id }
+                                        fontFamily={props.fontFamily}
                                     />
                                 )
                             })

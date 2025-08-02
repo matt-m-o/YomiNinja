@@ -3,11 +3,13 @@ models/*
 *.PNG
 *.png
 **.pyc
-py_ocr_service.venv/*
+*.venv/*
+python/*
 src/main.build/*
 src/output/*
 build/
 dist/
+dist_cuda/
 upx/
 data/
 src/protos/py/

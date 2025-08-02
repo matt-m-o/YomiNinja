@@ -44,12 +44,12 @@ export class IpcMainUniversal implements electron.IpcMain {
         return this;
     }
 
-    addListener(event: string | symbol, listener: (...args: any[]) => void): this {
+    addListener(event: string, listener: (...args: any[]) => void): this {
         this.ipcMain.addListener( event, listener );
         return this;
     }
 
-    off(event: string | symbol, listener: (...args: any[]) => void): this {
+    off(event: string, listener: (...args: any[]) => void): this {
         this.ipcMain.off( event, listener );
         return this;
     }

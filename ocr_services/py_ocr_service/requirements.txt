@@ -1,11 +1,11 @@
 grpcio
 grpcio-tools
-numpy
+numpy==1.26.4
 Pillow
-pyinstaller
+# pyinstaller
 opencv-python
 
-transformers==4.41.2
+transformers
 manga-ocr
 
 # comic-text-detector requirements

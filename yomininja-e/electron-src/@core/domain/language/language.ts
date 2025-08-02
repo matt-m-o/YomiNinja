@@ -50,7 +50,7 @@ export class Language {
 
     set two_letter_code( value: string ) {
 
-        if ( value.length != 2 )
+        if ( value?.length != 2 )
             return;
 
         this.props.two_letter_code = value;

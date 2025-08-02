@@ -47,7 +47,7 @@ export default function AppSettingsVisuals() {
 
         if ( !overlayMouseVisuals ) return;
 
-        console.log( overlayMouseVisuals )
+        // console.log( overlayMouseVisuals );
 
         setMouseSize( overlayMouseVisuals.custom_cursor_size );
 

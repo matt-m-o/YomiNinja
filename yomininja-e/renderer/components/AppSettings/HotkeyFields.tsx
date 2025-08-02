@@ -4,6 +4,7 @@ import AddSharpIcon from '@mui/icons-material/AddSharp';
 import BackspaceRoundedIcon from '@mui/icons-material/BackspaceRounded';
 import IconButton from '@mui/material/IconButton';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 const modifierKeys: string[] = [
     'Command', 'Cmd',
@@ -61,6 +62,7 @@ export interface HotkeyCombination {
 export type HotkeyFieldsProps = {
     label: string;
     title?: string;
+    commandLine: string;
     keyCombination: string;
     defaultKeys?: string;
     onChangeHandler: ( input?: string[] ) => void; // Dispatch<SetStateAction<HotkeyCombination>>;
@@ -75,6 +77,7 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
         keyCombination,
         defaultKeys,
         onChangeHandler,
+        commandLine,
         label,
         title,
         sx
@@ -118,7 +121,7 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
                     verticalAlign: 'middle',
                     textAlign: 'right',
                     minWidth: '80px',
-                    maxWidth: '80px'
+                    maxWidth: '115px'
                 }}
             >
                 <Typography
@@ -186,6 +189,21 @@ export default function HotkeyFields( props: HotkeyFieldsProps) {
                         title={'Restore default'}
                     >
                         <RestartAltIcon 
+                            style={{
+                                width: '25px',
+                                height: '25px'
+                            }}
+                        />
+                    </Button>
+                    
+                    <Button variant="text"
+                        title={'Copy CLI command'}
+                        onClick={ () => navigator.clipboard.writeText( commandLine ) }
+                        style={{
+                            minWidth: '40px',
+                        }}
+                    >
+                        <ContentCopyIcon 
                             style={{
                                 width: '25px',
                                 height: '25px'

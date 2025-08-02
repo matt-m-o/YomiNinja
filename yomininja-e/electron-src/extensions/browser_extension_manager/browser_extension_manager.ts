@@ -3,6 +3,7 @@ import fs from "fs"
 import StreamZip, { StreamZipAsync } from "node-stream-zip";
 import { applyYomiWorkaround } from "./workarounds/yomi_workaround";
 import sanitize from 'sanitize-filename';
+import { injectPreloadFile } from "../custom_browser_extensions_api";
 
 export class BrowserExtensionManager {
 
@@ -102,6 +103,11 @@ export class BrowserExtensionManager {
         const manifest = this.parseManifestJson(
             JSON.parse( fileContent ) 
         );
+
+        injectPreloadFile({
+            manifest,
+            extensionPath
+        });
 
         fs.writeFileSync( filePath, JSON.stringify( manifest, null, '\t' ) );
 

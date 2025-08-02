@@ -15,9 +15,12 @@ ipcMain.handle( 'ocr_recognition:restart_engine', async ( event: IpcMainInvokeEv
     ocrRecognitionController.restartEngine( engineName );
 });
 
-ipcMain.handle( 'refresh_all_windows', async () => {
-    overlayController.refreshPage();
-    mainController.refreshPage();
+ipcMain.handle( 'refresh_window', async ( event: IpcMainInvokeEvent, windowName: ('overlay' | 'main')[] ) => {
+    if ( windowName.includes( 'overlay') )
+        overlayController.refreshPage();
+
+    if ( windowName.includes( 'main') )
+        mainController.refreshPage();
 });
 
 ipcMain.handle( 'open_link', async ( event: IpcMainInvokeEvent, message: string ) => {

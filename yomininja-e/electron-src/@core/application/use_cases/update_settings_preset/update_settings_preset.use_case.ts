@@ -1,4 +1,3 @@
-import { settings } from "cluster";
 import { OcrEngineSettings, SettingsPreset, SettingsPresetJson } from "../../../domain/settings_preset/settings_preset";
 import { SettingsPresetRepository } from "../../../domain/settings_preset/settings_preset.repository";
 import { OcrAdapter } from "../../adapters/ocr.adapter";
@@ -88,6 +87,10 @@ export class UpdateSettingsPresetUseCase< TOcrSettings extends OcrEngineSettings
         settingsPreset.updateOverlaySettings({
             ...defaultSettingsProps.overlay,
             ...input.overlay,
+            hotkeys: {
+                ...defaultSettingsProps.overlay.hotkeys,
+                ...input.overlay.hotkeys
+            }
         });
         settingsPreset.updateDictionarySettings({
             ...defaultSettingsProps.dictionary,
@@ -108,7 +111,7 @@ export class UpdateSettingsPresetUseCase< TOcrSettings extends OcrEngineSettings
         
         if ( options?.restartOcrEngine ) {
 
-            await new Promise( resolve => setTimeout( resolve, 500 ) );
+            // await new Promise( resolve => setTimeout( resolve, 500 ) );
 
             for ( const adapterName of ocrAdaptersToBeRestarted ) {
 

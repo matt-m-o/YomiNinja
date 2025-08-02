@@ -1,11 +1,12 @@
 const TARGET_ARCH = process.env.TARGET_ARCH;
+const ML_HW_ACCELERATION = process.env.ML_HW_ACCELERATION
 
 if ( process.platform !== 'darwin' && TARGET_ARCH === 'arm64' ) {
     console.log("Skipping arm64 build!")
     process.exit();
 }
 
-module.exports = {
+let buildConfig = {
     "asar": true,
     "files": [
         "main",
@@ -27,6 +28,11 @@ module.exports = {
             "from": "electron_resources",
             "to": "./",
             "filter": "**/*"
+        },
+        {
+            "from": "main/electron-src/extensions/custom_browser_extensions_api/renderer/renderer.js",
+            "to": "./extensions/renderer.js",
+            "filter": "**/*"
         }
     ],
     "directories": {
@@ -38,10 +44,12 @@ module.exports = {
         "oneClick": false,
         "runAfterFinish": true,
         "allowToChangeInstallationDirectory": true,
-        "include": "./electron_resources/uninstaller.nsh"
+        "include": "./electron_resources/installer.nsh"
     },
     "win": {
-        "publisherName": "Matt M.",
+        "signtoolOptions": {
+            "publisherName": "Matt M.",
+        },
         "compression": "maximum",
         "asarUnpack": [
             "**/node_modules/sharp/**/*",
@@ -49,9 +57,12 @@ module.exports = {
         ],
         "extraResources": [
             {
-                "from": "../bin/win32",
+                "from": `../bin/win32/${TARGET_ARCH}`,
                 "to": "bin",
-                "filter": "**/*"
+                "filter": [
+                    "**/*",
+                    "!py_ocr_service/models/manga_ocr/**/*"
+                ]
             }
         ]
     },
@@ -64,9 +75,12 @@ module.exports = {
         ],
         "extraResources": [
             {
-                "from": "../bin/linux",
+                "from": `../bin/linux/${TARGET_ARCH}`,
                 "to": "bin",
-                "filter": "**/*"
+                "filter": [
+                    "**/*",
+                    "!py_ocr_service/models/manga_ocr/**/*"
+                ]
             }
         ],
         "target": [
@@ -84,18 +98,28 @@ module.exports = {
         ],
         "extraResources": [
             {
-                "from": `../bin/darwin/x64`, // "from": `../bin/darwin/${TARGET_ARCH}`,
+                "from": `../bin/darwin/${TARGET_ARCH}`,
                 "to": "bin",
-                "filter": "**/*"
+                "filter": [
+                    "**/*",
+                    "!py_ocr_service/models/manga_ocr/**/*"
+                ]
+            },
+            {
+                "from": `./node_modules/uiohook-napi/prebuilds/darwin-${TARGET_ARCH}/node.napi.node`,
+                "to": "app.asar.unpacked/node_modules/uiohook-napi/build/Release/uiohook_napi.node",
+                "filter": [
+                    "**/*",
+                ]
             }
         ],
         "target": [
             {
                 "target": "default",
-                "arch": [
-                    TARGET_ARCH
-                ]
+                "arch": TARGET_ARCH
             }
         ]
     }
-};
+}
+
+module.exports = buildConfig;

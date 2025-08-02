@@ -1,4 +1,4 @@
-import { MutableRefObject, useRef } from "react";
+import { MutableRefObject, useEffect, useRef } from "react";
 import { OcrTargetRegionJson } from "../../../electron-src/@core/domain/ocr_template/ocr_target_region/ocr_target_region";
 import Moveable, { OnDrag, OnDragEnd, OnRender, OnResize, OnResizeEnd } from "react-moveable";
 import { Box, debounce, styled } from "@mui/material";
@@ -90,6 +90,16 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
         });
     }, 250 );
 
+    function toggleImageVisibility( visible: boolean ) {
+        let element = document.getElementById(`region-image-${region.id}`);
+        if ( !element ) return;
+        const regionImage = element as HTMLImageElement;
+
+        regionImage.src = ''
+        
+        regionImage.style.visibility = visible ? 'visible' : 'hidden';
+    }
+
     return ( <>
         <OcrTargetRegionDiv id={region.id} ref={targetRef} className='ocr-region'
             onClick={ onClick }
@@ -97,9 +107,19 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
                 top: toCssPercentage(position.top),
                 left: toCssPercentage(position.left),
                 width: toCssPercentage(size.width),
-                height: toCssPercentage(size.height),
+                height: toCssPercentage(size.height)
             }}
-        />
+            
+        >
+            <img id={`region-image-${region.id}`}
+                src={ 'data:image/png;base64,' + region?.image_base64 } 
+                style={{
+                    width: "100%",
+                    height: "100%",
+                    visibility: region?.image_base64 ? 'visible' : 'hidden'
+                }}
+            />
+        </OcrTargetRegionDiv>
         <Moveable
             ref={moveableRef}
             target={targetRef}
@@ -117,6 +137,8 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
                 e.target.style.top = toCssPercentage( e.top / templateSize.height );
                 e.target.style.left = toCssPercentage( e.left / templateSize.width );
                 e.target.style.cursor = 'move';
+
+                toggleImageVisibility( false );
             }}
             onDragEnd={ ( e: OnDragEnd ) => {
 
@@ -133,6 +155,8 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
 
                 // console.log(templateSize);
                 // console.log( region );
+
+                toggleImageVisibility( true );
             }}
 
             useMutationObserver={true}
@@ -149,6 +173,8 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
             controlPadding={20}
             throttleResize={1}
             onResize={ ( e: OnResize ) => {
+
+                toggleImageVisibility( false );
 
                 let width = e.width / templateSize.width;
                 let height = e.height / templateSize.height;
@@ -218,6 +244,8 @@ export default function OcrTargetRegion( props: OcrTargetRegionProps  ) {
                     top,
                     left,
                 });
+
+                toggleImageVisibility( true );
             }}
         />
     </> )

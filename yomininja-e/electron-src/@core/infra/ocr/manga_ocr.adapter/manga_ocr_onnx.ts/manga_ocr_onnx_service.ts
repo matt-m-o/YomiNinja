@@ -1,5 +1,5 @@
 import { InferenceSession, Tensor } from "onnxruntime-node";
-import { MangaOcrService, MangaOcrRecognize_Input } from "../manga_ocr_service";
+import { MangaOcrService, MangaOcrRecognize_Input, MangaOcrRecognizeSelective_Input } from "../manga_ocr_service";
 import { BeamSearch } from "./beam_search";
 import { readFileSync } from "fs";
 import * as Jimp from 'jimp';
@@ -58,12 +58,13 @@ export class MangaOcrOnnxService implements MangaOcrService {
         // TODO: Detect text
         const boxes: OcrItemBox[] = input.boxes || [];
 
-        for ( const box of boxes ) {
+        for ( const [ idx, box ] of boxes.entries() ) {
 
             const textImage = await this.crop( jimpImage, box );
 
             const hypotheses = await this._recognize( textImage );
             result.addResultItem({
+                id: idx.toString(),
                 box,
                 classification_label: 1,
                 classification_score: 1,

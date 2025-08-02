@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "rootDir": "./",
+    "strict": true,
+    "esModuleInterop": true,
+    "checkJs": false,
+    "outDir": "../main/grpc",
+    "types": [
+      "jest"
+    ]
+  },
+  "exclude": ["node_modules", "lens_proto"],
+  "include": ["**/*.ts", "**/*.tsx", "**/*.js"],
+}

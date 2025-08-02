@@ -22,11 +22,18 @@ import path from 'path';
 import { USER_DATA_DIR } from '../../util/directories.util';
 import { LaunchConfig } from './types/launch_config';
 import { httpServer } from '../../common/server';
+import { detectHttpCliToolCmd } from '../../util/environment.util';
+import { removeIncompatibleFiles, isUserDataCompatible, updateUserDataVersion, updateUserDataStructure } from '../../util/user_data.util';
+import { app, Notification } from 'electron';
+import { AppExitHandler } from './util/app_exit_handler';
 
+import isDev from 'electron-is-dev';
 const isMacOS = process.platform === 'darwin';
 export let activeProfile: Profile;
 export let windowManager: WindowManager;
 export let launchConfig: LaunchConfig;
+
+const appExitHandler = new AppExitHandler();
 
 
 async function populateLanguagesRepository( languageRepo: LanguageTypeOrmRepository ) {
@@ -93,19 +100,18 @@ export async function initializeApp() {
     try {
 
         // createServer();
-
         const serviceStartupPromise = startServices();
 
         // Initializing database
         await get_MainDataSource().initialize();
-        const datasource = await get_DictionaryDataSource().initialize();
-        
+        const dictionaryDataSource = await get_DictionaryDataSource().initialize();
+
         // Setting database cache size
         const dbSize = 100 * 1024; // KB
         const defaultPageSize = 4; // KB
         const cacheSize = dbSize / defaultPageSize;
 
-        const queryRunner = datasource.createQueryRunner();        
+        const queryRunner = dictionaryDataSource.createQueryRunner();
         await queryRunner.query(`PRAGMA cache_size = ${cacheSize};`);         
         await queryRunner.release();
 
@@ -146,16 +152,6 @@ export async function initializeApp() {
                 };
             }
 
-            /// Migrating from v0.6 to v0.6.1 -----------------------------------
-            const cloudVisionSettings = settingsPresetUpdateData.ocr_engines.find(
-                item => item.ocr_adapter_name === cloudVisionOcrAdapterName
-            );
-
-            const defaultGoogleLensSettings = getGoogleLensDefaultSettings();
-
-            if ( cloudVisionSettings?.hotkey === defaultGoogleLensSettings.hotkey ) {
-                cloudVisionSettings.hotkey = getCloudVisionDefaultSettings().hotkey;
-            }
             /// ------------------------------------------------------------------
 
             await get_UpdateSettingsPresetUseCaseInstance().execute({
@@ -188,7 +184,7 @@ export async function initializeApp() {
                 active_settings_preset: defaultSettingsPreset,
                 selected_ocr_adapter_name: isMacOS ? googleLensOcrAdapterName : ppOcrAdapterName
             });
-            await profileRepo.insert(defaultProfile);
+            await profileRepo.insert( defaultProfile );
         }
         
         if ( !defaultProfile?.selected_ocr_adapter_name ) {
@@ -200,6 +196,8 @@ export async function initializeApp() {
 
         windowManager = new WindowManager();
         await windowManager.init();
+
+        await detectHttpCliToolCmd();
 
         // console.log('Initialization completed!');
     } catch (error) {
@@ -226,6 +224,14 @@ async function startServices() {
 
     await Promise.all( serviceStartupPromises );
     await servicesHealthCheck();
+
+    const quit = () => {
+        paddleOcrService.disable();
+        pyOcrService.disable();
+        // app.quit();
+    };
+
+    appExitHandler.setAppExitHandler( quit );
 }
 
 async function servicesHealthCheck() {
@@ -235,7 +241,7 @@ async function servicesHealthCheck() {
     if ( !isMacOS ) {
         serviceHealthCheckPromises.push( paddleOcrService.processStatusCheck() )
     }
-    serviceHealthCheckPromises.push( pyOcrService.processStatusCheck() )
+    serviceHealthCheckPromises.push( pyOcrService.processStatusCheck() );
 
     await Promise.all( serviceHealthCheckPromises );
 }

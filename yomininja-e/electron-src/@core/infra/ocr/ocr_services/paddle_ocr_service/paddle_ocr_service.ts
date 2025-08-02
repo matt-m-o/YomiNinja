@@ -20,6 +20,7 @@ import { DetectRequest } from "../../../../../../grpc/rpc/ocr_service/DetectRequ
 import { DetectResponse__Output } from "../../../../../../grpc/rpc/ocr_service/DetectResponse";
 import { getNextPortAvailable } from "../../../util/port_check";
 import { TextLine__Output } from "../../../../../../grpc/rpc/ocr_service/TextLine";
+import { isLinux } from "../../../../../util/environment.util";
 
 export class PaddleOcrService {
     
@@ -32,8 +33,11 @@ export class PaddleOcrService {
     private autoRestartCount = 0;
 
     constructor() {
+        
+        const arch = `${process.arch}`;
+
         this.binRoot = isDev
-            ? join( BIN_DIR, `/${os.platform()}/ppocr` )
+            ? join( BIN_DIR, `/${os.platform()}/${arch}/ppocr` )
             : join( process.resourcesPath, '/bin/ppocr/' );
     }
 
@@ -177,7 +181,7 @@ export class PaddleOcrService {
         this.serviceProcess = spawn(
             executable,
             [ this.settingsPresetsRoot, 'default', port.toString() ],
-            { cwd: this.binRoot }
+            { cwd: this.binRoot, detached: isLinux }
         );
         this.serviceProcess.on('error', error => {
             console.error(error);
@@ -230,9 +234,27 @@ export class PaddleOcrService {
             }
         });
 
-        process.on( 'exit', this.killServiceProcess );
-        process.on( 'SIGINT', this.killServiceProcess );
-        process.on( 'SIGTERM', this.killServiceProcess );
+    }
+
+    enable = async ( callback?: () => void ) => {
+        this.status = OcrAdapterStatus.Enabled;
+        try {
+            await new Promise( resolve => {
+                this.startProcess( resolve );
+            });
+        } catch (error) {
+            console.log(error);
+        }
+        
+        await this.processStatusCheck();
+        
+        if (!callback) return;
+
+        callback();
+    }
+    disable = () => {
+        this.status = OcrAdapterStatus.Disabled;
+        this.killServiceProcess();
     }
 
     // Checks if the ppocrService is enabled.
@@ -376,9 +398,13 @@ export class PaddleOcrService {
         if ( !this.serviceProcess ) return;
         console.log('Killing PaddleOCRService');
 
+        if ( !this.serviceProcess.pid ) return;
+
         try {
             // Ensure the child process is killed before exiting
             this.serviceProcess.kill('SIGTERM'); // You can use 'SIGINT' or 'SIGKILL' as well
+            if ( isLinux )
+                process.kill( -this.serviceProcess.pid );
         } catch (error) {
             console.error(error);
         }

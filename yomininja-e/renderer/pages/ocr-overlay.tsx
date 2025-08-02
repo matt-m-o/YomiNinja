@@ -9,6 +9,7 @@ import { NotificationsProvider } from '../context/notifications.provider';
 import { TTSProvider } from '../context/text-to-speech.provider';
 import { ProfileProvider } from '../context/profile.provider';
 import Head from 'next/head';
+import { AppInfoProvider } from '../context/app_info.provider';
 
 
 
@@ -34,9 +35,11 @@ export default function OcrOverlayPage() {
             <OcrTemplatesProvider>
               <TTSProvider>
                 <ProfileProvider>
+                  <AppInfoProvider>
+                    
+                    <OcrOverlay/>
 
-                  <OcrOverlay/>
-
+                  </AppInfoProvider>
                 </ProfileProvider>
               </TTSProvider>
             </OcrTemplatesProvider>

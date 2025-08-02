@@ -4,9 +4,13 @@ package ocr_service;
 
 service OCRService {
   rpc RecognizeBytes( RecognizeBytesRequest ) returns ( RecognizeDefaultResponse ) {}
+  rpc RecognizeSelective( RecognizeSelectiveRequest ) returns ( RecognizeDefaultResponse ) {}
   rpc RecognizeBase64( RecognizeBase64Request ) returns ( RecognizeDefaultResponse ) {}
   rpc Detect( DetectRequest ) returns ( DetectResponse ) {}
   rpc GetSupportedLanguages( GetSupportedLanguagesRequest ) returns ( GetSupportedLanguagesResponse ) {}
+  rpc GetSupportedModels( GetSupportedModelsRequest ) returns ( GetSupportedModelsResponse ) {}
+  rpc InstallModel( InstallModelRequest ) returns ( InstallModelResponse ) {}
+  rpc GetHardwareAccelerationOptions( GetHardwareAccelerationOptionsRequest ) returns ( GetHardwareAccelerationOptionsResponse ) {}
   rpc UpdatePpOcrSettings( UpdatePpOcrSettingsRequest ) returns ( UpdateSettingsResponse ) {}
   rpc KeepAlive( KeepAliveRequest ) returns ( KeepAliveResponse ) {}
   rpc MotionDetection( MotionDetectionRequest ) returns ( MotionDetectionResponse ) {}
@@ -24,6 +28,7 @@ message RecognizeBytesRequest {
   bytes image_bytes = 3;
   repeated Box boxes = 4;
   string ocr_engine = 5; // MangaOCR | PaddleOCR
+  bool detection_only = 6;
 }
 message RecognizeBase64Request {
   string id = 1;
@@ -31,6 +36,7 @@ message RecognizeBase64Request {
   string base64_image = 3;
   repeated Box boxes = 4;
   string ocr_engine = 5; // MangaOCR | PaddleOCR | AppleVision
+  bool detection_only = 6;
 }
 
 message Vertex {
@@ -54,6 +60,8 @@ message Result {
   int32 classification_label = 4; // Text direction
   Box box = 5;
   bool is_vertical = 6;
+  string id = 7;
+  string recognition_state = 8;
 }
 message ContextResolution {
   int32 width = 1;
@@ -119,4 +127,53 @@ message UpdatePpOcrSettingsRequest {
 }
 message UpdateSettingsResponse {
   bool success = 1;
+}
+
+
+message TextRecognitionModel {
+  string name = 1;
+  repeated string language_codes = 2;
+  bool is_installed = 3;
+}
+message GetSupportedModelsRequest {
+  string ocr_engine = 1; // MangaOCR | PaddleOCR | AppleVision
+  string language_code = 2;
+}
+message GetSupportedModelsResponse {
+  repeated TextRecognitionModel models = 1;
+}
+
+message InstallModelRequest {
+  string ocr_engine = 1; // MangaOCR | PaddleOCR | AppleVision
+  string model_name = 2;
+}
+message InstallModelResponse {
+  bool success = 1;
+}
+
+message HardwareAccelerationOption {
+  string backend = 1; // 'Torch' | 'ONNX'
+  string compute_platform = 2; // 'CPU' | 'CUDA' | 'ROCm' | 'Default';
+  string compute_platform_version = 3;
+  string install_command = 4;
+  bool installed = 5;
+}
+message GetHardwareAccelerationOptionsRequest {
+  string ocr_engine = 1; // MangaOCR | PaddleOCR | AppleVision
+}
+message GetHardwareAccelerationOptionsResponse {
+  repeated HardwareAccelerationOption options = 1;
+}
+
+
+message RecognizeSelectiveRequest {
+  // id of new or cached request
+  string id = 1; // Required
+  string language_code = 2;
+  bytes image_bytes = 3; // Optional
+  string base64_image = 6; // Optional
+
+  // list of ids of results to be recognized
+  repeated string result_ids = 4;
+  string ocr_engine = 5; // Required; MangaOCR 
 }

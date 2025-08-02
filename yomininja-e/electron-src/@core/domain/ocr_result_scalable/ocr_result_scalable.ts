@@ -1,4 +1,5 @@
-import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrResult, OcrResultContextResolution, OcrTextLineSymbol } from "../ocr_result/ocr_result";
+import { Language } from "../language/language";
+import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrRecognitionState, OcrResult, OcrResultContextResolution, OcrTextLineSymbol } from "../ocr_result/ocr_result";
 
 // Position percentages
 export type OcrResultBoxPositionPcts = {
@@ -17,6 +18,7 @@ export type OcrResultBoxScalable = {
     position: OcrResultBoxPositionPcts;
     dimensions?: OcrResultBoxDimensionsPcts;
     angle_degrees?: number;
+    angle_radians?: number;
     isVertical: boolean;
     transform_origin?: 'top' | 'bottom' | 'center';
 };
@@ -42,15 +44,19 @@ export type OcrTextLineScalable = {
 };
 
 export interface OcrItemScalable {
+    id: string;
     text: OcrTextLineScalable[];
     box: OcrResultBoxScalable;
     recognition_score: number,
     classification_score: number,
     classification_label: number,
+    recognition_state?: OcrRecognitionState;
+    region_id?: string;
 };
 
 export interface OcrRegion {
-    id?: string,
+    id: string,
+    result_id?: string; // id of request of result
     results: OcrItemScalable[],
     image?: Buffer | string,
     position: { // Percentages
@@ -71,6 +77,8 @@ export type OcrResultScalable_CreationInput = {
     image?: Buffer | string;
     results?: OcrItemScalable[];
     ocr_regions?: OcrRegion[];
+    ocr_engine_name?: string;
+    language?: Language;
 };
 
 // Scalable version OcrResult. Uses percentages instead of pixel coordinates
@@ -82,6 +90,8 @@ export class OcrResultScalable {
     public image?: Buffer | string;
     // public results: OcrItemScalable[];
     public ocr_regions: OcrRegion[];
+    public ocr_engine_name?: string;
+    public language?: Language;
     
     private constructor( input: OcrResultScalable_CreationInput ) {
 
@@ -96,6 +106,8 @@ export class OcrResultScalable {
         this.ocr_regions = input?.ocr_regions ? input.ocr_regions : [];
         this.position = input.position;
         this.image = input.image;
+        this.ocr_engine_name = input.ocr_engine_name;
+        this.language = input.language;
     }
 
     static create( input: OcrResultScalable_CreationInput ): OcrResultScalable {
@@ -124,6 +136,8 @@ export class OcrResultScalable {
 
         const rescaledRegionResults = regionResult.ocr_regions[0].results.map( result => {
 
+            result.region_id = input.regionId;
+
             if ( !globalScaling )
                 return result;
 
@@ -149,13 +163,30 @@ export class OcrResultScalable {
             return result;
         });
 
-        this.ocr_regions.push({
+        const newRegionData: OcrRegion = {
+            id: input.regionId || '0',
+            result_id: input.regionResult.id,
             results: rescaledRegionResults,
             position: regionPosition,
             size: regionSize,
-            id: input.regionId,
-            image: regionImage
-        });
+            image: regionImage,
+        };
+
+        let regionExists = this.ocr_regions.find( region => region.id == input.regionId );
+
+        if ( regionExists != undefined ) {
+
+            this.ocr_regions = this.ocr_regions.map( region => {
+                if ( region.id == input.regionId ) {
+                    return newRegionData;
+                }
+                return region;
+            });
+
+            return;
+        }
+
+        this.ocr_regions.push( newRegionData );
 
         // this.results = [ ...this.results, ...rescaledRegionResults ];
     }
@@ -253,11 +284,13 @@ export class OcrResultScalable {
             });
 
             results.push({
+                id: item.id,
                 box: itemBox,
                 text,
                 recognition_score: item.recognition_score,
                 classification_score: item.classification_score,
-                classification_label: item.classification_label
+                classification_label: item.classification_label,
+                recognition_state: item.recognition_state
             });
 
         });
@@ -265,6 +298,7 @@ export class OcrResultScalable {
         // console.timeEnd("createFromOcrResult"); // ~0.154ms to ~0.332ms
 
         ocr_regions.push({
+            id: '0',
             results,
             position: {
                 left: 0,
@@ -408,6 +442,7 @@ export class OcrResultScalable {
         return {
             position,
             angle_degrees,
+            angle_radians: 0,
             dimensions: {
                 width,
                 height
@@ -463,4 +498,21 @@ export class OcrResultScalable {
 
         return distance - symbolLength;
     }
+
+    toJson( serializeImage?: boolean ): OcrResultScalableJson {
+
+        const image = ( serializeImage && this.image && typeof this.image !== 'string' ) ?
+            'data:image/png;base64,'+Buffer.from(this.image).toString('base64'): this.image;
+
+        return {
+            ...this,
+            image,
+            language: this.language?.toJson()
+        };
+    }
 }
+
+export interface OcrResultScalableJson extends Omit<
+    OcrResultScalable, 
+    'toJson' | 'addRegionResult' | 'calculateEuclideanDistance'
+> {}

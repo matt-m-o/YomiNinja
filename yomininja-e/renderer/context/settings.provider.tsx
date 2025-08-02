@@ -1,11 +1,12 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { DictionarySettings, OcrEngineSettings, SettingsPresetJson, SettingsPresetProps } from "../../electron-src/@core/domain/settings_preset/settings_preset";
-import { Alert, Backdrop, CircularProgress, Snackbar, debounce } from "@mui/material";
+import { Alert, Backdrop, CircularProgress, Snackbar, Typography, debounce } from "@mui/material";
 import { OcrEngineSettingsU } from "../../electron-src/@core/infra/types/entity_instance.types";
 import { OverlayBehavior, OverlayHotkeys, OverlayVisualCustomizations } from "../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import { GeneralSettings } from "../../electron-src/@core/domain/settings_preset/settings_preset_general";
 import { ipcRenderer } from "../utils/ipc-renderer";
 import { CompatibilitySettings } from "../../electron-src/@core/domain/settings_preset/settings_preset_compatibility";
+import { HardwareAccelerationOption } from "../../electron-src/@core/application/adapters/ocr.adapter";
 
 export type SettingsContextType = {
     activeSettingsPreset: SettingsPresetJson;
@@ -25,6 +26,11 @@ export type SettingsContextType = {
     openGooglePage: () => void;
     removeGoogleCookies: () => void;
     hasGoogleCookies: boolean;
+    getHardwareAccelerationOptions: ( engineName: string ) => Promise< HardwareAccelerationOption[] >
+    installHardwareAcceleration: (
+        ( engineName: string, option: HardwareAccelerationOption ) => Promise< boolean >
+    ),
+
 };
 
 
@@ -214,6 +220,43 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         setHasGoogleCookies( false );
     }
 
+
+    async function getHardwareAccelerationOptions(
+        engineName: string
+    ): Promise< HardwareAccelerationOption[] > {
+
+        try {
+            return await ipcRenderer.invoke(
+                'ocr_recognition:get_hardware_acceleration_options',
+                engineName
+            );
+        } catch (error) {
+            console.log(error);
+        }
+        
+        return [];
+    }
+    async function installHardwareAcceleration(
+        engineName: string,
+        option: HardwareAccelerationOption
+    ): Promise< boolean > {
+        setOpenBackdrop(true);
+        let success = false;
+        try {
+            success = await ipcRenderer.invoke(
+                'ocr_recognition:install_hardware_acceleration',
+                engineName,
+                option
+            );
+        } catch (error) {
+            console.error(error);
+        }
+        
+        setOpenBackdrop(false);
+        return success;
+    }
+
+
     async function getActiveSettingsPreset(): Promise< SettingsPresetJson > {
 
         const settings = await ipcRenderer.invoke( 'settings_preset:get_active' ) as SettingsPresetJson;
@@ -247,6 +290,7 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         getActiveSettingsPreset();
         getDefaultSettingsPreset();
         checkGoogleCookies();
+        getHardwareAccelerationOptions('MangaOcrAdapter');
 
         return () => {
             ipcRenderer.removeAllListeners( 'settings_preset:active_data' );
@@ -254,13 +298,24 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
         }
     }, [] );
 
-    const [ openBackdrop, setOpenBackdrop ] = useState(false);
+    const [ openBackdrop, setOpenBackdrop ] = useState(false); 
     const backdrop = (
         <Backdrop
-            sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+            sx={{
+                color: '#fff',
+                zIndex: (theme) => theme.zIndex.drawer + 1
+            }}
             open={openBackdrop}            
         >
-            <CircularProgress color="inherit" />
+            <div style={{
+                display: "flex",
+                flexDirection: 'column',
+                alignItems: 'center'
+            }}>
+                <CircularProgress color="inherit" sx={{ ml: 'auto', mr: 'auto' }}/>
+                <Typography sx={{ mt: 2 }}>Please wait...</Typography>
+            </div>
+            
         </Backdrop>
     )
     
@@ -316,7 +371,9 @@ export const SettingsProvider = ( { children }: PropsWithChildren ) => {
                 openCloudVisionPage,
                 openGooglePage,
                 removeGoogleCookies,
-                hasGoogleCookies
+                hasGoogleCookies,
+                getHardwareAccelerationOptions,
+                installHardwareAcceleration
             }}
         >
 

@@ -3,12 +3,14 @@ import { WindowManagerLinuxX11 } from './linux/window_manager_linux_x11';
 import { WindowManagerWin32 } from './win32/window_manager_win32';
 import { WindowManagerLinuxXDoTool } from './linux/window_manager_linux_xdotool';
 import { WindowManagerMacOS } from './macos/window_manager_macos';
+import { isWaylandDisplay } from '../../electron-src/util/environment.util';
+import { screen } from 'electron';
 
 type Size = {
     width: number;
     height: number;
 };
-type Position = {
+export type Position = {
     x: number;
     y: number;
 };
@@ -40,6 +42,7 @@ export interface WindowManagerNativeInterface {
     searchWindowByTitle( title: string ): WindowProperties[] | Promise< WindowProperties[] >;
     getTaskBarProps(): TaskbarProperties;
     setWindowBounds?: ( handle: number, bounds: Partial<Rectangle> ) => void;
+    getCursorPosition: () => Position | Promise< Position >;
 };
 
 export class WindowManager {
@@ -97,5 +100,12 @@ export class WindowManager {
     setWindowBounds( handle: number, bounds: Partial<Rectangle> ): void {
         if ( this.windowManager.setWindowBounds )
             return this.windowManager.setWindowBounds( handle, bounds );
+    }
+
+    async getCursorPosition() {
+        if ( isWaylandDisplay )
+            return screen.getCursorScreenPoint();
+
+        return await this.windowManager.getCursorPosition();
     }
 }

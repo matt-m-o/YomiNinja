@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Grid, InputAdornment, SxProps, TextField, Theme, Typography, createTheme } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Grid, IconButton, InputAdornment, SxProps, TextField, Theme, Typography, createTheme } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Tab from '@mui/material/Tab';
 import TabContext from '@mui/lab/TabContext';
@@ -6,10 +6,13 @@ import TabList from '@mui/lab/TabList';
 import TabPanel from'@mui/lab/TabPanel';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import { ChangeEvent, useContext, useEffect, useState } from "react";
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 import { CaptureSource } from '../../../electron-src/ocr_recognition/common/types';
 import { CaptureSourceContext } from "../../context/capture_source.provider";
 import { ipcRenderer } from "../../utils/ipc-renderer";
+import { AppInfoContext } from "../../context/app_info.provider";
+import SyncIcon from '@mui/icons-material/Sync';
 
 const defaultTheme = createTheme({
     palette: {
@@ -27,11 +30,17 @@ export default function CaptureSourceMenu() {
         refreshCaptureSources,
     } = useContext( CaptureSourceContext );
 
+    const {
+        systemInfo
+    } = useContext( AppInfoContext );
+
     const [ searchValue, setSearchValue ] = useState< string >('');
 
     useEffect( () => {
+        if ( !systemInfo ) return;
+        if ( systemInfo?.windowSystem === 'Wayland' ) return;
         refreshCaptureSources();
-    }, []);    
+    }, [systemInfo]);    
     
     const [ tab, setTab ] = useState('1');
 
@@ -93,9 +102,19 @@ export default function CaptureSourceMenu() {
                 borderColor: defaultTheme.palette.action.active
             } : {};
 
+        let title = captureSource.name;
+
+        if (
+            systemInfo?.windowSystem === 'Wayland' &&
+            captureSource.name === 'Unknown'
+        ) {
+            title = 'The Capture Source name is not available';
+        }
+
+
 
         return <>
-            <Button title={captureSource.name}
+            <Button title={title}
                 onClick={ () => handleSourceClick(captureSource) } 
                 sx={{ ...sx, width: 'max-content' }}
             >
@@ -106,7 +125,7 @@ export default function CaptureSourceMenu() {
                     }}
                 >
                     <VideoElement mediaSourceId={captureSource.id} maxWidth={180} />
-                    <Typography align="center" mt={2}                
+                    <Typography align="center" mt={2}
                         sx={{ 
                             textTransform: 'initial',
                             textOverflow: 'ellipsis',
@@ -122,13 +141,43 @@ export default function CaptureSourceMenu() {
         </> 
     }
 
-    function CaptureSourceList( { items }: {items: CaptureSource[]} ) {
+    function CaptureSourceList( { items, type }: {items: CaptureSource[], type: 'screen' | 'window' } ) {
 
         const sort = ( a, b ) => {
             return a.name < b.name ? -1 : 1
         };
 
         return (<>
+            { systemInfo?.windowSystem === 'Wayland' &&
+                <Grid item>
+                    <Button title={'Refresh list'}
+                        onClick={ () => {
+                            refreshCaptureSources([type])
+                        }} 
+                        sx={{ width: 'max-content' }}
+                    >
+                        <Box display='flex' flexDirection='column' alignItems='center'
+                            sx={{
+                                height: '130px',
+                            }}
+                        >
+                            <SyncIcon sx={{ width: '100%', height: '100%' }}/>
+                            <Typography align="center" mt={2}
+                                sx={{ 
+                                    textTransform: 'initial',
+                                    textOverflow: 'ellipsis',
+                                    overflow: 'hidden',
+                                    whiteSpace: 'nowrap',
+                                    width: '180px',
+                                    mt: 'auto'
+                                }}
+                            >
+                                Refresh
+                            </Typography>
+                        </Box>
+                    </Button>
+                </Grid>
+            }
             { items?.sort(sort)
                 .filter( item => item.name.toLowerCase().includes( searchValue.toLowerCase() ) )
                 .map( ( item, idx ) => (
@@ -146,11 +195,11 @@ export default function CaptureSourceMenu() {
         <Box display='flex' justifyContent='center' flexDirection='column' 
             p={2} pt={3} height={'100vh'}
         >
-            <Typography mb={2} fontSize={'1.1rem'} > Choose the OCR capture source </Typography>
+            <Typography mb={2} fontSize={'1.1rem'} > Select a capture source </Typography>
 
             <TabContext value={tab}>
                 <Box sx={{ borderBottom: 1, borderColor: 'divider', display: 'flex' }}>
-                    <TabList onChange={tabHandleChange} aria-label="lab API tabs example">
+                    <TabList onChange={tabHandleChange}>
                         <Tab label="Entire screen" value="1" />
                         <Tab label="Window" value="2" />
                     </TabList>
@@ -174,9 +223,25 @@ export default function CaptureSourceMenu() {
                         sx={{
                             minWidth: '45%',
                             mt: 1.5,
-                            ml: 'auto'
+                            // ml: 1,
+                            ml: 'auto',
                         }}
                     />
+
+                    { systemInfo?.windowSystem !== 'Wayland'  &&
+                        <Button variant="text" title='Refresh'
+                            onClick={ () => refreshCaptureSources() }
+                            sx={{
+                                ml: 2,
+                                mt: 1,
+                                minWidth: '35px',
+                                minHeight: '35px'
+                            }}
+                        >
+                            <RefreshIcon/>
+                        </Button>
+                    }
+                    
                 </Box>
 
                 <Box
@@ -195,6 +260,7 @@ export default function CaptureSourceMenu() {
                         <Grid container spacing={{ xs: 2, md: 8 }} columns={{ xs: 1, sm: 4, md: 12 }}>
                             <CaptureSourceList
                                 items={ captureSources?.filter( item => item.type === 'screen' ) }
+                                type="screen"
                             />
                         </Grid>
                     </TabPanel>
@@ -202,6 +268,7 @@ export default function CaptureSourceMenu() {
                         <Grid container spacing={{ xs: 2, md: 8 }} columns={{ xs: 1, sm: 4, md: 12 }} >
                             <CaptureSourceList
                                 items={ captureSources?.filter( item => item.type === 'window' ) }
+                                type="window"
                             />
                         </Grid>
                     </TabPanel>

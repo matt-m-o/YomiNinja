@@ -36,6 +36,7 @@ export default function Extensions() {
         installedExtensions,
         installExtension,
         uninstallExtension,
+        clearExtensionData,
         openExtensionOptions,
         toggleExtension
     } = useContext( ExtensionsContext );
@@ -43,8 +44,15 @@ export default function Extensions() {
     const [ openUninstallDialog, setOpenUninstallDialog ] = useState< boolean >( false );
     const [ itemToUninstall, setItemToUninstall ] = useState< BrowserExtensionJson | null >();
 
-    function handleConfirmation() {
+    const [ openClearDataDialog, setOpenClearDataDialog ] = useState< boolean >( false );
+    const [ itemToClearData, setItemToClearData ] = useState< BrowserExtensionJson | null >();
+
+    function handleUninstallConfirmation(  ) {
         uninstallExtension( itemToUninstall );
+    }
+
+    function handleClearDataConfirmation(  ) {
+        clearExtensionData( itemToClearData );
     }
 
     const InstalledExtensions = (
@@ -54,6 +62,10 @@ export default function Extensions() {
                     <ExtensionItem
                         extension={ item }
                         openOptions={ () => openExtensionOptions( item ) }
+                        clearData={ () => {
+                            setItemToClearData( item );
+                            setOpenClearDataDialog( true );
+                        }}
                         uninstall={ () => {
                             setItemToUninstall( item );
                             setOpenUninstallDialog( true );
@@ -108,8 +120,22 @@ export default function Extensions() {
         <Card variant="elevation" sx={{ borderRadius: 4, userSelect: 'none' }}>
 
             <AlertDialog
-                title={'Confirm removal'}
-                message="Are you sure you want to uninstall this extension?"
+                title={''}
+                message={`Are you sure you want to clear "${itemToClearData?.name}" data?`}
+                okButtonText="Yes"
+                cancelButtonText="No"
+                open={ openClearDataDialog }
+                handleCancel={ () => {
+                    setOpenClearDataDialog( false );
+                    setItemToClearData( null );
+                }}
+                handleOk={ handleClearDataConfirmation }
+                handleClose={ () => setOpenClearDataDialog( false ) }
+            />
+
+            <AlertDialog
+                title={''}
+                message={`Are you sure you want to uninstall "${itemToUninstall?.name}"?`}
                 okButtonText="Yes"
                 cancelButtonText="No"
                 open={ openUninstallDialog }
@@ -117,7 +143,7 @@ export default function Extensions() {
                     setOpenUninstallDialog( false );
                     setItemToUninstall( null );
                 }}
-                handleOk={ handleConfirmation }
+                handleOk={ handleUninstallConfirmation }
                 handleClose={ () => setOpenUninstallDialog( false ) }
             />
 

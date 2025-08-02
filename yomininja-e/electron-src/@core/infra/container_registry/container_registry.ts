@@ -25,6 +25,7 @@ export const Registry = {
 
     // Use Cases
     RecognizeImageUseCaseInstance: Symbol.for('RecognizeImageUseCaseInstance'),
+    RecognizeSelectionUseCaseInstance: Symbol.for('RecognizeSelectionUseCaseInstance'),
     GetSupportedLanguagesUseCaseInstance: Symbol.for('GetSupportedLanguagesUseCaseInstance'),
     GetActiveSettingsPresetUseCase: Symbol.for('GetActiveSettingsPresetUseCase'),
     UpdateSettingsPresetUseCaseInstance: Symbol.for('UpdateSettingsPresetUseCaseInstance'),

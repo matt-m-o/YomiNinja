@@ -1,4 +1,4 @@
-import { BrowserWindow, IpcMainInvokeEvent, Tray, nativeImage, app, clipboard, globalShortcut, Menu, DisplayBalloonOptions, NativeImage, systemPreferences } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, Tray, nativeImage, app, clipboard, globalShortcut, Menu, DisplayBalloonOptions, NativeImage, systemPreferences, Notification } from "electron";
 import { UiohookKey, uIOhook } from "uiohook-napi";
 import { CaptureSource, ExternalWindow } from "../ocr_recognition/common/types";
 import { TaskbarProperties } from "../../gyp_modules/window_management/window_manager";
@@ -21,7 +21,7 @@ import { profileController } from "../profile/profile.index";
 import { dictionariesController } from "../dictionaries/dictionaries.index";
 import { ocrTemplateEvents, ocrTemplatesController } from "../ocr_templates/ocr_templates.index";
 import { htmlMouseButtonToUiohook, matchUiohookMouseEventButton } from "../common/mouse_helpers";
-import { debounce } from "lodash";
+import { cloneDeep, debounce } from "lodash";
 import { windowManager } from "node-window-manager";
 import { screenCapturerController } from "../screen_capturer/screen_capturer.index";
 import { ICONS_DIR } from "../util/directories.util";
@@ -29,9 +29,15 @@ import { join } from "path";
 import { sleep } from "../util/sleep.util";
 import electronIsDev from "electron-is-dev";
 import { ipcMain } from "../common/ipc_main";
-const isMacOS = process.platform === 'darwin';
+import { isLinux, isWaylandDisplay, isWindows, isMacOS } from "../util/environment.util";
+import { googleLensOcrAdapterName } from "../@core/infra/ocr/google_lens_ocr.adapter/google_lens_ocr_settings";
+import { ppOcrAdapterName } from "../@core/infra/ocr/ppocr.adapter/ppocr_settings";
+import { mangaOcrAdapterName } from "../@core/infra/ocr/manga_ocr.adapter/manga_ocr_settings";
+import { appleVisionAdapterName } from "../@core/infra/ocr/apple_vision.adapter/apple_vision_settings";
+import { cloudVisionOcrAdapterName } from "../@core/infra/ocr/cloud_vision_ocr.adapter/cloud_vision_ocr_settings";
+import url from "url";
 
-let startupTimer: NodeJS.Timeout;
+// let startupTimer: NodeJS.Timeout;
 
 export class AppController {
 
@@ -47,6 +53,10 @@ export class AppController {
     private userSelectedWindowId: number | undefined;
 
     private activeCaptureSource: CaptureSource;
+
+    private slowInitNotificationTimeout: NodeJS.Timeout;
+    private quitTimeout: NodeJS.Timeout;
+
     
     private taskbar: TaskbarProperties;
 
@@ -61,6 +71,9 @@ export class AppController {
     private tray: Tray | undefined;
     private temporaryTray: Tray | undefined;
 
+    private previousOcrCommandData: OcrCommandInput;
+    private remoteControlKey: string;
+
     constructor( input: {
         appService: AppService
     }) {
@@ -69,20 +82,20 @@ export class AppController {
     }
 
     async init() {
-        console.time('YomiNinja Startup time');
+        console.time('App Startup time');
 
-        if ( !isDev ) {
-            startupTimer = setTimeout( () => {
+        if ( !isDev ) { 
+            this.slowInitNotificationTimeout = setTimeout( () => {
+                console.log('Startup is taking longer than expected');
+                new Notification({
+                    title: 'Startup is taking longer than expected',
+                    body: 'Please restart the app if it doesn’t respond soon.'
+                }).show();
+            }, 2 * 60_000 ); // 2 minutes
+            this.quitTimeout = setTimeout( () => {
                 console.log('Initialization took too long. Closing the app.');
-                this.displayBalloon({
-                    content: 'The app is about to exit in 10 seconds. Please restart the app once it has exited.'
-                });
-                sleep(10_000)
-                    .then( () => {
-                        app.quit();
-                        process.exit();
-                    });
-            }, 45_000 );//
+                app.quit();
+            }, 4 * 60_000 ); // 4 minutes
         }
 
         this.mainWindow = await mainController.init();
@@ -129,8 +142,11 @@ export class AppController {
                     await browserExtensionsController.loadExtensions();
                 // }, 500 );
 
-                if ( startupTimer ) {
-                    clearTimeout( startupTimer );
+                if ( this.slowInitNotificationTimeout ) {
+                    clearTimeout( this.slowInitNotificationTimeout );
+                }
+                if ( this.quitTimeout ) {
+                    clearTimeout( this.quitTimeout );
                 }
             });
                 
@@ -139,6 +155,8 @@ export class AppController {
         const settings = await this.appService.getActiveSettingsPreset();
         if ( !settings )
             throw new Error('no-active-settings-preset');
+
+        this.remoteControlKey = settings.overlay.hotkeys.remote_control_key;
 
 
         const isSystemStartup = process.argv.some( arg =>
@@ -163,13 +181,33 @@ export class AppController {
         this.handleCaptureSourceSelection();
 
         this.taskbar = this.appService.getTaskbar();
-
-        this.activeCaptureSource = entireScreenAutoCaptureSource;
+        
+        await this.appService.init();
+        this.activeCaptureSource = this.appService.entireScreenCaptureSource;
         
         screenCapturerController.init();
-        screenCapturerController.onCapture( 
+        screenCapturerController.setCaptureSource( this.activeCaptureSource );
+
+        if ( !isWaylandDisplay ) {
+            screenCapturerController.createCapturer({
+                captureSource: this.activeCaptureSource,
+                streamFrames: false
+            });
+        }
+        screenCapturerController.onStreamFrame( 
             async ( frame: Buffer ) => {
                 return this._handleVideoStream( frame );
+            }
+        );
+
+        screenCapturerController.onScreenshot( 
+            async ( image: Buffer ) => {
+                return await this.handleOcrCommand({
+                    ...cloneDeep( this.previousOcrCommandData ),
+                    image,
+                    preventNegativeCoordinates: false,
+                    autoCrop: false
+                });
             }
         );
 
@@ -183,6 +221,8 @@ export class AppController {
             systemPreferences.isTrustedAccessibilityClient(true);
         }
         console.timeEnd('YomiNinja Startup time');
+
+        setTimeout( () => ocrRecognitionController.installOcrModels(), 15_000 );
     }
 
     registersIpcHandlers() {
@@ -206,9 +246,9 @@ export class AppController {
         });
 
         ipcMain.handle( 'app:get_capture_sources',
-            async ( event: IpcMainInvokeEvent ): Promise< CaptureSource[] > => {
+            async ( event: IpcMainInvokeEvent, types: ('screen' | 'window')[] | undefined ): Promise< CaptureSource[] > => {
 
-                const sources = await this.appService.getAllCaptureSources();
+                const sources = await this.appService.getAllCaptureSources(types);
                 return sources;
             }
         );
@@ -235,7 +275,7 @@ export class AppController {
 
                 this.activeCaptureSource = message;
 
-                if ( this.userSelectedWindowId ) {
+                if ( this.userSelectedWindowId && !isWaylandDisplay ) {
                     this.captureSourceWindow = await this.appService.getExternalWindow(
                         this.userSelectedWindowId
                     );
@@ -254,20 +294,20 @@ export class AppController {
                 overlayController.activeCaptureSource = this.activeCaptureSource;
                 
                 if ( this.activeCaptureSource.type === 'screen' )
-                    this.setOverlayBounds( 'fullscreen' );
+                    this.setOverlayBounds({ entireScreenMode: 'fullscreen' }); 
                 else
-                    this.setOverlayBounds( 'maximized' );
+                    this.setOverlayBounds({ entireScreenMode: 'maximized' }); 
                 
                 // console.log({
                 //     isAutoOcrEnabled: ocrTemplatesController.isAutoOcrEnabled
                 // });
-                if ( ocrTemplatesController.isAutoOcrEnabled ) {
-                    screenCapturerController.createCaptureStream({
-                        captureSource: this.activeCaptureSource,
-                        force: true
-                    });
-                }
-
+                
+                screenCapturerController.createCapturer({
+                    captureSource: this.activeCaptureSource,
+                    force: true,
+                    streamFrames: ocrTemplatesController.isAutoOcrEnabled
+                });
+                
                 this.isCaptureSourceUserSelected = true;
             }
         );
@@ -288,12 +328,13 @@ export class AppController {
                 console.log({ isAutoOcrEnabled });
 
             if ( !isAutoOcrEnabled )
-                await screenCapturerController.destroyScreenCapturer();
+                await screenCapturerController.stopStream();
 
             if ( isAutoOcrEnabled && this.isCaptureSourceUserSelected ) {
-                screenCapturerController.createCaptureStream({
+                screenCapturerController.createCapturer({
                     captureSource: this.activeCaptureSource,
-                    force: true
+                    force: false,
+                    streamFrames: isAutoOcrEnabled
                 });
             }
         });
@@ -415,6 +456,55 @@ export class AppController {
         this.globalShortcutAccelerators = [];
     }
 
+    async remoteControlRouter( url: url.UrlWithParsedQuery  ): Promise< boolean > {
+
+        const parameters = url.query;
+        
+        if ( !('key' in parameters) ) return false;
+
+        const key = parameters['key'];
+
+        if ( key != this.remoteControlKey ) {
+            console.log("\nInvalid Remote Control key!!!\n");
+            return false;
+        }
+
+        const command = url.pathname?.split('/remote-control/')[1];
+
+        if ( !command ) return false;
+
+        if ( command === 'ocr' ) {
+            await this.handleOcrCommand();
+            return true;
+        }
+        else if ( command === 'ocr/apple-vision' ) {
+            await this.handleOcrCommand({ engineName: appleVisionAdapterName });
+            return true;
+        }
+        else if ( command === 'ocr/google-lens' ) {
+            await this.handleOcrCommand({ engineName: googleLensOcrAdapterName });
+            return true;
+        }
+        else if ( command === 'ocr/cloud-vision' ) {
+            await this.handleOcrCommand({ engineName: cloudVisionOcrAdapterName });
+            return true;
+        }
+        else if ( command === 'ocr/paddleocr' ) {
+            await this.handleOcrCommand({ engineName: ppOcrAdapterName });
+            return true;
+        }
+        else if ( command === 'ocr/mangaocr' ) {
+            await this.handleOcrCommand({ engineName: mangaOcrAdapterName });
+            return true;
+        }
+        else {
+            if ( await overlayController.remoteControlRouter( command ) )
+                return true;
+        }
+
+        return false;
+    }
+
     private showOverlayWindow( input?: { showInactive: boolean, displayResults: boolean }) {
         if ( input ) {
             return overlayController.showOverlayWindow({
@@ -438,24 +528,37 @@ export class AppController {
         this.showOverlayWindowWithoutFocus = Boolean( settingsPresetJson.overlay.behavior.show_window_without_focus );
 
         this.registerGlobalShortcuts( settingsPresetJson );
+        this.remoteControlKey = settingsPresetJson.overlay.hotkeys.remote_control_key;
     }
 
-    setOverlayBounds(
-        entireScreenMode: 'fullscreen' | 'maximized' = 'fullscreen',
-        preventNegativeCoordinates: boolean = false
-    ) {
+    setOverlayBounds( input: {
+        entireScreenMode?: 'fullscreen' | 'maximized';
+        preventNegativeCoordinates?: boolean;
+        bounds?: Partial<Electron.Rectangle>;
+        imageSize?: Electron.Size
+    }) {
+        let {
+            entireScreenMode,
+            preventNegativeCoordinates,
+            bounds,
+            imageSize
+        } = input;
+
+        entireScreenMode = entireScreenMode || 'fullscreen';
 
         overlayController.setOverlayBounds({
             entireScreenMode,
             captureSourceDisplay: this.captureSourceDisplay,
             captureSourceWindow: this.captureSourceWindow,
             preventNegativeCoordinates,
-            isTaskbarVisible: !Boolean(this.taskbar?.auto_hide)
+            isTaskbarVisible: !Boolean(this.taskbar?.auto_hide),
+            bounds,
+            imageSize
         });
     }
 
 
-    handleDisplaySource() {
+    async handleDisplaySource() {
 
         if ( this.userSelectedDisplayId !== undefined ) {
             this.captureSourceDisplay = this.appService.getDisplay( this.userSelectedDisplayId );
@@ -466,12 +569,12 @@ export class AppController {
             this.userSelectedDisplayId === undefined &&
             !this.userSelectedWindowId
         ) 
-            this.captureSourceDisplay = this.appService.getCurrentDisplay();
+            this.captureSourceDisplay = await this.appService.getCurrentDisplay();
         else 
             this.captureSourceDisplay = undefined;        
     }
 
-    async handleWindowSource() {      
+    async handleWindowSource() {
         
         if ( this.userSelectedWindowId ) {
             this.captureSourceWindow = await this.appService.getExternalWindow( this?.userSelectedWindowId );
@@ -485,10 +588,15 @@ export class AppController {
 
     async handleCaptureSourceSelection() {
         // console.time('handleCaptureSourceSelection');
-        this.handleDisplaySource();
-        await this.handleWindowSource();
+
+        await this.handleDisplaySource();
+
+        if ( !isWaylandDisplay )
+            await this.handleWindowSource();
+
         // console.timeEnd('handleCaptureSourceSelection');
-        await screenCapturerController.setCaptureSource( this.activeCaptureSource );
+        if ( !isWaylandDisplay )
+            await screenCapturerController.setCaptureSource( this.activeCaptureSource );
     }
 
     private async isFullScreenImage( imageBuffer: Buffer ): Promise<boolean> {
@@ -529,36 +637,64 @@ export class AppController {
         let {
             image,
             runFullScreenImageCheck,
-            engineName
+            engineName,
+            preventNegativeCoordinates,
+            autoCrop
         } = input;
 
         if ( overlayController.isOverlayMovableResizable )
             return;
 
         ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
+        
+        if ( !input.image ) {
+            this.previousOcrCommandData = input;
+            const screenshotSuccess = screenCapturerController.screenshot({
+                captureSource: this.activeCaptureSource
+            });
+
+            if ( screenshotSuccess ) return;
+        }
         ipcMain.send( this.overlayWindow, 'ocr:processing_started' );
         
         await this.handleCaptureSourceSelection();
 
-        const preventNegativeCoordinates = Boolean(image);
+        preventNegativeCoordinates = preventNegativeCoordinates !== undefined ?
+            preventNegativeCoordinates :
+            Boolean( image );
 
+        
         image = await this.appService.getCaptureSourceImage({
             image,
             display: this.captureSourceDisplay,
             window: this.captureSourceWindow,
+            autoCrop
         });
 
         if ( !image ) return;
+
+        let imageSize: Promise<Electron.Size> | undefined;
+
+        if ( isLinux || isWindows ) {
+            imageSize = ( async () => {
+                const imageMetadata = await sharp(image).metadata();
+                return {
+                    width: imageMetadata.width || 0,
+                    height: imageMetadata.height || 0
+                }
+            })();
+        }
 
         // Setting overlay bounds
         let isFullScreenImage = true;
         if ( image && runFullScreenImageCheck)
             isFullScreenImage = await this.isFullScreenImage(image);
 
-        this.setOverlayBounds(
-            isFullScreenImage ? 'fullscreen' :  'maximized',
-            preventNegativeCoordinates
-        );
+        this.setOverlayBounds({
+            entireScreenMode: isFullScreenImage ? 'fullscreen' :  'maximized',
+            preventNegativeCoordinates,
+            imageSize: imageSize ? await imageSize : undefined
+        });
         this.showOverlayWindow({ showInactive: true, displayResults: false }); // This can cause problems with JPDBReader extension // Warning: Unknown display value, please report this!
         ipcMain.send( this.overlayWindow, 'user_command:toggle_results', false );
 
@@ -568,7 +704,7 @@ export class AppController {
                 'app:capture_source_image',
                 {
                     image,
-                    imageBase64 :image.toString('base64')
+                    imageBase64: Buffer.from(image).toString('base64')
                 }
             );
             this.mainWindow.show();
@@ -684,13 +820,6 @@ export class AppController {
                 }
             },
             {
-                label: 'Manually Move/Resize Overlay',
-                click: ( item ) => {
-                    overlayController.toggleMovable();
-                },
-                accelerator: 'Ctrl+Shift+M'
-            },
-            {
                 label: 'Automatic Overlay Adjustment',
                 toolTip: 'Overlay Auto Positioning and Resizing',
                 type: 'checkbox',
@@ -779,8 +908,10 @@ export class AppController {
     }
 }
 
-type OcrCommandInput = {
+export type OcrCommandInput = {
     image?: Buffer;
     runFullScreenImageCheck?: boolean;
     engineName?: string;
+    preventNegativeCoordinates?: boolean;
+    autoCrop?: boolean;
 }

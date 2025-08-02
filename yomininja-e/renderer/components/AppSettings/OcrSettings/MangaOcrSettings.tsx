@@ -1,9 +1,11 @@
-import { Alert, Backdrop, Box, Button, Card, CardContent, CircularProgress, Container, Divider, FilledInput, FormControl, FormControlLabel, FormGroup, IconButton, InputAdornment, InputLabel, Link, MenuItem, OutlinedInput, Popover, Select, Slider, Snackbar, Stack, Switch, SxProps, TextField, Theme, ToggleButton, ToggleButtonGroup, Typography, debounce, styled } from "@mui/material";
+import { Alert, Backdrop, Box, Button, Card, CardContent, CircularProgress, Container, Divider, FilledInput, FormControl, FormControlLabel, FormGroup, FormLabel, IconButton, InputAdornment, InputLabel, Link, MenuItem, OutlinedInput, Popover, Radio, RadioGroup, Select, Slider, Snackbar, Stack, Switch, SxProps, TextField, Theme, ToggleButton, ToggleButtonGroup, Typography, debounce, styled } from "@mui/material";
 import { SettingsContext } from "../../../context/settings.provider";
 import { ChangeEvent, useContext, useEffect, useState } from "react";
 import { MangaOcrEngineSettings } from "../../../../electron-src/@core/infra/ocr/manga_ocr.adapter/manga_ocr_settings";
 import CommonOcrSettings from "./CommonOcrSettings";
 import { ipcRenderer } from "../../../utils/ipc-renderer";
+import { HardwareAccelerationOption } from "../../../../electron-src/@core/application/adapters/ocr.adapter";
+import AlertDialog from "../../common/AlertDialog";
 
 
 type MangaOcrSettingsProps = {
@@ -18,10 +20,18 @@ export default function MangaOcrSettings( props: MangaOcrSettingsProps ) {
     const {
         activeSettingsPreset,
         updateActivePresetOcrEngine,
+        getHardwareAccelerationOptions,
+        installHardwareAcceleration
     } = useContext( SettingsContext );
 
-    const [ textDetector, setTextDetector ] = useState( ocrEngineSettings?.text_detector || 'ComicTextDetector' );
 
+    const [ selectiveRecognition, setSelectiveRecognition ] = useState<boolean>(false);
+    const [ textDetector, setTextDetector ] = useState( ocrEngineSettings?.text_detector || 'ComicTextDetector' );
+    const [ HWOptions, setHWOptions ] = useState<HardwareAccelerationOption[]|undefined>([]);
+    const [ activeHWOption, setActiveHWOption ] = useState<string|undefined>('');
+    const [ selectedHWOption, setSelectedHWOption ] = useState<string|undefined>('');
+
+    const [ openDialog, setOpenDialog ] = useState< boolean >( false );
 
     const paddleOcrSettings = activeSettingsPreset?.ocr_engines
             .find( engineSettings => {
@@ -33,7 +43,9 @@ export default function MangaOcrSettings( props: MangaOcrSettingsProps ) {
         if ( !ocrEngineSettings ) return;
 
         setTextDetector( ocrEngineSettings?.text_detector );
-        // setCpuThreads( ocrEngineSettings?.cpu_threads );
+        setSelectiveRecognition( ocrEngineSettings?.use_selective_recognition );
+
+        refreshHWOptions();
 
     }, [ ocrEngineSettings ] );
 
@@ -42,6 +54,56 @@ export default function MangaOcrSettings( props: MangaOcrSettingsProps ) {
             ...ocrEngineSettings,
             ...update
         });
+    }
+
+    function refreshHWOptions() {
+        getHardwareAccelerationOptions( 'MangaOcrAdapter' )
+            .then( options => {
+                setHWOptions(options);
+
+                const activeOption = options.find( option => option.installed );
+
+                if ( !activeOption )
+                    return;
+
+                const activeOptionID = getHWOptionID(activeOption);
+
+                setActiveHWOption( activeOptionID );
+                setSelectedHWOption( activeOptionID );
+            });
+    }
+
+    function getHWOptionID(option): string {
+        return [
+            option.backend,
+            option.computePlatform,
+            option.computePlatformVersion || ''
+        ].join('/');
+    }
+
+    function handleHWSelection(
+        event: React.ChangeEvent<HTMLInputElement>,
+        optionID: string
+    ) {
+        setSelectedHWOption( optionID );
+    }
+
+    function applyHWSelection() {
+        if ( !selectedHWOption ) return;
+        const [ backend, computePlatform, computePlatformVersion ] = selectedHWOption.split('/');
+        const option = HWOptions.find( option => (
+            backend == option.backend &&
+            computePlatform == option.computePlatform &&
+            computePlatformVersion == option.computePlatformVersion
+        ));
+        
+        if ( !option ) return;
+            
+        installHardwareAcceleration( 'MangaOcrAdapter', option )
+            .then( success => {
+                if (success)
+                    refreshHWOptions();
+            });
     }
 
     function createLink(input: { link: string, displayText: string }) {
@@ -72,6 +134,19 @@ export default function MangaOcrSettings( props: MangaOcrSettingsProps ) {
     return (
         <Box sx={{ flexGrow: 1, margin: 1, }}>
 
+            <AlertDialog
+                title={'Are you sure you want to replace the current runtime?'}
+                message="This operation might take a few minutes to complete."
+                okButtonText="Yes"
+                cancelButtonText="No"
+                open={ openDialog }
+                handleCancel={ () => {
+                    setOpenDialog( false );
+                }}
+                handleOk={ applyHWSelection }
+                handleClose={ () => setOpenDialog( false ) }
+            />
+
             <Typography component="div" fontSize='1.0rem'
                 mt={1} mb={4}
             >
@@ -89,6 +164,22 @@ export default function MangaOcrSettings( props: MangaOcrSettingsProps ) {
                     marginTop: '40px'
                 }}
             >
+
+                <FormControlLabel label='Recognition on-demand'
+                    title="Detect all text boxes first. Choose which ones you want to recognize (faster)"
+                    sx={{ mb: 4 }}
+                    control={
+                        <Switch
+                            checked={ Boolean( selectiveRecognition ) }
+                            onChange={ ( event ) => {
+                                setSelectiveRecognition( event.target.checked );
+                                handleEngineSettingsUpdate({
+                                    use_selective_recognition: event.target.checked
+                                });
+                            }}
+                        /> 
+                    }
+                />
             
                 <FormControl fullWidth 
                     sx={{
@@ -124,6 +215,52 @@ export default function MangaOcrSettings( props: MangaOcrSettingsProps ) {
 
                     <InputLabel>Text Detector</InputLabel>
 
+                </FormControl>
+
+                <FormControl sx={{ mt: 4 }}>
+                    <FormLabel id="hw-radio-buttons-group-label">Inference Runtime</FormLabel>
+                    <RadioGroup 
+                        row
+                        aria-labelledby="hw-radio-buttons-group-label"
+                        name="row-radio-buttons-group"
+                        value={selectedHWOption}
+                        onChange={handleHWSelection}
+                    >
+                        { HWOptions?.map( option => {
+                            const value = getHWOptionID(option);
+                            const isActive = value === activeHWOption;
+                            const shortLabel = option.computePlatform+' '+option.computePlatformVersion;
+                            const longLabel = option.backend+' '+option.computePlatform+' '+option.computePlatformVersion;
+                            const title = isActive ? longLabel+' (Active)' : longLabel;
+                            const outerRingColor = isActive ? '#40a3f3' : 'gray';
+                            return (
+                                <FormControlLabel
+                                    value={value}
+                                    title={title}
+                                    control={
+                                        <Radio
+                                            sx={{
+                                                color: outerRingColor,
+                                                '&.Mui-checked': {
+                                                    color: '#40a3f3',
+                                                },
+                                            }}
+                                        />
+                                    }
+                                    label={shortLabel}
+                                    sx={{ml: 2, mr: 3}}
+                                />    
+                            )
+                        })}
+                        
+                        <Button disabled={activeHWOption == selectedHWOption}
+                            variant="contained"
+                            sx={{ ml: 3 }}
+                            onClick={ () => setOpenDialog( true )}
+                        >
+                            Apply
+                        </Button>
+                    </RadioGroup>
                 </FormControl>
 
             </Container>

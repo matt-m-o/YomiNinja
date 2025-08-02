@@ -1,11 +1,14 @@
-import { OcrAdapterStatus } from "../../../../application/adapters/ocr.adapter";
+import { TextRecognitionModel } from "../../../../../../grpc/rpc/ocr_service/TextRecognitionModel";
+import { HardwareAccelerationOption, OcrAdapterStatus } from "../../../../application/adapters/ocr.adapter";
 import { OcrItemBox, OcrResult } from "../../../../domain/ocr_result/ocr_result";
 import { paddleOcrService } from "../../ocr_services/paddle_ocr_service/_temp_index";
 import { pyOcrService } from "../../ocr_services/py_ocr_service/_temp_index";
-import { MangaOcrRecognize_Input, MangaOcrService } from "../manga_ocr_service";
+import { MangaOcrRecognize_Input, MangaOcrRecognizeSelective_Input, MangaOcrService } from "../manga_ocr_service";
 
 
 export class MangaOcrPyService implements MangaOcrService {
+
+    private readonly ocrEngineName = 'MangaOCR';
 
     get status(): OcrAdapterStatus {
         return pyOcrService.status;
@@ -31,8 +34,23 @@ export class MangaOcrPyService implements MangaOcrService {
             id: input.id,
             image: input.image,
             languageCode: 'ja',
-            ocrEngine: 'MangaOCR',
-            boxes
+            ocrEngine: this.ocrEngineName,
+            boxes,
+            detectionOnly: Boolean(input.detection_only)
+        });
+        console.timeEnd("MangaOCR Recognize");
+
+        return result;
+    };
+
+    async recognizeSelective( input: MangaOcrRecognizeSelective_Input ): Promise< OcrResult | null > {
+
+        console.time("MangaOCR Recognize");
+        const result = await pyOcrService.recognizeSelective({
+            id: input.id,
+            languageCode: 'ja',
+            ocrEngine: this.ocrEngineName,
+            result_ids: input.selectedItemIds
         });
         console.timeEnd("MangaOCR Recognize");
 
@@ -51,4 +69,33 @@ export class MangaOcrPyService implements MangaOcrService {
         );
     }
 
+    async getSupportedModels(): Promise< TextRecognitionModel[] > { 
+        return await pyOcrService.getSupportedModels( this.ocrEngineName )
+    }
+
+    async installModel( modelName: string ): Promise< boolean > {
+        const result = await pyOcrService.installModel( this.ocrEngineName, modelName );
+        return result?.success || false;
+    }
+
+    async getHardwareAccelerationOptions(): Promise< HardwareAccelerationOption[] > {
+        return await pyOcrService.getHardwareAccelerationOptions( this.ocrEngineName );
+    }
+
+    async installHardwareAcceleration( option: HardwareAccelerationOption ): Promise< boolean > {
+        return new Promise( ( resolve, reject ) => {
+            const callback = (success: boolean, error?: Error) => {
+
+                if ( error )
+                    console.error(error);
+
+                resolve( success );
+            }
+            pyOcrService.installHardwareAcceleration({
+                option,
+                callback,
+                logger: console.log
+            });
+        });
+    }
 }
