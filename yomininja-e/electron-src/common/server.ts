@@ -7,14 +7,37 @@ import fs from 'fs';
 import path from 'path';
 import { PAGES_DIR } from '../util/directories.util';
 import mimeTypes from 'mime-types';
+import { customBrowserExtensionsAPI } from '../extensions/custom_browser_extensions_api/browser/api/browser_api';
+import { appController } from '../app/app.index';
+import { isLinux, httpServerPort, setHttpServerPort } from '../util/environment.util';
 
 export let httpServer = http.createServer( async (req, res) => {
-    // const parsed = url.parse( String(req?.url), true )
+
+    const parsedUrl = url.parse( String(req?.url), true )
+
     let filePath = req.url === '/' ? '/index.html' : String(req.url);
     filePath = path.join(
       isDev ? './renderer/out' : PAGES_DIR,
       filePath || ''
     );
+
+    if ( req.method === "POST" ) {
+        if ( parsedUrl.pathname?.includes('chrome-api') ) {
+            await customBrowserExtensionsAPI.router(
+                parsedUrl,
+                req,
+                res
+            );
+            return;
+        }
+    }
+    else if ( req.method === 'GET' ) {
+        if ( parsedUrl.pathname?.includes('/remote-control') ) {
+            appController.remoteControlRouter( parsedUrl );
+            res.end();
+            return;
+        }
+    }
   
     fs.access( filePath, fs.constants.F_OK, (err) => {
         if (err) {
@@ -50,11 +73,9 @@ export let socketServer = new Server( httpServer, {
     }    
 });
 
-export let httpServerPort = 10_010;
-
 getNextPortAvailable( httpServerPort )
     .then( port => {
-        httpServerPort = port || httpServerPort - 1;
+        setHttpServerPort( port || httpServerPort - 1 );
         console.log("\nHTTP Server port: "+httpServerPort);
         httpServer.listen( httpServerPort );
     });

@@ -1,6 +1,7 @@
 import bindings from 'bindings';
 import { Rectangle, TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
 import { windowManager } from 'node-window-manager';
+import { screen } from 'electron';
 
 export function getWindowManagerWin32(): WindowManagerNativeInterface {
     return bindings('window_manager_win32') as WindowManagerNativeInterface;
@@ -68,5 +69,9 @@ export class WindowManagerWin32 implements WindowManagerNativeInterface {
                 w.setBounds(bounds);
                 return true;
             });
+    }
+
+    getCursorPosition() {
+        return screen.getCursorScreenPoint();
     }
 }

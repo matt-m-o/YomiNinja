@@ -11,6 +11,7 @@ import { ipcRenderer } from "../utils/ipc-renderer";
 export type OcrTemplatesContextType = {
     ocrTemplates: OcrTemplateJson[];
     activeOcrTemplate: OcrTemplateJson | undefined;
+    activeOcrTemplateId: OcrTemplateId | undefined;
     createOcrTemplate: ( data: CreateOcrTemplate_Input ) => Promise< OcrTemplateJson >;
     updateOcrTemplate: ( data: OcrTemplateJson ) => Promise< OcrTemplateJson >;
     getOcrTemplates: ( input?: GetOcrTemplates_Input ) => Promise< OcrTemplateJson[] >;
@@ -32,6 +33,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
         
     const [ ocrTemplates, setOcrTemplates ] = useState< OcrTemplateJson[] >();
     const [ activeOcrTemplate, setActiveOcrTemplate ] = useState< OcrTemplateJson | null >();
+    const [ activeOcrTemplateId, setActiveOcrTemplateId ] = useState< OcrTemplateId | null >();
     
 
     async function createOcrTemplate( data: CreateOcrTemplate_Input ): Promise< OcrTemplateJson > {
@@ -69,6 +71,9 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
     async function loadOcrTemplate( id: OcrTemplateId | null ) {
 
         const template = await ipcRenderer.invoke( 'ocr_templates:change_active', id );
+
+        if ( activeOcrTemplateId !== id )
+            setActiveOcrTemplateId( id );
 
         if ( id )
             setActiveOcrTemplate( template );
@@ -150,7 +155,9 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
                 text_to_speech_options: {
                     ...item.text_to_speech_options,
                     ...data.text_to_speech_options,
-                }
+                },
+                preprocessing_pipeline: data?.preprocessing_pipeline,
+
             };
         });
     
@@ -195,6 +202,7 @@ export const OcrTemplatesProvider = ( { children }: PropsWithChildren ) => {
             value={{
                 ocrTemplates,
                 activeOcrTemplate,
+                activeOcrTemplateId,
                 createOcrTemplate,
                 updateOcrTemplate,
                 getOcrTemplates,

@@ -21,12 +21,13 @@ import { GetOcrTemplatesUseCase } from "../../application/use_cases/ocr_template
 import { DeleteOcrTemplateUseCase } from "../../application/use_cases/ocr_template/delete_ocr_template/delete_ocr_template.use_case";
 import { ChangeActiveOcrTemplateUseCase } from "../../application/use_cases/change_active_ocr_template/change_active_ocr_template.use_case";
 import { OcrEngineSettingsU } from "../types/entity_instance.types";
-import { CreateSettingsPresetUseCaseInstance, GetSupportedLanguagesUseCaseInstance, RecognizeImageUseCaseInstance, UpdateSettingsPresetUseCaseInstance } from "../types/use_case_instance.types";
+import { CreateSettingsPresetUseCaseInstance, GetSupportedLanguagesUseCaseInstance, RecognizeImageUseCaseInstance, RecognizeSelectionUseCaseInstance, UpdateSettingsPresetUseCaseInstance } from "../types/use_case_instance.types";
 import { ChangeSelectedOcrEngineUseCase } from "../../application/use_cases/change_selected_ocr_engine/change_selected_ocr_engine.use_case";
 import { CreateBrowserExtensionUseCase } from "../../application/use_cases/browser_extension/create_browser_extension/create_browser_extension.use_case";
 import { UpdateBrowserExtensionUseCase } from "../../application/use_cases/browser_extension/update_browser_extension/update_browser_extension.use_case";
 import { GetBrowserExtensionsUseCase } from "../../application/use_cases/browser_extension/get_browser_extensions/get_browser_extensions.use_case";
 import { PyVideoAnalyzerAdapter } from "../ocr/py_video_analyzer.adapter/py_video_analyzer.adapter";
+import { RecognizeSelectionUseCase } from "../../application/use_cases/recognize_selection/recognize_selection.use_case";
 
 export let enabledOcrEngines: symbol[] = [
     Registry.CloudVisionOcrAdapter,
@@ -52,6 +53,14 @@ container_registry.bind( Registry.RecognizeImageUseCaseInstance )
             context.container.get( Registry.SharpImageProcessingAdapter ),
             context.container.get( Registry.ProfileTypeOrmRepository ),
             new PyVideoAnalyzerAdapter()
+        );
+    })
+    .inSingletonScope();
+
+container_registry.bind( Registry.RecognizeSelectionUseCaseInstance )
+    .toDynamicValue( ( context ) => {
+        return new RecognizeSelectionUseCase< OcrEngineSettingsU >(
+            enabledOcrEngines.map( symbol => context.container.get(symbol) ),
         );
     })
     .inSingletonScope();
@@ -299,6 +308,10 @@ container_registry.bind( Registry.GetBrowserExtensionsUseCase )
 
 export function get_RecognizeImageUseCaseInstance(): RecognizeImageUseCaseInstance {
     return container_registry.get< RecognizeImageUseCaseInstance >( Registry.RecognizeImageUseCaseInstance )
+}
+
+export function get_RecognizeSelectionUseCaseInstance(): RecognizeSelectionUseCaseInstance {
+    return container_registry.get< RecognizeSelectionUseCaseInstance >( Registry.RecognizeSelectionUseCaseInstance )
 }
 
 export function get_GetSupportedLanguagesUseCaseInstance(): GetSupportedLanguagesUseCaseInstance {    

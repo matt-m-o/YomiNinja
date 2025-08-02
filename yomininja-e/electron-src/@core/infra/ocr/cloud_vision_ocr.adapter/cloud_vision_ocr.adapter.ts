@@ -1,5 +1,5 @@
 import { google } from "@google-cloud/vision/build/protos/protos";
-import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
+import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, TextRecognitionModel, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrResult, OcrResultContextResolution, OcrTextLine, OcrTextLineSymbol, OcrTextLineWord } from "../../../domain/ocr_result/ocr_result";
 import { CloudVisionAPICredentials, CloudVisionApi } from "./cloud_vision_api";
 import { CloudVisionAPIMode, CloudVisionOcrEngineSettings, cloudVisionOcrAdapterName, getCloudVisionDefaultSettings } from "./cloud_vision_ocr_settings";
@@ -76,7 +76,7 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
 
             page.blocks?.forEach( block => {
 
-                block.paragraphs?.forEach( paragraph => {
+                block.paragraphs?.forEach( (paragraph, paragraphIdx) => {
 
                     const { words, boundingBox } = paragraph;
 
@@ -176,11 +176,13 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
                     if ( !boundingBox?.vertices ) return;
 
                     ocrResultItems.push({
+                        id: paragraphIdx.toString(),
                         recognition_score: 1,
                         classification_score: 1,
                         classification_label: 0,
                         box: paragraphOcrBox,
-                        text: lines
+                        text: lines,
+                        recognition_state: 'RECOGNIZED'
                     });
                 });
 
@@ -194,10 +196,18 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
             image: input.imageBuffer
         });
 
-        return OcrResultScalable.createFromOcrResult( ocrResult );
+        const resultScalable = OcrResultScalable.createFromOcrResult( ocrResult );
+        resultScalable.ocr_engine_name = this.name;
+        resultScalable.language = input.language;
+
+        return resultScalable;
     }
 
     async getSupportedLanguages(): Promise< string[] > {
+        return [];
+    }
+
+    async getSupportedModels(): Promise<TextRecognitionModel[]> {
         return [];
     }
 

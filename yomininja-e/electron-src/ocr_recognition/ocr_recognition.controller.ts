@@ -1,4 +1,4 @@
-import { BrowserWindow, globalShortcut, screen, desktopCapturer, clipboard, IpcMainInvokeEvent } from "electron";
+import { BrowserWindow, globalShortcut, screen, desktopCapturer, clipboard, IpcMainInvokeEvent, app } from "electron";
 import isDev from 'electron-is-dev';
 import { join } from "path";
 import { format } from 'url';
@@ -15,12 +15,19 @@ import { OcrEngineSettingsU } from "../@core/infra/types/entity_instance.types";
 import { InAppNotification } from "../common/types/in_app_notification";
 import { ipcMain } from "../common/ipc_main";
 import { bufferToDataURL } from "../util/image.util";
-import { OcrResultScalable } from "../@core/domain/ocr_result_scalable/ocr_result_scalable";
-import { cloneDeep } from 'lodash';
+import { OcrResultScalable, OcrResultScalableJson } from "../@core/domain/ocr_result_scalable/ocr_result_scalable";
+import { cloneDeep, find } from 'lodash';
+import { Notification } from 'electron';
+import { pushInAppNotification } from "../common/notification_helpers";
+import { HardwareAccelerationOption } from "../@core/application/adapters/ocr.adapter";
 
 export type Recognition_Output = {
     result: OcrResultScalable | null;
     status: 'complete' | 'replaced' | 'failed';
+};
+
+export type RecognizeSelection_IPC_Input = {
+    regionId?: string; selectedItemIds: string[];
 };
 
 export class OcrRecognitionController {
@@ -31,6 +38,7 @@ export class OcrRecognitionController {
     private overlayWindow: BrowserWindow;
     private recognizing: boolean = false;
     private result: OcrResultScalable | null = null;
+    private ocrRequestImageBuffer: Buffer | undefined;
     private recognitionCallOnHold: Recognition_Input | undefined;
 
     constructor( input: {        
@@ -70,9 +78,60 @@ export class OcrRecognitionController {
             }
         );
 
+        ipcMain.handle( 'ocr_recognition:get_hardware_acceleration_options',
+            async (
+                event: IpcMainInvokeEvent,
+                engineName: string
+            ): Promise< HardwareAccelerationOption[] > => {
+                
+                return await this.ocrRecognitionService.getHardwareAccelerationOptions( engineName );
+            }
+        );
+
+        ipcMain.handle( 'ocr_recognition:install_hardware_acceleration',
+            async (
+                event: IpcMainInvokeEvent,
+                engineName: string,
+                option: HardwareAccelerationOption
+            ): Promise< boolean > => {
+                console.log(engineName)
+                console.log(option);
+                return await this.installHardwareAcceleration( engineName, option );
+            }
+        );
+
         ipcMain.handle( 'ocr_recognition:get_result',
-            ( event: IpcMainInvokeEvent ): OcrResultScalable | null => {
-                return this.result;
+            ( event: IpcMainInvokeEvent ): OcrResultScalableJson | null => {
+                if (this.result)
+                    return this.result.toJson()
+                return null;
+            }
+        );
+
+        ipcMain.handle( 'ocr_recognition:recognize_selection',
+            async (
+                event: IpcMainInvokeEvent,
+                input: RecognizeSelection_IPC_Input,
+            ): Promise<OcrResultScalableJson | null> => {
+
+                if ( !this.result ) return null;
+
+                const { regionId, selectedItemIds } = input;
+
+                const result = await this.ocrRecognitionService.getSelectiveResult({
+                    partialResult: this.result,
+                    selectedItemIds,
+                    regionId
+                });
+
+                if ( result ) {
+                    this.result = await this.ocrResultToJson( result );
+                    return result.toJson();
+                }
+                else if ( this.result )
+                    return this.result.toJson();
+
+                return null;
             }
         );
     }
@@ -156,6 +215,7 @@ export class OcrRecognitionController {
                     left: overlayBounds.x
                 };
                 resultJson = await this.ocrResultToJson( ocrResultScalable );
+                this.ocrRequestImageBuffer = image;
             }
 
             this.result = resultJson || null;
@@ -163,7 +223,7 @@ export class OcrRecognitionController {
             ipcMain.send(
                 this.overlayWindow,
                 'ocr:result',
-                this.result
+                this.result?.toJson() || null
             );
 
         } catch (error) {
@@ -184,11 +244,11 @@ export class OcrRecognitionController {
     ) {
         const { image, engineName } = input;
         
-        this.recognizing = true;
+        if ( this.recognizing ) return;
         
         try {
             // console.log('');
-            // console.time('controller.recognize');
+            // console.time('autoRecognize');
             // console.log(activeProfile);
             // console.log('OcrRecognitionController.recognize')
 
@@ -198,6 +258,11 @@ export class OcrRecognitionController {
                 engineName,
                 autoMode: true
             });
+
+            if ( this.result?.id === ocrResultScalable?.id ) {
+                console.timeEnd('autoRecognize');
+                return;
+            }
             // console.log({ ocrResultScalable });
 
             // console.timeEnd('controller.recognize');
@@ -212,6 +277,7 @@ export class OcrRecognitionController {
                     left: overlayBounds.x
                 };
                 resultJson = await this.ocrResultToJson( ocrResultScalable );
+                this.ocrRequestImageBuffer = image;
             }
 
             this.result = resultJson || null;
@@ -225,7 +291,9 @@ export class OcrRecognitionController {
         } catch (error) {
             console.error( error );
         }
-        this.recognizing = false;
+
+        // console.timeEnd('autoRecognize');
+        // this.recognizing = false;
     }
 
     async applySettingsPreset( settingsPresetJson?: SettingsPresetJson ) {
@@ -262,22 +330,91 @@ export class OcrRecognitionController {
     async ocrResultToJson( result: OcrResultScalable ): Promise<OcrResultScalable > {
 
         if ( result?.image && typeof result.image !== 'string' ) {
-            result.image = await bufferToDataURL({
-                image: result.image,
-                format: 'png',
-                quality: 100
-            });
+            result.image = 'data:image/png;base64,'+Buffer.from(result.image).toString('base64');
         }
 
-        for ( const region of result.ocr_regions ) {
-            if ( !region.image || !Buffer.isBuffer(region.image) )
-                continue;
-            region.image = await bufferToDataURL({
-                image: region.image
-            });
-        }
+        // for ( const region of result.ocr_regions ) {
+        //     if ( !region.image || !Buffer.isBuffer(region.image) )
+        //         continue;
+        //     region.image = await bufferToDataURL({
+        //         image: region.image
+        //     });
+        // }
 
         return result;
+    }
+
+    resultImage(): Buffer | undefined {
+        return this.ocrRequestImageBuffer;
+    }
+
+    async installOcrModels() {
+
+        const ocrAdapters = [ 'MangaOcrAdapter' ];
+
+        for ( const ocrAdapter of ocrAdapters ) {
+
+            const models = await this.ocrRecognitionService.getSupportedModels(ocrAdapter);
+        
+            for ( const model of models ) {
+                if ( !model.isInstalled && model.name ) {
+
+                    console.log(`Installing OCR model: ${model.name}`);
+                    this.notify({
+                        type: 'info',
+                        title: "Installing OCR model!",
+                        message: `Model: ${model.name}`
+                    });
+
+                    const success = await this.ocrRecognitionService.installOcrModel( ocrAdapter, model.name );
+                    
+                    this.notify({
+                        type: success ? 'info' :'error',
+                        title: success ? "OCR model installed!" : "OCR model installation failed!",
+                        message: `Model: ${model.name}`
+                    });
+                }
+            }
+        }
+    }
+
+    async installHardwareAcceleration( engineName: string, option: HardwareAccelerationOption ) {
+        const optionName = `${option.backend} ${option.computePlatform} ${option.computePlatformVersion}`;
+        console.log(`Installing: ${optionName}`);
+        this.notify({
+            type: 'info',
+            title: `Installing runtime!`,
+            message: `Runtime: ${optionName}`
+        });
+        const success = await this.ocrRecognitionService.installHardwareAcceleration( engineName, option );
+        this.notify({ 
+            type: success ? 'info' :'error',
+            title: success ? "Runtime installed!" : "Runtime installation failed!",
+            message: `Runtime: ${optionName}`
+        });
+
+        return success;
+    }
+
+    notify( input: {type: 'error' | 'info', title: string, message: string} ) {
+
+        const { type, title, message } = input;
+
+        pushInAppNotification({
+            notification: {
+                type,
+                message: `${title}\n${message}`,
+            },
+            windows: [
+                this.mainWindow,
+                this.overlayWindow
+            ]
+        });
+
+        (new Notification({
+            title,
+            body: message
+        })).show()
     }
 }
 

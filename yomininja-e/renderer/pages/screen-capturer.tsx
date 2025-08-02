@@ -4,7 +4,8 @@ import { ipcRenderer } from "../utils/ipc-renderer";
 
 
 class Capturer {
-
+    
+    mediaSourceId: string;
     mediaStream: MediaStream;
     track: MediaStreamTrack; 
     imageCapture: ImageCapture;
@@ -14,61 +15,133 @@ class Capturer {
 
     keepStreaming: boolean = false;
 
-    init = async (
+    createdAt: number = 0;
+    frameGrabbedAt: number = Date.now();
+
+    init = async ( input: {
         mediaSourceId: string,
-        screenSize: { width: number, height: number }
-    ) => {
+        mediaSize?: { width: number, height: number },
+        canvasSize?: { width: number, height: number },
+        force?: boolean;
+    }) => {
+        const {
+            mediaSourceId,
+            mediaSize,
+            canvasSize,
+            force
+        } = input;
+
+        if ( Date.now() < this.createdAt )
+            return;
+
+        this.createdAt = Date.now();
+
+        if ( this.mediaStream ) {
+
+            if (
+                !force &&
+                this.canvas &&
+                this.mediaSourceId === mediaSourceId &&
+                canvasSize.width === this.canvas.width &&
+                canvasSize.height === this.canvas.height
+            )
+                return;
+
+            this.mediaStream.getTracks()
+                .forEach( t => t.stop() );
+        }
+
+        this.mediaSourceId = mediaSourceId;
+
+        let mandatory: any = {
+            chromeMediaSource: 'desktop',
+            chromeMediaSourceId: mediaSourceId,
+            maxFrameRate: 10,
+            cursor: "never"
+        };
+
+        if ( mediaSize ) {
+            mandatory = {
+                ...mandatory,
+                maxWidth: mediaSize.width,
+                maxHeight: mediaSize.height
+            };
+        }
+
         this.mediaStream = await navigator.mediaDevices.getUserMedia({
             audio: false,
             video: {
                 // @ts-expect-error
-                mandatory: {
-                    chromeMediaSource: 'desktop',
-                    chromeMediaSourceId: mediaSourceId,
-                    maxWidth: screenSize.width,
-                    maxHeight: screenSize.height,
-                    // maxWidth: 1920,
-                    // maxHeight: 1000,
-                    maxFrameRate: 10,
-                    // minAspectRatio: 0.1,
-                    maxAspectRatio: 40
-                }
+                mandatory
             }
         });
 
         this.track = this.mediaStream.getVideoTracks()[0];
         this.imageCapture = new ImageCapture( this.track );
-        const { width, height } = this.track.getSettings();
+        
+        if ( canvasSize ) {
+            this.canvas = new OffscreenCanvas(
+                canvasSize.width,
+                canvasSize.height
+            );
+        }
+
+        this.updatePreviewSource();
+    }
+
+    setCanvasSize = async ( width?: number, height?: number ) => {
+
+        if ( !window && !height) {
+            const { width, height } = this.track.getSettings();
+            this.canvas = new OffscreenCanvas( width, height );
+        }
+
         this.canvas = new OffscreenCanvas( width, height );
     }
     
-    grabFrame = async (): Promise< Buffer > => {
+    grabFrame = async ( format: 'jpeg' | 'png' = 'jpeg' ): Promise< Buffer | undefined > => {
 
-        if ( this.grabbingFrame || !this.imageCapture ) return;
-        this.grabbingFrame = true;
+        if (
+            this.grabbingFrame ||
+            !this.imageCapture ||
+            !this.canvas
+        ) return;
+        
+        try {
 
-        const { width, height } = this.track.getSettings();
+            if ( await this.autoResetCapturer() )
+                return;
+            
+            this.grabbingFrame = true;
 
-        // console.time('grabFrame')
-        const frame = await this.imageCapture.grabFrame();
+            // console.time('grabFrame')
+            const frame = await this.imageCapture.grabFrame();
 
-        const context = this.canvas.getContext('2d');
-        context.drawImage( frame, 0, 0, width, height );
+            const context = this.canvas.getContext('2d');
+            context.drawImage( frame, 0, 0, frame.width, frame.height );
 
-        const blob = await new Promise<Blob>((resolve, reject) => {
-            this.canvas.convertToBlob({ type: 'image/jpeg', quality: 1 })
-                .then((blob) => {
-                    if (!blob) reject();
-                    resolve(blob);
-                });
-        });
+            const blob = await new Promise<Blob>((resolve, reject) => {
+                this.canvas.convertToBlob({ type: `image/${format}`, quality: 1 })
+                    .then((blob) => {
+                        if (!blob) reject();
+                        resolve(blob);
+                    });
+            });
 
-        const buffer = Buffer.from( await blob.arrayBuffer() )
+            const buffer = Buffer.from( await blob.arrayBuffer() );
+
+            this.grabbingFrame = false;
+
+            this.frameGrabbedAt = Date.now();
+
+            // console.timeEnd('grabFrame')
+            return buffer;
+        } catch (error) {
+            console.log(error);
+            await this.reset(); 
+        }
 
         this.grabbingFrame = false;
-
-        // console.timeEnd('grabFrame')
-        return buffer;
     }
 
     startStream = async ( resultCallBack: ( frame: Buffer ) => Promise<any>  ) => {
@@ -81,13 +154,12 @@ class Capturer {
         ) {
             // console.log({ interval: this.intervalBetweenFrames });
             await this.sleep( this.intervalBetweenFrames );
-            const frame = await this.grabFrame();
+            const frame = await this.grabFrame('jpeg');
             await resultCallBack( frame );
         }
     }
 
     stopStream = () => {
-        this.mediaStream.stop();
         this.keepStreaming = false;
     }
 
@@ -97,6 +169,62 @@ class Capturer {
 
     setIntervalBetweenFrames = ( ms: number ) => {
         this.intervalBetweenFrames = ms;
+    }
+
+    updatePreviewSource() {
+        const element = document.getElementById('video-element');
+
+        if ( !element ) return;
+        
+        const videoElement = element as HTMLVideoElement;
+
+        videoElement.srcObject = this.mediaStream;
+    }
+
+    async reset( force?: boolean ) {
+        if ( !this.mediaStream ) return;
+
+        let canvasSize: Electron.Size | undefined;
+
+        if ( this.canvas ) {
+            canvasSize = {
+                width: this.canvas.width,
+                height: this.canvas.height
+            };
+        }
+
+        await this.init({
+            mediaSourceId: this.mediaSourceId,
+            canvasSize,
+            force
+        });
+    }
+
+    async autoResetCapturer(): Promise<boolean> {
+
+        const idleTime = Date.now() - this.frameGrabbedAt;
+        const maxIdleTime = 1000 * 60 * 60 * 2; // 2 hours;
+
+        const streamEnded = this.track.readyState === 'ended';
+
+        // console.log({
+        //     idleTime,
+        //     maxIdleTime 
+        // });
+
+        if ( this.track.readyState === 'ended' )
+            console.log(`track.readyState: ${this.track.readyState}`);
+
+        if ( idleTime < maxIdleTime && !streamEnded )
+            return false;
+
+        this.frameGrabbedAt = Date.now();
+
+        console.log('auto reset');
+
+        await this.reset(true);
+
+        return true
     }
 }
 
@@ -115,11 +243,9 @@ function ScreenCapturerElement() {
         refreshCaptureSources
     } = useContext( CaptureSourceContext );
 
-    const capturer = new Capturer();
+    const [ preview, setPreview ] = useState<JSX.Element | undefined >();
 
-    useEffect( () => {
-        refreshCaptureSources();
-    }, [] );
+    const capturer = new Capturer();
 
     useEffect( () => {
         console.log({ activeCaptureSource });
@@ -128,37 +254,42 @@ function ScreenCapturerElement() {
         if ( capturer.keepStreaming )
             return;
 
-        ipcRenderer.invoke( 'screen_capturer:get_display_size')
-            .then( displaySize => {
+        capturer.init({ mediaSourceId: activeCaptureSource.id })
+            .then( async () => {
 
-                const windowSize = activeCaptureSource?.window?.size;
+                setPreview( VideoElement(capturer) );
 
-                capturer.init( activeCaptureSource.id, windowSize || displaySize )
-                    .then( async () => {
+                ipcRenderer.on( 'screen_capturer:start_stream', () => {
+                    if ( capturer.keepStreaming ) return;
+                    capturer.startStream( sendStreamFrame )
+                        .catch(console.error);
+                });
 
-                        // This makes the render independent
-                        capturer.startStream( sendFrame );
+                ipcRenderer.on( 'screen_capturer:set_interval', ( _, interval: number ) => {
+                    capturer.setIntervalBetweenFrames( interval );
+                });
 
-                        ipcRenderer.on( 'screen_capturer:set_interval', ( _, interval: number ) => {
-                            capturer.setIntervalBetweenFrames( interval );
-                        });
+                ipcRenderer.on( 'screen_capturer:grab_frame', async () => {
+                    
+                    try {
+                        const frame = await capturer.grabFrame('jpeg');
+                        if ( frame ) {
+                            sendFrame( frame )
+                                .catch( console.error );
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        await capturer.reset(true)
+                            .catch( console.error );
+                    }
+                });
 
-                        ipcRenderer.on( 'screen_capturer:grab_frame', async () => {
-                
-                            const frame = await capturer.grabFrame();
-                            
-                            if ( frame )
-                                sendFrame( frame );
-                        });
+                ipcRenderer.on( 'screen_capturer:stop_stream', async () => {
+                    capturer.stopStream();
+                });
 
-                        ipcRenderer.on( 'screen_capturer:stop_stream', async () => {
-                            capturer.stopStream();
-                        });
-
-                        const interval = await ipcRenderer.invoke( 'screen_capturer:get_interval');
-                        capturer.setIntervalBetweenFrames( interval );
-                    });
-
+                const interval = await ipcRenderer.invoke( 'screen_capturer:get_interval');
+                capturer.setIntervalBetweenFrames( interval );
             });
 
         
@@ -173,30 +304,43 @@ function ScreenCapturerElement() {
 
 
     
-    // function VideoElement() {
-    //     return (
-    //         <video
-    //             ref={ (videoElement) => {
-    //                 if ( !videoElement || !mediaStream )
-    //                     return;
-    //                 // videoElement.srcObject = mediaStream;
-    //             }}
-    //             autoPlay
-    //             style={{
-    //                 width: '100%',
-    //                 height: '100%',
-    //             }}
-    //         />
-    //     );
-    // }
+    function VideoElement( capturer: Capturer ) {
+        return (
+            <video id='video-element'
+                ref={ (videoElement) => {
+                    if ( !videoElement || !capturer.mediaStream )
+                        return;
+                    videoElement.srcObject = capturer.mediaStream;
+                }}
+                autoPlay
+                onResize={ (e) => {
+                    const { videoWidth, videoHeight } = e.currentTarget;
+                    capturer.init({
+                        mediaSourceId: capturer.mediaSourceId,
+                        canvasSize: {
+                            width: videoWidth,
+                            height: videoHeight
+                        }
+                    });
+                }}
+            />
+        );
+    }
 
     async function sendFrame( frame: Buffer ) {
         await ipcRenderer.invoke(
-            'screen_capturer:frame',
+            'screen_capturer:screenshot',
             frame
         );
     }
 
-    // return <VideoElement/>;
-    return <></>;
+    async function sendStreamFrame( frame: Buffer ) {
+        await ipcRenderer.invoke(
+            'screen_capturer:stream_frame',
+            frame
+        );
+    }
+
+    // return <></>;
+    return <> {preview} </>;
 }

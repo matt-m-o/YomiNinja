@@ -8,7 +8,7 @@ export type CaptureSourceContextType = {
     captureSourceImage?: Buffer;
     captureSourceImageBase64?: string;
     updateActiveCaptureSource: ( update: CaptureSource ) => Promise< void >;
-    refreshCaptureSources: () => void; 
+    refreshCaptureSources: ( types?: ('screen' | 'window')[]  ) => void; 
     clearCaptureSourceImage: () => void;
 };
 
@@ -33,8 +33,8 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
         ipcRenderer.invoke( 'app:set_capture_source', captureSource );
     }
 
-    async function getCaptureSources() {
-        const result: CaptureSource[] = await ipcRenderer.invoke( 'app:get_capture_sources' );
+    async function getCaptureSources( types?: ('screen' | 'window')[]  ) {
+        const result: CaptureSource[] = await ipcRenderer.invoke( 'app:get_capture_sources', types );
 
         console.log( result );
 
@@ -47,8 +47,8 @@ export const CaptureSourceProvider = ( { children }: PropsWithChildren ) => {
         setActiveCaptureSource(source);
     }
 
-    async function refreshCaptureSources() {
-        getCaptureSources();
+    async function refreshCaptureSources( types?: ('screen' | 'window')[]  ) {
+        getCaptureSources( types );
     }
 
     function clearCaptureSourceImage() {

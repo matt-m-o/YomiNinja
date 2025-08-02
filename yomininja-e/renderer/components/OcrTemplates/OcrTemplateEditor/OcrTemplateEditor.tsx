@@ -14,6 +14,7 @@ import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
 import { ipcRenderer } from "../../../utils/ipc-renderer";
 import AutoOcrOptions from "./AutoOcrOptions";
 import TTSOptions from "./TTSOptions";
+import ImagePreprocessingOptions from "./ImagePreprocessingOptions/ImagePreprocessingOptions";
 
 export type Size = { // Pixels
     width: number;
@@ -52,6 +53,7 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
 
     const {
         activeOcrTemplate,
+        activeOcrTemplateId,
         addTargetRegion,
         removeTargetRegion,
         updateTargetRegion,
@@ -113,6 +115,11 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
     const accordionStyle: CSSProperties = {
         backgroundColor: '#202124',
     };
+
+
+    useEffect( () => {
+        setSelectedTargetRegion(undefined);
+    }, [activeOcrTemplateId] )
 
     return ( <>
         { activeOcrTemplate && <>
@@ -250,6 +257,21 @@ export default function OcrTemplateEditor( props: OcrTemplateEditorProps ) {
                 >
 
                     <TTSOptions
+                        selectedTargetRegion={selectedTargetRegion}
+                        setSelectedTargetRegion={setSelectedTargetRegion}
+                    />
+                </CustomAccordion>
+
+                <CustomAccordion style={accordionStyle} disabled={ !Boolean(selectedTargetRegion) }
+                    summary={
+                        <Typography fontSize={'1.1rem'}>
+                            Image Preprocessing
+                        </Typography>
+                    }
+                    detailsSx={{ pl: 3, pr: 3 }}
+                >
+
+                    <ImagePreprocessingOptions
                         selectedTargetRegion={selectedTargetRegion}
                         setSelectedTargetRegion={setSelectedTargetRegion}
                     />

@@ -2,6 +2,8 @@ import { IpcMainInvokeEvent, screen } from "electron";
 import { screenCapturerService } from "./screen_capturer.index";
 import { CaptureSource } from "../app/types";
 import { ipcMain } from "../common/ipc_main";
+import isDev from "electron-is-dev";
+import { isMacOS } from "../util/environment.util";
 
 export class ScreenCapturerController {
 
@@ -24,21 +26,70 @@ export class ScreenCapturerController {
         });
     }
 
-    createCaptureStream( input: { captureSource: CaptureSource, force?: boolean } ) {
-        screenCapturerService.createCaptureStream({
+    screenshot( input: { captureSource: CaptureSource } ): boolean {
+        
+        const { captureSource } = input ; 
+        
+        if ( captureSource?.name?.includes('Entire screen') ) {
+            const displays = screen.getAllDisplays();
+            if ( displays.length > 1 )
+                return false;
+        }
+    
+        console.time("Screenshot time");
+        screenCapturerService.grabFrame();
+        return true;
+    }
+
+    createCapturer(
+        input: {
+            captureSource: CaptureSource,
+            force?: boolean,
+            streamFrames: boolean,
+        }
+    ) {
+        screenCapturerService.createCapturer({
             captureSource: input.captureSource,
-            force: Boolean(input.force)
+            force: Boolean(input.force),
+            streamFrames: input.streamFrames,
+            showWindow: isDev
         });
     }
 
-    onCapture( handler: ( frame: Buffer ) => Promise<void> ) {
-        ipcMain.handle( 'screen_capturer:frame', async ( event: IpcMainInvokeEvent, frame: Buffer ) => {
+    onStreamFrame( handler: ( frame: Buffer ) => Promise<void> ) {
+        ipcMain.handle( 'screen_capturer:stream_frame', async ( event: IpcMainInvokeEvent, frame: Buffer ) => {
 
             if ( !frame )
                 return;
 
-            handler( frame );
+            if ( isMacOS ) {
+                frame = await screenCapturerService.cropWorkAreaFromImage({
+                    image: frame
+                });
+            }
 
+            handler( frame );
+        });
+    }
+
+    onScreenshot( handler: ( screenshot: Buffer ) => Promise<void> ) {
+        ipcMain.handle( 'screen_capturer:screenshot', async ( event: IpcMainInvokeEvent, screenshot: Buffer ) => {
+
+            console.log()
+            console.timeEnd("Screenshot time");
+            console.log()
+
+            if ( !screenshot )
+                return;
+
+            if ( isMacOS ) {
+                screenshot = await screenCapturerService.cropWorkAreaFromImage({
+                    image: screenshot
+                });
+            }
+
+            handler( screenshot );
+            
         });
     }
 
@@ -52,5 +103,9 @@ export class ScreenCapturerController {
             return;
 
         await screenCapturerService.setCaptureSource( captureSource );
+    }
+
+    async stopStream() {
+        screenCapturerService.stopStream();
     }
 }

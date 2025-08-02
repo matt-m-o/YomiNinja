@@ -24,6 +24,7 @@ describe( "OCR Result tests", () => {
             },
             results: [
                 {
+                    id: '1',
                     text: [{ content: "text" }],
                     recognition_score: 0.99,
                     classification_score: 0.99,
@@ -56,6 +57,7 @@ describe( "OCR Result tests", () => {
             },
             results: [
                 {
+                    id: '1',
                     text:[{ content: "text" }],
                     recognition_score: 0.99,
                     classification_score: 0.99,

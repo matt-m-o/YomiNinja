@@ -9,13 +9,14 @@ import { SimpleConsoleLogger } from "typeorm";
 export type ExtensionItemProps = {
     extension: BrowserExtensionJson;
     openOptions: () => void;
+    clearData: () => void;
     uninstall: () => void;
     onToggle: ( extension: BrowserExtensionJson ) => void;
 }
 
 export default function ExtensionItem( props: ExtensionItemProps ) {
 
-    const { extension, openOptions, uninstall, onToggle } = props;
+    const { extension, openOptions, uninstall, clearData, onToggle } = props;
 
     const [ enabled, setEnabled ] = useState(true);
 
@@ -70,16 +71,25 @@ export default function ExtensionItem( props: ExtensionItemProps ) {
                             >
                                 {extension.name}
                             </Typography>
-                            <Typography color='InactiveCaptionText'>
+                            <Typography color='InactiveCaptionText'
+                                title={`Local ID: ${extension.id}`}
+                            >
                                 {extension.version}
                             </Typography>
                         </Box>
                         
-                        <Typography 
-                            title={ extension.description }
-                            color='darkgray'
-                            // height='96px'
+                        <Typography
+                            title={extension.description}
+                            color="darkgray"
                             flex={1}
+                            sx={{
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2, // Change to desired number of lines
+                                WebkitBoxOrient: 'vertical',
+                                maxHeight: '50px', // Must match the line clamp height
+                            }}
                         >
                             {extension.description}
                         </Typography>
@@ -115,6 +125,15 @@ export default function ExtensionItem( props: ExtensionItemProps ) {
                             disabled={ !extension?.optionsUrl }
                         >
                             Options
+                        </Button>
+
+                        <Button
+                            variant="outlined"
+                            onClick={ clearData }
+                            // color="error"
+                            sx={{ textTransform: 'capitalize', mr: '10px' }}
+                        >
+                            Clear data
                         </Button>
 
                         <Button

@@ -84,7 +84,8 @@ export class CreateSettingsPresetUseCase< TOcrSettings extends OcrEngineSettings
                 if ( !ocrSettings ) return;
 
                 await ocrAdapter.updateSettings( ocrSettings, ocrSettings );
-    
+                
+                console.log('Restarting '+ocrAdapter.name);
                 await new Promise( resolve => setTimeout( resolve, 500 ) );
                 await new Promise( resolve => ocrAdapter.restart( () => resolve(null) ) );
             }

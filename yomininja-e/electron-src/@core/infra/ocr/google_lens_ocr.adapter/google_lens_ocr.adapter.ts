@@ -1,5 +1,5 @@
 import { google } from "@google-cloud/vision/build/protos/protos";
-import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
+import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, TextRecognitionModel, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import { OcrItem, OcrItemBox, OcrItemBoxVertex, OcrResult, OcrResultContextResolution, OcrTextLine } from "../../../domain/ocr_result/ocr_result";
 import { googleLensOcrAdapterName, GoogleLensOcrEngineSettings, getGoogleLensDefaultSettings } from "./google_lens_ocr_settings";
 import { OcrEngineSettingsU } from "../../types/entity_instance.types";
@@ -50,7 +50,11 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
         //     imageHeight: imageMetadata.height
         // });
 
+        console.log();
+        console.time("Google Lens request time");
         const data = await this.sendRequest( imageBuffer );
+        console.timeEnd("Google Lens request time");
+        console.log();
 
         if ( !data ) {
             this.cacheResult( null );
@@ -74,6 +78,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
             context_resolution: contextResolution,
             ocr_regions: [
                 {
+                    id: '0',
                     position: {
                         top: 0,
                         left: 0,
@@ -137,7 +142,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
 
         const data = new FormData();
 
-        data.append( 'encoded_image', image, { filename: 'image.png' } );
+        data.append( 'encoded_image', Buffer.from(image), { filename: 'image.png' } );
 
         const stcs = Date.now().toString().slice(0, 10);
 
@@ -160,7 +165,6 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
         };
 
         try {
-
             const response = await axios.request(config);
 
             if ( !response?.data ) return;
@@ -191,7 +195,6 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
         } catch (error) {
             console.log(error);
         }
-        
     }
 
     handleOcrData( data: any[], contextResolution: OcrResultContextResolution ): OcrItemScalable[] {
@@ -210,7 +213,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
 
         const blocksDataArr = data[2][3][0].slice( firstIdx );
 
-        const blocks: OcrItemScalable[] = blocksDataArr.map( ( blockData: any[] ) => {
+        const blocks: OcrItemScalable[] = blocksDataArr.map( ( blockData: any[], blockIdx: number ) => {
 
             let blockIsVertical = false;
 
@@ -308,6 +311,7 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
             }
 
             const block: OcrItemScalable = {
+                id: blockIdx.toString(),
                 text: blockLines,
                 box: {
                     position: {
@@ -324,7 +328,8 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
                 },
                 classification_label: 0,
                 classification_score: 1,
-                recognition_score: 1
+                recognition_score: 1,
+                recognition_state: 'RECOGNIZED'
             };
 
             // console.log( block.box )
@@ -370,6 +375,10 @@ export class GoogleLensOcrAdapter implements OcrAdapter< GoogleLensOcrEngineSett
     }
 
     async getSupportedLanguages(): Promise< string[] > {
+        return [];
+    }
+
+    async getSupportedModels(): Promise<TextRecognitionModel[]> {
         return [];
     }
 

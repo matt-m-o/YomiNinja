@@ -1,4 +1,4 @@
-import { systemPreferences } from 'electron';
+import { systemPreferences, screen } from 'electron';
 import { Rectangle, TaskbarProperties, WindowManagerNativeInterface, WindowProperties } from '../window_manager';
 import { windowManager } from 'node-window-manager';
 import os from 'os';
@@ -161,5 +161,9 @@ export class WindowManagerMacOS implements WindowManagerNativeInterface {
         return this.hasAccessibilityAccess;
         // this.hasAccessibilityAccess = windowManager.requestAccessibility();
         // return this.hasAccessibilityAccess;
+    }
+
+    getCursorPosition() {
+        return screen.getCursorScreenPoint();
     }
 }

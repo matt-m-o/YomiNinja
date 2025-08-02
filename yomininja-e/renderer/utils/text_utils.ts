@@ -1,5 +1,22 @@
+import { LanguageJson } from "../../electron-src/@core/domain/language/language";
 import { OcrItemScalable, OcrTextLineScalable } from "../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 
+
+export function getDefaultFontFamily( language?: LanguageJson | string ) {
+
+    const tag = typeof language === 'object' ? 
+        language.bcp47_tag :
+        language;
+
+    const fonts = {
+        'zh-Hans': '-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Heiti SC", "Noto Sans SC", sans-serif',
+        'zh-Hant': '-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", sans-serif',
+        'ja-JP': '"Segoe UI", Meiryo, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+        // 'ja-JP': "arial"
+    };
+    
+    return tag in fonts ? fonts[tag] : fonts['ja-JP'];
+}
 
 export function isEolCharacter( char: string ): boolean {
     return [
@@ -33,18 +50,14 @@ export function getSymbolSpacingSide( symbol: string ): 'left' | 'right' | undef
         return "right";
 }
 
-export function removeFurigana( input: OcrItemScalable[], threshold = 0.6 ) {
+export function removeFurigana( input: OcrItemScalable[], threshold = 0.8 ) {
 
-    input.forEach( item => {
+    return input.map( item => {
 
         let isVertical = item.box.isVertical;
-        let averageFontSize = 0;
-        let maxFontSize = 0
-
-        if ( isVertical ) return;
-
-        item.text.forEach( line => {
-
+        
+        const weights = [];
+        const fontSizes = item.text.map( line => {
             if (
                 !line.box?.dimensions?.height ||
                 !line.box?.dimensions?.width
@@ -52,42 +65,43 @@ export function removeFurigana( input: OcrItemScalable[], threshold = 0.6 ) {
 
             const lineDims = line.box.dimensions;
 
-            const fontSize = isVertical ? lineDims.width : lineDims.height;
+            if ( isVertical ) {
+                weights.push( lineDims.height )
+                return lineDims.width;
+            }
 
-            averageFontSize += fontSize;
-            if ( fontSize > maxFontSize )
-                maxFontSize = fontSize;
-        });
+            weights.push( lineDims.width )
+            return lineDims.height;
+        }).filter(Boolean);
+        
+        const minFontSize = findByMedianThreshold( fontSizes, weights, threshold );
 
-        averageFontSize = averageFontSize / item.text.length;
+        return {
+            ...item,
+            text: item.text.filter( line => {
 
-        const minFontSize = ( ( averageFontSize + maxFontSize ) / 2 ) * threshold;
-
-        item.text = item.text.filter( line => {
-
-            if (
-                !line.box?.dimensions?.height ||
-                !line.box?.dimensions?.width
-            ) return;
-
-            const lineDims = line.box.dimensions;
-
-            const fontSize = isVertical ? lineDims.width : lineDims.height;
-
-            // if ( line.content.includes('') ) {
-            //     console.log({
-            //         content: line.content,
-            //         averageFontSize,
-            //         minFontSize,
-            //         fontSize,
-            //     });
-            // }
-
-            return fontSize > minFontSize;
-        })
+                if (
+                    !line.box?.dimensions?.height ||
+                    !line.box?.dimensions?.width
+                ) return;
+    
+                const lineDims = line.box.dimensions;
+    
+                const fontSize = isVertical ? lineDims.width : lineDims.height;
+    
+                if ( fontSize < minFontSize && isOnlyHiragana( line.content?.trim() ) ) {
+                    return false;
+                }
+    
+                return true;
+            })
+        };
     });
+}
 
-    return input;
+export type FontStyle = {
+    fontSize: number;
+    letterSpacing: number;
 }
 
 export function getBestFontStyle( input: {
@@ -97,7 +111,9 @@ export function getBestFontStyle( input: {
     initialFontSize: number;
     initialSpacing?: number;
     isVertical: boolean;
-}): { fontSize: number, letterSpacing: number } {
+    fontFamily?: string;
+    fontWeight?: number;
+}): FontStyle {
 
     let { text } = input;
 
@@ -109,7 +125,7 @@ export function getBestFontStyle( input: {
         isVertical,
     } = input;
 
-    const fontFamily = 'arial';
+    const fontFamily = input.fontFamily || 'arial';
 
     let maxSideLength = isVertical ? maxHeight : maxWidth;
     let maxFontSize = initialFontSize;
@@ -175,6 +191,15 @@ export function getBestFontStyle( input: {
             break;
         }
 
+        let font = '';
+        if ( input.fontWeight )
+            font += input.fontWeight;
+
+        font += ` ${fontSize}px`;
+
+        if ( fontFamily )
+            font += ' '+fontFamily;
+
         context.font = `${fontSize}px ${fontFamily}`;
         metrics = context.measureText(text);
 
@@ -232,7 +257,7 @@ export function getBestFontStyle( input: {
 
         spacingIterations++;
         if (spacingIterations > 50) {
-            console.log(`Breaking spacing iterations | text: "${text}"`);
+            // console.log(`Breaking spacing iterations | text: "${text}"`);
             break;
         }
         
@@ -300,4 +325,32 @@ export function getSymbolPositionOffset(
         topOffset,
         leftOffset
     }
+}
+
+function weightedMedian(values, weights) {
+    const combined = values.map((v, i) => ({ value: v, weight: weights[i] }));
+    combined.sort((a, b) => a.value - b.value);
+  
+    const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+    let cumulativeWeight = 0;
+  
+    for (let i = 0; i < combined.length; i++) {
+      cumulativeWeight += combined[i].weight;
+      if (cumulativeWeight >= totalWeight / 2) {
+        return combined[i].value;
+      }
+    }
+  }
+
+function findByMedianThreshold( values: number[], weights: number[], factor = 0.7 ): number {
+    const median = weightedMedian(values, weights);
+    return median * factor;
+}
+
+function isOnlyHiragana( str: string ): boolean {
+    return /^[\u3040-\u309F]+$/.test(str);
+}
+
+function containsKanji( string: string ): boolean {
+    return /\p{Script=Han}/u.test( string );
 }

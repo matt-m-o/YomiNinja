@@ -3,6 +3,7 @@ import { SettingsContext } from "../../context/settings.provider";
 import { useContext, useEffect, useState } from "react";
 import HotkeyFields, { HotkeyCombination } from "./HotkeyFields";
 import { OcrEngineSettings, SettingsPresetJson } from "../../../electron-src/@core/domain/settings_preset/settings_preset";
+import { AppInfoContext } from "../../context/app_info.provider";
 
 
 // Settings section component
@@ -14,6 +15,10 @@ export default function AppSettingsHotkeys() {
         updateActivePresetHotkeys,
         updateActivePresetOcrEngine
     } = useContext( SettingsContext );
+
+    const {
+        systemInfo
+    } = useContext( AppInfoContext );
 
     const appleVisionSettings = getOcrEngineSettings('AppleVisionAdapter');
     const appleVisionDefaultSettings = getOcrEngineSettings('AppleVisionAdapter', true);
@@ -41,6 +46,7 @@ export default function AppSettingsHotkeys() {
     const toggleOverlayKeys = stringToHotkeyCombination( overlayHotkeys?.toggle );
     const showOverlayKeys = stringToHotkeyCombination( overlayHotkeys?.show );
     const clearOverlayKeys = stringToHotkeyCombination( overlayHotkeys?.clear );
+    const manualAdjustmentOverlayKeys = stringToHotkeyCombination( overlayHotkeys?.manual_adjustment );
     // const [ ocrOnPrintScreen, setOcrOnPrintScreen ] = useState< boolean >( Boolean(overlayHotkeys?.ocr_on_screen_shot) );
     const ocrOnPrintScreen = Boolean(overlayHotkeys?.ocr_on_screen_shot);
 
@@ -100,6 +106,18 @@ export default function AppSettingsHotkeys() {
         
     );
 
+    const cmdLineBaseUrl = location.host+'/remote-control';
+    let baseCmdLine = systemInfo.httpCliTool;
+
+    if ( systemInfo.httpCliTool === 'wget' )
+        baseCmdLine += ' -qO- '+cmdLineBaseUrl;
+
+    else if ( systemInfo.httpCliTool === 'curl' )
+        baseCmdLine += ' -o- '+cmdLineBaseUrl;
+
+    const getCmdLine = ( path: string ) => {
+        return `${baseCmdLine}${path}?key=${overlayHotkeys?.remote_control_key}`
+    }
     
     return (
         <Box sx={{ margin: 1, mt: 0 }}>
@@ -129,6 +147,7 @@ export default function AppSettingsHotkeys() {
                         if ( !input ) return;
                         updateActivePresetHotkeys({ ocr: hotkeyCombinationToString( input ) })
                     }}
+                    commandLine={ getCmdLine('/ocr') }
                     sx={{ marginBottom: 0 }}
                     children={
                         <FormGroup >
@@ -161,6 +180,7 @@ export default function AppSettingsHotkeys() {
                                 hotkey: hotkeyCombinationToString( input )
                             });
                         }}
+                        commandLine={ getCmdLine('/ocr/apple-vision') }
                     />
                 }
 
@@ -177,6 +197,7 @@ export default function AppSettingsHotkeys() {
                                 hotkey: hotkeyCombinationToString( input )
                             });
                         }}
+                        commandLine={ getCmdLine('/ocr/paddleocr') }
                     />
                 }
 
@@ -191,6 +212,7 @@ export default function AppSettingsHotkeys() {
                             hotkey: hotkeyCombinationToString( input )
                         });
                     }}
+                    commandLine={ getCmdLine('/ocr/mangaocr') }
                 />
 
                 <HotkeyFields
@@ -205,6 +227,7 @@ export default function AppSettingsHotkeys() {
                             hotkey: hotkeyCombinationToString( input )
                         });
                     }}
+                    commandLine={ getCmdLine('/ocr/google-lens') }
                 />
 
                 <HotkeyFields
@@ -219,6 +242,7 @@ export default function AppSettingsHotkeys() {
                             hotkey: hotkeyCombinationToString( input )
                         });
                     }}
+                    commandLine={ getCmdLine('/ocr/cloud-vision') }
                 />
 
                 <HotkeyFields
@@ -229,6 +253,7 @@ export default function AppSettingsHotkeys() {
                         if ( !input ) return;
                         updateActivePresetHotkeys({ toggle: hotkeyCombinationToString( input ) })
                     }}
+                    commandLine={ getCmdLine('/toggle-overlay') }
                 />
 
                 <HotkeyFields
@@ -239,6 +264,7 @@ export default function AppSettingsHotkeys() {
                         if ( !input ) return;
                         updateActivePresetHotkeys({ show: hotkeyCombinationToString( input ) })
                     }}
+                    commandLine={ getCmdLine('/show-overlay') }
                 />
 
                 <HotkeyFields
@@ -249,6 +275,18 @@ export default function AppSettingsHotkeys() {
                         if ( !input ) return;
                         updateActivePresetHotkeys({ clear: hotkeyCombinationToString( input ) })
                     }}
+                    commandLine={ getCmdLine('/hide-overlay') }
+                />
+
+                <HotkeyFields
+                    label='Manually adjust overlay'
+                    keyCombination={ manualAdjustmentOverlayKeys }
+                    defaultKeys={overlayDefaultHotkeys?.manual_adjustment}
+                    onChangeHandler={ ( input?: string[]  ) => {
+                        if ( !input ) return;
+                        updateActivePresetHotkeys({ manual_adjustment: hotkeyCombinationToString( input ) })
+                    }}
+                    commandLine={ getCmdLine('/toggle-movable-overlay') }
                 />
 
                 <HotkeyFields
@@ -259,6 +297,7 @@ export default function AppSettingsHotkeys() {
                         if ( !input ) return;
                         updateActivePresetHotkeys({ copy_text: hotkeyCombinationToString( input ) })
                     }}
+                    commandLine={ getCmdLine('/copy-text') }
                 />
 
             </div>

@@ -118,6 +118,34 @@ export default function OcrOverlayForBrowsersAlt() {
         };
     }, [overlayWindow] );
 
+    useEffect( () => {
+
+        const migakuWorkaround = () =>  {
+            document.querySelectorAll('.ocr-line').forEach( el => {
+                (el as HTMLElement).style.whiteSpace = 'normal';
+            });
+        }
+
+        const observer = new MutationObserver( () => {
+            const migakuEl = document.querySelector('.migaku-sentence');
+            if ( migakuEl ) {
+                const line = document.querySelector('.ocr-line') as HTMLElement;
+                if ( !line || line.style.whiteSpace == 'normal' ) return;
+                migakuWorkaround();
+                setTimeout(migakuWorkaround, 5000);
+                // observer.disconnect();
+            }
+        });
+      
+        observer.observe( document.body, {
+            childList: true,
+            subtree: true,
+        });
+    
+        return () => observer.disconnect(); // Cleanup on unmount
+        
+    }, []);
+
     // useEffect( () => {
 
     //     if ( !isPopup || !window ) return;
@@ -157,8 +185,8 @@ export default function OcrOverlayForBrowsersAlt() {
           }
     
           const newPosition = {
-            x: position.left - (widthOffset / 2),
-            y: position.top - heightOffset + 9
+            x: Number(position?.left) - (widthOffset / 2),
+            y: Number(position?.top) - heightOffset + 9
           };
     
           

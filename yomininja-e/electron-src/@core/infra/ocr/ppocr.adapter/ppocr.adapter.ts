@@ -1,4 +1,4 @@
-import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
+import { OcrAdapter, OcrAdapterStatus, OcrEngineSettingsOptions, OcrRecognitionInput, TextRecognitionModel, UpdateOcrAdapterSettingsOutput } from "../../../application/adapters/ocr.adapter";
 import { RecognizeBytesRequest } from "../../../../../grpc/rpc/ocr_service/RecognizeBytesRequest";
 
 import { PpOcrEngineSettings, getPpOcrDefaultSettings, ppOcrAdapterName } from "./ppocr_settings";
@@ -61,13 +61,20 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
         if ( !result )
             return null;
 
-        return OcrResultScalable.createFromOcrResult( result )
+        const resultScalable = OcrResultScalable.createFromOcrResult( result );
+        resultScalable.ocr_engine_name = this.name;
+        resultScalable.language = language;
+
+        return resultScalable;
     }
 
     async getSupportedLanguages(): Promise< string[] > {
         return await paddleOcrService.getSupportedLanguages();
     }
 
+    async getSupportedModels(): Promise<TextRecognitionModel[]> {
+        return [];
+    }
 
     async updateSettings(
         _settingsUpdate: OcrEngineSettingsU,
@@ -102,5 +109,4 @@ export class PpOcrAdapter implements OcrAdapter< PpOcrEngineSettings > {
     async restart( callback: () => void ): Promise< void > {
         await paddleOcrService.restart( callback );
     };
-
 }

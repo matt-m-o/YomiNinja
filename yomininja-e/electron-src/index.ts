@@ -1,9 +1,9 @@
 // Packages
+import { isUserDataCompatible, removeIncompatibleFiles, updateUserDataStructure, updateUserDataVersion } from './util/user_data.util';
+updateUserDataStructure();
 import os from 'os';
 console.log({ cpu_model: os.cpus()[0].model.trim() });
 import { httpServer } from './common/server';
-
-import { BrowserWindow, app, ipcMain, IpcMainEvent, IpcMainInvokeEvent, clipboard, globalShortcut, systemPreferences } from 'electron';
 import prepareNext from 'electron-next';
 import './shared_handlers';
 import { uIOhook } from 'uiohook-napi';
@@ -14,6 +14,7 @@ import path from 'path';
 import { getLaunchConfig } from './@core/infra/app_initialization';
 import { pyOcrService } from './@core/infra/ocr/ocr_services/py_ocr_service/_temp_index';
 import { paddleOcrService } from './@core/infra/ocr/ocr_services/paddle_ocr_service/_temp_index';
+import { app, globalShortcut, Notification } from 'electron';
 const isMacOS = process.platform === 'darwin';
 
 
@@ -28,8 +29,10 @@ if (!gotTheLock)
 else {
   app.on('ready', async () => {
 
+    await postInstallSetup();
+
     if ( process.platform === 'win32' ) {
-      app.setAppUserModelId(`com.yomininja.${app.getName()}`);
+      app.setAppUserModelId(app.name);
     }
   
     // Prepare the renderer once the app is ready
@@ -70,6 +73,8 @@ function startUIOhook(){
 
 function preInitialization() {
 
+  app.commandLine.appendSwitch( 'disable-features', 'WebSQL' );
+
   const launchConfig = getLaunchConfig();
 
   if ( launchConfig.hardware_acceleration === false ) {
@@ -83,4 +88,23 @@ function preInitialization() {
     console.log("GPU Compositing is disabled!");
   }
   
+}
+
+async function postInstallSetup() {
+
+  if ( isUserDataCompatible() )
+      return;
+
+  (new Notification({
+      title: 'Initial setup in progress...',
+      body: 'This may take a moment.'
+  })).show();
+
+  updateUserDataStructure();
+  
+  removeIncompatibleFiles();
+
+  pyOcrService.installPython();
+
+  updateUserDataVersion();
 }

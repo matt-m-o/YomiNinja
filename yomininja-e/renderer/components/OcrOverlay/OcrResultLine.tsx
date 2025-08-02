@@ -1,9 +1,9 @@
 import { styled, SxProps } from "@mui/material";
 import { OcrResultBoxScalable, OcrTextLineScalable, OcrTextLineSymbolScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
-import { CSSProperties, useContext, useEffect } from "react";
+import { CSSProperties, useContext, useEffect, useRef, useState } from "react";
 import { ProfileContext } from "../../context/profile.provider";
-import { getBestFontStyle, getSymbolPositionOffset, isEolCharacter } from "../../utils/text_utils";
+import { FontStyle, getBestFontStyle, getDefaultFontFamily, getSymbolPositionOffset, isEolCharacter } from "../../utils/text_utils";
 import OcrWordsContainer from "./OcrWordsContainer";
 import OcrSymbolsContainer from "./OcrSymbolsContainer";
 
@@ -11,6 +11,7 @@ import OcrSymbolsContainer from "./OcrSymbolsContainer";
 export type OcrResultLineProps = {
     line: OcrTextLineScalable;
     box: OcrResultBoxScalable; // Text block bounding box
+    textBlockBoxWidthPx: number;
     textBlockBoxHeightPx: number;
     regionWidthPx: number;
     regionHeightPx: number;
@@ -19,6 +20,7 @@ export type OcrResultLineProps = {
     contentEditable: boolean;
     isLastLine: boolean;
     includesGeneratedFurigana: boolean;
+    fontFamily?: string;
     onBlur?: () => void;
 };
 
@@ -31,13 +33,14 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         line,
         box,
         isLastLine,
+        textBlockBoxWidthPx,
         textBlockBoxHeightPx,
         regionWidthPx,
         regionHeightPx,
         ocrItemBoxVisuals,
         contentEditable,
         sizeExpansionPx,
-        includesGeneratedFurigana
+        includesGeneratedFurigana,
     } = props;
 
     const { profile } = useContext( ProfileContext );
@@ -60,14 +63,16 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             zIndex: '9000000',
         }
     }
-    
+
+    const fontFamily = props.fontFamily || getDefaultFontFamily( active_ocr_language?.bcp47_tag );
 
     const Container = styled('span')(containerStyle);
 
     const Line = styled('div')({
-        transformOrigin: 'top left',
+        // transformOrigin: line.box.transform_origin || 'top left',
         whiteSpace: 'pre',
         width: 'max-content',
+        fontFamily
     });
 
 
@@ -156,7 +161,10 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         .some( tag => bcp47_tag === tag ))
     )
         eolSymbol = '.'
-
+    
+    const containerTransform = line.box.transform_origin === 'center' ?
+        `rotate( ${line.box.angle_radians}rad )` :
+        `rotate( ${box.angle_degrees}deg )`;
 
     const symbolsContainer = positioningMode === 'character-based' && line.symbols?.length ? ( 
         <OcrSymbolsContainer
@@ -174,8 +182,8 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             isLastLine={isLastLine}
             EOLSymbol={EOLSymbol}
             includesGeneratedFurigana={includesGeneratedFurigana}
+            fontFamily={fontFamily}
             style={{
-                transform: `rotate( ${-box.angle_degrees}deg )`,
                 fontSize: lineFontSize
             }}
         />
@@ -195,8 +203,9 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             isLastLine={isLastLine}
             EOLSymbol={EOLSymbol}
             includesGeneratedFurigana={includesGeneratedFurigana}
+            fontFamily={fontFamily}
             style={{
-                transform: `rotate( ${-line.box.angle_degrees}deg )`,
+                transform: containerTransform,
                 fontSize: lineFontSize
             }}
         />
@@ -207,29 +216,60 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         if ( box.isVertical ) {
             [ '．．．', '...', '･･･', '・・・' ]
                 .forEach( item => {
-                    line.content = line.content.replaceAll(item, '…' );
+                    line.content = line.content?.replaceAll(item, '…' );
                 });
         }
         else {
             [ '・・・' ]
                 .forEach( item => {
-                    line.content = line.content.replaceAll(item, '...' );
+                    line.content = line.content?.replaceAll(item, '...' );
                 });
         }
 
         if ( !lineFontSize && (lineBoxWidthPx || lineBoxHeightPx) ) {
             lineFontSize = box.isVertical ? lineBoxWidthPx : lineBoxHeightPx;
         }
-        
-        const bestFontStyle = getBestFontStyle({
+
+        const getBestFontStyle_input = {
             text: line.content.trim(),
             maxWidth: lineBoxWidthPx,
             maxHeight: lineBoxHeightPx,
             initialFontSize: lineFontSize,
             isVertical: Boolean(box?.isVertical),
-            initialSpacing: 0
-        });
+            initialSpacing: 0,
+            fontFamily,
+            fontWeight: ocrItemBoxVisuals.text.font_weight
+        }
+
+        let bestFontStyle: FontStyle;
         
+        if ( positioningMode === 'block-based' ) {
+            const lineSegments = getBestFontStyle_input.text.split('\u200B');
+
+            getBestFontStyle_input.maxWidth = textBlockBoxWidthPx;
+            getBestFontStyle_input.maxHeight = textBlockBoxHeightPx;
+
+            lineSegments.forEach( segment => {
+                const fontStyle = getBestFontStyle({
+                    ...getBestFontStyle_input,
+                    text: segment.trim()
+                });
+
+                if ( !fontStyle ) return;
+
+                if ( 
+                    !bestFontStyle ||
+                    bestFontStyle?.fontSize > fontStyle?.fontSize
+                ) {
+                    bestFontStyle = fontStyle;
+                    return;
+                }
+            });
+        }
+        
+        if ( !bestFontStyle?.fontSize )
+            bestFontStyle = getBestFontStyle( getBestFontStyle_input );
+                
         lineFontSize = bestFontStyle.fontSize;
         lineFontSize *= fontSizeFactor;
         letterSpacing = bestFontStyle.letterSpacing * letterSpacingFactor;
@@ -274,10 +314,29 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         letterSpacing: letterSpacing+'px'
     };
 
-    if ( box.isVertical )
+    if ( box.isVertical ) {
         lineBaseCSS.top = lineTopPx || '0%';
-    else
+        lineBaseCSS.transformOrigin = line.box.transform_origin || 'top left';
+    }
+    else {
         lineBaseCSS.bottom = lineBottomPx || '0%';
+        lineBaseCSS.transformOrigin = line.box.transform_origin || 'bottom left';
+    }
+
+    if ( positioningMode === 'block-based' ) {
+
+        const nLineBreaks = line.content.split('\u200B').length;
+
+        if ( box.isVertical ) {
+            lineBaseCSS.maxHeight = textBlockBoxHeightPx + 'px';
+            lineBaseCSS.lineHeight = (textBlockBoxWidthPx / nLineBreaks) +'px';
+        }
+        else {
+            lineBaseCSS.maxWidth = textBlockBoxWidthPx;
+            lineBaseCSS.lineHeight = (textBlockBoxHeightPx / nLineBreaks) + 'px';
+        }
+        lineBaseCSS.textAlign = 'left';
+    }
 
     const margin = props.sizeExpansionPx / 2 + 'px';
 
@@ -295,6 +354,7 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
             margin,
             marginTop: !box.isVertical ? margin : lineTopPx,
             marginLeft: box.isVertical ? margin : lineLeftPx,
+            // transformOrigin: line.box.transform_origin || 'top left',
         }}>
             {symbolsContainer || line.content}
             { EOLSymbol }
@@ -306,7 +366,8 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
         {
             symbolsContainer ||
             wordsContainer ||
-            <Line
+            <Line className="ocr-line"
+
                 contentEditable={contentEditable}
                 onBlur={ ( e ) => {
                     line.content = e.target.textContent;
@@ -316,15 +377,22 @@ export default function OcrResultLine( props: OcrResultLineProps ) {
                     ...lineBaseCSS,
                     position: linePositioning,
                     left: lineLeftPx || '0%',
-                    // transformOrigin: line?.box?.transform_origin || 'left top',
-                    // transform: `rotate( ${line?.box?.angle_degrees}deg )`,
+                    // transformOrigin: box.transform_origin == 'center' ? 'center' : undefined,
+                    // transform: containerTransform,
                     borderRadius: ocrItemBoxVisuals.border_radius,// '0px',
                     // textAlign: box.isVertical ? 'inherit' : 'left',
                     backgroundColor: ocrItemBoxVisuals.background_color,
                     // border: 'solid 1px green'
                 }}
             >
-                { line.content.trim()}
+                { line.content.trim()
+                    .split('\u200B')
+                    .flatMap( (part, i, arr) => (
+                        i < arr.length - 1
+                            ? [part, <wbr key={i} />]
+                            : [part]
+                    ))
+                }
                 { ocrItemBoxVisuals?.text?.sentence_ending_punctuation?.enabled && EOLSymbol }
             </Line>
         }

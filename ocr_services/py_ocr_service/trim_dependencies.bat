@@ -1,0 +1,1 @@
+del ".\.python\win32\x64\Lib\site-packages\torch\lib\*.lib"

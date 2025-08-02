@@ -1,3 +1,12 @@
+import sys
+import os
+sys.path.insert(0, '.')
+try:
+    custom_modules_path = os.environ['CUSTOM_MODULES_PATH']
+    sys.path.append( custom_modules_path )
+except Exception as error:
+    print(error)
+
 import threading
 from concurrent import futures
 import logging
@@ -5,7 +14,6 @@ import grpc
 from ocr_service_pb2 import Result
 import ocr_service_pb2 as service_pb
 import ocr_service_pb2_grpc as service_grpc
-import sys
 import time
 from multiprocessing import freeze_support
 
@@ -93,12 +101,16 @@ class Service( service_grpc.OCRServiceServicer ):
 
         results: List[Result] = []
 
+        response = None
+
         try:
             match request.ocr_engine:
                 case 'MangaOCR':
-                    results = self.manga_ocr_service.recognize(
-                        np.array( image ),
-                        request.boxes
+                    response = self.manga_ocr_service.recognize(
+                        image= image,
+                        request_id= request.id,
+                        boxes= request.boxes,
+                        detection_only= request.detection_only,
                     )
 
                 case 'AppleVision':
@@ -114,16 +126,15 @@ class Service( service_grpc.OCRServiceServicer ):
                     )
                     
                 case _:
-                    results = MangaOcrService(self.manga_ocr_service).recognize(
-                        np.array( image ),
-                        request.boxes
-                    )
                     print(f'{request.ocr_engine} is not supported')
 
         except Exception as error:
             print(error)
 
         self.processing = False
+
+        if response:
+            return response
 
         return service_pb.RecognizeDefaultResponse(
             context_resolution={
@@ -133,6 +144,50 @@ class Service( service_grpc.OCRServiceServicer ):
             id=request.id,
             results=results
         )
+    
+    def RecognizeSelective(self, request: service_pb.RecognizeSelectiveRequest, context):
+
+        self.processing = True
+
+        image: Image = None
+
+        if request.image_bytes:
+            image = self.bytesToPILImage( request.image_bytes )
+        
+        elif request.base64_image:
+            image = self.base64ToPILImage( request.base64_image )
+
+        response = None
+
+        try:
+            match request.ocr_engine:
+                case 'MangaOCR':
+                    response = self.manga_ocr_service.recognize_selective(
+                        image= image,
+                        request_id= request.id,
+                        result_ids= request.result_ids
+                    )
+                    
+                case _:
+                    print(f'{request.ocr_engine} is not supported')
+
+        except Exception as error:
+            print(error)
+
+        self.processing = False
+
+        if response:
+            return response
+
+        return service_pb.RecognizeDefaultResponse(
+            context_resolution={
+                'width': 0,
+                'height': 0
+            },
+            id=request.id,
+            results=[]
+        )
+
     
     def GetSupportedLanguages(self, request: service_pb.GetSupportedLanguagesRequest, context):
         self.last_rpc_time = time.time()
@@ -156,6 +211,76 @@ class Service( service_grpc.OCRServiceServicer ):
         return service_pb.GetSupportedLanguagesResponse(
             language_codes= language_codes
         )
+
+    def GetSupportedModels(self, request: service_pb.GetSupportedModelsRequest, context):
+        self.last_rpc_time = time.time()
+
+        models = []
+
+        match request.ocr_engine:
+            case 'MangaOCR':
+                models = self.manga_ocr_service.get_supported_models()
+
+            case 'AppleVision':
+                pass # models = self.apple_vision_service.get_supported_models()
+            
+            case 'AppleVisionKit':
+                pass # models = self.apple_vision_kit_service.get_supported_models()
+                
+            case _:
+                print(f'{request.ocr_engine} is not supported')
+
+
+        return service_pb.GetSupportedModelsResponse(
+            models = models
+        )
+    
+    def InstallModel(self, request: service_pb.InstallModelRequest, context):
+        self.last_rpc_time = time.time()
+
+        success = False
+
+        match request.ocr_engine:
+            case 'MangaOCR':
+                success = self.manga_ocr_service.install_model( request.model_name )
+
+            case 'AppleVision':
+                pass # models = self.apple_vision_service.install_model()
+            
+            case 'AppleVisionKit':
+                pass # models = self.apple_vision_kit_service.install_model()
+                
+            case _:
+                print(f'{request.ocr_engine} is not supported')
+
+
+        return service_pb.InstallModelResponse(
+            success = success
+        )
+        
+    def GetHardwareAccelerationOptions(self, request: service_pb.GetHardwareAccelerationOptionsRequest, context):
+        self.last_rpc_time = time.time()
+
+        options = []
+
+        match request.ocr_engine:
+            case 'MangaOCR':
+                options = self.manga_ocr_service.get_hardware_acceleration_options()
+
+            case 'AppleVision':
+                pass # options = self.apple_vision_service.get_hardware_acceleration_options()
+            
+            case 'AppleVisionKit':
+                pass # models = self.apple_vision_kit_service.get_hardware_acceleration_options()
+                
+            case _:
+                print(f'{request.ocr_engine} is not supported')
+
+
+        return service_pb.GetHardwareAccelerationOptionsResponse(
+            options= options
+        )
+
 
     def MotionDetection(self, request: service_pb.MotionDetectionRequest, context):
         
@@ -194,14 +319,14 @@ def serve( port: str = '23456', executor: ProcessPoolExecutor = None ):
     print( server_info.replace("'", '"') )
 
     # Start the timeout check in a new thread
-    timeout_thread = threading.Thread(target=servicer.timeout_check)
-    timeout_thread.start()
+    # timeout_thread = threading.Thread(target=servicer.timeout_check)
+    # timeout_thread.start()
 
     server.wait_for_termination()
 
 
 if __name__ == "__main__":
-    freeze_support()
+    # freeze_support()
     logging.basicConfig()
 
     server_port = '33456'

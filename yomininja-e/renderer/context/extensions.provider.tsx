@@ -12,6 +12,7 @@ export type ExtensionsContextType = {
     installedExtensions: BrowserExtensionJson[];
     installExtension: () => Promise<void>;
     uninstallExtension: ( extension: BrowserExtensionJson ) => void;
+    clearExtensionData: ( extension: BrowserExtensionJson ) => void;
     openExtensionOptions: ( input: BrowserExtensionJson ) => Promise< void >;
     toggleExtension: ( extension: BrowserExtensionJson ) => void;
 };
@@ -40,12 +41,25 @@ export const ExtensionsProvider = ( { children }: PropsWithChildren ) => {
         await ipcRenderer.invoke( 'extensions:uninstall_extension', extension );
     }
 
+    async function clearExtensionData( extension: BrowserExtensionJson ) {
+        // if ( extension.enabled )
+        //     await toggleExtension( extension );
+        await ipcRenderer.invoke( 'extensions:clear_extension_data', extension );
+
+        await toggleExtension({
+            ...extension,
+            enabled: false
+        });
+
+        setTimeout( refreshUI, 500 );
+    }
+
     async function openExtensionOptions( browserExtension: BrowserExtensionJson ): Promise< void > {
         await ipcRenderer.invoke( 'extensions:open_extension_options', browserExtension );
     }
 
     function refreshUI() {
-        ipcRenderer.invoke( 'refresh_all_windows' );
+        ipcRenderer.invoke( 'refresh_window', ['main', 'overlay'] );
     }
 
     function getExtensionActionButton( extensionId: string ): Element {
@@ -115,6 +129,7 @@ export const ExtensionsProvider = ( { children }: PropsWithChildren ) => {
                 installedExtensions,
                 installExtension,
                 uninstallExtension,
+                clearExtensionData,
                 openExtensionOptions,
                 toggleExtension,
                 browserActionList,

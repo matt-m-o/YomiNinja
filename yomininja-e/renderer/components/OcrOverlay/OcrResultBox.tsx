@@ -1,5 +1,5 @@
 import { CSSProperties, useEffect, useRef, useState } from "react";
-import { OcrItemScalable, OcrTextLineSymbolScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
+import { OcrItemScalable, OcrTextLineScalable, OcrTextLineSymbolScalable } from "../../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { styled } from "@mui/material";
 import { OverlayBehavior, OverlayHotkeys, OverlayOcrItemBoxVisuals } from "../../../electron-src/@core/domain/settings_preset/settings_preset_overlay";
 import OcrResultLine from "./OcrResultLine";
@@ -9,7 +9,7 @@ const BaseOcrResultBox = styled('div')({
     // border: 'solid',
     outline: 'solid',
     position: 'absolute',
-    fontFamily: "arial",
+    // fontFamily: "arial",
     // color: 'transparent',
     contentVisibility: 'hidden',
     transformOrigin: 'top left',
@@ -37,6 +37,7 @@ export default function OcrResultBox( props: {
     overlayBehavior: OverlayBehavior;
     contentEditable: boolean;
     isElectron: boolean;
+    fontFamily: string;
     onMouseEnter?: ( item: OcrItemScalable, ocrRegionId?: string ) => void;
     onMouseLeave?: () => void;
     onClick?: ( item: OcrItemScalable, ocrRegionId?: string ) => void;
@@ -224,7 +225,30 @@ export default function OcrResultBox( props: {
     }, [contentEditable]);
     
     
+    const boxTransform = box.transform_origin === 'center' ?
+        `rotate( ${box.angle_radians}rad )` :
+        `rotate( ${box.angle_degrees}deg )`;
 
+        
+    let text: OcrTextLineScalable[];
+
+    if (
+        ocrItem.text.length > 1 &&
+        ocrItemBoxVisuals.text?.positioning?.mode === 'block-based'
+    ) {
+        const firstLine = {
+            ...ocrItem.text[0]
+        };
+
+        for( let i=1; i < ocrItem.text.length; i++ ) {
+            firstLine.content += `\u200B${ocrItem.text[i].content}`
+        }
+
+        text = [firstLine];
+    }
+    else {
+        text = ocrItem.text;
+    }
 
     return (
         <Box className={ `extracted-text ${contentEditable ? 'editable' : ''}` } ref={boxRef}
@@ -234,9 +258,10 @@ export default function OcrResultBox( props: {
                 // top: box.position.top + '%',
                 transformOrigin: box?.transform_origin || 'top left',
                 bottom: ( bottom - sizeExpansionBottomPct ) + '%',
-                transform: `rotate( ${box.angle_degrees}deg )`,
+                transform: boxTransform,
                 minWidth: ( minWidth + sizeExpansionWidthPct ) + '%',
                 minHeight: ( box.dimensions.height + sizeExpansionHeightPct ) + '%',
+                cursor: ocrItem.recognition_state === 'DETECTED' ? 'progress' : 'unset'
             }}
             onMouseEnter={ () => props.onMouseEnter( ocrItem, ocrRegionId ) }
             onMouseLeave={ props.onMouseLeave }
@@ -252,7 +277,7 @@ export default function OcrResultBox( props: {
             // }}
             suppressContentEditableWarning
         >
-            { ocrItem.text.map( ( line, lIdx ) => {
+            { text.map( ( line, lIdx ) => {
 
                 const isLastLine = ocrItem.text.length - 1 === lIdx;
 
@@ -268,6 +293,7 @@ export default function OcrResultBox( props: {
                     <OcrResultLine
                         contentEditable={contentEditable}
                         box={box}
+                        textBlockBoxWidthPx={boxWidthPx}
                         textBlockBoxHeightPx={boxHeightPx}
                         line={line}
                         isLastLine={isLastLine}
@@ -278,6 +304,7 @@ export default function OcrResultBox( props: {
                         ocrItemBoxVisuals={ocrItemBoxVisuals}
                         sizeExpansionPx={sizeExpansionPx}
                         includesGeneratedFurigana={includesGeneratedFurigana}
+                        fontFamily={props.fontFamily}
                     />
                 )
             }) }

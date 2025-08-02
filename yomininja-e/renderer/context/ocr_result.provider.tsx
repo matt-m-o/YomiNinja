@@ -2,12 +2,14 @@ import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { OcrResultScalable } from "../../electron-src/@core/domain/ocr_result_scalable/ocr_result_scalable";
 import { ipcRenderer } from "../utils/ipc-renderer";
 import { setTimeout } from "timers";
+import { RecognizeSelection_IPC_Input } from "../../electron-src/ocr_recognition/ocr_recognition.controller";
 
 
 export type OcrResultContextType = {    
     ocrResult: OcrResultScalable;
     showResults: boolean;
     processing: boolean;
+    recognizeSelection: ( input: RecognizeSelection_IPC_Input ) => Promise<OcrResultScalable | null>;
 };
 
 export const OcrResultContext = createContext( {} as OcrResultContextType );
@@ -28,6 +30,22 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
 
         setOcrResult(data);
         previousResultId = data?.id;
+    }
+
+    async function recognizeSelection( input: RecognizeSelection_IPC_Input ) {
+        try {
+            setProcessing(true);
+            const result = await ipcRenderer.invoke(
+                'ocr_recognition:recognize_selection',
+                input
+            );
+            ocrResultHandler( null, result );
+            setProcessing(false);
+            return result;
+        } catch (error) {
+            console.error(error);
+        }
+        setProcessing(false);
     }
     
     useEffect( () => {
@@ -69,7 +87,8 @@ export const OcrResultProvider = ( { children }: PropsWithChildren ) => {
             value={{
                 ocrResult,
                 showResults,
-                processing
+                processing,
+                recognizeSelection
             }}
         >
             {children}

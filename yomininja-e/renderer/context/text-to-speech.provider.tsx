@@ -1,4 +1,7 @@
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
+import { VoiceVoxTTS } from "./text-to-speech/voicevox_tts";
+import { TextToSpeech } from "./text-to-speech/text_to_speech";
+import { SystemTTS } from "./text-to-speech/system_tts";
 
 export type TTSSpeak_Input = {
     text: string,
@@ -16,57 +19,40 @@ export type TTSContextType = {
 };
 
 
-
 export const TTSContext = createContext( {} as TTSContextType );
 
 
 export const TTSProvider = ( { children }: PropsWithChildren ) => {
     
     const [ voices, setVoices ] = useState< SpeechSynthesisVoice[] >([]);
+    const textToSpeech = new TextToSpeech([
+        new SystemTTS(),
+        new VoiceVoxTTS(),
+    ]);
     
     useEffect( () => {
-
-        window.speechSynthesis.onvoiceschanged = ( voicesChangedEvent ) => {
-            const voices = window.speechSynthesis.getVoices();
-            setVoices( voices );
-            console.log({ voicesChangedEvent });
-            console.log({ voices });
-        }
+        
+        window.speechSynthesis.onvoiceschanged = () => {
+            textToSpeech.getVoices()
+                .then( voices => {
+                    setVoices( voices );
+                    console.log({ voices });
+                });
+        };
+        
     }, [] );
 
     function speak( input: TTSSpeak_Input ) {
 
-        if ( input.cancelCurrentText )
-            window.speechSynthesis.cancel();
-
-        const speechSU = new SpeechSynthesisUtterance();
-
-        speechSU.text = input.text;
-
-        let voice: SpeechSynthesisVoice | undefined;
-
-        if ( input.voice )
-            voice = input.voice;
-
-        else if ( input.voiceURI ) {
-            voice = voices.find(
-                item => item.voiceURI === input.voiceURI
-            );
-        }
-
-        if ( voice )
-            speechSU.voice = voice;
-
-        if ( input.volume !== undefined )
-            speechSU.volume = input.volume;
-
-        if ( input.speed !== undefined )
-            speechSU.rate = input.speed;
-
-        if ( input.pitch !== undefined )
-            speechSU.pitch = input.pitch;
-
-        window.speechSynthesis.speak( speechSU );
+        textToSpeech.speak({
+            text: input.text,
+            voice: input.voice,
+            voiceURI: input.voiceURI,
+            volume: input.volume,
+            speed: input.speed,
+            pitch: input.pitch,
+            cancelCurrentText: input.cancelCurrentText
+        });
     }
     
     function getVoices( bcp47Tag?: string ): SpeechSynthesisVoice[] {

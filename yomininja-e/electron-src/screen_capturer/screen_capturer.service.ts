@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain, IpcMainInvokeEvent, MessagePortMain } from "electron";
+import { BrowserWindow, IpcMainInvokeEvent, MessagePortMain, screen } from "electron";
 import { CaptureSource, ExternalWindow } from "../app/types";
 import { join } from 'path';
 import { PAGES_DIR } from "../util/directories.util";
@@ -7,6 +7,9 @@ import isDev from 'electron-is-dev';
 import { ocrRecognitionController } from "../ocr_recognition/ocr_recognition.index";
 import fs from 'fs';
 import { cloneDeep } from 'lodash';
+import sharp from "sharp";
+import { windowManager } from "../@core/infra/app_initialization";
+import { isMacOS } from "../util/environment.util";
 
 export class ScreenCapturerService {
 
@@ -18,29 +21,43 @@ export class ScreenCapturerService {
     obs: any;
     obsConnected: boolean = false;
 
-    async createCaptureStream( input: { captureSource: CaptureSource, force?: boolean }  ) {
+    async createCapturer(
+        input: {
+            captureSource: CaptureSource,
+            showWindow?: boolean,
+            streamFrames: boolean,
+            force?: boolean,
+        }
+    ) {
 
-        this.captureSource = cloneDeep( input.captureSource );
+        const { showWindow, streamFrames } = input;
 
-        await this.sleep(1000);
+        if ( input.captureSource.id !== this.captureSource?.id )
+            input.force = true;
 
         if ( 
             !input.force &&
             this.screenCapturerWindow
-        )
+        ){
+
+            if ( input.streamFrames )
+                this.startStream();
+            else
+                this.stopStream();
+
             return;
+        }
 
-        await this.createCapturerWindow( false ); // isDev
-    }
+        this.captureSource = cloneDeep( input.captureSource );
 
-    async createCapturerWindow( showWindow = false ) {
+        await this.sleep(1000);
         
         if ( this.screenCapturerWindow )
             await this.destroyScreenCapturer();
             
         this.screenCapturerWindow = new BrowserWindow({
-            width: 960,
-            height: 540,
+            width: 1100,
+            height: 600,
             autoHideMenuBar: true,
             show: showWindow,
             alwaysOnTop: true,
@@ -48,6 +65,7 @@ export class ScreenCapturerService {
                 nodeIntegration: false,
                 contextIsolation: false,
                 preload: join(__dirname, '../preload.js'),
+                backgroundThrottling: false
             },
             title: 'Screen Capturer - YomiNinja'
         });
@@ -73,9 +91,14 @@ export class ScreenCapturerService {
             );
         }
 
-        // this.screenCapturerWindow.webContents.on( 'dom-ready', this.startStream );
-        this.screenCapturerWindow.webContents.on( 'dom-ready', () => {
-            this.setIntervalBetweenFrames( this.intervalBetweenFrames );
+        if ( streamFrames ) {
+            this.screenCapturerWindow.webContents.on('dom-ready', () => {
+                setTimeout( this.startStream, 3000 );
+            });
+        }
+
+        this.screenCapturerWindow.webContents.once("did-navigate", () => {
+            console.log(`\nWebRTC process id: ${this.screenCapturerWindow?.webContents.getOSProcessId()}\n`);
         });
     }
 
@@ -100,15 +123,22 @@ export class ScreenCapturerService {
     }
 
     grabFrame = () => {
-        // console.log('\ngrabFrame \n')
         this.screenCapturerWindow?.webContents.send('screen_capturer:grab_frame');
     }
 
     startStream = async () => {
-        while ( this.screenCapturerWindow !== undefined ) {
-            await this.sleep( this.intervalBetweenFrames );
-            this.grabFrame();
-        }
+
+        this.screenCapturerWindow?.webContents.send('screen_capturer:start_stream');
+        this.setIntervalBetweenFrames( this.intervalBetweenFrames );
+
+        // while ( this.screenCapturerWindow !== undefined ) {
+        //     await this.sleep( this.intervalBetweenFrames );
+        //     this.grabFrame();
+        // }
+    }
+
+    stopStream = () => {
+        this.screenCapturerWindow?.webContents.send('screen_capturer:stop_stream');
     }
 
     sleep( ms: number ) {
@@ -155,25 +185,102 @@ export class ScreenCapturerService {
             return;
         }
 
-        const currentSize = this.captureSource?.window?.size;
-        const newSize = captureSource.window?.size;
+    }
 
-        const sameShape = (
-            currentSize?.width === newSize?.width &&
-            currentSize?.height === newSize?.height
-        );
+    async cropWorkAreaFromImage(
+        input: {
+            image: Buffer
+        }
+    ): Promise<Buffer> {
 
-        if ( !sameShape ) {
+        const { image } = input;
 
-            this.captureSource = cloneDeep( captureSource );
+        let display = screen.getAllDisplays()
+            .find( display => display.id == Number(this.captureSource?.displayId) );
 
-            await this.destroyScreenCapturer();
-            await this.createCaptureStream({
-                captureSource,
-                force: true
+        console.log( this.captureSource );
+
+        console.log({
+            displays: screen.getAllDisplays().map( s => s.id )
+        });
+
+        // try with a display with negative coordinats
+
+        display = display || (await this.getCurrentDisplay());
+
+        const sharpPipeline = sharp(image);
+
+        const imageMetadata = await sharpPipeline.metadata();
+
+        if (
+            !imageMetadata.width ||
+            !imageMetadata.height ||
+            !display
+        )
+            return image;
+
+        console.log({
+            imageMetadata: {
+                width: imageMetadata.width,
+                height: imageMetadata.height,
+            },
+            workArea: {
+                width: display.workArea.width,
+                height: display.workArea.height,
+            }
+        });
+
+        if (
+            imageMetadata.height > display.workArea.height ||
+            imageMetadata.width > display.workArea.width
+        ) {
+            const { workArea } = display;
+
+            const region: sharp.Region = {
+                top: workArea.y,
+                left: workArea.x,
+                width: workArea.width,
+                height: workArea.height
+            };
+
+            if ( region.top < 0 )
+                region.top = 0;
+
+            if ( region.left < 0 )
+                region.left = 0;
+
+            const overWidth = (region.width + region.left) - imageMetadata.width;
+            const overHeight = (region.height + region.top) - imageMetadata.height;
+
+            if ( overWidth > 0 )
+                region.width = region.width - overWidth;
+
+            if ( overHeight > 0 )
+                region.height = region.height - overHeight;
+
+            if ( isMacOS ) {
+                region.left = workArea.x - display.bounds.x;
+                region.top = workArea.y - display.bounds.y;
+                region.width = workArea.width <= imageMetadata.width ? workArea.width : imageMetadata.width;
+                region.height = workArea.height <= imageMetadata.height ? workArea.height: imageMetadata.height;
+            }
+
+            console.log({
+                workAreaSharpRegion: region
             });
+
+            const workAreaImage = sharpPipeline.extract(region);
+
+            return await workAreaImage.toBuffer();
         }
 
+        return image;
+    }
+
+    async getCurrentDisplay(): Promise<Electron.Display> {
+        const cursorScreenPoint = await windowManager.getCursorPosition();
+        const displayNearestPoint = screen.getDisplayNearestPoint(cursorScreenPoint);
+        return displayNearestPoint;
     }
 
 }
