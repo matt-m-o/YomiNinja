@@ -146,6 +146,35 @@ export default function OcrOverlay() {
 
   }, [systemInfo] );
 
+  useEffect( () => {
+    const observer = new MutationObserver( () => {
+
+      const googleTranslateBubble = document.querySelector('body > div.jfk-bubble.gtx-bubble');
+      if ( googleTranslateBubble ) {
+        const htmlEl = document.querySelector(`HTML`) as HTMLElement;
+        const bubbleEl = googleTranslateBubble as HTMLElement;
+        const overlayHeight = htmlEl.offsetHeight;
+        const overlayWidth = htmlEl.offsetWidth;
+        const bubbleRect = googleTranslateBubble.getBoundingClientRect();
+        
+        if ( bubbleRect.bottom > overlayHeight ) {
+          bubbleEl.style.top = (overlayHeight - bubbleRect.height - 10) + 'px';
+        }
+        if ( bubbleRect.right > overlayWidth ) {
+          bubbleEl.style.left = (overlayWidth - bubbleRect.width - 10) + 'px';
+        }
+
+      }
+    });
+
+    observer.observe( document.body, {
+        childList: true,
+        subtree: true,
+    });
+
+    return () => observer.disconnect(); // Cleanup on unmount
+
+  }, [] );
 
   const templateRegions = activeOcrTemplate?.target_regions.map( region => {
     const { position, size } = region;

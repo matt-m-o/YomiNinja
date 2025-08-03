@@ -196,7 +196,7 @@ export default function OcrResults( props: OcrResultsProps ) {
                 const furiganaFilterThreshold = (
                     Number(ocrItemBoxVisuals?.text?.furigana_filter?.threshold || 80) / 100
                 );
-                const enableFuriganaFilter = ocrItemBoxVisuals?.text?.furigana_filter.enabled;
+                const enableFuriganaFilter = Boolean(ocrItemBoxVisuals?.text?.furigana_filter?.enabled);
 
                 // const regionAspectRatio = ocrRegion.size.width / ocrRegion.size.height;
                 const regionWidth = isElectron ?
