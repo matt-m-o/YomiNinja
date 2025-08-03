@@ -44,12 +44,11 @@ YomiNinja currently offers support for distros using the X11 window system. Wayl
     sudo dpkg -i yomininja-e_x.x.x_amd64.deb
     ```
 ### macOS
-[Download](https://github.com/matt-m-o/YomiNinja/releases) and install the latest YomiNinja release (.dmg file). <br>
+[Download](https://github.com/matt-m-o/YomiNinja/releases) and install the latest YomiNinja release. <br>
 
 Notes:
+- The ARM64 version for macOS might show the message "YomiNinja is damaged and can't be opened". You can work around this issue by running the command ```xattr -cr /Applications/YomiNinja.app```
 - The list of available languages for the Apple Vision OCR engine depends on your macOS version.
-- Manga OCR will be supported in version 0.8 and above.
-- Native support for ARM64 (Apple Silicon) is coming in version 0.8 and above.
 
 
 
@@ -86,6 +85,8 @@ Notes:
 - [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)
 - [Google Cloud Vision](https://cloud.google.com/vision/docs)
 - [Google Lens](https://lens.google/intl/pt-BR/#translate)
+- [Manga OCR](https://github.com/kha-white/manga-ocr)
+- [Apple's Vision Framework](https://developer.apple.com/documentation/vision)
 
 ## Building
 1. Clone the git repository
@@ -129,3 +130,4 @@ Notes:
 - [Yomichan](https://github.com/FooSoft/yomichan)
 - [mokuro](https://github.com/kha-white/mokuro)
 - [kanjitomo-ocr](https://github.com/sakarika/kanjitomo-ocr)
+
