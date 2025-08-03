@@ -108,7 +108,7 @@ Notes:
     - Windows: `./bin/win32/ppocr`
     - Linux: `./bin/linux/ppocr`
 
-4. (optional) Download [10ten v1.15.1](https://github.com/birchill/10ten-ja-reader/releases/tag/v1.15.1) for Chrome, and place the zip file into the following directory:
+4. (optional) Download [10ten](https://github.com/birchill/10ten-ja-reader/releases) for Electron, and place the zip file into the following directory:
        
        ./yomininja-e/extensions/
 
@@ -130,4 +130,5 @@ Notes:
 - [Yomichan](https://github.com/FooSoft/yomichan)
 - [mokuro](https://github.com/kha-white/mokuro)
 - [kanjitomo-ocr](https://github.com/sakarika/kanjitomo-ocr)
+
 
