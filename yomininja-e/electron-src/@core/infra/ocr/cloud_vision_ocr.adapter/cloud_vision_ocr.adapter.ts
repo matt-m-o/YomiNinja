@@ -77,7 +77,15 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
                 height: page.height
             };
 
-            page.blocks?.forEach( block => {
+            page.blocks?.forEach( (block, blockIdx) => {
+
+                const blockBoundingBox = block.boundingBox;
+
+                if ( !blockBoundingBox?.vertices ) return;
+                
+                const blockOcrBox = this.getOcrItemBox( blockBoundingBox?.vertices );
+
+                const lines: OcrTextLine[] = [];
 
                 block.paragraphs?.forEach( (paragraph, paragraphIdx) => {
 
@@ -97,13 +105,12 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
                     const boxHeightPx = contextResolution.height * ( Number(paragraphDimensions?.height) / 100 );
 
                     const isVertical = boxHeightPx > boxWidthPx * 1.20 ;
-
-                    const lines: OcrTextLine[] = [{
+                    
+                    lines.push({
                         content: '',
                         symbols: [],
                         words: []
-                    }];
-
+                    });
                     let createNewLine = false;
 
                     words?.forEach(
@@ -176,17 +183,16 @@ export class CloudVisionOcrAdapter implements OcrAdapter< CloudVisionOcrEngineSe
                         }
                     );
 
-                    if ( !boundingBox?.vertices ) return;
+                });
 
-                    ocrResultItems.push({
-                        id: paragraphIdx.toString(),
-                        recognition_score: 1,
-                        classification_score: 1,
-                        classification_label: 0,
-                        box: paragraphOcrBox,
-                        text: lines,
-                        recognition_state: 'RECOGNIZED'
-                    });
+                ocrResultItems.push({
+                    id: blockIdx.toString(),
+                    recognition_score: block.confidence || 1,
+                    classification_score: 1,
+                    classification_label: 0,
+                    box: blockOcrBox, // paragraphOcrBox || blockOcrBox
+                    text: lines,
+                    recognition_state: 'RECOGNIZED'
                 });
 
             });
