@@ -16,7 +16,7 @@
     "url": "https://github.com/matt-m-o/YomiNinja.git"
   },
   "scripts": {
-    "postinstall": "npm run install-app-deps",
+    "postinstall": "electron-builder install-app-deps",
     "clean": "rimraf dist main renderer/out renderer/.next && node-gyp clean",
     "dev": "npm run build-electron && electron .",
     "build-renderer": "next build renderer",
