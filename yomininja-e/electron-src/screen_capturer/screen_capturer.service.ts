@@ -219,6 +219,8 @@ export class ScreenCapturerService {
         )
             return image;
 
+        const { scaleFactor } = display;
+
         console.log({
             imageMetadata: {
                 width: imageMetadata.width,
@@ -227,7 +229,8 @@ export class ScreenCapturerService {
             workArea: {
                 width: display.workArea.width,
                 height: display.workArea.height,
-            }
+            },
+            scaleFactor
         });
 
         if (
@@ -259,10 +262,23 @@ export class ScreenCapturerService {
                 region.height = region.height - overHeight;
 
             if ( isMacOS ) {
-                region.left = workArea.x - display.bounds.x;
-                region.top = workArea.y - display.bounds.y;
-                region.width = workArea.width <= imageMetadata.width ? workArea.width : imageMetadata.width;
-                region.height = workArea.height <= imageMetadata.height ? workArea.height: imageMetadata.height;
+                const scaledWorkArea: Electron.Rectangle = {
+                    width: workArea.width * scaleFactor,
+                    height: workArea.height * scaleFactor,
+                    x: workArea.x * scaleFactor,
+                    y: workArea.y * scaleFactor
+                }
+                region.left = scaledWorkArea.x - display.bounds.x;
+                region.top = scaledWorkArea.y - display.bounds.y;
+                region.width = scaledWorkArea.width <= imageMetadata.width ? scaledWorkArea.width : imageMetadata.width;
+                region.height = scaledWorkArea.height <= imageMetadata.height ? scaledWorkArea.height: imageMetadata.height;
+
+                // Add fix to main project
+                if ( region.top + region.height > imageMetadata.height )
+                    region.height = imageMetadata.height - region.top;
+            
+                if ( region.left + region.width > imageMetadata.width )
+                    region.width = imageMetadata.width - region.left;
             }
 
             console.log({
