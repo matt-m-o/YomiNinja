@@ -291,6 +291,9 @@ export class AppService {
             (imageSize.height > display.workArea.height ||
              imageSize.width > display.workArea.width)
         ) {
+
+            const { scaleFactor } = display;
+
             const workArea: Electron.Rectangle = {
                 width: display.workArea.width,
                 height: display.workArea.height,
@@ -298,9 +301,20 @@ export class AppService {
                 y: display.workArea.y,
             };
 
-            if ( isMacOS ) { //! Add this tix to the main project
+            if ( isMacOS ) {
+                workArea.width = workArea.width * scaleFactor;
+                workArea.height = workArea.height * scaleFactor;
+                workArea.x = workArea.x * scaleFactor;
+                workArea.y = workArea.y * scaleFactor;
+
                 workArea.x = workArea.x - display.bounds.x;
                 workArea.y = workArea.y - display.bounds.y;
+
+                if ( workArea.y + workArea.height > imageSize.height )
+                    workArea.height = imageSize.height - workArea.y;
+            
+                if ( workArea.x + workArea.width > imageSize.width )
+                    workArea.width = imageSize.width - workArea.x;
             }
 
             // console.log({ workArea });
