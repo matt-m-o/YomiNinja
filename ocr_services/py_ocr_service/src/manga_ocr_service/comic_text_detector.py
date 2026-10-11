@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import torch
 from typing import List
 
 from comic_text_detector.inference import TextDetector
@@ -33,7 +34,13 @@ class ComicTextDetector:
         self,
         model_path = '../models/comic_text_detector/comictextdetector.pt'
     ):
-        self.text_detector = TextDetector(model_path, input_size=1024, device='cpu', act='leaky')
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+        try:
+            self.text_detector = TextDetector(model_path, input_size=1024, device=device, act='leaky')
+        except Exception as e:
+            print(f'[ComicTextDetector] failed on {device}, falling back to CPU: {e}')
+            self.text_detector = TextDetector(model_path, input_size=1024, device='cpu', act='leaky')
 
 
     def detect(self, image: np.ndarray) -> List[TextBlock]:
